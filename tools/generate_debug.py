@@ -12,6 +12,8 @@ vio = next(core for core in config['debug_cores'] if core['name'] == 'vio0')
 existing = {probe['name'] for probe in vio['probes']}
 added = False
 for name, width, initial in [
+    ('lift_auto_enable', 1, '0x1'), ('lift_auto_max', 8, '0x80'),
+    ('ae_display_mean', 8, None), ('lift_actual_strength', 8, None), ('lift_at_max', 1, None),
     ('ae_high_protect', 1, '0x1'), ('ae_high_threshold', 8, '0xe8'),
     ('ae_high_limit', 8, '0xa'), ('lift_enable', 1, '0x0'), ('lift_strength', 8, '0x60'),
     ('ae_high_permille', 10, None), ('ae_highlight_limited', 1, None),
@@ -30,7 +32,7 @@ from efx_dbg.rtl_gen import write_debug_top_verilog
 profile = json.loads(json.dumps(config), cls=DebugProfileDecoder)
 write_debug_top_verilog(str(ROOT / 'debug_top.v'), profile, 'debug_edb_top', insert_gbuf=True)
 config_path.write_text(json.dumps(config, indent=4) + '\n', encoding='utf-8')
-print('Generated manual USER1 debugger: full-frame highlight protection and tone lift.')
+print('Generated manual USER1 debugger: highlight protection and automatic tone lift.')
 
 # The CLI compile flow consumes this generated core but does not create it.
 # Keep the existing automatic USER2 MIPI analyzer available in a clean checkout.

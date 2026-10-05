@@ -21,6 +21,8 @@ if __name__ == '__main__':
     isp = ROOT / 'rtl/isp'
     run('highlight_stats_tb', [TESTS / 'highlight_stats_tb.v', isp / 'ae_frame_stats.v'])
     run('luma_lift_tb', [TESTS / 'luma_lift_tb.v', isp / 'luma_tone_map.v'])
+    run('luma_lift_tb', [TESTS / 'luma_lift_tb.v', isp / 'luma_tone_map.v'], ['-Pluma_lift_tb.SAFE=1'])
+    run('auto_lift_tb', [TESTS / 'auto_lift_tb.v', isp / 'auto_tone_lift.v', isp / 'luma_tone_map.v', isp / 'ae_frame_stats.v'])
     run('highlight_ae_tb', [TESTS / 'highlight_ae_tb.v', isp / 'sc431hai_auto_exposure.v'])
     run('ae_stability_tb', [TESTS / 'ae_stability_tb.v', isp / 'sc431hai_auto_exposure.v'])
     run('predictive_ae_tb', [TESTS / 'predictive_ae_tb.v', isp / 'sc431hai_auto_exposure.v'])

@@ -3,7 +3,7 @@
         {
             "name": "vio0",
             "type": "vio",
-            "uuid": "8710e7ef755a45389d03177a0517b43f",
+            "uuid": "6aae4e1f9bf74de7b0f7602f6051a529",
             "probes": [
                 {
                     "name": "r_gain",
@@ -127,6 +127,31 @@
                 },
                 {
                     "name": "ae_highlight_limited",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "lift_auto_enable",
+                    "width": 1,
+                    "init": "0x1"
+                },
+                {
+                    "name": "lift_auto_max",
+                    "width": 8,
+                    "init": "0x80"
+                },
+                {
+                    "name": "ae_display_mean",
+                    "width": 8,
+                    "init": null
+                },
+                {
+                    "name": "lift_actual_strength",
+                    "width": 8,
+                    "init": null
+                },
+                {
+                    "name": "lift_at_max",
                     "width": 1,
                     "init": null
                 }

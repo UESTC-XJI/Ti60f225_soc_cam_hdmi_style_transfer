@@ -1,7 +1,7 @@
 // Four stages, one common RGB scale: lift shadows/midtones without channel clipping.
 // LUT curve leaves codes <=16 unchanged. Strength 0..128 blends to the full curve.
 // Gain is limited by the brightest channel's headroom, preserving RGB ratios.
-module luma_tone_map(
+module luma_tone_map #(parameter HIGHLIGHT_SAFE=0)(
   input clk,rst_n,i_enable,
   input [7:0] i_strength,
   input i_vs,i_hs,i_de,
@@ -35,7 +35,7 @@ module luma_tone_map(
       vs_d<=i_vs;
       if(i_vs && !vs_d) begin enabled<=i_enable;strength<=i_strength>128 ? 8'd128 : i_strength;end
       r1<=i_r;g1<=i_g;b1<=i_b;sync1<={i_vs,i_hs,i_de};
-      extra1<=lift_extra_lookup(luminance);cap1<=lift_cap_lookup(maximum);
+      extra1<=lift_extra_lookup(luminance);cap1<=HIGHLIGHT_SAFE ? lift_safe_cap_lookup(maximum) : lift_cap_lookup(maximum);
       r2<=r1;g2<=g1;b2<=b1;sync2<=sync1;cap2<=cap1;
       lift2<=enabled ? extra1*strength : 17'd0;
       r3<=r2;g3<=g2;b3<=b2;sync3<=sync2;

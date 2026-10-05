@@ -21,6 +21,7 @@
 `include "isp/sc431hai_auto_exposure.v"
 `include "isp/luma_color_suppress.v"
 `include "isp/luma_tone_map.v"
+`include "isp/auto_tone_lift.v"
 // `include "define.v"
 
 module ti60f225_oob_top #(
@@ -519,7 +520,9 @@ wire i2c_rst_n = i2c_rst_cnt[12];
 // Runtime exposure control. All camera register traffic stays in CLK_5M.
 wire ae_enable,tone_enable;
 wire [7:0] ae_target,high_green_strength,dark_red_strength;
-wire ae_high_protect,lift_enable;
+wire ae_high_protect,lift_enable,lift_auto_enable;
+wire [7:0] lift_auto_max,ae_display_mean,lift_actual_strength;
+wire lift_at_max;
 wire [7:0] ae_high_threshold,ae_high_limit,lift_strength;
 wire sensor_config_done,ae_wr_en,ae_rd_en,ae_wr_done,ae_rd_done,ae_wr_error,ae_rd_error;
 wire [15:0] ae_addr;
@@ -1084,10 +1087,10 @@ wire CONTRAST_B    ;
 
 wire [7:0] tone_rdata,tone_gdata,tone_bdata;
 wire tone_vs,tone_hs,tone_de;
-wire [25:0] tone_controls;
-isp_cdc_mailbox #(.WIDTH(26)) tone_control_mailbox(
+wire [44:0] tone_controls;
+isp_cdc_mailbox #(.WIDTH(45)) tone_control_mailbox(
   .s_clk(vid_clk_dvi2),.s_rst_n(w_arstn),.s_valid(1'b1),
-  .s_data({lift_enable,lift_strength,tone_enable,high_green_strength,dark_red_strength}),.s_ready(),
+  .s_data({ae_enable,ae_high_protect,lift_auto_enable,lift_auto_max,ae_target,lift_enable,lift_strength,tone_enable,high_green_strength,dark_red_strength}),.s_ready(),
   .d_clk(hdmi_tx_slow_clk),.d_rst_n(w_arstn),.d_valid(),.d_data(tone_controls)
 );
 luma_color_suppress tone_adjustment(
@@ -1101,12 +1104,35 @@ luma_color_suppress tone_adjustment(
 
 wire [7:0] lift_rdata,lift_gdata,lift_bdata;
 wire lift_vs,lift_hs,lift_de;
-luma_tone_map lift_adjustment(
-  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),.i_enable(tone_controls[25]),.i_strength(tone_controls[24:17]),
+wire display_stats_valid;
+wire [7:0] display_stats_mean,effective_lift_strength;
+wire automatic_lift_at_max;
+wire automatic_lift_enabled=tone_controls[44] && tone_controls[43] && tone_controls[42] && tone_controls[25];
+auto_tone_lift automatic_lift(
+  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),.i_enable(automatic_lift_enabled),
+  .i_valid(display_stats_valid),.i_mean(display_stats_mean),.i_target(tone_controls[33:26]),
+  .i_max_strength(tone_controls[41:34]),.i_manual_strength(tone_controls[24:17]),
+  .o_strength(effective_lift_strength),.o_at_max(automatic_lift_at_max)
+);
+luma_tone_map #(.HIGHLIGHT_SAFE(1)) lift_adjustment(
+  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),.i_enable(tone_controls[25]),.i_strength(effective_lift_strength),
   .i_vs(tone_vs),.i_hs(tone_hs),.i_de(tone_de),.i_r(tone_rdata),.i_g(tone_gdata),.i_b(tone_bdata),
   .o_vs(lift_vs),.o_hs(lift_hs),.o_de(lift_de),.o_r(lift_rdata),.o_g(lift_gdata),.o_b(lift_bdata)
 );
 
+// Separate feedback after lift, before Gamma. Single-pixel HDMI clock domain.
+ae_frame_stats #(.FRAME_WIDTH(HACT),.FRAME_HEIGHT(VACT),.PIXELS_PER_CLOCK(1),.MEAN_ONLY(1)) display_meter(
+  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),.i_vs(lift_vs),.i_de(lift_de),
+  .i_rgb({24'd0,lift_bdata,lift_gdata,lift_rdata}),.i_high_threshold(8'd232),
+  .o_valid(display_stats_valid),.o_mean(display_stats_mean),.o_highlights(),.o_high_permille()
+);
+wire [16:0] display_status;
+isp_cdc_mailbox #(.WIDTH(17)) display_status_mailbox(
+  .s_clk(hdmi_tx_slow_clk),.s_rst_n(w_arstn),.s_valid(display_stats_valid),
+  .s_data({automatic_lift_at_max,effective_lift_strength,display_stats_mean}),.s_ready(),
+  .d_clk(vid_clk_dvi2),.d_rst_n(w_arstn),.d_valid(),.d_data(display_status)
+);
+assign {lift_at_max,lift_actual_strength,ae_display_mean}=display_status;
 gamma_correction
 #(
 	.DATA_WIDTH		(8),
@@ -1185,6 +1211,11 @@ debug_edb_top debug_edb_top_inst (
     .vio0_ae_high_protect (ae_high_protect),
     .vio0_ae_high_threshold (ae_high_threshold),
     .vio0_ae_high_limit  (ae_high_limit),
+    .vio0_lift_auto_enable (lift_auto_enable),
+    .vio0_lift_auto_max (lift_auto_max),
+    .vio0_ae_display_mean (ae_display_mean),
+    .vio0_lift_actual_strength (lift_actual_strength),
+    .vio0_lift_at_max (lift_at_max),
     .vio0_lift_enable   (lift_enable),
     .vio0_lift_strength (lift_strength),
     .vio0_tone_enable   (tone_enable),

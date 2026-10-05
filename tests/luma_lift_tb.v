@@ -1,8 +1,8 @@
 `timescale 1ns/1ps
-module luma_lift_tb;
+module luma_lift_tb #(parameter SAFE=0);
   reg clk=0,rst=0,en=0,vs=0,hs=0,de=0;reg[7:0] strength=0,r=0,g=0,b=0;
   wire ov,oh,od;wire[7:0] ro,go,bo;
-  luma_tone_map dut(clk,rst,en,strength,vs,hs,de,r,g,b,ov,oh,od,ro,go,bo);
+  luma_tone_map #(.HIGHLIGHT_SAFE(SAFE)) dut(clk,rst,en,strength,vs,hs,de,r,g,b,ov,oh,od,ro,go,bo);
   always #5 clk=~clk;
   reg[8:0] gains[0:255];reg[9:0] caps[0:255];
   integer er[0:3],eg[0:3],eb[0:3],sy[0:3],ir[0:3],ig[0:3],ib[0:3],ff[0:3];
@@ -25,9 +25,10 @@ module luma_lift_tb;
       if(od) begin
         if(ro!==er[3][7:0] || go!==eg[3][7:0] || bo!==eb[3][7:0]) $fatal(1,"lift RGB arithmetic cycle %0d",n);
         if(ro<ir[3] || go<ig[3] || bo<ib[3]) $fatal(1,"lift wrap/darken");
-        if(ir[3]==255 || ig[3]==255 || ib[3]==255) begin
+        if(ir[3]>=(SAFE?231:255) || ig[3]>=(SAFE?231:255) || ib[3]>=(SAFE?231:255)) begin
           if(ro!=ir[3] || go!=ig[3] || bo!=ib[3]) $fatal(1,"lift introduced clipping");
         end
+        if(SAFE && ir[3]<232 && ig[3]<232 && ib[3]<232 && (ro>=232 || go>=232 || bo>=232)) $fatal(1,"safe lift created highlights");
         // Common scaling preserves channel ratios to within one output LSB.
         difference_rg=ro*ig[3]-go*ir[3];difference_rb=ro*ib[3]-bo*ir[3];
         if(difference_rg>255 || difference_rg< -255 || difference_rb>255 || difference_rb< -255)
@@ -59,7 +60,7 @@ module luma_lift_tb;
   endtask
   integer s;
   initial begin
-    $readmemh("rtl/isp/lift_gain.mem",gains);$readmemh("rtl/isp/lift_cap.mem",caps);
+    $readmemh("rtl/isp/lift_gain.mem",gains);if(SAFE) $readmemh("rtl/isp/lift_safe_cap.mem",caps);else $readmemh("rtl/isp/lift_cap.mem",caps);
     repeat(3) @(negedge clk);rst=1;
     frame(0,128,1000);frame(1,0,1000);
     for(s=0;s<=128;s=s+1) frame(1,s,s==96?10000:0);

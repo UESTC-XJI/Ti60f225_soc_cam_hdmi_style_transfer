@@ -1,8 +1,11 @@
-// Central 50% mean plus full-frame highlight fraction, before tone/gamma.
+// Central 50% mean plus optional full-frame highlight fraction.
+// Default dual-pixel mode meters before tone; single-pixel mean-only mode
+// meters the actual post-lift display output.
 // Two pixels sampled every eight pair-clocks and eight rows (32,400 at 1080p).
 // One sequential divider computes both results; no pixel-path division.
 module ae_frame_stats #(
-  parameter FRAME_WIDTH=1920, FRAME_HEIGHT=1080, MIN_SAMPLES=64
+  parameter FRAME_WIDTH=1920, FRAME_HEIGHT=1080, MIN_SAMPLES=64,
+    PIXELS_PER_CLOCK=2, MEAN_ONLY=0
 )(
   input clk, rst_n, i_vs, i_de,
   input [47:0] i_rgb,
@@ -25,9 +28,9 @@ module ae_frame_stats #(
   wire [1:0] hot_increment={1'b0,hot0}+{1'b0,hot1};
   wire line_end=de_d && !i_de;
   wire complete_frame=y==FRAME_HEIGHT || (line_end && y==FRAME_HEIGHT-1);
-  wire take_full=frame_started && !i_vs && i_de && x<FRAME_WIDTH/2 &&
-    y<FRAME_HEIGHT && x[2:0]==0 && y[2:0]==0;
-  wire in_roi=x>=FRAME_WIDTH/8 && x<(FRAME_WIDTH*3)/8 &&
+  wire take_full=frame_started && !i_vs && i_de && x<FRAME_WIDTH/PIXELS_PER_CLOCK &&
+    y<FRAME_HEIGHT && (PIXELS_PER_CLOCK==2 ? x[2:0]==0 : x[3:0]==0) && y[2:0]==0;
+  wire in_roi=x>=FRAME_WIDTH/(4*PIXELS_PER_CLOCK) && x<(FRAME_WIDTH*3)/(4*PIXELS_PER_CLOCK) &&
     y>=FRAME_HEIGHT/4 && y<(FRAME_HEIGHT*3)/4;
   reg dividing,div_ratio;
   reg [4:0] bit_count;
@@ -54,11 +57,11 @@ module ae_frame_stats #(
         sum<=0;samples<=0;full_samples<=0;full_hot<=0;overflow<=0;
       end else if(line_end) begin
         y<=y+1'b1;
-        if(frame_started && x!=FRAME_WIDTH/2) frame_bad<=1;
+        if(frame_started && x!=FRAME_WIDTH/PIXELS_PER_CLOCK) frame_bad<=1;
       end
       if(i_vs && !vs_d) begin
         if(frame_started && complete_frame && !frame_bad &&
-           (!line_end || x==FRAME_WIDTH/2) && !dividing && !overflow &&
+           (!line_end || x==FRAME_WIDTH/PIXELS_PER_CLOCK) && !dividing && !overflow &&
            samples>=MIN_SAMPLES && full_samples!=0) begin
           dividing<=1;div_ratio<=0;dividend<={2'b0,sum};divisor<=samples;
           remainder<=0;quotient<=0;bit_count<=0;
@@ -68,11 +71,11 @@ module ae_frame_stats #(
         sum<=0;samples<=0;full_samples<=0;full_hot<=0;overflow<=0;frame_started<=0;
       end else if(take_full) begin
         if(full_samples<=16'd65533) begin
-          full_samples<=full_samples+16'd2;
-          full_hot<=full_hot+{14'b0,hot_increment};
+          full_samples<=full_samples+PIXELS_PER_CLOCK;
+          full_hot<=full_hot+(PIXELS_PER_CLOCK==2 ? {14'b0,hot_increment} : {15'b0,hot0});
           if(in_roi) begin
-            sum<=sum+{16'b0,luma0[9:2]}+{16'b0,luma1[9:2]};
-            samples<=samples+16'd2;
+            sum<=sum+{16'b0,luma0[9:2]}+(PIXELS_PER_CLOCK==2 ? {16'b0,luma1[9:2]} : 24'd0);
+            samples<=samples+PIXELS_PER_CLOCK;
           end
         end else overflow<=1;
       end
@@ -80,7 +83,9 @@ module ae_frame_stats #(
         remainder<=subtract ? trial-{1'b0,divisor} : trial;
         dividend<={dividend[24:0],1'b0};quotient<=next_q;
         if(bit_count==25) begin
-          if(!div_ratio) begin
+          if(MEAN_ONLY) begin
+            o_mean<=next_q[7:0];dividing<=0;o_valid<=1;
+          end else if(!div_ratio) begin
             o_mean<=next_q[7:0];div_ratio<=1;
             dividend<=hot_scaled;divisor<=full_divisor;remainder<=0;quotient<=0;bit_count<=0;
           end else begin

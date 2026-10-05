@@ -3,7 +3,7 @@
 // Auto-generated Efinix JTAG debugger top module. Do not modify. 
 //
 
-`define DBG_MODULE_UUID _786da867220e4e82a8593fe8870fc745
+`define DBG_MODULE_UUID _d9468e89732645639d1c78e65f7b25ad
 `define CONCAT(a,b) a``b
 `define DBG_MODULE_NAME(name) `CONCAT(name,`DBG_MODULE_UUID)
 
@@ -36,6 +36,9 @@ module debug_edb_top (
     input  vio0_ae_at_max,
     input  [9:0] vio0_ae_high_permille,
     input  vio0_ae_highlight_limited,
+    input  [7:0] vio0_ae_display_mean,
+    input  [7:0] vio0_lift_actual_strength,
+    input  vio0_lift_at_max,
     output [15:0] vio0_r_gain,
     output [15:0] vio0_g_gain,
     output [15:0] vio0_b_gain,
@@ -50,6 +53,8 @@ module debug_edb_top (
     output [7:0] vio0_ae_high_limit,
     output vio0_lift_enable,
     output [7:0] vio0_lift_strength,
+    output vio0_lift_auto_enable,
+    output [7:0] vio0_lift_auto_max,
     input  la0_clk,
     input  [7:0] la0_ch0_g,
     input  [7:0] la0_ch0_b,
@@ -115,9 +120,9 @@ module debug_edb_top (
 
     // debug core instances
     `DBG_MODULE_NAME(edb_vio_top) #(
-        .NUM_PROBE_IN           ( 11 ),
-        .NUM_PROBE_OUT          ( 14 ),
-        .UUID           ( 128'h8710e7ef755a45389d03177a0517b43f ),
+        .NUM_PROBE_IN           ( 14 ),
+        .NUM_PROBE_OUT          ( 16 ),
+        .UUID           ( 128'h6aae4e1f9bf74de7b0f7602f6051a529 ),
         .PROBE_IN0_WIDTH        ( 1 ),
         .PROBE_IN1_WIDTH        ( 1 ),
         .PROBE_IN2_WIDTH        ( 1 ),
@@ -129,6 +134,9 @@ module debug_edb_top (
         .PROBE_IN8_WIDTH        ( 1 ),
         .PROBE_IN9_WIDTH        ( 10 ),
         .PROBE_IN10_WIDTH       ( 1 ),
+        .PROBE_IN11_WIDTH       ( 8 ),
+        .PROBE_IN12_WIDTH       ( 8 ),
+        .PROBE_IN13_WIDTH       ( 1 ),
         .PROBE_OUT0_WIDTH       ( 16 ),
         .PROBE_OUT1_WIDTH       ( 16 ),
         .PROBE_OUT2_WIDTH       ( 16 ),
@@ -143,6 +151,8 @@ module debug_edb_top (
         .PROBE_OUT11_WIDTH      ( 8 ),
         .PROBE_OUT12_WIDTH      ( 1 ),
         .PROBE_OUT13_WIDTH      ( 8 ),
+        .PROBE_OUT14_WIDTH      ( 1 ),
+        .PROBE_OUT15_WIDTH      ( 8 ),
         .PROBE_OUT0_INIT_VAL    ( 'h168 ),
         .PROBE_OUT1_INIT_VAL    ( 'h100 ),
         .PROBE_OUT2_INIT_VAL    ( 'h1a9 ),
@@ -156,7 +166,9 @@ module debug_edb_top (
         .PROBE_OUT10_INIT_VAL   ( 'he8 ),
         .PROBE_OUT11_INIT_VAL   ( 'ha ),
         .PROBE_OUT12_INIT_VAL   ( 'h0 ),
-        .PROBE_OUT13_INIT_VAL   ( 'h60 )
+        .PROBE_OUT13_INIT_VAL   ( 'h60 ),
+        .PROBE_OUT14_INIT_VAL   ( 'h1 ),
+        .PROBE_OUT15_INIT_VAL   ( 'h80 )
     ) vio0 (
         .bscan_CAPTURE          ( bscan_CAPTURE ),
         .bscan_DRCK             ( bscan_DRCK ),
@@ -185,9 +197,9 @@ module debug_edb_top (
         .probe_in8          ( vio0_ae_at_max ),
         .probe_in9          ( vio0_ae_high_permille ),
         .probe_in10         ( vio0_ae_highlight_limited ),
-        .probe_in11         ( 1'b0 ),
-        .probe_in12         ( 1'b0 ),
-        .probe_in13         ( 1'b0 ),
+        .probe_in11         ( vio0_ae_display_mean ),
+        .probe_in12         ( vio0_lift_actual_strength ),
+        .probe_in13         ( vio0_lift_at_max ),
         .probe_in14         ( 1'b0 ),
         .probe_in15         ( 1'b0 ),
         .probe_in16         ( 1'b0 ),
@@ -252,8 +264,8 @@ module debug_edb_top (
         .probe_out11            ( vio0_ae_high_limit ),
         .probe_out12            ( vio0_lift_enable ),
         .probe_out13            ( vio0_lift_strength ),
-        .probe_out14            (  ),
-        .probe_out15            (  ),
+        .probe_out14            ( vio0_lift_auto_enable ),
+        .probe_out15            ( vio0_lift_auto_max ),
         .probe_out16            (  ),
         .probe_out17            (  ),
         .probe_out18            (  ),
