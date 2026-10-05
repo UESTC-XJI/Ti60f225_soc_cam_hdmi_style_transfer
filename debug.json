@@ -28,7 +28,7 @@
                 {
                     "name": "ae_enable",
                     "width": 1,
-                    "init": "0x0"
+                    "init": "0x1"
                 },
                 {
                     "name": "ae_target",
@@ -38,7 +38,7 @@
                 {
                     "name": "tone_enable",
                     "width": 1,
-                    "init": "0x0"
+                    "init": "0x1"
                 },
                 {
                     "name": "high_green_strength",
@@ -113,12 +113,12 @@
                 {
                     "name": "lift_enable",
                     "width": 1,
-                    "init": "0x0"
+                    "init": "0x1"
                 },
                 {
                     "name": "lift_strength",
                     "width": 8,
-                    "init": "0x60"
+                    "init": "0x20"
                 },
                 {
                     "name": "ae_high_permille",

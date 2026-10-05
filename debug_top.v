@@ -157,7 +157,7 @@ module debug_edb_top (
         .PROBE_OUT1_INIT_VAL    ( 'h100 ),
         .PROBE_OUT2_INIT_VAL    ( 'h1a9 ),
         .PROBE_OUT3_INIT_VAL    ( 'h0 ),
-        .PROBE_OUT4_INIT_VAL    ( 'h0 ),
+        .PROBE_OUT4_INIT_VAL    ( 'h1 ),
         .PROBE_OUT5_INIT_VAL    ( 'h60 ),
         .PROBE_OUT6_INIT_VAL    ( 'h0 ),
         .PROBE_OUT7_INIT_VAL    ( 'h20 ),
@@ -165,8 +165,8 @@ module debug_edb_top (
         .PROBE_OUT9_INIT_VAL    ( 'h1 ),
         .PROBE_OUT10_INIT_VAL   ( 'he8 ),
         .PROBE_OUT11_INIT_VAL   ( 'ha ),
-        .PROBE_OUT12_INIT_VAL   ( 'h0 ),
-        .PROBE_OUT13_INIT_VAL   ( 'h60 ),
+        .PROBE_OUT12_INIT_VAL   ( 'h1 ),
+        .PROBE_OUT13_INIT_VAL   ( 'h20 ),
         .PROBE_OUT14_INIT_VAL   ( 'h1 ),
         .PROBE_OUT15_INIT_VAL   ( 'h80 )
     ) vio0 (
