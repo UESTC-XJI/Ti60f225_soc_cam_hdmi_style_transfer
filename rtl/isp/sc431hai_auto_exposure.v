@@ -5,7 +5,7 @@ module sc431hai_auto_exposure #(
   parameter WAIT_FRAMES=2, TIMEOUT_CYCLES=250000,
   parameter FILTER_SHIFT=2, CONFIRM_FRAMES=2, DEADBAND=12, SETTLE_BAND=6,
   parameter SMALL_STEP_SHIFT=6, LARGE_STEP_SHIFT=5, LARGE_ERROR=32,
-  parameter RELEASE_FRAMES=8
+  parameter RELEASE_FRAMES=8, PREDICTIVE_ENABLE=1
 )(
   input clk,rst_n,i_config_done,i_enable,i_sensor_frame_start,
   input i_stats_valid,i_highlights,
@@ -25,7 +25,8 @@ module sc431hai_auto_exposure #(
   output reg o_highlight_limited
 );
   localparam BOOT=0,READ_SEND=1,READ_WAIT=2,LIMITS=3,READY=4,
-    WAIT_FRAME=5,WRITE_SEND=6,WRITE_WAIT=7,FAULT=8;
+    WAIT_FRAME=5,WRITE_SEND=6,WRITE_WAIT=7,FAULT=8,
+    PREDICT_DIVIDE=9,PREDICT_APPLY=10;
   reg [3:0] state;
   reg [2:0] index;
   reg [7:0] exp_hi,exp_mid,exp_lo,cooldown;
@@ -39,13 +40,21 @@ module sc431hai_auto_exposure #(
   reg filter_valid;
   reg [11:0] mean_filter;
   reg [13:0] high_filter;
+  reg [7:0] previous_mean;
   reg [1:0] last_direction;
   reg [1:0] brightness_direction;
   reg [7:0] confirm_count,release_count;
   wire [19:0] mean_mix=mean_filter*((1<<FILTER_SHIFT)-1)+{i_mean,4'b0};
   wire [21:0] high_mix=high_filter*((1<<FILTER_SHIFT)-1)+{i_high_permille,4'b0};
-  wire [11:0] mean_next=filter_valid ? (mean_mix>>FILTER_SHIFT) : {i_mean,4'b0};
-  wire [13:0] high_next=filter_valid ? (high_mix>>FILTER_SHIFT) : {i_high_permille,4'b0};
+  wire [19:0] mean_shifted=mean_mix>>FILTER_SHIFT;
+  wire [21:0] high_shifted=high_mix>>FILTER_SHIFT;
+  wire [8:0] mean_change=i_mean>previous_mean ? {1'b0,i_mean}-{1'b0,previous_mean} :
+    {1'b0,previous_mean}-{1'b0,i_mean};
+  // A late exposure response must not be mixed with an old exposure's mean.
+  // Re-seed and confirm again when accepted measurements change substantially.
+  wire mean_jump=PREDICTIVE_ENABLE && filter_valid && mean_change>DEADBAND;
+  wire [11:0] mean_next=(filter_valid && !mean_jump) ? mean_shifted[11:0] : {i_mean,4'b0};
+  wire [13:0] high_next=filter_valid ? high_shifted[13:0] : {i_high_permille,4'b0};
   wire [7:0] mean_control=(mean_next+12'd8)>>4;
   wire [9:0] high_control=high_next[13:4];
   wire [8:0] mean_error=mean_control>target ? {1'b0,mean_control}-{1'b0,target} :
@@ -63,7 +72,38 @@ module sc431hai_auto_exposure #(
   reg [1:0] direction;
   reg [16:0] candidate;
   reg [15:0] next_exposure;
-  assign o_ready=state>=READY && state<=WRITE_WAIT;
+  // One 24-cycle divider per confirmed correction. No video-path division.
+  reg [23:0] pred_dividend,pred_quotient,pred_estimate;
+  reg [7:0] pred_divisor;
+  reg [8:0] pred_remainder;
+  reg [4:0] pred_bit;
+  reg [15:0] pred_base;
+  reg [1:0] pred_direction;
+  reg pred_large;
+  wire [8:0] pred_trial={pred_remainder[7:0],pred_dividend[23]};
+  wire pred_subtract=pred_trial>={1'b0,pred_divisor};
+  wire [23:0] pred_next_q={pred_quotient[22:0],pred_subtract};
+  wire [15:0] pred_goal=pred_estimate>{8'b0,maximum} ? maximum :
+    (pred_estimate<24'd4 ? 16'd4 : pred_estimate[15:0]);
+  wire [15:0] pred_distance=pred_goal>pred_base ? pred_goal-pred_base : pred_base-pred_goal;
+  wire [15:0] pred_half=pred_distance<2 ? 16'd1 : (pred_distance>>1);
+  // Large changes: at most double exposure or reduce it by 25%. Near target:
+  // at most 12.5%. Half-distance naturally shrinks further near convergence.
+  wire [15:0] pred_cap_raw=pred_large ?
+    (pred_direction==1 ? pred_base : (pred_base>>2)) : (pred_base>>3);
+  wire [15:0] pred_cap=pred_cap_raw==0 ? 16'd1 : pred_cap_raw;
+  wire [15:0] pred_step=pred_half>pred_cap ? pred_cap : pred_half;
+  wire [16:0] pred_candidate=pred_direction==1 ? {1'b0,pred_base}+{1'b0,pred_step} :
+    {1'b0,pred_base}-{1'b0,pred_step};
+  wire [15:0] pred_result=pred_candidate<4 ? 16'd4 :
+    (pred_candidate>max_wide ? maximum : pred_candidate[15:0]);
+  // A brightness-based reduction is also safe when highlights are excessive.
+  // A dark mean must never turn highlight protection into an exposure increase.
+  wire predict_correction=PREDICTIVE_ENABLE &&
+    ((direction==1 && !high_over && !high_hold) ||
+     (direction==2 && {1'b0,mean_control}>({1'b0,target}+SETTLE_BAND)));
+  assign o_ready=(state>=READY && state<=WRITE_WAIT) ||
+    state==PREDICT_DIVIDE || state==PREDICT_APPLY;
   assign o_at_limit=o_ready && (o_exposure<=4 || o_exposure>=maximum);
   always @(*) begin
     candidate={1'b0,o_exposure};
@@ -90,8 +130,10 @@ module sc431hai_auto_exposure #(
       pending<=0;group_failed<=0;timer<=0;o_wr_en<=0;o_rd_en<=0;o_addr<=0;o_data<=0;
       o_exposure<=0;o_vts<=0;o_mean<=0;o_error<=0;
       o_highlight_limited<=0;
-      filter_valid<=0;mean_filter<=0;high_filter<=0;
+      filter_valid<=0;mean_filter<=0;high_filter<=0;previous_mean<=0;
       last_direction<=0;brightness_direction<=0;confirm_count<=0;release_count<=0;
+      pred_dividend<=0;pred_quotient<=0;pred_estimate<=0;pred_divisor<=1;
+      pred_remainder<=0;pred_bit<=0;pred_base<=0;pred_direction<=0;pred_large<=0;
     end else begin
       o_wr_en<=0;o_rd_en<=0;
       if(i_stats_valid) o_mean<=i_mean;
@@ -143,6 +185,7 @@ module sc431hai_auto_exposure #(
             if(cooldown!=0) cooldown<=cooldown-1'b1;
             else begin
               filter_valid<=1;mean_filter<=mean_next;high_filter<=high_next;
+              previous_mean<=i_mean;
               if(mean_error<=SETTLE_BAND) brightness_direction<=0;
               if(!i_high_protect) begin o_highlight_limited<=0;release_count<=0;end
               else if(high_control<={2'b0,high_release}) begin
@@ -153,21 +196,42 @@ module sc431hai_auto_exposure #(
               if(direction==0) begin last_direction<=0;confirm_count<=0;end
               else begin
                 last_direction<=direction;
-                if(direction!=last_direction) confirm_count<=1;
+                if(direction!=last_direction || mean_jump) confirm_count<=1;
                 else if(confirm_count<CONFIRM_FRAMES) confirm_count<=confirm_count+1'b1;
               end
               if(o_exposure<4 || o_exposure>maximum ||
                  (direction!=0 && (CONFIRM_FRAMES==1 ||
-                  (direction==last_direction && confirm_count>=CONFIRM_FRAMES-1)))) begin
+                  (!mean_jump && direction==last_direction && confirm_count>=CONFIRM_FRAMES-1)))) begin
                 if(high_over) o_highlight_limited<=1;
                 if(next_exposure!=o_exposure) begin
                   if(!high_over) brightness_direction<=direction;
-                  pending<=next_exposure;state<=WAIT_FRAME;
+                  if(predict_correction && o_exposure>=4 && o_exposure<=maximum) begin
+                    pred_dividend<=o_exposure*target;
+                    pred_divisor<=mean_control==0 ? 8'd1 : mean_control;
+                    pred_quotient<=0;pred_remainder<=0;pred_bit<=0;
+                    pred_base<=o_exposure;pred_direction<=direction;
+                    pred_large<=mean_error>=LARGE_ERROR;
+                    state<=PREDICT_DIVIDE;
+                  end else begin pending<=next_exposure;state<=WAIT_FRAME;end
                   last_direction<=0;confirm_count<=0;
                 end
               end
             end
           end
+        end
+        PREDICT_DIVIDE: begin
+          if(!i_enable) state<=READY;
+          else begin
+            pred_remainder<=pred_subtract ? pred_trial-{1'b0,pred_divisor} : pred_trial;
+            pred_dividend<={pred_dividend[22:0],1'b0};pred_quotient<=pred_next_q;
+            if(pred_bit==23) begin pred_estimate<=pred_next_q;state<=PREDICT_APPLY;end
+            else pred_bit<=pred_bit+1'b1;
+          end
+        end
+        PREDICT_APPLY: begin
+          if(!i_enable || (pred_direction==1 && (high_over || high_hold)) ||
+             pred_goal==pred_base) state<=READY;
+          else begin pending<=pred_result;state<=WAIT_FRAME;end
         end
         WAIT_FRAME: begin
           if(!i_enable) state<=READY;

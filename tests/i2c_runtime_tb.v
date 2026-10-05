@@ -103,8 +103,8 @@ module i2c_runtime_tb;
     if(fault || exp!=800 || vts!=1500) $fatal(1,"AE real bus boot");
     repeat(4) @(negedge clk);en=1;sv=1;@(negedge clk);sv=0;
     wait(ae.state==5);@(negedge clk);fs=1;@(negedge clk);fs=0;
-    wait(exp==900 || fault);#2;
-    if(fault || mem['h3812]!='h30 || mem['h3e00]!='ha0 || mem['h3e01]!='h38 || mem['h3e02]!='h45)
+    wait(exp==1360 || fault);#2; // goal=800*96/40=1920, halfway=1360.
+    if(fault || mem['h3812]!='h30 || mem['h3e00]!='ha0 || mem['h3e01]!='h55 || mem['h3e02]!='h05)
       $fatal(1,"AE real bus group hold result");
     $display("PASS I2C: 165-entry init, 6.160x analog gain readback, repeated starts, read/write/NACK, AE group update (%0d starts, %0d stops)",starts,stops);$finish;
   end

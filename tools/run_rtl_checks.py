@@ -23,6 +23,7 @@ if __name__ == '__main__':
     run('luma_lift_tb', [TESTS / 'luma_lift_tb.v', isp / 'luma_tone_map.v'])
     run('highlight_ae_tb', [TESTS / 'highlight_ae_tb.v', isp / 'sc431hai_auto_exposure.v'])
     run('ae_stability_tb', [TESTS / 'ae_stability_tb.v', isp / 'sc431hai_auto_exposure.v'])
+    run('predictive_ae_tb', [TESTS / 'predictive_ae_tb.v', isp / 'sc431hai_auto_exposure.v'])
     run('ae_controller_tb', [TESTS / 'ae_controller_tb.v', isp / 'sc431hai_auto_exposure.v'])
     run('tone_tb', [TESTS / 'legacy_tone_mailbox_tb.v', isp / 'luma_color_suppress.v'])
     run('mailbox_tb', [TESTS / 'legacy_tone_mailbox_tb.v', isp / 'isp_cdc_mailbox.v'])
