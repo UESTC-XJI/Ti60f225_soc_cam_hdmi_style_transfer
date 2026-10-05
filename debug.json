@@ -3,7 +3,7 @@
         {
             "name": "vio0",
             "type": "vio",
-            "uuid": "c8eb78c9d9c9473c9b687834c3ee5c04",
+            "uuid": "2724c79bf8a142d1beee5616dd31aee9",
             "probes": [
                 {
                     "name": "r_gain",
@@ -83,6 +83,16 @@
                 {
                     "name": "ae_mean",
                     "width": 8,
+                    "init": null
+                },
+                {
+                    "name": "ae_at_min",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "ae_at_max",
+                    "width": 1,
                     "init": null
                 }
             ]

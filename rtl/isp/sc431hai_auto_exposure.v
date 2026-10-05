@@ -35,7 +35,9 @@ module sc431hai_auto_exposure #(
   assign o_at_limit=o_ready && (o_exposure<=4 || o_exposure>=maximum);
   always @(*) begin
     candidate={1'b0,o_exposure};
-    if(i_highlights || {1'b0,i_mean}>({1'b0,target}+9'd8))
+    // A small bright object must not keep driving an already dark ROI down.
+    // Highlight protection can lower exposure only at/above the target mean.
+    if({1'b0,i_mean}>({1'b0,target}+9'd8) || (i_highlights && i_mean>=target))
       candidate=o_exposure>step ? {1'b0,o_exposure}-{1'b0,step} : 17'd4;
     else if(({1'b0,i_mean}+9'd8)<{1'b0,target})
       candidate={1'b0,o_exposure}+{1'b0,step};
@@ -72,7 +74,7 @@ module sc431hai_auto_exposure #(
           if(i_rd_error) begin state<=FAULT;o_error<=1; end
           else begin
             case(index)
-              0:o_vts[15:8]<=i_read_data;
+              0:o_vts[15:8]<={1'b0,i_read_data[6:0]}; // 320e[7] is not part of VTS.
               1:o_vts[7:0]<=i_read_data;
               2:exp_hi<=i_read_data;
               3:exp_mid<=i_read_data;
@@ -83,7 +85,7 @@ module sc431hai_auto_exposure #(
           end
         end
         LIMITS: begin
-          if(o_vts<6 || o_vts>16'h7ff0) begin state<=FAULT;o_error<=1; end
+          if(o_vts<8) begin state<=FAULT;o_error<=1; end
           else begin
             o_exposure<={exp_hi[3:0],exp_mid,exp_lo[7:4]};
             cooldown<=WAIT_FRAMES;state<=READY;
@@ -118,7 +120,10 @@ module sc431hai_auto_exposure #(
           if(index==4) begin
             if(group_failed || i_wr_error) begin state<=FAULT;o_error<=1; end
             else begin o_exposure<=pending;cooldown<=WAIT_FRAMES;state<=READY; end
-          end else begin index<=index+1'b1;state<=WRITE_SEND; end
+          end else begin
+            index<=i_wr_error ? 3'd4 : index+1'b1;
+            state<=WRITE_SEND;
+          end
         end
         FAULT: begin o_wr_en<=0;o_rd_en<=0; end
         default: begin state<=FAULT;o_error<=1; end

@@ -14,6 +14,12 @@
 /////////////////////////////////////////////////////////////////////////////////
 //`define SOFT_TAP 1
 `include "ddr3_controller/ddr3_parameter.vh"
+// Include ISP modules here so GUI project-file saves cannot drop their sources.
+// These four modules should not also be added as separate project design files.
+`include "isp/isp_cdc_mailbox.v"
+`include "isp/ae_frame_stats.v"
+`include "isp/sc431hai_auto_exposure.v"
+`include "isp/luma_color_suppress.v"
 // `include "define.v"
 
 module ti60f225_oob_top #(
@@ -543,9 +549,9 @@ always @(posedge CLK_5M or negedge i2c_rst_n) begin
   end
 end
 isp_cdc_mailbox #(.WIDTH(17)) ae_statistics_mailbox(
-  .s_clk(vid_clk_dvi2),.s_rst_n(vid_rst_n),.s_valid(stats_valid),
+  .s_clk(vid_clk_dvi2),.s_rst_n(w_arstn),.s_valid(stats_valid),
   .s_data({ae_target,stats_hot,stats_mean}),.s_ready(),
-  .d_clk(CLK_5M),.d_rst_n(i2c_rst_n),.d_valid(ae_stats_valid),.d_data(ae_stats_message)
+  .d_clk(CLK_5M),.d_rst_n(w_arstn),.d_valid(ae_stats_valid),.d_data(ae_stats_message)
 );
 sc431hai_auto_exposure ae_controller(
   .clk(CLK_5M),.rst_n(i2c_rst_n),.i_config_done(sensor_config_done),
@@ -560,6 +566,9 @@ sc431hai_auto_exposure ae_controller(
 wire ae_ready,ae_fault,ae_at_limit,ae_highlights;
 wire [15:0] ae_exposure,ae_vts;
 wire [7:0] ae_mean;
+wire ae_at_min=ae_ready && ae_exposure<=16'd4;
+wire [16:0] ae_maximum={ae_vts,1'b0}-17'd11;
+wire ae_at_max=ae_ready && {1'b0,ae_exposure}>=ae_maximum;
 reg ae_hot_i2c;
 always @(posedge CLK_5M or negedge i2c_rst_n) begin
   if(!i2c_rst_n) ae_hot_i2c<=0;
@@ -574,8 +583,8 @@ always @(posedge CLK_5M or negedge i2c_rst_n) begin
   else if(status_ready && ae_status!=ae_status_sent) ae_status_sent<=ae_status;
 end
 isp_cdc_mailbox #(.WIDTH(44)) ae_status_mailbox(
-  .s_clk(CLK_5M),.s_rst_n(i2c_rst_n),.s_valid(ae_status!=ae_status_sent),.s_data(ae_status),.s_ready(status_ready),
-  .d_clk(vid_clk_dvi2),.d_rst_n(vid_rst_n),.d_valid(),.d_data(ae_status_video)
+  .s_clk(CLK_5M),.s_rst_n(w_arstn),.s_valid(ae_status!=ae_status_sent),.s_data(ae_status),.s_ready(status_ready),
+  .d_clk(vid_clk_dvi2),.d_rst_n(w_arstn),.d_valid(),.d_data(ae_status_video)
 );
 assign {ae_ready,ae_fault,ae_at_limit,ae_highlights,ae_vts,ae_exposure,ae_mean}=ae_status_video;
 
@@ -1062,9 +1071,15 @@ wire CONTRAST_B    ;
 
 wire [7:0] tone_rdata,tone_gdata,tone_bdata;
 wire tone_vs,tone_hs,tone_de;
+wire [16:0] tone_controls;
+isp_cdc_mailbox #(.WIDTH(17)) tone_control_mailbox(
+  .s_clk(vid_clk_dvi2),.s_rst_n(w_arstn),.s_valid(1'b1),
+  .s_data({tone_enable,high_green_strength,dark_red_strength}),.s_ready(),
+  .d_clk(hdmi_tx_slow_clk),.d_rst_n(w_arstn),.d_valid(),.d_data(tone_controls)
+);
 luma_color_suppress tone_adjustment(
-  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),.i_enable(tone_enable),
-  .i_high_green(high_green_strength),.i_dark_red(dark_red_strength),
+  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),.i_enable(tone_controls[16]),
+  .i_high_green(tone_controls[15:8]),.i_dark_red(tone_controls[7:0]),
   .i_vs(hdmi_tx_vs),.i_hs(hdmi_tx_hs),.i_de(hdmi_tx_de),
   .i_r(CAM_RAW_GREEN_FIRST ? hdmi_tx_bdata : hdmi_tx_rdata),.i_g(hdmi_tx_gdata),
   .i_b(CAM_RAW_GREEN_FIRST ? hdmi_tx_rdata : hdmi_tx_bdata),
@@ -1152,6 +1167,8 @@ debug_edb_top debug_edb_top_inst (
     .vio0_ae_ready      (ae_ready),
     .vio0_ae_fault      (ae_fault),
     .vio0_ae_at_limit   (ae_at_limit),
+    .vio0_ae_at_min     (ae_at_min),
+    .vio0_ae_at_max     (ae_at_max),
     .vio0_ae_highlights (ae_highlights),
     .vio0_ae_vts        (ae_vts),
     .vio0_ae_exposure   (ae_exposure),

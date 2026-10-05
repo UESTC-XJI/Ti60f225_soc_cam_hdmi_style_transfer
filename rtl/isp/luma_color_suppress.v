@@ -38,7 +38,7 @@ module luma_color_suppress(
         dark_strength<=i_dark_red>128 ? 8'd128 : i_dark_red;
       end
       r1<=i_r;g1<=i_g;b1<=i_b;sync1<={i_vs,i_hs,i_de};
-      high_weight<=high_delta[5:0]<<2;
+      high_weight<={high_delta[5:0],2'b00};
       dark_weight<=shadow_weight>255 ? 8'd255 : shadow_weight[7:0];
       r2<=r1;g2<=g1;b2<=b1;sync2<=sync1;
       green_cut<=enabled ? high_weight*high_strength : 16'd0;

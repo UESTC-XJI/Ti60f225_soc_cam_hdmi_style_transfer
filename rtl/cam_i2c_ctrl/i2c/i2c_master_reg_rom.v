@@ -241,10 +241,10 @@ ROM[8'h9d] = {16'h3210,8'h01,1'b0};
 ROM[8'h9e] = {16'h3211,8'h44,1'b0};
 ROM[8'h9f] = {16'h3212,8'h00,1'b0};
 ROM[8'ha0] = {16'h3213,8'h05,1'b0};
-ROM[8'ha1] = {16'h3E08,8'h80,1'b0};
-ROM[8'ha2] = {16'h3E09,8'h2a,1'b0};
+ROM[8'ha1] = {16'h3E08,8'h83,1'b0}; // Analog gain 6.160x (SC431HAI table 2-7).
+ROM[8'ha2] = {16'h3E09,8'h20,1'b0}; // Fine gain paired with 3e08=0x83.
 ROM[8'ha3] = {16'h3221,8'h00,1'b0};
-ROM[8'ha4] = {16'h4501,8'ha4,1'b0}; // Enable SC431HAI grayscale ramp (bit 3).
+ROM[8'ha4] = {16'h4501,8'ha4,1'b0}; // Normal image; bit 3=0 (0xac enables grayscale ramp).
 end 
 // write is unused
 wire [ADDR_WIDTH-1:0] ADDRA = {ADDR_WIDTH{1'b0}}; 

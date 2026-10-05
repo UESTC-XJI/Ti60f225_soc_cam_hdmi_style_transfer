@@ -3,7 +3,7 @@
 // Auto-generated Efinix JTAG debugger top module. Do not modify. 
 //
 
-`define DBG_MODULE_UUID _8c88224642b74604aec25c171afca6f9
+`define DBG_MODULE_UUID _3e9c6674076d43e7af1af11a79b6b903
 `define CONCAT(a,b) a``b
 `define DBG_MODULE_NAME(name) `CONCAT(name,`DBG_MODULE_UUID)
 
@@ -32,6 +32,8 @@ module debug_edb_top (
     input  [15:0] vio0_ae_vts,
     input  [15:0] vio0_ae_exposure,
     input  [7:0] vio0_ae_mean,
+    input  vio0_ae_at_min,
+    input  vio0_ae_at_max,
     output [15:0] vio0_r_gain,
     output [15:0] vio0_g_gain,
     output [15:0] vio0_b_gain,
@@ -106,9 +108,9 @@ module debug_edb_top (
 
     // debug core instances
     `DBG_MODULE_NAME(edb_vio_top) #(
-        .NUM_PROBE_IN           ( 7 ),
+        .NUM_PROBE_IN           ( 9 ),
         .NUM_PROBE_OUT          ( 9 ),
-        .UUID           ( 128'hc8eb78c9d9c9473c9b687834c3ee5c04 ),
+        .UUID           ( 128'h2724c79bf8a142d1beee5616dd31aee9 ),
         .PROBE_IN0_WIDTH        ( 1 ),
         .PROBE_IN1_WIDTH        ( 1 ),
         .PROBE_IN2_WIDTH        ( 1 ),
@@ -116,6 +118,8 @@ module debug_edb_top (
         .PROBE_IN4_WIDTH        ( 16 ),
         .PROBE_IN5_WIDTH        ( 16 ),
         .PROBE_IN6_WIDTH        ( 8 ),
+        .PROBE_IN7_WIDTH        ( 1 ),
+        .PROBE_IN8_WIDTH        ( 1 ),
         .PROBE_OUT0_WIDTH       ( 16 ),
         .PROBE_OUT1_WIDTH       ( 16 ),
         .PROBE_OUT2_WIDTH       ( 16 ),
@@ -158,8 +162,8 @@ module debug_edb_top (
         .probe_in4          ( vio0_ae_vts ),
         .probe_in5          ( vio0_ae_exposure ),
         .probe_in6          ( vio0_ae_mean ),
-        .probe_in7          ( 1'b0 ),
-        .probe_in8          ( 1'b0 ),
+        .probe_in7          ( vio0_ae_at_min ),
+        .probe_in8          ( vio0_ae_at_max ),
         .probe_in9          ( 1'b0 ),
         .probe_in10         ( 1'b0 ),
         .probe_in11         ( 1'b0 ),
