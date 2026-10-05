@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-// Exercise shipping defaults, including WAIT_FRAMES=8, against scene changes.
+// Shipping cadence: two settling frames plus two confirmation frames.
 module ae_stability_tb;
   reg clk=0,rst=0,en=0,sv=0,fs=0,wd=0,rd=0;
   reg protect=1;reg[9:0] ratio=0;reg[7:0] mean=100,target=100,read_data=0;
@@ -13,6 +13,7 @@ module ae_stability_tb;
     .i_high_protect(protect),.i_high_permille(ratio),.i_high_limit(8'd10),.o_highlight_limited(blocked));
   always #5 clk=~clk;
   integer writes=0,initialexp=800,j,k,beforewrites,changes,lastchange,newchange;
+  integer exposure_history[0:1],four_frame_updates;
   always @(negedge clk) begin
     wd=0;rd=0;
     if(read) begin
@@ -48,26 +49,26 @@ module ae_stability_tb;
     boot(800);sample(100,0);
     for(j=0;j<80;j=j+1) sample(90+j%21, j%11);
     unchanged(800);if(writes) $fatal(1,"small scene jitter caused writes");
-    sample(140,20);sample(140,0);
+    sample(140,20);
     for(j=0;j<20;j=j+1) sample(100,0);
     unchanged(800);if(writes) $fatal(1,"brief bright scene/highlight caused writes");
-    boot(800);sample(80,0);sample(80,0);sample(80,0);unchanged(800);
+    boot(800);sample(80,0);unchanged(800);
     sample(80,0);settled(812); // Near target: floor(800/64)=12.
-    for(j=0;j<8;j=j+1) sample(240,1000); // Old bright frames in the settling interval.
+    for(j=0;j<2;j=j+1) sample(240,1000); // Old bright frames in the settling interval.
     unchanged(812);if(blocked || dut.filter_valid) $fatal(1,"cooldown retained stale stats");
-    sample(80,0);sample(80,0);sample(80,0);unchanged(812);
+    sample(80,0);unchanged(812);
     sample(80,0);settled(824);
-    boot(800);sample(20,0);sample(20,0);sample(20,0);unchanged(800);
+    boot(800);sample(20,0);unchanged(800);
     sample(20,0);settled(825); // Large error: floor(800/32)=25.
-    boot(800);sample(120,0);sample(120,0);sample(120,0);unchanged(800);
+    boot(800);sample(120,0);unchanged(800);
     sample(120,0);settled(788);
-    for(j=0;j<8;j=j+1) sample(0,0);
+    for(j=0;j<2;j=j+1) sample(0,0);
     for(j=0;j<12;j=j+1) sample(100,0);
     unchanged(788);if(writes!=5) $fatal(1,"old dark frames caused reverse adjustment");
-    boot(800);sample(30,20);sample(30,20);sample(30,20);unchanged(800);
+    boot(800);sample(30,20);unchanged(800);
     sample(30,20);settled(775);
     if(!blocked) $fatal(1,"persistent highlights not protected");
-    for(j=0;j<8;j=j+1) sample(30,7);
+    for(j=0;j<2;j=j+1) sample(30,7);
     for(j=0;j<20;j=j+1) sample(30,7);
     unchanged(775);if(!blocked || writes!=5) $fatal(1,"highlight hold unstable");
     sample(30,0);sample(30,0);sample(30,0);sample(30,7);
@@ -78,40 +79,46 @@ module ae_stability_tb;
     while(blocked && k<40) begin sample(30,0);k=k+1;end
     if(blocked || k<8) $fatal(1,"release did not require persistent low highlights");
     unchanged(775);
-    sample(30,0);sample(30,0);sample(30,0);sample(30,0);settled(799);
-    // Closed-loop linear scene: actual mean tracks exposure, with +/-3 code noise.
+    sample(30,0);unchanged(775);sample(30,0);settled(799);
+    // Closed-loop scene includes TWO stale output frames and +/-3 code noise.
     // Long run must converge inside the deadband and stop, without reversing.
     boot(800);protect=0;target=96;changes=0;lastchange=-100;
+    exposure_history[0]=800;exposure_history[1]=800;four_frame_updates=0;
     for(j=0;j<400;j=j+1) begin
-      sample(exposure*96/1000+(j%7)-3,0);
+      newchange=exposure_history[1];exposure_history[1]=exposure_history[0];exposure_history[0]=exposure;
+      sample(newchange*96/1000+(j%7)-3,0);
       if(dut.state==5) begin
         newchange=dut.pending;
-        if(newchange<=exposure || newchange-exposure>exposure/32 || j-lastchange<12)
+        if(j-lastchange==4) four_frame_updates=four_frame_updates+1;
+        if(newchange<=exposure || newchange-exposure>exposure/32 || j-lastchange<4)
           $fatal(1,"closed-loop step/direction/interval instability");
         settled(newchange);changes=changes+1;lastchange=j;
       end
     end
-    if(changes==0 || lastchange>300 || exposure*96/1000<84 || exposure*96/1000>108)
+    if(changes==0 || four_frame_updates==0 || lastchange>300 || exposure*96/1000<84 || exposure*96/1000>108)
       $fatal(1,"static scene failed to converge and settle");
     beforewrites=writes;
     for(j=0;j<100;j=j+1) sample(exposure*96/1000+(j%7)-3,0);
     unchanged(exposure);if(writes!=beforewrites) $fatal(1,"static scene hunts after convergence");
     boot(1200);protect=0;target=96;changes=0;lastchange=-100;
+    exposure_history[0]=1200;exposure_history[1]=1200;four_frame_updates=0;
     for(j=0;j<500;j=j+1) begin
-      sample(exposure*96/1000+(j%7)-3,0);
+      newchange=exposure_history[1];exposure_history[1]=exposure_history[0];exposure_history[0]=exposure;
+      sample(newchange*96/1000+(j%7)-3,0);
       if(dut.state==5) begin
         newchange=dut.pending;
-        if(newchange>=exposure || exposure-newchange>exposure/32 || j-lastchange<12)
+        if(j-lastchange==4) four_frame_updates=four_frame_updates+1;
+        if(newchange>=exposure || exposure-newchange>exposure/32 || j-lastchange<4)
           $fatal(1,"bright closed-loop direction/step/interval instability");
         settled(newchange);changes=changes+1;lastchange=j;
       end
     end
     unchanged(exposure);
-    if(changes==0 || lastchange>400 || exposure*96/1000<84 || exposure*96/1000>108)
+    if(changes==0 || four_frame_updates==0 || lastchange>400 || exposure*96/1000<84 || exposure*96/1000>108)
       $fatal(1,"bright scene failed to converge and settle");
     en=0;repeat(3) @(negedge clk);
     if(dut.filter_valid || blocked || dut.confirm_count) $fatal(1,"disable retains history");
-    $display("PASS AE stability: default filtering, four-frame confirmation, 1/64 and 1/32 steps, settling reset, sustained highlight release and noisy closed-loop convergence");$finish;
+    $display("PASS AE stability: four-frame update cadence, two-frame confirmation, settling reset, small steps, sustained highlight release and noisy closed-loop convergence with two-frame display latency");$finish;
   end
   initial begin #1000000;$fatal(1,"stability watchdog");end
 endmodule

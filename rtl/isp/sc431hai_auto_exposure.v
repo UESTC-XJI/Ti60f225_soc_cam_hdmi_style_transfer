@@ -2,8 +2,8 @@
 // Read actual VTS/exposure first. Sensor analog/digital gains remain fixed.
 // Every change uses Group Hold and starts at a sensor frame boundary.
 module sc431hai_auto_exposure #(
-  parameter WAIT_FRAMES=8, TIMEOUT_CYCLES=250000,
-  parameter FILTER_SHIFT=2, CONFIRM_FRAMES=4, DEADBAND=12, SETTLE_BAND=6,
+  parameter WAIT_FRAMES=2, TIMEOUT_CYCLES=250000,
+  parameter FILTER_SHIFT=2, CONFIRM_FRAMES=2, DEADBAND=12, SETTLE_BAND=6,
   parameter SMALL_STEP_SHIFT=6, LARGE_STEP_SHIFT=5, LARGE_ERROR=32,
   parameter RELEASE_FRAMES=8
 )(
