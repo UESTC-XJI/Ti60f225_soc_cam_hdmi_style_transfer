@@ -20,6 +20,7 @@ if __name__ == '__main__':
     BUILD.mkdir(parents=True, exist_ok=True)
     isp = ROOT / 'rtl/isp'
     run('highlight_stats_tb', [TESTS / 'highlight_stats_tb.v', isp / 'ae_frame_stats.v'])
+    run('highlight_stats_tb', [TESTS / 'highlight_stats_tb.v', isp / 'ae_frame_stats.v'], ['-Phighlight_stats_tb.FULL=1'])
     run('luma_lift_tb', [TESTS / 'luma_lift_tb.v', isp / 'luma_tone_map.v'])
     run('luma_lift_tb', [TESTS / 'luma_lift_tb.v', isp / 'luma_tone_map.v'], ['-Pluma_lift_tb.SAFE=1'])
     run('auto_lift_tb', [TESTS / 'auto_lift_tb.v', isp / 'auto_tone_lift.v', isp / 'luma_tone_map.v', isp / 'ae_frame_stats.v'])

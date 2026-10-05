@@ -1121,7 +1121,7 @@ luma_tone_map #(.HIGHLIGHT_SAFE(1)) lift_adjustment(
 );
 
 // Separate feedback after lift, before Gamma. Single-pixel HDMI clock domain.
-ae_frame_stats #(.FRAME_WIDTH(HACT),.FRAME_HEIGHT(VACT),.PIXELS_PER_CLOCK(1),.MEAN_ONLY(1)) display_meter(
+ae_frame_stats #(.FRAME_WIDTH(HACT),.FRAME_HEIGHT(VACT),.PIXELS_PER_CLOCK(1),.MEAN_ONLY(1),.FULL_FRAME_MEAN(1)) display_meter(
   .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),.i_vs(lift_vs),.i_de(lift_de),
   .i_rgb({24'd0,lift_bdata,lift_gdata,lift_rdata}),.i_high_threshold(8'd232),
   .o_valid(display_stats_valid),.o_mean(display_stats_mean),.o_highlights(),.o_high_permille()

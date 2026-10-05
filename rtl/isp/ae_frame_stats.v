@@ -5,7 +5,7 @@
 // One sequential divider computes both results; no pixel-path division.
 module ae_frame_stats #(
   parameter FRAME_WIDTH=1920, FRAME_HEIGHT=1080, MIN_SAMPLES=64,
-    PIXELS_PER_CLOCK=2, MEAN_ONLY=0
+    PIXELS_PER_CLOCK=2, MEAN_ONLY=0, FULL_FRAME_MEAN=0
 )(
   input clk, rst_n, i_vs, i_de,
   input [47:0] i_rgb,
@@ -73,7 +73,7 @@ module ae_frame_stats #(
         if(full_samples<=16'd65533) begin
           full_samples<=full_samples+PIXELS_PER_CLOCK;
           full_hot<=full_hot+(PIXELS_PER_CLOCK==2 ? {14'b0,hot_increment} : {15'b0,hot0});
-          if(in_roi) begin
+          if(FULL_FRAME_MEAN || in_roi) begin
             sum<=sum+{16'b0,luma0[9:2]}+(PIXELS_PER_CLOCK==2 ? {16'b0,luma1[9:2]} : 24'd0);
             samples<=samples+PIXELS_PER_CLOCK;
           end

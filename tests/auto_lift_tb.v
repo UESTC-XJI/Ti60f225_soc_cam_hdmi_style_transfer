@@ -7,20 +7,29 @@ module auto_lift_tb;
   luma_tone_map #(.HIGHLIGHT_SAFE(1)) lift(.clk(clk),.rst_n(rst),.i_enable(1'b1),.i_strength(strength),
     .i_vs(vs),.i_hs(1'b0),.i_de(de),.i_r(pixel),.i_g(pixel),.i_b(pixel),
     .o_vs(lv),.o_hs(lh),.o_de(ld),.o_r(r),.o_g(g),.o_b(b));
-  ae_frame_stats #(.FRAME_WIDTH(64),.FRAME_HEIGHT(32),.MIN_SAMPLES(4),.PIXELS_PER_CLOCK(1),.MEAN_ONLY(1)) meter(
+  ae_frame_stats #(.FRAME_WIDTH(64),.FRAME_HEIGHT(32),.MIN_SAMPLES(4),.PIXELS_PER_CLOCK(1),.MEAN_ONLY(1),.FULL_FRAME_MEAN(1)) meter(
     .clk(clk),.rst_n(rst),.i_vs(lv),.i_de(ld),.i_rgb({24'd0,b,g,r}),.i_high_threshold(8'd232),
     .o_valid(valid),.o_mean(mean),.o_highlights(),.o_high_permille());
   always #5 clk=~clk;
-  integer samples=0,sum=0,expected=0,frames=0,j,stable_strength;
+  integer samples=0,sum=0,expected=0,frames=0,j,stable_strength,out_x=0,out_y=0;
+  reg previous_vs=0,previous_de=0;
   always @(posedge clk) if(rst) begin
     if(ld) begin
       if(r!=g || g!=b || r<pixel && pixel==0) $fatal(1,"lift color/black");
     end
-    if(meter.take_full && meter.in_roi) begin sum=sum+(r+2*g+b)/4;samples=samples+1;end
-    if(lv && !meter.vs_d) begin
-      if(samples!=0) begin expected=sum/samples;end
+    // Independent output-coordinate oracle includes sampled edge highlights.
+    if(ld && !lv && out_x%16==0 && out_y%8==0) begin sum=sum+(r+2*g+b)/4;samples=samples+1;end
+    if(!ld) out_x=0;else out_x=out_x+1;
+    if(previous_de && !ld) out_y=out_y+1;
+    if(previous_vs && !lv) begin out_x=0;out_y=0;end
+    if(lv && !previous_vs) begin
+      if(samples!=0) begin
+        if(samples!=16) $fatal(1,"full-display sample count=%0d",samples);
+        expected=sum/samples;
+      end
       sum=0;samples=0;
     end
+    previous_vs=lv;previous_de=ld;
     #1;if(valid) begin
       if(mean!=expected) $fatal(1,"display mean=%0d expected=%0d",mean,expected);
       frames=frames+1;
@@ -32,7 +41,7 @@ module auto_lift_tb;
       @(negedge clk);de=0;vs=1;repeat(60) @(negedge clk);vs=0;@(negedge clk);
       for(y=0;y<32;y=y+1) begin
         for(x=0;x<64;x=x+1) begin
-          // Existing bright highlight outside ROI must remain unchanged.
+          // Sampled corner highlight contributes to the full-display average.
           pixel=(x==0 && y==0)?250:gray+noise;de=1;@(negedge clk);
         end
         de=0;repeat(4) @(negedge clk);
@@ -58,7 +67,7 @@ module auto_lift_tb;
     if(strength!=32 || atmax) $fatal(1,"manual fallback");
     en=1;maximum=128;
     for(j=0;j<100;j=j+1) frame(110,0);
-    if(strength!=0 || mean!=110) $fatal(1,"bright scene must not add lift");
+    if(strength!=0 || mean!=118) $fatal(1,"bright scene must not add lift");
     if(frames<490) $fatal(1,"missing display frames");
     $display("PASS automatic lift: real curve/post-lift single-pixel meter, dark/midtone compensation, noise stability, strength limit, manual fallback and bright bypass");$finish;
   end

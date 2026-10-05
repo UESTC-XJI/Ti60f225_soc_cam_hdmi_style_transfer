@@ -1,8 +1,8 @@
 `timescale 1ns/1ps
-module highlight_stats_tb;
+module highlight_stats_tb #(parameter FULL=0);
   reg clk=0,rst=0,vs=0,de=0;reg[47:0] rgb=0;reg[7:0] threshold=232;
   wire valid,hot;wire[7:0] mean;wire[9:0] ratio;
-  ae_frame_stats #(.FRAME_WIDTH(64),.FRAME_HEIGHT(32),.MIN_SAMPLES(4)) dut(
+  ae_frame_stats #(.FRAME_WIDTH(64),.FRAME_HEIGHT(32),.MIN_SAMPLES(4),.FULL_FRAME_MEAN(FULL)) dut(
     .clk(clk),.rst_n(rst),.i_vs(vs),.i_de(de),.i_rgb(rgb),.i_high_threshold(threshold),
     .o_valid(valid),.o_mean(mean),.o_highlights(hot),.o_high_permille(ratio));
   always #5 clk=~clk;
@@ -31,7 +31,7 @@ module highlight_stats_tb;
           if(x%8==0 && y%8==0) begin
             fullcount=fullcount+2;
             hotcount=hotcount+(r0>=t || g0>=t || b0>=t)+(r1>=t || g1>=t || b1>=t);
-            if(x>=8 && x<24 && y>=8 && y<24) begin
+            if(FULL || (x>=8 && x<24 && y>=8 && y<24)) begin
               sum=sum+(r0+2*g0+b0)/4+(r1+2*g1+b1)/4;count=count+2;
             end
           end
