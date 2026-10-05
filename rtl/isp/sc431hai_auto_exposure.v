@@ -2,7 +2,10 @@
 // Read actual VTS/exposure first. Sensor analog/digital gains remain fixed.
 // Every change uses Group Hold and starts at a sensor frame boundary.
 module sc431hai_auto_exposure #(
-  parameter WAIT_FRAMES=8, TIMEOUT_CYCLES=250000
+  parameter WAIT_FRAMES=8, TIMEOUT_CYCLES=250000,
+  parameter FILTER_SHIFT=2, CONFIRM_FRAMES=4, DEADBAND=12, SETTLE_BAND=6,
+  parameter SMALL_STEP_SHIFT=6, LARGE_STEP_SHIFT=5, LARGE_ERROR=32,
+  parameter RELEASE_FRAMES=8
 )(
   input clk,rst_n,i_config_done,i_enable,i_sensor_frame_start,
   input i_stats_valid,i_highlights,
@@ -32,24 +35,51 @@ module sc431hai_auto_exposure #(
   wire [16:0] max_wide={o_vts,1'b0}-17'd11;
   wire [15:0] maximum=max_wide[15:0];
   wire [7:0] target=i_target<16 ? 8'd16 : (i_target>224 ? 8'd224 : i_target);
-  wire [15:0] step=(o_exposure>>3)==0 ? 16'd1 : (o_exposure>>3);
+  // Q8.4 / Q10.4 EWMA: retain sub-code precision without pixel-path changes.
+  reg filter_valid;
+  reg [11:0] mean_filter;
+  reg [13:0] high_filter;
+  reg [1:0] last_direction;
+  reg [1:0] brightness_direction;
+  reg [7:0] confirm_count,release_count;
+  wire [19:0] mean_mix=mean_filter*((1<<FILTER_SHIFT)-1)+{i_mean,4'b0};
+  wire [21:0] high_mix=high_filter*((1<<FILTER_SHIFT)-1)+{i_high_permille,4'b0};
+  wire [11:0] mean_next=filter_valid ? (mean_mix>>FILTER_SHIFT) : {i_mean,4'b0};
+  wire [13:0] high_next=filter_valid ? (high_mix>>FILTER_SHIFT) : {i_high_permille,4'b0};
+  wire [7:0] mean_control=(mean_next+12'd8)>>4;
+  wire [9:0] high_control=high_next[13:4];
+  wire [8:0] mean_error=mean_control>target ? {1'b0,mean_control}-{1'b0,target} :
+    {1'b0,target}-{1'b0,mean_control};
+  wire [15:0] small_step=(o_exposure>>SMALL_STEP_SHIFT)==0 ? 16'd1 : (o_exposure>>SMALL_STEP_SHIFT);
+  wire [15:0] large_step=(o_exposure>>LARGE_STEP_SHIFT)==0 ? 16'd1 : (o_exposure>>LARGE_STEP_SHIFT);
   wire [7:0] high_limit=i_high_limit==0 ? 8'd1 : i_high_limit;
   wire [7:0] high_release=high_limit>>1;
-  wire high_over=i_high_protect && i_high_permille>{2'b0,high_limit};
-  wire high_hold=i_high_protect && o_highlight_limited && i_high_permille>{2'b0,high_release};
+  wire high_over=i_high_protect && high_control>{2'b0,high_limit};
+  wire high_hold=i_high_protect && o_highlight_limited &&
+    (RELEASE_FRAMES!=1 || high_control>{2'b0,high_release});
+  wire [9:0] severe_limit={2'b0,high_limit}+
+    (high_limit<8 ? 10'd4 : {3'b0,high_limit[7:1]});
+  wire [15:0] step=(high_over ? high_control>severe_limit : mean_error>=LARGE_ERROR) ? large_step : small_step;
+  reg [1:0] direction;
   reg [16:0] candidate;
   reg [15:0] next_exposure;
   assign o_ready=state>=READY && state<=WRITE_WAIT;
   assign o_at_limit=o_ready && (o_exposure<=4 || o_exposure>=maximum);
   always @(*) begin
     candidate={1'b0,o_exposure};
+    direction=0;
     // Full-frame highlights outrank mean brightness when protection is enabled.
     // Hysteresis holds exposure until the ratio falls below half the limit.
-    if(high_over || {1'b0,i_mean}>({1'b0,target}+9'd8) ||
-       (!i_high_protect && i_highlights && i_mean>=target))
+    if(high_over || {1'b0,mean_control}>({1'b0,target}+DEADBAND) ||
+       (brightness_direction==2 && {1'b0,mean_control}>({1'b0,target}+SETTLE_BAND)) ||
+       (!i_high_protect && i_highlights && mean_control>=target)) begin
+      direction=2;
       candidate=o_exposure>step ? {1'b0,o_exposure}-{1'b0,step} : 17'd4;
-    else if(!high_hold && ({1'b0,i_mean}+9'd8)<{1'b0,target})
+    end else if(!high_hold && (({1'b0,mean_control}+DEADBAND)<{1'b0,target} ||
+       (brightness_direction==1 && ({1'b0,mean_control}+SETTLE_BAND)<{1'b0,target}))) begin
+      direction=1;
       candidate={1'b0,o_exposure}+{1'b0,step};
+    end
     if(o_exposure<4 || candidate<4) next_exposure=16'd4;
     else if(o_exposure>maximum || candidate>max_wide) next_exposure=maximum;
     else next_exposure=candidate[15:0];
@@ -60,13 +90,14 @@ module sc431hai_auto_exposure #(
       pending<=0;group_failed<=0;timer<=0;o_wr_en<=0;o_rd_en<=0;o_addr<=0;o_data<=0;
       o_exposure<=0;o_vts<=0;o_mean<=0;o_error<=0;
       o_highlight_limited<=0;
+      filter_valid<=0;mean_filter<=0;high_filter<=0;
+      last_direction<=0;brightness_direction<=0;confirm_count<=0;release_count<=0;
     end else begin
       o_wr_en<=0;o_rd_en<=0;
       if(i_stats_valid) o_mean<=i_mean;
-      if(!i_enable) o_highlight_limited<=0;
-      else if(i_stats_valid) begin
-        if(!i_high_protect || i_high_permille<={2'b0,high_release}) o_highlight_limited<=0;
-        else if(high_over) o_highlight_limited<=1;
+      if(!i_enable) begin
+        o_highlight_limited<=0;filter_valid<=0;
+        last_direction<=0;brightness_direction<=0;confirm_count<=0;release_count<=0;
       end
       if(state==READ_WAIT || state==WRITE_WAIT || state==WAIT_FRAME) timer<=timer+1'b1;
       else timer<=0;
@@ -110,8 +141,31 @@ module sc431hai_auto_exposure #(
           if(!i_enable) cooldown<=0;
           else if(i_stats_valid) begin
             if(cooldown!=0) cooldown<=cooldown-1'b1;
-            else if(next_exposure!=o_exposure) begin
-              pending<=next_exposure;state<=WAIT_FRAME;
+            else begin
+              filter_valid<=1;mean_filter<=mean_next;high_filter<=high_next;
+              if(mean_error<=SETTLE_BAND) brightness_direction<=0;
+              if(!i_high_protect) begin o_highlight_limited<=0;release_count<=0;end
+              else if(high_control<={2'b0,high_release}) begin
+                if(release_count>=RELEASE_FRAMES-1) begin
+                  o_highlight_limited<=0;release_count<=0;
+                end else release_count<=release_count+1'b1;
+              end else release_count<=0;
+              if(direction==0) begin last_direction<=0;confirm_count<=0;end
+              else begin
+                last_direction<=direction;
+                if(direction!=last_direction) confirm_count<=1;
+                else if(confirm_count<CONFIRM_FRAMES) confirm_count<=confirm_count+1'b1;
+              end
+              if(o_exposure<4 || o_exposure>maximum ||
+                 (direction!=0 && (CONFIRM_FRAMES==1 ||
+                  (direction==last_direction && confirm_count>=CONFIRM_FRAMES-1)))) begin
+                if(high_over) o_highlight_limited<=1;
+                if(next_exposure!=o_exposure) begin
+                  if(!high_over) brightness_direction<=direction;
+                  pending<=next_exposure;state<=WAIT_FRAME;
+                  last_direction<=0;confirm_count<=0;
+                end
+              end
             end
           end
         end
@@ -134,7 +188,11 @@ module sc431hai_auto_exposure #(
           // Even on NACK, attempt release before reporting failure.
           if(index==4) begin
             if(group_failed || i_wr_error) begin state<=FAULT;o_error<=1; end
-            else begin o_exposure<=pending;cooldown<=WAIT_FRAMES;state<=READY; end
+            else begin
+              o_exposure<=pending;cooldown<=WAIT_FRAMES;state<=READY;
+              // Discard pre-change statistics; re-seed after DDR/sensor settling.
+              filter_valid<=0;release_count<=0;last_direction<=0;confirm_count<=0;
+            end
           end else begin
             index<=i_wr_error ? 3'd4 : index+1'b1;
             state<=WRITE_SEND;
