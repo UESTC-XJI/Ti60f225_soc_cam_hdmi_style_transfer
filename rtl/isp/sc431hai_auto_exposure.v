@@ -5,7 +5,7 @@ module sc431hai_auto_exposure #(
   parameter WAIT_FRAMES=2, TIMEOUT_CYCLES=250000,
   parameter FILTER_SHIFT=2, CONFIRM_FRAMES=2, DEADBAND=12, SETTLE_BAND=6,
   parameter SMALL_STEP_SHIFT=6, LARGE_STEP_SHIFT=5, LARGE_ERROR=32,
-  parameter RELEASE_FRAMES=8, PREDICTIVE_ENABLE=1
+  parameter RELEASE_FRAMES=8, PREDICTIVE_ENABLE=1, RECOVERY_FRAMES=32
 )(
   input clk,rst_n,i_config_done,i_enable,i_sensor_frame_start,
   input i_stats_valid,i_highlights,
@@ -32,6 +32,13 @@ module sc431hai_auto_exposure #(
   reg [7:0] exp_hi,exp_mid,exp_lo,cooldown;
   reg [15:0] pending;
   reg group_failed;
+  // Learn a safe ceiling after a highlight-driven reduction. Releasing the
+  // latch must not immediately restore the large mean-driven exposure jump.
+  reg ceiling_valid,pending_high;
+  reg [15:0] highlight_ceiling;
+  reg [7:0] recovery_count,ceiling_limit;
+  wire ceiling_active=PREDICTIVE_ENABLE && i_high_protect && ceiling_valid &&
+    ceiling_limit==(i_high_limit==0 ? 8'd1 : i_high_limit);
   reg [31:0] timer;
   wire [16:0] max_wide={o_vts,1'b0}-17'd11;
   wire [15:0] maximum=max_wide[15:0];
@@ -95,8 +102,11 @@ module sc431hai_auto_exposure #(
   wire [15:0] pred_step=pred_half>pred_cap ? pred_cap : pred_half;
   wire [16:0] pred_candidate=pred_direction==1 ? {1'b0,pred_base}+{1'b0,pred_step} :
     {1'b0,pred_base}-{1'b0,pred_step};
-  wire [15:0] pred_result=pred_candidate<4 ? 16'd4 :
+  wire [15:0] pred_unbounded=pred_candidate<4 ? 16'd4 :
     (pred_candidate>max_wide ? maximum : pred_candidate[15:0]);
+  wire [15:0] pred_result=(pred_direction==1 && ceiling_active &&
+    pred_unbounded>highlight_ceiling) ?
+    (highlight_ceiling<o_exposure ? o_exposure : highlight_ceiling) : pred_unbounded;
   // A brightness-based reduction is also safe when highlights are excessive.
   // A dark mean must never turn highlight protection into an exposure increase.
   wire predict_correction=PREDICTIVE_ENABLE &&
@@ -123,13 +133,16 @@ module sc431hai_auto_exposure #(
     if(o_exposure<4 || candidate<4) next_exposure=16'd4;
     else if(o_exposure>maximum || candidate>max_wide) next_exposure=maximum;
     else next_exposure=candidate[15:0];
+    if(direction==1 && ceiling_active && next_exposure>highlight_ceiling)
+      next_exposure=highlight_ceiling<o_exposure ? o_exposure : highlight_ceiling;
   end
   always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
       state<=BOOT;index<=0;exp_hi<=0;exp_mid<=0;exp_lo<=0;cooldown<=0;
       pending<=0;group_failed<=0;timer<=0;o_wr_en<=0;o_rd_en<=0;o_addr<=0;o_data<=0;
       o_exposure<=0;o_vts<=0;o_mean<=0;o_error<=0;
-      o_highlight_limited<=0;
+      o_highlight_limited<=0;ceiling_valid<=0;highlight_ceiling<=0;
+      recovery_count<=0;ceiling_limit<=0;pending_high<=0;
       filter_valid<=0;mean_filter<=0;high_filter<=0;previous_mean<=0;
       last_direction<=0;brightness_direction<=0;confirm_count<=0;release_count<=0;
       pred_dividend<=0;pred_quotient<=0;pred_estimate<=0;pred_divisor<=1;
@@ -140,6 +153,9 @@ module sc431hai_auto_exposure #(
       if(!i_enable) begin
         o_highlight_limited<=0;filter_valid<=0;
         last_direction<=0;brightness_direction<=0;confirm_count<=0;release_count<=0;
+      end
+      if(!i_enable || !i_high_protect || ceiling_limit!=high_limit) begin
+        ceiling_valid<=0;recovery_count<=0;
       end
       if(state==READ_WAIT || state==WRITE_WAIT || state==WAIT_FRAME) timer<=timer+1'b1;
       else timer<=0;
@@ -186,6 +202,17 @@ module sc431hai_auto_exposure #(
             else begin
               filter_valid<=1;mean_filter<=mean_next;high_filter<=high_next;
               previous_mean<=i_mean;
+              // Probe only after sustained unused highlight headroom, at the
+              // learned ceiling, with no active hold. Each probe is <=1/64.
+              if(ceiling_active && !high_hold && direction==1 &&
+                 o_exposure>=highlight_ceiling && high_control<={2'b0,high_release} &&
+                 i_high_permille<={2'b0,high_release}) begin
+                if(recovery_count>=RECOVERY_FRAMES-1) begin
+                  highlight_ceiling<=({1'b0,o_exposure}+{1'b0,small_step}>max_wide) ?
+                    maximum : o_exposure+small_step;
+                  recovery_count<=0;
+                end else recovery_count<=recovery_count+1'b1;
+              end else recovery_count<=0;
               if(mean_error<=SETTLE_BAND) brightness_direction<=0;
               if(!i_high_protect) begin o_highlight_limited<=0;release_count<=0;end
               else if(high_control<={2'b0,high_release}) begin
@@ -204,6 +231,7 @@ module sc431hai_auto_exposure #(
                   (!mean_jump && direction==last_direction && confirm_count>=CONFIRM_FRAMES-1)))) begin
                 if(high_over) o_highlight_limited<=1;
                 if(next_exposure!=o_exposure) begin
+                  pending_high<=high_over;
                   if(!high_over) brightness_direction<=direction;
                   if(predict_correction && o_exposure>=4 && o_exposure<=maximum) begin
                     pred_dividend<=o_exposure*target;
@@ -230,7 +258,7 @@ module sc431hai_auto_exposure #(
         end
         PREDICT_APPLY: begin
           if(!i_enable || (pred_direction==1 && (high_over || high_hold)) ||
-             pred_goal==pred_base) state<=READY;
+             pred_goal==pred_base || pred_result==o_exposure) state<=READY;
           else begin pending<=pred_result;state<=WAIT_FRAME;end
         end
         WAIT_FRAME: begin
@@ -254,6 +282,10 @@ module sc431hai_auto_exposure #(
             if(group_failed || i_wr_error) begin state<=FAULT;o_error<=1; end
             else begin
               o_exposure<=pending;cooldown<=WAIT_FRAMES;state<=READY;
+              if(PREDICTIVE_ENABLE && pending_high && i_high_protect && i_enable) begin
+                ceiling_valid<=1;highlight_ceiling<=pending;ceiling_limit<=high_limit;
+              end
+              recovery_count<=0;
               // Discard pre-change statistics; re-seed after DDR/sensor settling.
               filter_valid<=0;release_count<=0;last_direction<=0;confirm_count<=0;
             end

@@ -75,7 +75,35 @@ module ae_stability_tb;
       $display("PREDICTIVE SCENE target=%0d initial_mean=%0d initial_exposure=%0d black=%0d updates=%0d final_mean=%0d",goal,start_luma,start_exposure,black,steps,y);
     end
   endtask
+  // Static dark ROI with a bright window: mean target is physically incompatible
+  // with highlight protection. A steep clipping threshold must not cause jumps.
+  task highlight_scene;
+    integer n,y,h,old_exp,updates,wait_cycles,seen_limit;
+    begin
+      boot(1983);target=100;updates=0;seen_limit=0;
+      exposure_history[0]=1983;exposure_history[1]=1983;exposure_history[2]=1983;
+      for(n=0;n<800;n=n+1) begin
+        old_exp=exposure_history[2];y=old_exp/30;h=old_exp>1900 ? 20 : 0;
+        exposure_history[2]=exposure_history[1];exposure_history[1]=exposure_history[0];exposure_history[0]=exposure;
+        sample(y,h);
+        if(blocked) seen_limit=1;
+        if(dut.state==9 || dut.state==10 || dut.state==5) begin
+          wait_cycles=0;
+          while(dut.state!=5 && wait_cycles<40) begin @(negedge clk);wait_cycles=wait_cycles+1;end
+          if(dut.state!=5) $fatal(1,"highlight scene prediction did not finish");
+          old_exp=exposure;newchange=dut.pending;
+          if(seen_limit && newchange>old_exp && newchange-old_exp>old_exp/64+1)
+            $fatal(1,"highlight recovery jumped: %0d -> %0d",old_exp,newchange);
+          settled(newchange);updates=updates+1;
+        end
+      end
+      if(!seen_limit || fault || exposure>1940 || exposure<1800 || updates>60)
+        $fatal(1,"highlight scene hunts: exposure=%0d updates=%0d",exposure,updates);
+      $display("PASS highlight closed loop: 3-frame latency, steep clipping, bounded recovery; exposure=%0d updates=%0d",exposure,updates);
+    end
+  endtask
   initial begin
+    highlight_scene();
     boot(800);sample(100,0);
     for(j=0;j<80;j=j+1) sample(90+j%21, j%11);
     unchanged(800);if(writes) $fatal(1,"small scene jitter caused writes");
@@ -109,7 +137,14 @@ module ae_stability_tb;
     while(blocked && k<40) begin sample(30,0);k=k+1;end
     if(blocked || k<8) $fatal(1,"release did not require persistent low highlights");
     unchanged(775);
-    sample(30,0);unchanged(775);sample(30,0);settled(1550);
+    for(j=0;j<20;j=j+1) sample(30,0);
+    unchanged(775); // Hold the learned ceiling after the latch releases.
+    k=0;
+    while(dut.state==4 && k<40) begin sample(30,0);k=k+1;end
+    if(k<10 || k>16) $fatal(1,"recovery ceiling relaxed without 32 stable frames");
+    settled(787); // floor(775/64)=12; a bounded probe after sustained headroom.
+    protect=0;repeat(3) @(negedge clk);
+    sample(30,0);sample(30,0);sample(30,0);sample(30,0);settled(1574); // Explicitly disabling protection restores prediction.
     // Closed-loop scene includes TWO stale output frames and +/-3 code noise.
     // Long run must converge inside the deadband and stop, without reversing.
     boot(800);protect=0;target=96;changes=0;lastchange=-100;
