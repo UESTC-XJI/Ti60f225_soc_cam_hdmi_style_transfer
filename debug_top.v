@@ -3,7 +3,7 @@
 // Auto-generated Efinix JTAG debugger top module. Do not modify. 
 //
 
-`define DBG_MODULE_UUID _3e9c6674076d43e7af1af11a79b6b903
+`define DBG_MODULE_UUID _786da867220e4e82a8593fe8870fc745
 `define CONCAT(a,b) a``b
 `define DBG_MODULE_NAME(name) `CONCAT(name,`DBG_MODULE_UUID)
 
@@ -34,6 +34,8 @@ module debug_edb_top (
     input  [7:0] vio0_ae_mean,
     input  vio0_ae_at_min,
     input  vio0_ae_at_max,
+    input  [9:0] vio0_ae_high_permille,
+    input  vio0_ae_highlight_limited,
     output [15:0] vio0_r_gain,
     output [15:0] vio0_g_gain,
     output [15:0] vio0_b_gain,
@@ -43,6 +45,11 @@ module debug_edb_top (
     output vio0_tone_enable,
     output [7:0] vio0_high_green_strength,
     output [7:0] vio0_dark_red_strength,
+    output vio0_ae_high_protect,
+    output [7:0] vio0_ae_high_threshold,
+    output [7:0] vio0_ae_high_limit,
+    output vio0_lift_enable,
+    output [7:0] vio0_lift_strength,
     input  la0_clk,
     input  [7:0] la0_ch0_g,
     input  [7:0] la0_ch0_b,
@@ -108,9 +115,9 @@ module debug_edb_top (
 
     // debug core instances
     `DBG_MODULE_NAME(edb_vio_top) #(
-        .NUM_PROBE_IN           ( 9 ),
-        .NUM_PROBE_OUT          ( 9 ),
-        .UUID           ( 128'h2724c79bf8a142d1beee5616dd31aee9 ),
+        .NUM_PROBE_IN           ( 11 ),
+        .NUM_PROBE_OUT          ( 14 ),
+        .UUID           ( 128'h8710e7ef755a45389d03177a0517b43f ),
         .PROBE_IN0_WIDTH        ( 1 ),
         .PROBE_IN1_WIDTH        ( 1 ),
         .PROBE_IN2_WIDTH        ( 1 ),
@@ -120,6 +127,8 @@ module debug_edb_top (
         .PROBE_IN6_WIDTH        ( 8 ),
         .PROBE_IN7_WIDTH        ( 1 ),
         .PROBE_IN8_WIDTH        ( 1 ),
+        .PROBE_IN9_WIDTH        ( 10 ),
+        .PROBE_IN10_WIDTH       ( 1 ),
         .PROBE_OUT0_WIDTH       ( 16 ),
         .PROBE_OUT1_WIDTH       ( 16 ),
         .PROBE_OUT2_WIDTH       ( 16 ),
@@ -129,6 +138,11 @@ module debug_edb_top (
         .PROBE_OUT6_WIDTH       ( 1 ),
         .PROBE_OUT7_WIDTH       ( 8 ),
         .PROBE_OUT8_WIDTH       ( 8 ),
+        .PROBE_OUT9_WIDTH       ( 1 ),
+        .PROBE_OUT10_WIDTH      ( 8 ),
+        .PROBE_OUT11_WIDTH      ( 8 ),
+        .PROBE_OUT12_WIDTH      ( 1 ),
+        .PROBE_OUT13_WIDTH      ( 8 ),
         .PROBE_OUT0_INIT_VAL    ( 'h168 ),
         .PROBE_OUT1_INIT_VAL    ( 'h100 ),
         .PROBE_OUT2_INIT_VAL    ( 'h1a9 ),
@@ -137,7 +151,12 @@ module debug_edb_top (
         .PROBE_OUT5_INIT_VAL    ( 'h60 ),
         .PROBE_OUT6_INIT_VAL    ( 'h0 ),
         .PROBE_OUT7_INIT_VAL    ( 'h20 ),
-        .PROBE_OUT8_INIT_VAL    ( 'h20 )
+        .PROBE_OUT8_INIT_VAL    ( 'h20 ),
+        .PROBE_OUT9_INIT_VAL    ( 'h1 ),
+        .PROBE_OUT10_INIT_VAL   ( 'he8 ),
+        .PROBE_OUT11_INIT_VAL   ( 'ha ),
+        .PROBE_OUT12_INIT_VAL   ( 'h0 ),
+        .PROBE_OUT13_INIT_VAL   ( 'h60 )
     ) vio0 (
         .bscan_CAPTURE          ( bscan_CAPTURE ),
         .bscan_DRCK             ( bscan_DRCK ),
@@ -164,8 +183,8 @@ module debug_edb_top (
         .probe_in6          ( vio0_ae_mean ),
         .probe_in7          ( vio0_ae_at_min ),
         .probe_in8          ( vio0_ae_at_max ),
-        .probe_in9          ( 1'b0 ),
-        .probe_in10         ( 1'b0 ),
+        .probe_in9          ( vio0_ae_high_permille ),
+        .probe_in10         ( vio0_ae_highlight_limited ),
         .probe_in11         ( 1'b0 ),
         .probe_in12         ( 1'b0 ),
         .probe_in13         ( 1'b0 ),
@@ -228,11 +247,11 @@ module debug_edb_top (
         .probe_out6         ( vio0_tone_enable ),
         .probe_out7         ( vio0_high_green_strength ),
         .probe_out8         ( vio0_dark_red_strength ),
-        .probe_out9         (  ),
-        .probe_out10            (  ),
-        .probe_out11            (  ),
-        .probe_out12            (  ),
-        .probe_out13            (  ),
+        .probe_out9         ( vio0_ae_high_protect ),
+        .probe_out10            ( vio0_ae_high_threshold ),
+        .probe_out11            ( vio0_ae_high_limit ),
+        .probe_out12            ( vio0_lift_enable ),
+        .probe_out13            ( vio0_lift_strength ),
         .probe_out14            (  ),
         .probe_out15            (  ),
         .probe_out16            (  ),

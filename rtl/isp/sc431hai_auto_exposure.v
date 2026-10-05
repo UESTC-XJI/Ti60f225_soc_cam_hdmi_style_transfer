@@ -15,7 +15,11 @@ module sc431hai_auto_exposure #(
   output reg [15:0] o_exposure,o_vts,
   output reg [7:0] o_mean,
   output o_ready,o_at_limit,
-  output reg o_error
+  output reg o_error,
+  input i_high_protect,
+  input [9:0] i_high_permille,
+  input [7:0] i_high_limit,
+  output reg o_highlight_limited
 );
   localparam BOOT=0,READ_SEND=1,READ_WAIT=2,LIMITS=3,READY=4,
     WAIT_FRAME=5,WRITE_SEND=6,WRITE_WAIT=7,FAULT=8;
@@ -29,17 +33,22 @@ module sc431hai_auto_exposure #(
   wire [15:0] maximum=max_wide[15:0];
   wire [7:0] target=i_target<16 ? 8'd16 : (i_target>224 ? 8'd224 : i_target);
   wire [15:0] step=(o_exposure>>3)==0 ? 16'd1 : (o_exposure>>3);
+  wire [7:0] high_limit=i_high_limit==0 ? 8'd1 : i_high_limit;
+  wire [7:0] high_release=high_limit>>1;
+  wire high_over=i_high_protect && i_high_permille>{2'b0,high_limit};
+  wire high_hold=i_high_protect && o_highlight_limited && i_high_permille>{2'b0,high_release};
   reg [16:0] candidate;
   reg [15:0] next_exposure;
   assign o_ready=state>=READY && state<=WRITE_WAIT;
   assign o_at_limit=o_ready && (o_exposure<=4 || o_exposure>=maximum);
   always @(*) begin
     candidate={1'b0,o_exposure};
-    // A small bright object must not keep driving an already dark ROI down.
-    // Highlight protection can lower exposure only at/above the target mean.
-    if({1'b0,i_mean}>({1'b0,target}+9'd8) || (i_highlights && i_mean>=target))
+    // Full-frame highlights outrank mean brightness when protection is enabled.
+    // Hysteresis holds exposure until the ratio falls below half the limit.
+    if(high_over || {1'b0,i_mean}>({1'b0,target}+9'd8) ||
+       (!i_high_protect && i_highlights && i_mean>=target))
       candidate=o_exposure>step ? {1'b0,o_exposure}-{1'b0,step} : 17'd4;
-    else if(({1'b0,i_mean}+9'd8)<{1'b0,target})
+    else if(!high_hold && ({1'b0,i_mean}+9'd8)<{1'b0,target})
       candidate={1'b0,o_exposure}+{1'b0,step};
     if(o_exposure<4 || candidate<4) next_exposure=16'd4;
     else if(o_exposure>maximum || candidate>max_wide) next_exposure=maximum;
@@ -50,9 +59,15 @@ module sc431hai_auto_exposure #(
       state<=BOOT;index<=0;exp_hi<=0;exp_mid<=0;exp_lo<=0;cooldown<=0;
       pending<=0;group_failed<=0;timer<=0;o_wr_en<=0;o_rd_en<=0;o_addr<=0;o_data<=0;
       o_exposure<=0;o_vts<=0;o_mean<=0;o_error<=0;
+      o_highlight_limited<=0;
     end else begin
       o_wr_en<=0;o_rd_en<=0;
       if(i_stats_valid) o_mean<=i_mean;
+      if(!i_enable) o_highlight_limited<=0;
+      else if(i_stats_valid) begin
+        if(!i_high_protect || i_high_permille<={2'b0,high_release}) o_highlight_limited<=0;
+        else if(high_over) o_highlight_limited<=1;
+      end
       if(state==READ_WAIT || state==WRITE_WAIT || state==WAIT_FRAME) timer<=timer+1'b1;
       else timer<=0;
       if((state==READ_WAIT || state==WRITE_WAIT || state==WAIT_FRAME) && timer>=TIMEOUT_CYCLES-1) begin

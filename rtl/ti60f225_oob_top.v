@@ -20,6 +20,7 @@
 `include "isp/ae_frame_stats.v"
 `include "isp/sc431hai_auto_exposure.v"
 `include "isp/luma_color_suppress.v"
+`include "isp/luma_tone_map.v"
 // `include "define.v"
 
 module ti60f225_oob_top #(
@@ -518,6 +519,8 @@ wire i2c_rst_n = i2c_rst_cnt[12];
 // Runtime exposure control. All camera register traffic stays in CLK_5M.
 wire ae_enable,tone_enable;
 wire [7:0] ae_target,high_green_strength,dark_red_strength;
+wire ae_high_protect,lift_enable;
+wire [7:0] ae_high_threshold,ae_high_limit,lift_strength;
 wire sensor_config_done,ae_wr_en,ae_rd_en,ae_wr_done,ae_rd_done,ae_wr_error,ae_rd_error;
 wire [15:0] ae_addr;
 wire [7:0] ae_write_data,ae_read_data;
@@ -526,8 +529,10 @@ wire [7:0] ae_mean_i2c;
 wire ae_ready_i2c,ae_fault_i2c,ae_limit_i2c;
 wire stats_valid,stats_hot;
 wire [7:0] stats_mean;
+wire [9:0] stats_high_permille;
+wire ae_highlight_limited_i2c;
 wire ae_stats_valid;
-wire [16:0] ae_stats_message;
+wire [35:0] ae_stats_message;
 (* ASYNC_REG="TRUE" *) reg ae_enable_meta,ae_enable_i2c;
 reg sensor_vs_d,sensor_frame_toggle;
 (* ASYNC_REG="TRUE" *) reg sensor_fs_meta,sensor_fs_sync;
@@ -548,16 +553,18 @@ always @(posedge CLK_5M or negedge i2c_rst_n) begin
     sensor_fs_meta<=sensor_frame_toggle;sensor_fs_sync<=sensor_fs_meta;sensor_fs_seen<=sensor_fs_sync;
   end
 end
-isp_cdc_mailbox #(.WIDTH(17)) ae_statistics_mailbox(
+isp_cdc_mailbox #(.WIDTH(36)) ae_statistics_mailbox(
   .s_clk(vid_clk_dvi2),.s_rst_n(w_arstn),.s_valid(stats_valid),
-  .s_data({ae_target,stats_hot,stats_mean}),.s_ready(),
+  .s_data({ae_high_protect,ae_high_limit,ae_target,stats_hot,stats_high_permille,stats_mean}),.s_ready(),
   .d_clk(CLK_5M),.d_rst_n(w_arstn),.d_valid(ae_stats_valid),.d_data(ae_stats_message)
 );
 sc431hai_auto_exposure ae_controller(
   .clk(CLK_5M),.rst_n(i2c_rst_n),.i_config_done(sensor_config_done),
   .i_enable(ae_enable_i2c),.i_sensor_frame_start(sensor_frame_start),
-  .i_stats_valid(ae_stats_valid),.i_highlights(ae_stats_message[8]),
-  .i_mean(ae_stats_message[7:0]),.i_target(ae_stats_message[16:9]),
+  .i_stats_valid(ae_stats_valid),.i_highlights(ae_stats_message[18]),
+  .i_mean(ae_stats_message[7:0]),.i_target(ae_stats_message[26:19]),
+  .i_high_protect(ae_stats_message[35]),.i_high_limit(ae_stats_message[34:27]),
+  .i_high_permille(ae_stats_message[17:8]),.o_highlight_limited(ae_highlight_limited_i2c),
   .o_wr_en(ae_wr_en),.o_rd_en(ae_rd_en),.o_addr(ae_addr),.o_data(ae_write_data),
   .i_wr_done(ae_wr_done),.i_rd_done(ae_rd_done),.i_wr_error(ae_wr_error),.i_rd_error(ae_rd_error),
   .i_read_data(ae_read_data),.o_exposure(ae_exposure_i2c),.o_vts(ae_vts_i2c),
@@ -566,27 +573,32 @@ sc431hai_auto_exposure ae_controller(
 wire ae_ready,ae_fault,ae_at_limit,ae_highlights;
 wire [15:0] ae_exposure,ae_vts;
 wire [7:0] ae_mean;
+wire [9:0] ae_high_permille;
+wire ae_highlight_limited;
 wire ae_at_min=ae_ready && ae_exposure<=16'd4;
 wire [16:0] ae_maximum={ae_vts,1'b0}-17'd11;
 wire ae_at_max=ae_ready && {1'b0,ae_exposure}>=ae_maximum;
 reg ae_hot_i2c;
+reg [9:0] ae_high_permille_i2c;
 always @(posedge CLK_5M or negedge i2c_rst_n) begin
-  if(!i2c_rst_n) ae_hot_i2c<=0;
-  else if(ae_stats_valid) ae_hot_i2c<=ae_stats_message[8];
+  if(!i2c_rst_n) begin ae_hot_i2c<=0;ae_high_permille_i2c<=0;end
+  else if(ae_stats_valid) begin
+    ae_hot_i2c<=ae_stats_message[18];ae_high_permille_i2c<=ae_stats_message[17:8];
+  end
 end
-wire [43:0] ae_status={ae_ready_i2c,ae_fault_i2c,ae_limit_i2c,ae_hot_i2c,ae_vts_i2c,ae_exposure_i2c,ae_mean_i2c};
-reg [43:0] ae_status_sent;
+wire [54:0] ae_status={ae_highlight_limited_i2c,ae_high_permille_i2c,ae_ready_i2c,ae_fault_i2c,ae_limit_i2c,ae_hot_i2c,ae_vts_i2c,ae_exposure_i2c,ae_mean_i2c};
+reg [54:0] ae_status_sent;
 wire status_ready;
-wire [43:0] ae_status_video;
+wire [54:0] ae_status_video;
 always @(posedge CLK_5M or negedge i2c_rst_n) begin
   if(!i2c_rst_n) ae_status_sent<=0;
   else if(status_ready && ae_status!=ae_status_sent) ae_status_sent<=ae_status;
 end
-isp_cdc_mailbox #(.WIDTH(44)) ae_status_mailbox(
+isp_cdc_mailbox #(.WIDTH(55)) ae_status_mailbox(
   .s_clk(CLK_5M),.s_rst_n(w_arstn),.s_valid(ae_status!=ae_status_sent),.s_data(ae_status),.s_ready(status_ready),
   .d_clk(vid_clk_dvi2),.d_rst_n(w_arstn),.d_valid(),.d_data(ae_status_video)
 );
-assign {ae_ready,ae_fault,ae_at_limit,ae_highlights,ae_vts,ae_exposure,ae_mean}=ae_status_video;
+assign {ae_highlight_limited,ae_high_permille,ae_ready,ae_fault,ae_at_limit,ae_highlights,ae_vts,ae_exposure,ae_mean}=ae_status_video;
 
 i2c_master_ctrl_top #(.RUNTIME_ENABLE(1'b1)) u2_i2c_master_ctrl_top(
   /*i*/.clk			(CLK_5M		),
@@ -881,6 +893,7 @@ debayer_top_2to1 #(
 );
 ae_frame_stats #(.FRAME_WIDTH(HACT),.FRAME_HEIGHT(VACT)) ae_meter(
   .clk(vid_clk_dvi2),.rst_n(vid_rst_n),.i_vs(rgb_vs),.i_de(rgb_de),.i_rgb(rgb_datax2),
+  .i_high_threshold(ae_high_threshold),.o_high_permille(stats_high_permille),
   .o_valid(stats_valid),.o_mean(stats_mean),.o_highlights(stats_hot)
 );
 reg rgb_vs_r = 'd0;
@@ -1071,10 +1084,10 @@ wire CONTRAST_B    ;
 
 wire [7:0] tone_rdata,tone_gdata,tone_bdata;
 wire tone_vs,tone_hs,tone_de;
-wire [16:0] tone_controls;
-isp_cdc_mailbox #(.WIDTH(17)) tone_control_mailbox(
+wire [25:0] tone_controls;
+isp_cdc_mailbox #(.WIDTH(26)) tone_control_mailbox(
   .s_clk(vid_clk_dvi2),.s_rst_n(w_arstn),.s_valid(1'b1),
-  .s_data({tone_enable,high_green_strength,dark_red_strength}),.s_ready(),
+  .s_data({lift_enable,lift_strength,tone_enable,high_green_strength,dark_red_strength}),.s_ready(),
   .d_clk(hdmi_tx_slow_clk),.d_rst_n(w_arstn),.d_valid(),.d_data(tone_controls)
 );
 luma_color_suppress tone_adjustment(
@@ -1084,6 +1097,14 @@ luma_color_suppress tone_adjustment(
   .i_r(CAM_RAW_GREEN_FIRST ? hdmi_tx_bdata : hdmi_tx_rdata),.i_g(hdmi_tx_gdata),
   .i_b(CAM_RAW_GREEN_FIRST ? hdmi_tx_rdata : hdmi_tx_bdata),
   .o_vs(tone_vs),.o_hs(tone_hs),.o_de(tone_de),.o_r(tone_rdata),.o_g(tone_gdata),.o_b(tone_bdata)
+);
+
+wire [7:0] lift_rdata,lift_gdata,lift_bdata;
+wire lift_vs,lift_hs,lift_de;
+luma_tone_map lift_adjustment(
+  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),.i_enable(tone_controls[25]),.i_strength(tone_controls[24:17]),
+  .i_vs(tone_vs),.i_hs(tone_hs),.i_de(tone_de),.i_r(tone_rdata),.i_g(tone_gdata),.i_b(tone_bdata),
+  .o_vs(lift_vs),.o_hs(lift_hs),.o_de(lift_de),.o_r(lift_rdata),.o_g(lift_gdata),.o_b(lift_bdata)
 );
 
 gamma_correction
@@ -1096,12 +1117,12 @@ inst_gamma_correction
 	.i_pclk		(hdmi_tx_slow_clk),
 	.i_rstn		(vid_rst_n),
 	
-	.i_red		(tone_rdata),//(con_rdata  ),//
-	.i_green	(tone_gdata),//(con_gdata  ),//
-	.i_blue		(tone_bdata),//(con_bdata  ),//
-  .i_valid	(tone_de   ),//(con_de     ),//
-  .i_hs     (tone_hs   ),//(con_hs     ),//
-  .i_vs     (tone_vs   ),//(con_vs     ),//
+	.i_red		(lift_rdata),
+	.i_green	(lift_gdata),
+	.i_blue		(lift_bdata),
+  .i_valid	(lift_de),
+  .i_hs     (lift_hs),
+  .i_vs     (lift_vs),
 	.o_blue		(gamma_bdata		),
   .o_green	(gamma_gdata	  ),
 	.o_red		(gamma_rdata		),
@@ -1114,12 +1135,12 @@ dvi_encoder dvi_encoder_m0
 (
 	.pixelclk      		(hdmi_tx_slow_clk          ),// system clock
 	.rst_p         		(~vid_rst_n      ),// reset
-	.i_bdata      		(gamma_sel ? gamma_bdata	: tone_bdata),
-	.i_gdata     		  (gamma_sel ? gamma_gdata	: tone_gdata   ),//(tone_gdata ),//(video_g            ),//(gdata_in	),   //   
-	.i_rdata       		(gamma_sel ? gamma_rdata	: tone_rdata),
-  .i_de            	(gamma_sel ? gamma_valid	: tone_de      ),//(tone_de    ),//(video_de           ),//(rx_de		  ),   //
-	.i_hs         		(gamma_sel ? gamma_hs	    : tone_hs    ),//(video_hs           ),//(rx_hsync	),   //   
-	.i_vs         		(gamma_sel ? gamma_vs	    : tone_vs    ),//(video_vs           ),//(rx_vsync	),   //  
+	.i_bdata      		(gamma_sel ? gamma_bdata : lift_bdata),
+	.i_gdata     		(gamma_sel ? gamma_gdata : lift_gdata),
+	.i_rdata       		(gamma_sel ? gamma_rdata : lift_rdata),
+  .i_de            	(gamma_sel ? gamma_valid : lift_de),
+	.i_hs         		(gamma_sel ? gamma_hs : lift_hs),
+	.i_vs         		(gamma_sel ? gamma_vs : lift_vs),
 	
   .video_format     (video_format), //// 00 = RGB, 01 = YCbCr 4:2:2, 10 = YCbCr 4:4:4
   .video_VIC        (0),
@@ -1161,6 +1182,11 @@ debug_edb_top debug_edb_top_inst (
     .vio0_gamma_sel     (gamma_sel),
     .vio0_ae_enable     (ae_enable),
     .vio0_ae_target     (ae_target),
+    .vio0_ae_high_protect (ae_high_protect),
+    .vio0_ae_high_threshold (ae_high_threshold),
+    .vio0_ae_high_limit  (ae_high_limit),
+    .vio0_lift_enable   (lift_enable),
+    .vio0_lift_strength (lift_strength),
     .vio0_tone_enable   (tone_enable),
     .vio0_high_green_strength (high_green_strength),
     .vio0_dark_red_strength   (dark_red_strength),
@@ -1170,6 +1196,8 @@ debug_edb_top debug_edb_top_inst (
     .vio0_ae_at_min     (ae_at_min),
     .vio0_ae_at_max     (ae_at_max),
     .vio0_ae_highlights (ae_highlights),
+    .vio0_ae_high_permille (ae_high_permille),
+    .vio0_ae_highlight_limited (ae_highlight_limited),
     .vio0_ae_vts        (ae_vts),
     .vio0_ae_exposure   (ae_exposure),
     .vio0_ae_mean       (ae_mean),

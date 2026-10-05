@@ -3,7 +3,7 @@
         {
             "name": "vio0",
             "type": "vio",
-            "uuid": "2724c79bf8a142d1beee5616dd31aee9",
+            "uuid": "8710e7ef755a45389d03177a0517b43f",
             "probes": [
                 {
                     "name": "r_gain",
@@ -92,6 +92,41 @@
                 },
                 {
                     "name": "ae_at_max",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "ae_high_protect",
+                    "width": 1,
+                    "init": "0x1"
+                },
+                {
+                    "name": "ae_high_threshold",
+                    "width": 8,
+                    "init": "0xe8"
+                },
+                {
+                    "name": "ae_high_limit",
+                    "width": 8,
+                    "init": "0xa"
+                },
+                {
+                    "name": "lift_enable",
+                    "width": 1,
+                    "init": "0x0"
+                },
+                {
+                    "name": "lift_strength",
+                    "width": 8,
+                    "init": "0x60"
+                },
+                {
+                    "name": "ae_high_permille",
+                    "width": 10,
+                    "init": null
+                },
+                {
+                    "name": "ae_highlight_limited",
                     "width": 1,
                     "init": null
                 }

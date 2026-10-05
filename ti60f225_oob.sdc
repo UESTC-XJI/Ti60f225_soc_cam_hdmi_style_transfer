@@ -83,7 +83,7 @@ set_input_delay -clock_fall -clock jtag_inst2_autodbg_TCK__ -min 0.620 [get_port
 
 # HSIO GPIO Constraints
 #########################
-create_clock -period <USER_PERIOD> [get_ports {CLK_25M}]
+create_clock -period 40.000 -name CLK_25M [get_ports {CLK_25M}]
 set_output_delay -clock sdram_clk -reference_pin [get_ports {sdram_clk~CLKOUT~218~95}] -max 0.302 [get_ports {ddr_addr[0]}]
 set_output_delay -clock sdram_clk -reference_pin [get_ports {sdram_clk~CLKOUT~218~95}] -min -0.140 [get_ports {ddr_addr[0]}]
 set_output_delay -clock sdram_clk -reference_pin [get_ports {sdram_clk~CLKOUT~218~36}] -max 0.302 [get_ports {ddr_addr[1]}]
