@@ -1,0 +1,139 @@
+{
+    "debug_cores": [
+        {
+            "name": "vio0",
+            "type": "vio",
+            "uuid": "c8eb78c9d9c9473c9b687834c3ee5c04",
+            "probes": [
+                {
+                    "name": "r_gain",
+                    "width": 16,
+                    "init": "0x168"
+                },
+                {
+                    "name": "g_gain",
+                    "width": 16,
+                    "init": "0x100"
+                },
+                {
+                    "name": "b_gain",
+                    "width": 16,
+                    "init": "0x1a9"
+                },
+                {
+                    "name": "gamma_sel",
+                    "width": 1,
+                    "init": "0x0"
+                },
+                {
+                    "name": "ae_enable",
+                    "width": 1,
+                    "init": "0x0"
+                },
+                {
+                    "name": "ae_target",
+                    "width": 8,
+                    "init": "0x60"
+                },
+                {
+                    "name": "tone_enable",
+                    "width": 1,
+                    "init": "0x0"
+                },
+                {
+                    "name": "high_green_strength",
+                    "width": 8,
+                    "init": "0x20"
+                },
+                {
+                    "name": "dark_red_strength",
+                    "width": 8,
+                    "init": "0x20"
+                },
+                {
+                    "name": "ae_ready",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "ae_fault",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "ae_at_limit",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "ae_highlights",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "ae_vts",
+                    "width": 16,
+                    "init": null
+                },
+                {
+                    "name": "ae_exposure",
+                    "width": 16,
+                    "init": null
+                },
+                {
+                    "name": "ae_mean",
+                    "width": 8,
+                    "init": null
+                }
+            ]
+        },
+        {
+            "name": "la0",
+            "type": "la",
+            "uuid": "8b991dc2d6a84fb98d48d5d60bf7bec8",
+            "probes": [
+                {
+                    "name": "ch0_g",
+                    "width": 8,
+                    "probe_type": 1
+                },
+                {
+                    "name": "ch0_b",
+                    "width": 8,
+                    "probe_type": 1
+                },
+                {
+                    "name": "ch0_de",
+                    "width": 1,
+                    "probe_type": 1
+                },
+                {
+                    "name": "cal_done",
+                    "width": 1,
+                    "probe_type": 1
+                },
+                {
+                    "name": "ch0_vs",
+                    "width": 1,
+                    "probe_type": 1
+                },
+                {
+                    "name": "raw_row_odd",
+                    "width": 1,
+                    "probe_type": 1
+                }
+            ],
+            "data_depth": 1024,
+            "trigin_en": false,
+            "trigout_en": false,
+            "capture_control": false,
+            "input_pipeline": 1,
+            "auto_inserted": false
+        }
+    ],
+    "session": {
+        "debug_widget": [],
+        "wizard": {}
+    },
+    "jtag_user": "USER1"
+}

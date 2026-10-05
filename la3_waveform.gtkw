@@ -1,0 +1,15 @@
+[dumpfile] "C:\Users\ADMINI~1\AppData\Local\Temp\tmp4y0hiyas\la3tmp_continous.vcd"
+[dumpfile_mtime] "Mon Dec 23 03:17:11 2024"
+[dumpfile_size] 58246
+[savefile] "E:\FPGA_Demo\02_Ti60F225_DemoBoard\FPGA_Prj\10_Ti60f225_csi2hdmi_demo\Ti60f225_sc431hai2hdmi_v0_2402\la3_waveform.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*0.000000 c 2048 6144 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[signals_width] 126
+[sst_expanded] 1
+@22
+top.cam_d2_HS_IN[7:0]
+top.cam_d1_HS_IN[7:0]
+top.cam_d0_HS_IN[7:0]
+top.cam_d3_HS_IN[7:0]

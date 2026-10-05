@@ -1,0 +1,18 @@
+[dumpfile] "C:\Users\ELITES~1\AppData\Local\Temp\tmposaytx77\la2tmp_continous.vcd"
+[dumpfile_mtime] "Mon Aug 10 12:01:04 2026"
+[dumpfile_size] 148208
+[savefile] "D:\Computer\FPGA_Prj\03_Ti60F225_demobaord\Ti60f225_sc431hai2hdmi_v0_2402\la2_waveform.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*0.000000 c 1024 3072 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[signals_width] 126
+[sst_expanded] 1
+@22
+top.w_mipi_rx_vs
+top.w_mipi_rx_data[63:0]
+top.w_mipi_rx_hs
+top.w_mipi_rx_de
+top.checker0/i_vs
+top.checker0/i_de
+top.checker0/vin[31:0]
