@@ -1,0 +1,308 @@
+{
+  "input": {
+    "file": "input.hex",
+    "shape": [
+      1,
+      1,
+      64,
+      64
+    ],
+    "quant_scale": 0.00392156862745098,
+    "qrange": [
+      0,
+      255
+    ],
+    "layout": "NCHW，行主序"
+  },
+  "caveat": "每层的 _in.hex / _acc.hex 是**该次卷积**的精确整数输入与累加器，可直接逐元素比对。_out 的再量化刻度取的是模块顺序上的下一个卷积；残差相加处两分支必须共用同一 scale，这一约束不在本 golden 里体现。",
+  "layers": [
+    {
+      "index": 0,
+      "name": "enc1.conv",
+      "in_file": "L00_enc1_conv_in.hex",
+      "acc_file": "L00_enc1_conv_acc.hex",
+      "in_scale": 0.00392156862745098,
+      "out_scale": 0.010990072699154125,
+      "in_qrange": [
+        0,
+        255
+      ],
+      "in_shape": [
+        1,
+        1,
+        66,
+        66
+      ],
+      "acc_shape": [
+        1,
+        4,
+        64,
+        64
+      ]
+    },
+    {
+      "index": 1,
+      "name": "enc2.conv",
+      "in_file": "L01_enc2_conv_in.hex",
+      "acc_file": "L01_enc2_conv_acc.hex",
+      "in_scale": 0.010990072699154125,
+      "out_scale": 0.01429288340549843,
+      "in_qrange": [
+        0,
+        255
+      ],
+      "in_shape": [
+        1,
+        4,
+        66,
+        66
+      ],
+      "acc_shape": [
+        1,
+        8,
+        32,
+        32
+      ]
+    },
+    {
+      "index": 2,
+      "name": "enc3.conv",
+      "in_file": "L02_enc3_conv_in.hex",
+      "acc_file": "L02_enc3_conv_acc.hex",
+      "in_scale": 0.01429288340549843,
+      "out_scale": 0.01760712604896695,
+      "in_qrange": [
+        0,
+        255
+      ],
+      "in_shape": [
+        1,
+        8,
+        34,
+        34
+      ],
+      "acc_shape": [
+        1,
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "index": 3,
+      "name": "res.0.c1.conv",
+      "in_file": "L03_res_0_c1_conv_in.hex",
+      "acc_file": "L03_res_0_c1_conv_acc.hex",
+      "in_scale": 0.01760712604896695,
+      "out_scale": 0.010150651370777803,
+      "in_qrange": [
+        0,
+        255
+      ],
+      "in_shape": [
+        1,
+        16,
+        18,
+        18
+      ],
+      "acc_shape": [
+        1,
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "index": 4,
+      "name": "res.0.c2.conv",
+      "in_file": "L04_res_0_c2_conv_in.hex",
+      "acc_file": "L04_res_0_c2_conv_acc.hex",
+      "in_scale": 0.010150651370777803,
+      "out_scale": 0.03490322593628891,
+      "in_qrange": [
+        0,
+        255
+      ],
+      "in_shape": [
+        1,
+        16,
+        18,
+        18
+      ],
+      "acc_shape": [
+        1,
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "index": 5,
+      "name": "res.1.c1.conv",
+      "in_file": "L05_res_1_c1_conv_in.hex",
+      "acc_file": "L05_res_1_c1_conv_acc.hex",
+      "in_scale": 0.03490322593628891,
+      "out_scale": 0.008309693429984298,
+      "in_qrange": [
+        -127,
+        127
+      ],
+      "in_shape": [
+        1,
+        16,
+        18,
+        18
+      ],
+      "acc_shape": [
+        1,
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "index": 6,
+      "name": "res.1.c2.conv",
+      "in_file": "L06_res_1_c2_conv_in.hex",
+      "acc_file": "L06_res_1_c2_conv_acc.hex",
+      "in_scale": 0.008309693429984298,
+      "out_scale": 0.03371196656715213,
+      "in_qrange": [
+        0,
+        255
+      ],
+      "in_shape": [
+        1,
+        16,
+        18,
+        18
+      ],
+      "acc_shape": [
+        1,
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "index": 7,
+      "name": "res.2.c1.conv",
+      "in_file": "L07_res_2_c1_conv_in.hex",
+      "acc_file": "L07_res_2_c1_conv_acc.hex",
+      "in_scale": 0.03371196656715213,
+      "out_scale": 0.006508097461625641,
+      "in_qrange": [
+        -127,
+        127
+      ],
+      "in_shape": [
+        1,
+        16,
+        18,
+        18
+      ],
+      "acc_shape": [
+        1,
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "index": 8,
+      "name": "res.2.c2.conv",
+      "in_file": "L08_res_2_c2_conv_in.hex",
+      "acc_file": "L08_res_2_c2_conv_acc.hex",
+      "in_scale": 0.006508097461625641,
+      "out_scale": 0.033875585541011784,
+      "in_qrange": [
+        0,
+        255
+      ],
+      "in_shape": [
+        1,
+        16,
+        18,
+        18
+      ],
+      "acc_shape": [
+        1,
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "index": 9,
+      "name": "dec1.conv",
+      "in_file": "L09_dec1_conv_in.hex",
+      "acc_file": "L09_dec1_conv_acc.hex",
+      "in_scale": 0.033875585541011784,
+      "out_scale": 0.00956431370155484,
+      "in_qrange": [
+        -127,
+        127
+      ],
+      "in_shape": [
+        1,
+        16,
+        34,
+        34
+      ],
+      "acc_shape": [
+        1,
+        8,
+        32,
+        32
+      ]
+    },
+    {
+      "index": 10,
+      "name": "dec2.conv",
+      "in_file": "L10_dec2_conv_in.hex",
+      "acc_file": "L10_dec2_conv_acc.hex",
+      "in_scale": 0.00956431370155484,
+      "out_scale": 0.0060316875869152594,
+      "in_qrange": [
+        0,
+        255
+      ],
+      "in_shape": [
+        1,
+        8,
+        66,
+        66
+      ],
+      "acc_shape": [
+        1,
+        4,
+        64,
+        64
+      ]
+    },
+    {
+      "index": 11,
+      "name": "out.conv",
+      "in_file": "L11_out_conv_in.hex",
+      "acc_file": "L11_out_conv_acc.hex",
+      "in_scale": 0.0060316875869152594,
+      "out_scale": 0.0060316875869152594,
+      "in_qrange": [
+        0,
+        255
+      ],
+      "in_shape": [
+        1,
+        4,
+        66,
+        66
+      ],
+      "acc_shape": [
+        1,
+        1,
+        64,
+        64
+      ]
+    }
+  ]
+}

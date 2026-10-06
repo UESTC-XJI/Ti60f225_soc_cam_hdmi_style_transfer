@@ -1,0 +1,65 @@
+{
+  "total_bytes": 16920,
+  "layers": [
+    {
+      "name": "enc1.conv",
+      "offset": 0,
+      "count": 108
+    },
+    {
+      "name": "enc2.conv",
+      "offset": 108,
+      "count": 288
+    },
+    {
+      "name": "enc3.conv",
+      "offset": 396,
+      "count": 1152
+    },
+    {
+      "name": "res.0.c1.conv",
+      "offset": 1548,
+      "count": 2304
+    },
+    {
+      "name": "res.0.c2.conv",
+      "offset": 3852,
+      "count": 2304
+    },
+    {
+      "name": "res.1.c1.conv",
+      "offset": 6156,
+      "count": 2304
+    },
+    {
+      "name": "res.1.c2.conv",
+      "offset": 8460,
+      "count": 2304
+    },
+    {
+      "name": "res.2.c1.conv",
+      "offset": 10764,
+      "count": 2304
+    },
+    {
+      "name": "res.2.c2.conv",
+      "offset": 13068,
+      "count": 2304
+    },
+    {
+      "name": "dec1.conv",
+      "offset": 15372,
+      "count": 1152
+    },
+    {
+      "name": "dec2.conv",
+      "offset": 16524,
+      "count": 288
+    },
+    {
+      "name": "out.conv",
+      "offset": 16812,
+      "count": 108
+    }
+  ]
+}
