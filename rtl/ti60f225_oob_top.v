@@ -894,7 +894,7 @@ debayer_top_2to1 #(
 	.rgb_datax2_o (rgb_datax2     ),//b,g,r,b,g,r
 	.raw_row_odd_o (raw_row_odd   )
 );
-ae_frame_stats #(.FRAME_WIDTH(HACT),.FRAME_HEIGHT(VACT)) ae_meter(
+ae_frame_stats #(.FRAME_WIDTH(HACT),.FRAME_HEIGHT(VACT),.FULL_FRAME_MEAN(1)) ae_meter(
   .clk(vid_clk_dvi2),.rst_n(vid_rst_n),.i_vs(rgb_vs),.i_de(rgb_de),.i_rgb(rgb_datax2),
   .i_high_threshold(ae_high_threshold),.o_high_permille(stats_high_permille),
   .o_valid(stats_valid),.o_mean(stats_mean),.o_highlights(stats_hot)
