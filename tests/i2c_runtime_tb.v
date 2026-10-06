@@ -18,7 +18,7 @@ module i2c_runtime_tb;
     .runtime_addr(ae_mode?aa:ma),.runtime_data(ae_mode?ad:md),
     .config_done(cfg),.runtime_wr_done(wd),.runtime_rd_done(rd),
     .runtime_wr_error(we),.runtime_rd_error(re),.runtime_read_data(result));
-  sc431hai_auto_exposure #(.WAIT_FRAMES(1),.TIMEOUT_CYCLES(20000),
+  sc431hai_auto_exposure #(.FIXED_STEP_ENABLE(1),.PREDICTIVE_ENABLE(0),.WAIT_FRAMES(1),.TIMEOUT_CYCLES(20000),
     .FILTER_SHIFT(0),.CONFIRM_FRAMES(1),.DEADBAND(8),.SETTLE_BAND(8),
     .SMALL_STEP_SHIFT(3),.LARGE_STEP_SHIFT(3),.RELEASE_FRAMES(1)) ae(
     .clk(clk),.rst_n(rst),.i_config_done(cfg && ae_mode),.i_enable(en),.i_sensor_frame_start(fs),
@@ -103,8 +103,8 @@ module i2c_runtime_tb;
     if(fault || exp!=800 || vts!=1500) $fatal(1,"AE real bus boot");
     repeat(4) @(negedge clk);en=1;sv=1;@(negedge clk);sv=0;
     wait(ae.state==5);@(negedge clk);fs=1;@(negedge clk);fs=0;
-    wait(exp==1360 || fault);#2; // goal=800*96/40=1920, halfway=1360.
-    if(fault || mem['h3812]!='h30 || mem['h3e00]!='ha0 || mem['h3e01]!='h55 || mem['h3e02]!='h05)
+    wait(exp==928 || fault);#2; // Error 56 -> fixed step128, exposure800 ->928.
+    if(fault || mem['h3812]!='h30 || mem['h3e00]!='ha0 || mem['h3e01]!='h3a || mem['h3e02]!='h05)
       $fatal(1,"AE real bus group hold result");
     $display("PASS I2C: 165-entry init, 6.160x analog gain readback, repeated starts, read/write/NACK, AE group update (%0d starts, %0d stops)",starts,stops);$finish;
   end

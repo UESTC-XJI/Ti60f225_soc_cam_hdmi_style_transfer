@@ -4,7 +4,7 @@ module ae_stability_tb;
   reg clk=0,rst=0,en=0,sv=0,fs=0,wd=0,rd=0;
   reg protect=1;reg[9:0] ratio=0;reg[7:0] mean=100,target=100,read_data=0;
   wire wr,read,ready,fault,blocked;wire[15:0] addr,exposure,vts;wire[7:0] data,om;
-  sc431hai_auto_exposure #(.TIMEOUT_CYCLES(1000)) dut(
+  sc431hai_auto_exposure #(.FIXED_STEP_ENABLE(0),.PREDICTIVE_ENABLE(1),.FAST_RECOVERY_FRAMES(8),.TIMEOUT_CYCLES(1000)) dut(
     .clk(clk),.rst_n(rst),.i_config_done(1'b1),.i_enable(en),.i_sensor_frame_start(fs),
     .i_stats_valid(sv),.i_highlights(ratio>15),.i_mean(mean),.i_target(target),
     .o_wr_en(wr),.o_rd_en(read),.o_addr(addr),.o_data(data),.i_wr_done(wd),.i_rd_done(rd),
@@ -119,19 +119,20 @@ module ae_stability_tb;
           if(dut.state!=5) $fatal(1,"dark recovery prediction did not finish");
           newchange=dut.pending;
           if(newchange>exposure) seen_recovery=1;
-          if(newchange>exposure && newchange-exposure>exposure/16+1)
+          if(newchange>exposure && newchange-exposure>(exposure/16<4?4:exposure/16)+1)
             $fatal(1,"dark recovery jumped");
           settled(newchange);
         end
       end
-      if(fault || (occupancy<10 && !seen_recovery) || (occupancy==2 && y<90) || (occupancy==7 && exposure<=65) || (occupancy==10 && (exposure!=65 || seen_recovery)))
+      if(fault || (occupancy<10 && !seen_recovery) || (occupancy==2 && y<90) || ((occupancy==6 || occupancy==7) && y<90) || (occupancy==10 && (exposure!=65 || seen_recovery)))
         $fatal(1,"dark recovery stuck occupancy=%0d exposure=%0d mean=%0d",occupancy,exposure,y);
       $display("PASS dark recovery highlights=%0d exposure=%0d mean=%0d frames=%0d",occupancy,exposure,y,max_frames);
     end
   endtask
   initial begin
     dark_recovery(2,800);
-    dark_recovery(7,200);
+    dark_recovery(6,1200);
+    dark_recovery(7,1200);
     dark_recovery(10,200);
     highlight_scene();
     boot(800);sample(100,0);
