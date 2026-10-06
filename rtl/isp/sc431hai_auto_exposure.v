@@ -105,8 +105,15 @@ module sc431hai_auto_exposure #(
     (safe_gap<=6 ? 16'd1 : ((safe_gap-17'd4)>>1));
   wire [15:0] guarded_recovery_step=priority_active && boundary_step<recovery_step ? boundary_step : recovery_step;
   wire [7:0] scene_high_limit=high_limit<4 ? 8'd0 : high_limit>>2;
-  wire scene_became_dark=safe_scene_valid &&
-    ({1'b0,mean_control}+9'd8)<{1'b0,safe_scene_mean} &&
+  // At tiny exposures the black pedestal masks scene changes: a dark scene
+  // cannot drop another eight codes below an already dark safe reference.
+  // Persistent zero highlights and a near-black mean invalidate that stale
+  // low-exposure boundary without releasing ordinary bright-window ceilings.
+  wire dark_floor_escape=o_exposure<=16'd64 && mean_control<=8'd32 &&
+    ({1'b0,mean_control}+9'd16)<{1'b0,target} &&
+    high_control==0 && i_high_permille==0;
+  wire scene_became_dark=(dark_floor_escape || (safe_scene_valid &&
+    ({1'b0,mean_control}+9'd8)<{1'b0,safe_scene_mean})) &&
     high_control<={2'b0,scene_high_limit} && i_high_permille<={2'b0,scene_high_limit};
   wire [16:0] recovery_candidate={1'b0,o_exposure}+{1'b0,guarded_recovery_step};
   wire high_over=i_high_protect && high_control>{2'b0,high_limit};

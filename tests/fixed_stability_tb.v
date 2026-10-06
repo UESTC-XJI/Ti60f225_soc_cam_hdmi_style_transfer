@@ -109,7 +109,43 @@ module fixed_stability_tb;
       $display("PASS changed scene clears stale window boundary and recovers exposure=%0d",exposure);
     end
   endtask
+  task lamp_to_dark;
+    integer n;
+    begin
+      boot(100);target=100;protect=1;
+      // An intense lamp remains clipped down to the physical exposure floor.
+      for(n=0;n<100;n=n+1) begin
+        sample(100,100);
+        if(dut.state==5) settled(dut.pending);
+      end
+      if(exposure!=4 || !dut.ceiling_valid) $fatal(1,"lamp did not learn minimum boundary");
+      // A remaining highlight must not trigger the zero-highlight escape.
+      for(n=0;n<100;n=n+1) begin
+        sample(20,1);
+        if(dut.state==5) settled(dut.pending);
+      end
+      if(exposure!=4 || !dut.ceiling_valid) $fatal(1,"nonzero highlights released minimum boundary");
+      // RAW black pedestal stays near 20 even after pointing away from lamp.
+      // No eight-code mean drop is available to the old scene-change detector.
+      for(n=0;n<40;n=n+1) begin
+        sample(20,0);
+        if(dut.state==5) settled(dut.pending);
+      end
+      if(exposure<=64 || dut.ceiling_valid)
+        $fatal(1,"zero-highlight dark scene stuck at lamp boundary: exposure=%0d mean=%0d",exposure,om);
+      exposure_history[0]=exposure;exposure_history[1]=exposure;exposure_history[2]=exposure;
+      for(n=0;n<700;n=n+1) begin
+        sample(20+exposure_history[2]/30,0);
+        exposure_history[2]=exposure_history[1];exposure_history[1]=exposure_history[0];exposure_history[0]=exposure;
+        if(dut.state==5) settled(dut.pending);
+      end
+      if(om<96 || om>104 || dut.ceiling_valid || dut.o_exposure_constrained)
+        $fatal(1,"lamp-to-dark recovery did not converge: exposure=%0d mean=%0d",exposure,om);
+      $display("PASS lamp-to-dark floor escape and convergence exposure=%0d mean=%0d",exposure,om);
+    end
+  endtask
   initial begin
+    lamp_to_dark();
     window_scene();
     loop_scene(65,96,108,16,0,0);
     loop_scene(1983,100,99,0,0,0);
