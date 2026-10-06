@@ -92,17 +92,47 @@ module ae_stability_tb;
           while(dut.state!=5 && wait_cycles<40) begin @(negedge clk);wait_cycles=wait_cycles+1;end
           if(dut.state!=5) $fatal(1,"highlight scene prediction did not finish");
           old_exp=exposure;newchange=dut.pending;
-          if(seen_limit && newchange>old_exp && newchange-old_exp>old_exp/64+1)
+          if(seen_limit && newchange>old_exp && newchange-old_exp>old_exp/16+1)
             $fatal(1,"highlight recovery jumped: %0d -> %0d",old_exp,newchange);
           settled(newchange);updates=updates+1;
         end
       end
-      if(!seen_limit || fault || exposure>1940 || exposure<1800 || updates>60)
+      if(!seen_limit || fault || exposure>1940 || exposure<1800 || updates>230)
         $fatal(1,"highlight scene hunts: exposure=%0d updates=%0d",exposure,updates);
       $display("PASS highlight closed loop: 3-frame latency, steep clipping, bounded recovery; exposure=%0d updates=%0d",exposure,updates);
     end
   endtask
+  // Reproduce the reported stuck state by first learning a tiny safe ceiling.
+  // Then remove excess highlights and verify enabled protection permits recovery.
+  task dark_recovery(input integer occupancy,max_frames);
+    integer n,wait_cycles,y,seen_recovery;
+    begin
+      boot(67);target=96;seen_recovery=0;
+      sample(23,20);sample(23,20);settled(65);
+      if(!dut.ceiling_valid || !blocked) $fatal(1,"tiny ceiling not learned");
+      for(n=0;n<max_frames;n=n+1) begin
+        y=16+exposure*7/65;
+        sample(y,occupancy);
+        if(dut.state==9 || dut.state==10 || dut.state==5) begin
+          wait_cycles=0;
+          while(dut.state!=5 && wait_cycles<40) begin @(negedge clk);wait_cycles=wait_cycles+1;end
+          if(dut.state!=5) $fatal(1,"dark recovery prediction did not finish");
+          newchange=dut.pending;
+          if(newchange>exposure) seen_recovery=1;
+          if(newchange>exposure && newchange-exposure>exposure/16+1)
+            $fatal(1,"dark recovery jumped");
+          settled(newchange);
+        end
+      end
+      if(fault || (occupancy<10 && !seen_recovery) || (occupancy==2 && y<90) || (occupancy==7 && exposure<=65) || (occupancy==10 && (exposure!=65 || seen_recovery)))
+        $fatal(1,"dark recovery stuck occupancy=%0d exposure=%0d mean=%0d",occupancy,exposure,y);
+      $display("PASS dark recovery highlights=%0d exposure=%0d mean=%0d frames=%0d",occupancy,exposure,y,max_frames);
+    end
+  endtask
   initial begin
+    dark_recovery(2,800);
+    dark_recovery(7,200);
+    dark_recovery(10,200);
     highlight_scene();
     boot(800);sample(100,0);
     for(j=0;j<80;j=j+1) sample(90+j%21, j%11);
@@ -137,14 +167,12 @@ module ae_stability_tb;
     while(blocked && k<40) begin sample(30,0);k=k+1;end
     if(blocked || k<8) $fatal(1,"release did not require persistent low highlights");
     unchanged(775);
-    for(j=0;j<20;j=j+1) sample(30,0);
-    unchanged(775); // Hold the learned ceiling after the latch releases.
     k=0;
     while(dut.state==4 && k<40) begin sample(30,0);k=k+1;end
-    if(k<10 || k>16) $fatal(1,"recovery ceiling relaxed without 32 stable frames");
-    settled(787); // floor(775/64)=12; a bounded probe after sustained headroom.
+    if(k<8 || k>12) $fatal(1,"recovery ceiling relaxed without eight stable frames");
+    settled(823); // floor(775/16)=48; bounded recovery with low highlights.
     protect=0;repeat(3) @(negedge clk);
-    sample(30,0);sample(30,0);sample(30,0);sample(30,0);settled(1574); // Explicitly disabling protection restores prediction.
+    sample(30,0);sample(30,0);sample(30,0);sample(30,0);settled(1646); // Explicitly disabling protection restores prediction.
     // Closed-loop scene includes TWO stale output frames and +/-3 code noise.
     // Long run must converge inside the deadband and stop, without reversing.
     boot(800);protect=0;target=96;changes=0;lastchange=-100;

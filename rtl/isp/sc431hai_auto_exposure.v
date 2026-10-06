@@ -5,7 +5,7 @@ module sc431hai_auto_exposure #(
   parameter WAIT_FRAMES=2, TIMEOUT_CYCLES=250000,
   parameter FILTER_SHIFT=2, CONFIRM_FRAMES=2, DEADBAND=12, SETTLE_BAND=6,
   parameter SMALL_STEP_SHIFT=6, LARGE_STEP_SHIFT=5, LARGE_ERROR=32,
-  parameter RELEASE_FRAMES=8, PREDICTIVE_ENABLE=1, RECOVERY_FRAMES=32
+  parameter RELEASE_FRAMES=8, PREDICTIVE_ENABLE=1, RECOVERY_FRAMES=32, FAST_RECOVERY_FRAMES=8
 )(
   input clk,rst_n,i_config_done,i_enable,i_sensor_frame_start,
   input i_stats_valid,i_highlights,
@@ -37,6 +37,7 @@ module sc431hai_auto_exposure #(
   reg ceiling_valid,pending_high;
   reg [15:0] highlight_ceiling;
   reg [7:0] recovery_count,ceiling_limit;
+  reg recovery_was_fast,release_was_low;
   wire ceiling_active=PREDICTIVE_ENABLE && i_high_protect && ceiling_valid &&
     ceiling_limit==(i_high_limit==0 ? 8'd1 : i_high_limit);
   reg [31:0] timer;
@@ -70,6 +71,13 @@ module sc431hai_auto_exposure #(
   wire [15:0] large_step=(o_exposure>>LARGE_STEP_SHIFT)==0 ? 16'd1 : (o_exposure>>LARGE_STEP_SHIFT);
   wire [7:0] high_limit=i_high_limit==0 ? 8'd1 : i_high_limit;
   wire [7:0] high_release=high_limit>>1;
+  // Low highlight occupancy permits faster bounded recovery. Between half the
+  // limit and the limit, keep probing rather than permanently freezing AE.
+  wire recovery_headroom=high_control<{2'b0,high_limit} && i_high_permille<{2'b0,high_limit};
+  wire recovery_fast=high_control<={2'b0,high_release} && i_high_permille<={2'b0,high_release};
+  wire [15:0] recovery_raw=o_exposure>>(recovery_fast ? 4 : 7);
+  wire [15:0] recovery_step=recovery_raw==0 ? 16'd1 : recovery_raw;
+  wire [16:0] recovery_candidate={1'b0,o_exposure}+{1'b0,recovery_step};
   wire high_over=i_high_protect && high_control>{2'b0,high_limit};
   wire high_hold=i_high_protect && o_highlight_limited &&
     (RELEASE_FRAMES!=1 || high_control>{2'b0,high_release});
@@ -142,7 +150,7 @@ module sc431hai_auto_exposure #(
       pending<=0;group_failed<=0;timer<=0;o_wr_en<=0;o_rd_en<=0;o_addr<=0;o_data<=0;
       o_exposure<=0;o_vts<=0;o_mean<=0;o_error<=0;
       o_highlight_limited<=0;ceiling_valid<=0;highlight_ceiling<=0;
-      recovery_count<=0;ceiling_limit<=0;pending_high<=0;
+      recovery_count<=0;ceiling_limit<=0;pending_high<=0;recovery_was_fast<=0;release_was_low<=0;
       filter_valid<=0;mean_filter<=0;high_filter<=0;previous_mean<=0;
       last_direction<=0;brightness_direction<=0;confirm_count<=0;release_count<=0;
       pred_dividend<=0;pred_quotient<=0;pred_estimate<=0;pred_divisor<=1;
@@ -202,21 +210,24 @@ module sc431hai_auto_exposure #(
             else begin
               filter_valid<=1;mean_filter<=mean_next;high_filter<=high_next;
               previous_mean<=i_mean;
-              // Probe only after sustained unused highlight headroom, at the
-              // learned ceiling, with no active hold. Each probe is <=1/64.
+              // Learned limits are temporary: use 1/16 probes after eight
+              // stable low-highlight samples, or 1/128 near the boundary.
               if(ceiling_active && !high_hold && direction==1 &&
-                 o_exposure>=highlight_ceiling && high_control<={2'b0,high_release} &&
-                 i_high_permille<={2'b0,high_release}) begin
-                if(recovery_count>=RECOVERY_FRAMES-1) begin
-                  highlight_ceiling<=({1'b0,o_exposure}+{1'b0,small_step}>max_wide) ?
-                    maximum : o_exposure+small_step;
+                 o_exposure>=highlight_ceiling && recovery_headroom) begin
+                recovery_was_fast<=recovery_fast;
+                if(recovery_count!=0 && recovery_was_fast!=recovery_fast) recovery_count<=1;
+                else if(recovery_count>=(recovery_fast ? FAST_RECOVERY_FRAMES : RECOVERY_FRAMES)-1) begin
+                  highlight_ceiling<=recovery_candidate>max_wide ? maximum : recovery_candidate[15:0];
                   recovery_count<=0;
                 end else recovery_count<=recovery_count+1'b1;
               end else recovery_count<=0;
               if(mean_error<=SETTLE_BAND) brightness_direction<=0;
               if(!i_high_protect) begin o_highlight_limited<=0;release_count<=0;end
-              else if(high_control<={2'b0,high_release}) begin
-                if(release_count>=RELEASE_FRAMES-1) begin
+              else if(high_control<={2'b0,high_release} || (PREDICTIVE_ENABLE && recovery_headroom)) begin
+                release_was_low<=high_control<={2'b0,high_release};
+                if(PREDICTIVE_ENABLE && release_count!=0 && release_was_low!=(high_control<={2'b0,high_release}))
+                  release_count<=1;
+                else if(release_count>=((high_control<={2'b0,high_release}) ? RELEASE_FRAMES : RECOVERY_FRAMES)-1) begin
                   o_highlight_limited<=0;release_count<=0;
                 end else release_count<=release_count+1'b1;
               end else release_count<=0;
