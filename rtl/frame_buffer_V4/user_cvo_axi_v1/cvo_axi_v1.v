@@ -1,16 +1,17 @@
+`include "../../defines.v"
 
 	module cvo_axi #(
-	parameter SYMBOL_WIDTH      = 8,            // Bits per color component
-    parameter SYMBOL_NUM   		= 2,            // Parallel pixels: 1, 2, 4, 8
-    parameter PIXEL_NUM     	= 0,            // 0:RGB, 1:YUV444, 2:YUV422
-    parameter HSYNC_POL         = 1,            // H sync polarity (0=active low, 1=active high)
-    parameter VSYNC_POL         = 1,            // V sync polarity (0=active low, 1=active high)
-    parameter FIFO_DEPTH        = 512,          // FIFO buffer depth
-    parameter FIFO_ALMOST_FULL  = 500,          // FIFO almost full threshold
-	parameter MAX_H_VALID       = 1920,
-    parameter MAX_V_VALID       = 1080,
+	parameter SYMBOL_WIDTH      = `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_PARAMETER_SYMBOL_WIDTH,            // Bits per color component
+    parameter SYMBOL_NUM   		= `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_PARAMETER_SYMBOL_NUM,            // Parallel pixels: 1, 2, 4, 8
+    parameter PIXEL_NUM     	= `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_PARAMETER_PIXEL_NUM,            // 0:RGB, 1:YUV444, 2:YUV422
+    parameter HSYNC_POL         = `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_PARAMETER_HSYNC_POL,            // H sync polarity (0=active low, 1=active high)
+    parameter VSYNC_POL         = `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_PARAMETER_VSYNC_POL,            // V sync polarity (0=active low, 1=active high)
+    parameter FIFO_DEPTH        = `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_PARAMETER_FIFO_DEPTH,          // FIFO buffer depth
+    parameter FIFO_ALMOST_FULL  = `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_PARAMETER_FIFO_ALMOST_FULL,          // FIFO almost full threshold
+	parameter MAX_H_VALID       = `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_PARAMETER_MAX_H_VALID,
+    parameter MAX_V_VALID       = `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_PARAMETER_MAX_V_VALID,
     // Derived parameters
-    parameter DATA_WIDTH        = SYMBOL_WIDTH * PIXEL_NUM * SYMBOL_NUM
+    parameter DATA_WIDTH        = `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_PARAMETER_DATA_WIDTH
 			
 			
 	)(
@@ -24,23 +25,23 @@
     // AXI Stream Input (Standard Video Interface)
     //------------------------------------------------------------------------
 	input  wire 										s_axi_clk,
-    input  wire [DATA_WIDTH-1:0]            			s_axis_tdata,   // Pixel data
+    input  wire [`CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_RANGE_1]            			s_axis_tdata,   // Pixel data
     input  wire                             			s_axis_tvalid,  // Data valid
     output wire                             			s_axis_tready,  // Ready to accept
     input  wire                             			s_axis_tlast,   // End of line (EOL)
     input  wire                             			s_axis_tuser,   // Start of frame (SOF)
 	
-	input		wire 	[12:0]							H_FRONT_PORCH 	,
-	input		wire 	[12:0]							H_SYNC 			,
-	input		wire 	[12:0]							H_VALID 		,
-	input		wire 	[12:0]							H_BACK_PORCH 	,
-	input		wire 	[12:0]							V_FRONT_PORCH 	,
-	input		wire 	[12:0]							V_SYNC 			,
-	input		wire 	[12:0]							V_VALID 		,
-	input		wire 	[12:0]							V_BACK_PORCH 	,
+	input		wire 	[`CFG_BITS_13-1:0]							H_FRONT_PORCH 	,
+	input		wire 	[`CFG_BITS_13-1:0]							H_SYNC 			,
+	input		wire 	[`CFG_BITS_13-1:0]							H_VALID 		,
+	input		wire 	[`CFG_BITS_13-1:0]							H_BACK_PORCH 	,
+	input		wire 	[`CFG_BITS_13-1:0]							V_FRONT_PORCH 	,
+	input		wire 	[`CFG_BITS_13-1:0]							V_SYNC 			,
+	input		wire 	[`CFG_BITS_13-1:0]							V_VALID 		,
+	input		wire 	[`CFG_BITS_13-1:0]							V_BACK_PORCH 	,
 	
 	
-	output		 	[DATA_WIDTH-1:0] 					vout ,
+	output		 	[`CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_RANGE_2] 					vout ,
 	output		reg										o_hs = 'd0,
 	output		reg										o_vs = 'd0,
 	output		reg										o_de = 'd0
@@ -50,26 +51,26 @@
 //
 //==========================================================
 	
-	localparam S_H_SYNC 		= 2'd0;
-	localparam S_H_BACK_PORCH 	= 2'd1;
-	localparam S_H_VALID 		= 2'd2;
-	localparam S_H_FRONT_PORCH 	= 2'd3;
-	localparam S_V_SYNC 		= 2'd0;
-	localparam S_V_BACK_PORCH 	= 2'd1;
-	localparam S_V_VALID 		= 2'd2;
-	localparam S_V_FRONT_PORCH 	= 2'd3;
-	localparam FIFO_ADDR_WIDTH   = $clog2(FIFO_DEPTH) ;
+	localparam S_H_SYNC 		= `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_LOCALPARAM_S_H_SYNC;
+	localparam S_H_BACK_PORCH 	= `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_LOCALPARAM_S_H_BACK_PORCH;
+	localparam S_H_VALID 		= `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_LOCALPARAM_S_H_VALID;
+	localparam S_H_FRONT_PORCH 	= `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_LOCALPARAM_S_H_FRONT_PORCH;
+	localparam S_V_SYNC 		= `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_LOCALPARAM_S_V_SYNC;
+	localparam S_V_BACK_PORCH 	= `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_LOCALPARAM_S_V_BACK_PORCH;
+	localparam S_V_VALID 		= `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_LOCALPARAM_S_V_VALID;
+	localparam S_V_FRONT_PORCH 	= `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_LOCALPARAM_S_V_FRONT_PORCH;
+	localparam FIFO_ADDR_WIDTH   = `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_LOCALPARAM_FIFO_ADDR_WIDTH ;
 	
 	wire									fifo_wr_rst ;
-	wire	[FIFO_ADDR_WIDTH:0] 					wrusedw;
+	wire	[`CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_RANGE_3] 					wrusedw;
 	//wire 
-	wire	[DATA_WIDTH-1:0] fifo_rd_data;
+	wire	[`CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_RANGE_4] fifo_rd_data;
 	wire										fifo_rd_en;
 	wire									fifo_rd_empty;
-	reg	[1:0] 						h_state = S_H_FRONT_PORCH;
-	reg	[1:0] 						v_state = S_V_FRONT_PORCH;
-	reg	[12:0] 						h_cnt = 0;
-	reg	[12:0] 						v_cnt = 0;
+	reg	[`CFG_BITS_2-1:0] 						h_state = S_H_FRONT_PORCH;
+	reg	[`CFG_BITS_2-1:0] 						v_state = S_V_FRONT_PORCH;
+	reg	[`CFG_BITS_13-1:0] 						h_cnt = 0;
+	reg	[`CFG_BITS_13-1:0] 						v_cnt = 0;
 	reg										frame_start_d0 = 1'b0;
 	reg										frame_start_d1 = 1'b0;
 	// wire									pos_frame_start;
@@ -85,9 +86,9 @@
 	reg										v_back_porch_flag = 1'b0;
 	wire									fifo_rst					;
 	wire									pos_fifo_rd_period;
-	reg [3:0] 								sync_frame_start;
+	reg [`CFG_BITS_4-1:0] 								sync_frame_start;
 	reg										fifo_rd_period_d0 = 1'b0;
-	reg [15:0] axi_v_cnt = 'd0;
+	reg [`CFG_BITS_16-1:0] axi_v_cnt = 'd0;
 	reg   		axi_en = 'd0;
 	reg										fifo_wr_almost_full = 'd0;
 //==========================================================
@@ -135,9 +136,9 @@
 
 DC_FIFO
 # (
-  	.FIFO_MODE  ( "Normal"        	), //"Normal"; //"ShowAhead"
-    .DATA_WIDTH ( DATA_WIDTH        ),
-    .FIFO_DEPTH ( FIFO_DEPTH        )//,
+    .FIFO_MODE  ( `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_INST_U_RD_FIFO_FIFO_MODE        	), //"Normal"; //"ShowAhead"
+    .DATA_WIDTH ( `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_INST_U_RD_FIFO_DATA_WIDTH        ),
+    .FIFO_DEPTH ( `CFG_FRAME_BUFFER_V4_USER_CVO_AXI_V1_CVO_AXI_V1_V_INST_U_RD_FIFO_FIFO_DEPTH        )//,
 
   ) u_rd_fifo(   
   //System Signal

@@ -1,36 +1,37 @@
+`include "../defines.v"
 // See Section 8.2.1
 module auxiliary_video_information_info_frame
 #(
-    parameter bit [1:0] VIDEO_FORMAT = 2'b00, // 00 = RGB, 01 = YCbCr 4:2:2, 10 = YCbCr 4:4:4
-    parameter bit ACTIVE_FORMAT_INFO_PRESENT = 1'b0, // Not valid
-    parameter bit [1:0] BAR_INFO = 2'b00, // Not valid
-    parameter bit [1:0] SCAN_INFO = 2'b00, // No data
-    parameter bit [1:0] COLORIMETRY = 2'b00, // No data
-    parameter bit [1:0] PICTURE_ASPECT_RATIO = 2'b00, // No data, See CEA-CEB16 for more information about Active Format Description processing.
-    parameter bit [3:0] ACTIVE_FORMAT_ASPECT_RATIO = 4'b1000, // Not valid unless ACTIVE_FORMAT_INFO_PRESENT = 1'b1, then Same as picture aspect ratio
-    parameter bit IT_CONTENT = 1'b0, //  The IT content bit indicates when picture content is composed according to common IT practice (i.e. without regard to Nyquist criterion) and is unsuitable for analog reconstruction or filtering. When the IT content bit is set to 1, downstream processors should pass pixel data unfiltered and without analog reconstruction.
-    parameter bit [2:0] EXTENDED_COLORIMETRY = 3'b000, // Not valid unless COLORIMETRY = 2'b11. The extended colorimetry bits, EC2, EC1, and EC0, describe optional colorimetry encoding that may be applicable to some implementations and are always present, whether their information is valid or not (see CEA 861-D Section 7.5.5).
-    parameter bit [1:0] RGB_QUANTIZATION_RANGE = 2'b00, // Default. Displays conforming to CEA-861-D accept both a limited quantization range of 220 levels (16 to 235) anda full range of 256 levels (0 to 255) when receiving video with RGB color space (see CEA 861-D Sections 5.1, Section 5.2, Section 5.3 and Section 5.4). By default, RGB pixel data values should be assumed to have the limited range when receiving a CE video format, and the full range when receiving an IT format. The quantization bits allow the source to override this default and to explicitly indicate the current RGB quantization range.
-    parameter bit [1:0] NON_UNIFORM_PICTURE_SCALING = 2'b00, // None. The Nonuniform Picture Scaling bits shall be set if the source device scales the picture or has determined that scaling has been performed in a specific direction.
-    parameter int       VIDEO_ID_CODE = 4, // Same as the one from the HDMI module
-    parameter bit [1:0] YCC_QUANTIZATION_RANGE = 2'b00, // 00 = Limited, 01 = Full
-    parameter bit [1:0] CONTENT_TYPE = 2'b00, // No data, becomes Graphics if IT_CONTENT = 1'b1.
-    parameter bit [3:0] PIXEL_REPETITION = 4'b0000 // None
+    parameter bit [`CFG_BITS_2-1:0] VIDEO_FORMAT = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_VIDEO_FORMAT, // 00 = RGB, 01 = YCbCr 4:2:2, 10 = YCbCr 4:4:4
+    parameter bit ACTIVE_FORMAT_INFO_PRESENT = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_ACTIVE_FORMAT_INFO_PRESENT, // Not valid
+    parameter bit [`CFG_BITS_2-1:0] BAR_INFO = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_BAR_INFO, // Not valid
+    parameter bit [`CFG_BITS_2-1:0] SCAN_INFO = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_SCAN_INFO, // No data
+    parameter bit [`CFG_BITS_2-1:0] COLORIMETRY = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_COLORIMETRY, // No data
+    parameter bit [`CFG_BITS_2-1:0] PICTURE_ASPECT_RATIO = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_PICTURE_ASPECT_RATIO, // No data, See CEA-CEB16 for more information about Active Format Description processing.
+    parameter bit [`CFG_BITS_4-1:0] ACTIVE_FORMAT_ASPECT_RATIO = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_ACTIVE_FORMAT_ASPECT_RATIO, // Not valid unless ACTIVE_FORMAT_INFO_PRESENT = 1'b1, then Same as picture aspect ratio
+    parameter bit IT_CONTENT = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_IT_CONTENT, //  The IT content bit indicates when picture content is composed according to common IT practice (i.e. without regard to Nyquist criterion) and is unsuitable for analog reconstruction or filtering. When the IT content bit is set to 1, downstream processors should pass pixel data unfiltered and without analog reconstruction.
+    parameter bit [`CFG_BITS_3-1:0] EXTENDED_COLORIMETRY = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_EXTENDED_COLORIMETRY, // Not valid unless COLORIMETRY = 2'b11. The extended colorimetry bits, EC2, EC1, and EC0, describe optional colorimetry encoding that may be applicable to some implementations and are always present, whether their information is valid or not (see CEA 861-D Section 7.5.5).
+    parameter bit [`CFG_BITS_2-1:0] RGB_QUANTIZATION_RANGE = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_RGB_QUANTIZATION_RANGE, // Default. Displays conforming to CEA-861-D accept both a limited quantization range of 220 levels (16 to 235) anda full range of 256 levels (0 to 255) when receiving video with RGB color space (see CEA 861-D Sections 5.1, Section 5.2, Section 5.3 and Section 5.4). By default, RGB pixel data values should be assumed to have the limited range when receiving a CE video format, and the full range when receiving an IT format. The quantization bits allow the source to override this default and to explicitly indicate the current RGB quantization range.
+    parameter bit [`CFG_BITS_2-1:0] NON_UNIFORM_PICTURE_SCALING = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_NON_UNIFORM_PICTURE_SCALING, // None. The Nonuniform Picture Scaling bits shall be set if the source device scales the picture or has determined that scaling has been performed in a specific direction.
+    parameter int       VIDEO_ID_CODE = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_VIDEO_ID_CODE, // Same as the one from the HDMI module
+    parameter bit [`CFG_BITS_2-1:0] YCC_QUANTIZATION_RANGE = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_YCC_QUANTIZATION_RANGE, // 00 = Limited, 01 = Full
+    parameter bit [`CFG_BITS_2-1:0] CONTENT_TYPE = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_CONTENT_TYPE, // No data, becomes Graphics if IT_CONTENT = 1'b1.
+    parameter bit [`CFG_BITS_4-1:0] PIXEL_REPETITION = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_PARAMETER_PIXEL_REPETITION // None
 )
 (
-    input  logic [ 1:0] video_format,
-    input  logic [ 6:0] video_VIC,
-    output logic [23:0] header,
-    output logic [55:0] sub0,
-    output logic [55:0] sub1,
-    output logic [55:0] sub2,
-    output logic [55:0] sub3
+    input  logic [ `CFG_BITS_2-1:0] video_format,
+    input  logic [ `CFG_BITS_7-1:0] video_VIC,
+    output logic [`CFG_BITS_24-1:0] header,
+    output logic [`CFG_BITS_56-1:0] sub0,
+    output logic [`CFG_BITS_56-1:0] sub1,
+    output logic [`CFG_BITS_56-1:0] sub2,
+    output logic [`CFG_BITS_56-1:0] sub3
 );
 
 
-localparam bit [4:0] LENGTH = 5'd13;
-localparam bit [7:0] VERSION = 8'd2;
-localparam bit [6:0] TYPE = 7'd2;
+localparam bit [`CFG_BITS_5-1:0] LENGTH = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_LOCALPARAM_LENGTH;
+localparam bit [`CFG_BITS_8-1:0] VERSION = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_LOCALPARAM_VERSION;
+localparam bit [`CFG_BITS_7-1:0] TYPE = `CFG_DVI_TX_AUXILIARY_VIDEO_INFORMATION_INFO_FRAME_SV_LOCALPARAM_TYPE;
 
 //Encryption begin
 /*----------------------------------------------------------------------------------*\
@@ -43,8 +44,8 @@ assign header = {{3'b0, LENGTH}, VERSION, {1'b1, TYPE}};
 // PB7-13 =  sub1
 // PB14-20 = sub2
 // PB21-27 = sub3
-logic [7:0] packet_bytes [27:0];
-logic [55:0] sub [3:0];
+logic [`CFG_BITS_8-1:0] packet_bytes [`CFG_BITS_28-1:0];
+logic [`CFG_BITS_56-1:0] sub [`CFG_BITS_4-1:0];
 assign packet_bytes[0] = 8'd1 + ~(header[23:16] + header[15:8] + header[7:0] + packet_bytes[13] + packet_bytes[12] + packet_bytes[11] + packet_bytes[10] + packet_bytes[9] + packet_bytes[8] + packet_bytes[7] + packet_bytes[6] + packet_bytes[5] + packet_bytes[4] + packet_bytes[3] + packet_bytes[2] + packet_bytes[1]);
 assign packet_bytes[1] = {1'b0, video_format, ACTIVE_FORMAT_INFO_PRESENT, BAR_INFO, SCAN_INFO};
 assign packet_bytes[2] = {COLORIMETRY, PICTURE_ASPECT_RATIO, ACTIVE_FORMAT_ASPECT_RATIO};

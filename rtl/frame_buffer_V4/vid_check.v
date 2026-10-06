@@ -1,3 +1,4 @@
+`include "../defines.v"
 
 module vid_check(
 input wire clk,
@@ -5,14 +6,14 @@ input wire rst_n,
 input wire i_hs,
 input wire i_vs,
 input wire i_de,
-input wire [23:0] vin,
+input wire [`CFG_BITS_24-1:0] vin,
 output reg check_fail
 
 );
 
 reg vs_r0 = 1'b0;
 reg vs_r1 = 1'b0;
-reg [23:0] check_data = 'd0;
+reg [`CFG_BITS_24-1:0] check_data = 'd0;
 always @( posedge clk )
 begin
     vs_r0 <= i_vs;

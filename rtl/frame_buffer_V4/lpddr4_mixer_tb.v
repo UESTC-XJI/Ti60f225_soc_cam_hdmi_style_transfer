@@ -1,86 +1,87 @@
+`include "../defines.v"
 `timescale 1 ns / 1 ns
 
 module lpddr4_mixer_tb;
 
  /////////////   
-parameter   AXI_DATA_WIDTH    = 128               ; //AXI Data Width(Bit)
+parameter   AXI_DATA_WIDTH    = `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_PARAMETER_AXI_DATA_WIDTH               ; //AXI Data Width(Bit)
   
-parameter   DDR_WRITE_FIRST   = 1'h1              ; //1:Write First ; 0: Read First   
-parameter   AXI_ID_WIDTH    =   8         ;
-localparam   AXI0_WR_ID        = 8'haa           ; //AXI Write ID
-localparam   AXI0_RD_ID        = 8'h55           ; //AXI Read ID	
-localparam   AXI_ADDR_WIDTH 	= 32;//Address Width    
+parameter   DDR_WRITE_FIRST   = `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_PARAMETER_DDR_WRITE_FIRST              ; //1:Write First ; 0: Read First
+parameter   AXI_ID_WIDTH    =   `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_PARAMETER_AXI_ID_WIDTH         ;
+localparam   AXI0_WR_ID        = `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_LOCALPARAM_AXI0_WR_ID           ; //AXI Write ID
+localparam   AXI0_RD_ID        = `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_LOCALPARAM_AXI0_RD_ID           ; //AXI Read ID
+localparam   AXI_ADDR_WIDTH 	= `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_LOCALPARAM_AXI_ADDR_WIDTH;//Address Width
 
-localparam H_FP   	      = 13'd88 	;//	
-localparam H_SYNC 	 		  = 13'd44 	;//
-localparam H_VALID 	 	  	= 13'd199  ;//
-localparam H_BP  	        = 13'd148   ;// 	
-localparam V_FP   	      = 13'd4 	;//	
-localparam V_SYNC 	 	    = 13'd5 	;//
-localparam V_VALID 	 	  	= 13'd9  ;//
-localparam V_BP  	        = 13'd36 	;//	
+localparam H_FP   	      = `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_LOCALPARAM_H_FP 	;//
+localparam H_SYNC 	 		  = `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_LOCALPARAM_H_SYNC 	;//
+localparam H_VALID 	 	  	= `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_LOCALPARAM_H_VALID  ;//
+localparam H_BP  	        = `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_LOCALPARAM_H_BP   ;//
+localparam V_FP   	      = `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_LOCALPARAM_V_FP 	;//
+localparam V_SYNC 	 	    = `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_LOCALPARAM_V_SYNC 	;//
+localparam V_VALID 	 	  	= `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_LOCALPARAM_V_VALID  ;//
+localparam V_BP  	        = `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_LOCALPARAM_V_BP 	;//
 
-localparam WR_FIFO_DEPTH  = 1024;
-localparam RD_FIFO_DEPTH  = 1024;
+localparam WR_FIFO_DEPTH  = `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_LOCALPARAM_WR_FIFO_DEPTH;
+localparam RD_FIFO_DEPTH  = `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_LOCALPARAM_RD_FIFO_DEPTH;
 
 wire  axi0_ARQOS;         
 wire  axi0_AWQOS;         
-wire  [5:0] axi0_AWID;    
-wire  [32:0] axi0_AWADDR; 
-wire  [7:0] axi0_AWLEN;   
-wire  [2:0] axi0_AWSIZE;  
-wire  [1:0] axi0_AWBURST; 
+wire  [`CFG_BITS_6-1:0] axi0_AWID;
+wire  [`CFG_BITS_33-1:0] axi0_AWADDR;
+wire  [`CFG_BITS_8-1:0] axi0_AWLEN;
+wire  [`CFG_BITS_3-1:0] axi0_AWSIZE;
+wire  [`CFG_BITS_2-1:0] axi0_AWBURST;
 wire  axi0_AWVALID;       
-wire  [3:0] axi0_AWCACHE; 
+wire  [`CFG_BITS_4-1:0] axi0_AWCACHE;
 wire  axi0_AWCOBUF;       
 wire  axi0_AWLOCK;        
 wire  axi0_AWAPCMD;       
 wire  axi0_AWALLSTRB;     
-wire  [5:0] axi0_ARID;   
-wire  [32:0] axi0_ARADDR; 
-wire  [7:0] axi0_ARLEN;   
-wire  [2:0] axi0_ARSIZE;  
-wire  [1:0] axi0_ARBURST; 
+wire  [`CFG_BITS_6-1:0] axi0_ARID;
+wire  [`CFG_BITS_33-1:0] axi0_ARADDR;
+wire  [`CFG_BITS_8-1:0] axi0_ARLEN;
+wire  [`CFG_BITS_3-1:0] axi0_ARSIZE;
+wire  [`CFG_BITS_2-1:0] axi0_ARBURST;
 wire  axi0_ARVALID;       
 wire  axi0_ARLOCK;        
 wire  axi0_ARAPCMD;       
 wire  axi0_WLAST;         
 wire  axi0_WVALID;        
-wire  [511:0] axi0_WDATA; 
-wire  [63:0] axi0_WSTRB;  
+wire  [`CFG_BITS_512-1:0] axi0_WDATA;
+wire  [`CFG_BITS_64-1:0] axi0_WSTRB;
 wire  axi0_BREADY;        
 wire  axi0_RREADY;        
 wire axi0_AWREADY;        
 wire axi0_ARREADY;        
 wire axi0_WREADY;         
-wire [5:0] axi0_BID;      
-wire [1:0] axi0_BRESP;    
+wire [`CFG_BITS_6-1:0] axi0_BID;
+wire [`CFG_BITS_2-1:0] axi0_BRESP;
 wire axi0_BVALID;         
-wire [5:0] axi0_RID;      
+wire [`CFG_BITS_6-1:0] axi0_RID;
 wire axi0_RLAST;          
 wire axi0_RVALID;         
-wire [511:0] axi0_RDATA;  
-wire [1:0] axi0_RRESP;   
+wire [`CFG_BITS_512-1:0] axi0_RDATA;
+wire [`CFG_BITS_2-1:0] axi0_RRESP;
 
   //Ports
   reg  clk= 0;
   reg  rst_n = 0;
-  wire [7:0] i_rdata;
-  wire [7:0] i_gdata;
-  wire [7:0] i_bdata;
+  wire [`CFG_BITS_8-1:0] i_rdata;
+  wire [`CFG_BITS_8-1:0] i_gdata;
+  wire [`CFG_BITS_8-1:0] i_bdata;
 
   wire  hs;
   wire  vs;
   wire  de;
 
-  wire [7:0] rgb_r;
-  wire [7:0] rgb_g;
-  wire [7:0] rgb_b;
+  wire [`CFG_BITS_8-1:0] rgb_r;
+  wire [`CFG_BITS_8-1:0] rgb_g;
+  wire [`CFG_BITS_8-1:0] rgb_b;
 
   
-  wire [7:0] 	ch0_r;
-  wire [7:0]    ch0_g;
-  wire [7:0]    ch0_b;
+  wire [`CFG_BITS_8-1:0] 	ch0_r;
+  wire [`CFG_BITS_8-1:0]    ch0_g;
+  wire [`CFG_BITS_8-1:0]    ch0_b;
   wire ch0_vs;
   wire ch0_hs;
   wire ch0_de;
@@ -89,7 +90,7 @@ wire                    fb_m_axis_tuser ;
 wire                    fb_m_axis_tvalid;
 wire                    fb_m_axis_tready;
 wire                    fb_m_axis_tlast ;
-wire  [16-1:0] fb_m_axis_tdata ;
+wire  [`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_RANGE_1] fb_m_axis_tdata ;
 wire            fifo_rd_period;
 reg rd_start = 'd0;
   always #10 clk = !clk;
@@ -106,18 +107,18 @@ reg rd_start = 'd0;
   end
 
 color_bar_rgb # (
-  .HS_POLORY(1'b1),
-  .VS_POLORY(1'b1),
-  .NUM_OF_PIXERS_PER_CLOCK(1),
-  .H_FRONT_PORCH(H_FP),
-  .H_SYNC(H_SYNC),
-  .H_VALID(H_VALID),
-  .H_BACK_PORCH(H_BP),
-  .V_FRONT_PORCH(V_FP),
-  .V_SYNC(V_SYNC),
-  .V_VALID(V_VALID),
-  .V_BACK_PORCH(V_BP),
-  .TEST_MODE(0)
+  .HS_POLORY(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_COLOR_BAR_RGB_INST_HS_POLORY),
+  .VS_POLORY(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_COLOR_BAR_RGB_INST_VS_POLORY),
+  .NUM_OF_PIXERS_PER_CLOCK(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_COLOR_BAR_RGB_INST_NUM_OF_PIXERS_PER_CLOCK),
+  .H_FRONT_PORCH(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_COLOR_BAR_RGB_INST_H_FRONT_PORCH),
+  .H_SYNC(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_COLOR_BAR_RGB_INST_H_SYNC),
+  .H_VALID(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_COLOR_BAR_RGB_INST_H_VALID),
+  .H_BACK_PORCH(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_COLOR_BAR_RGB_INST_H_BACK_PORCH),
+  .V_FRONT_PORCH(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_COLOR_BAR_RGB_INST_V_FRONT_PORCH),
+  .V_SYNC(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_COLOR_BAR_RGB_INST_V_SYNC),
+  .V_VALID(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_COLOR_BAR_RGB_INST_V_VALID),
+  .V_BACK_PORCH(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_COLOR_BAR_RGB_INST_V_BACK_PORCH),
+  .TEST_MODE(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_COLOR_BAR_RGB_INST_TEST_MODE)
 )
 color_bar_rgb_inst (
   .clk(clk),
@@ -140,19 +141,19 @@ color_bar_rgb_inst (
 
 
 frame_buffer #(
-.I_VID_WIDTH (16),
-.O_VID_WIDTH (16),
-.START_ADDR     (32'h00120        ),
-.FB_NUM			    (3),   
-.MAX_VID_WIDTH  (1920),		
-.MAX_VID_HIGHT	(1080)	,
-.BURST_LEN  	(63),
-.AXI_DATA_WIDTH ( AXI_DATA_WIDTH	),
-.AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH	),
-.WR_FIFO_DEPTH	( WR_FIFO_DEPTH		),    
-.RD_FIFO_DEPTH 	( RD_FIFO_DEPTH 	),
-.O_FRAME_WIDTH (199),
-.O_FRAME_HEIGHT(9)
+.I_VID_WIDTH (`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_CHECKER0_I_VID_WIDTH),
+.O_VID_WIDTH (`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_CHECKER0_O_VID_WIDTH),
+.START_ADDR     (`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_CHECKER0_START_ADDR        ),
+.FB_NUM			    (`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_CHECKER0_FB_NUM),
+.MAX_VID_WIDTH  (`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_CHECKER0_MAX_VID_WIDTH),
+.MAX_VID_HIGHT	(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_CHECKER0_MAX_VID_HIGHT)	,
+.BURST_LEN  	(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_CHECKER0_BURST_LEN),
+.AXI_DATA_WIDTH ( `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_CHECKER0_AXI_DATA_WIDTH	),
+.AXI_ADDR_WIDTH ( `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_CHECKER0_AXI_ADDR_WIDTH	),
+.WR_FIFO_DEPTH	( `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_CHECKER0_WR_FIFO_DEPTH		),
+.RD_FIFO_DEPTH 	( `CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_CHECKER0_RD_FIFO_DEPTH 	),
+.O_FRAME_WIDTH (`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_CHECKER0_O_FRAME_WIDTH),
+.O_FRAME_HEIGHT(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_CHECKER0_O_FRAME_HEIGHT)
 )checker0(
     .axi_clk(axi0_ACLK),
     .rst_n(rst_n),
@@ -213,14 +214,14 @@ frame_buffer #(
 
   
 vout_display_pro  #(
-    .BLUE_Y(8'd190),
-    .BLUE_CB(8'd190),
-    .BLUE_CR(8'd190),
-    .SYMBOL_WIDTH(8),
-    .SYMBOL_NUM(3),
-    .PAR_PIXEL_NUM(1),
-    .MAX_WIDTH(3840),
-    .MAX_HEIGTH(2160)
+    .BLUE_Y(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_VOUT_DISPLAY_PRO_INST_BLUE_Y),
+    .BLUE_CB(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_VOUT_DISPLAY_PRO_INST_BLUE_CB),
+    .BLUE_CR(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_VOUT_DISPLAY_PRO_INST_BLUE_CR),
+    .SYMBOL_WIDTH(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_VOUT_DISPLAY_PRO_INST_SYMBOL_WIDTH),
+    .SYMBOL_NUM(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_VOUT_DISPLAY_PRO_INST_SYMBOL_NUM),
+    .PAR_PIXEL_NUM(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_VOUT_DISPLAY_PRO_INST_PAR_PIXEL_NUM),
+    .MAX_WIDTH(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_VOUT_DISPLAY_PRO_INST_MAX_WIDTH),
+    .MAX_HEIGTH(`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_VOUT_DISPLAY_PRO_INST_MAX_HEIGTH)
 )vout_display_pro_inst (
     .rst_n(rst_n),
     .dp_clk(clk),
@@ -297,10 +298,10 @@ vid_check  u_vid_check(
 
 axi_ram #
 (
-    .DATA_WIDTH            (AXI_DATA_WIDTH       ),
-    .ADDR_WIDTH            (20       ),
-    .ID_WIDTH              (6            ),
-    .PIPELINE_OUTPUT       (0            )
+    .DATA_WIDTH            (`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_U_AXI_RAM_DATA_WIDTH       ),
+    .ADDR_WIDTH            (`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_U_AXI_RAM_ADDR_WIDTH       ),
+    .ID_WIDTH              (`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_U_AXI_RAM_ID_WIDTH            ),
+    .PIPELINE_OUTPUT       (`CFG_FRAME_BUFFER_V4_LPDDR4_MIXER_TB_V_INST_U_AXI_RAM_PIPELINE_OUTPUT            )
 )                                        
 u_axi_ram
 (

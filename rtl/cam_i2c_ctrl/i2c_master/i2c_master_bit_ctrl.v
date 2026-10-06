@@ -1,3 +1,4 @@
+`include "../../defines.v"
 // (C) 2001-2016 Intel Corporation. All rights reserved.
 // Your use of Intel Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
@@ -157,9 +158,9 @@ module i2c_master_bit_ctrl(
 	input nReset;
 	input ena;            // core enable signal
 
-	input [15:0] clk_cnt; // clock prescale value
+	input [`CFG_BITS_16-1:0] clk_cnt; // clock prescale value
 
-	input  [3:0] cmd;
+	input  [`CFG_BITS_4-1:0] cmd;
 	output       cmd_ack; // command complete acknowledge
 	reg cmd_ack;
 	output       busy;    // i2c bus busy
@@ -192,10 +193,10 @@ module i2c_master_bit_ctrl(
 	reg clk_en;                 // clock generation signals
 	wire slave_wait;
 //	reg [15:0] cnt = clk_cnt;   // clock divider counter (simulation)
-	reg [15:0] cnt;             // clock divider counter (synthesis)
+	reg [`CFG_BITS_16-1:0] cnt;             // clock divider counter (synthesis)
 
 	// state machine variable
-	reg [16:0] c_state; // synopsys enum_state
+	reg [`CFG_BITS_17-1:0] c_state; // synopsys enum_state
 
 	//
 	// module body
@@ -329,24 +330,24 @@ module i2c_master_bit_ctrl(
 	// generate statemachine
 
 	// nxt_state decoder
-	parameter [16:0] idle    = 17'b0_0000_0000_0000_0000;
-	parameter [16:0] start_a = 17'b0_0000_0000_0000_0001;
-	parameter [16:0] start_b = 17'b0_0000_0000_0000_0010;
-	parameter [16:0] start_c = 17'b0_0000_0000_0000_0100;
-	parameter [16:0] start_d = 17'b0_0000_0000_0000_1000;
-	parameter [16:0] start_e = 17'b0_0000_0000_0001_0000;
-	parameter [16:0] stop_a  = 17'b0_0000_0000_0010_0000;
-	parameter [16:0] stop_b  = 17'b0_0000_0000_0100_0000;
-	parameter [16:0] stop_c  = 17'b0_0000_0000_1000_0000;
-	parameter [16:0] stop_d  = 17'b0_0000_0001_0000_0000;
-	parameter [16:0] rd_a    = 17'b0_0000_0010_0000_0000;
-	parameter [16:0] rd_b    = 17'b0_0000_0100_0000_0000;
-	parameter [16:0] rd_c    = 17'b0_0000_1000_0000_0000;
-	parameter [16:0] rd_d    = 17'b0_0001_0000_0000_0000;
-	parameter [16:0] wr_a    = 17'b0_0010_0000_0000_0000;
-	parameter [16:0] wr_b    = 17'b0_0100_0000_0000_0000;
-	parameter [16:0] wr_c    = 17'b0_1000_0000_0000_0000;
-	parameter [16:0] wr_d    = 17'b1_0000_0000_0000_0000;
+	parameter [`CFG_BITS_17-1:0] idle    = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_IDLE;
+	parameter [`CFG_BITS_17-1:0] start_a = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_START_A;
+	parameter [`CFG_BITS_17-1:0] start_b = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_START_B;
+	parameter [`CFG_BITS_17-1:0] start_c = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_START_C;
+	parameter [`CFG_BITS_17-1:0] start_d = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_START_D;
+	parameter [`CFG_BITS_17-1:0] start_e = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_START_E;
+	parameter [`CFG_BITS_17-1:0] stop_a  = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_STOP_A;
+	parameter [`CFG_BITS_17-1:0] stop_b  = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_STOP_B;
+	parameter [`CFG_BITS_17-1:0] stop_c  = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_STOP_C;
+	parameter [`CFG_BITS_17-1:0] stop_d  = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_STOP_D;
+	parameter [`CFG_BITS_17-1:0] rd_a    = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_RD_A;
+	parameter [`CFG_BITS_17-1:0] rd_b    = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_RD_B;
+	parameter [`CFG_BITS_17-1:0] rd_c    = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_RD_C;
+	parameter [`CFG_BITS_17-1:0] rd_d    = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_RD_D;
+	parameter [`CFG_BITS_17-1:0] wr_a    = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_WR_A;
+	parameter [`CFG_BITS_17-1:0] wr_b    = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_WR_B;
+	parameter [`CFG_BITS_17-1:0] wr_c    = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_WR_C;
+	parameter [`CFG_BITS_17-1:0] wr_d    = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BIT_CTRL_V_PARAMETER_WR_D;
 
 	always @(posedge clk or negedge nReset)
 	  if (!nReset)

@@ -1,3 +1,4 @@
+`include "defines.v"
 /////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2013-2018 Efinix Inc. All rights reserved.
@@ -12,32 +13,32 @@
 
 module dual_clock_fifo_wrapper
 #(
-	parameter	DATA_WIDTH		= 8,
-	parameter	ADDR_WIDTH		= 8,
-	parameter	LATENCY			= 1,
-	parameter	FIFO_MODE		= "STD_FIFO",
-	parameter	RAM_INIT_FILE	= "",
+	parameter	DATA_WIDTH		= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_DATA_WIDTH,
+	parameter	ADDR_WIDTH		= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_ADDR_WIDTH,
+	parameter	LATENCY			= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_LATENCY,
+	parameter	FIFO_MODE		= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_FIFO_MODE,
+	parameter	RAM_INIT_FILE	= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_RAM_INIT_FILE,
 	/////////////////////////////////////////////////////////////////////////////////////
 	// compatibility	output_reg			check_full_overflow		check_empty_underflow
 	/////////////////////////////////////////////////////////////////////////////////////
 	// E				user configurable	user configurable		user configurable
 	// X				user configurable	always on				always on
 	// A				always off			user configurable		user configurable
-	parameter	COMPATIBILITY	= "E",
-	parameter	OUTPUT_REG		= "TRUE",
-	parameter	CHECK_FULL		= "TRUE",
-	parameter	CHECK_EMPTY		= "TRUE",
-	parameter	AFULL_THRESHOLD	= 2**ADDR_WIDTH-1,
-	parameter	AEMPTY_THRESHOLD= 1,
-	parameter	AFULL_OFFSET	= 2,
-	parameter	AEMPTY_OFFSET	= 2
+	parameter	COMPATIBILITY	= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_COMPATIBILITY,
+	parameter	OUTPUT_REG		= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_OUTPUT_REG,
+	parameter	CHECK_FULL		= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_CHECK_FULL,
+	parameter	CHECK_EMPTY		= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_CHECK_EMPTY,
+	parameter	AFULL_THRESHOLD	= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_AFULL_THRESHOLD,
+	parameter	AEMPTY_THRESHOLD= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_AEMPTY_THRESHOLD,
+	parameter	AFULL_OFFSET	= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_AFULL_OFFSET,
+	parameter	AEMPTY_OFFSET	= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_AEMPTY_OFFSET
 )
 (
 	input						i_arst,
 	
 	input						i_wclk,
 	input						i_we,
-	input	[DATA_WIDTH-1:0]	i_wdata,
+	input	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_1]	i_wdata,
 	
 	input						i_rclk,
 	input						i_re,
@@ -45,27 +46,27 @@ module dual_clock_fifo_wrapper
 	
 	output						o_full,
 	output						o_empty,
-	output	[DATA_WIDTH-1:0]	o_rdata,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_2]	o_rdata,
 	
 	output						o_afull,
-	output	[ADDR_WIDTH-1:0]	o_wcnt,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_3]	o_wcnt,
 	output						o_aempty,
-	output	[ADDR_WIDTH-1:0]	o_rcnt,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_4]	o_rcnt,
 	
 	output						o_dbg_w_re,
 	
-	output	[ADDR_WIDTH:0]		o_dbg_w_waddrb_1P,
-	output	[ADDR_WIDTH-1:0]	o_dbg_w_waddrg_1P,
-	output	[ADDR_WIDTH:0]		o_dbg_r_waddrb_1P,
-	output	[ADDR_WIDTH-1:0]	o_dbg_r_waddrg_1P,
-	output	[ADDR_WIDTH-1:0]	o_dbg_r_waddrg_2P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_5]		o_dbg_w_waddrb_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_6]	o_dbg_w_waddrg_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_7]		o_dbg_r_waddrb_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_8]	o_dbg_r_waddrg_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_9]	o_dbg_r_waddrg_2P,
 	output						o_dbg_r_wflag_1P,
 	
-	output	[ADDR_WIDTH:0]		o_dbg_w_raddrb_1P,
-	output	[ADDR_WIDTH-1:0]	o_dbg_w_raddrg_1P,
-	output	[ADDR_WIDTH:0]		o_dbg_r_raddrb_1P,
-	output	[ADDR_WIDTH-1:0]	o_dbg_r_raddrg_1P,
-	output	[ADDR_WIDTH-1:0]	o_dbg_r_raddrg_2P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_10]		o_dbg_w_raddrb_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_11]	o_dbg_w_raddrg_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_12]		o_dbg_r_raddrb_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_13]	o_dbg_r_raddrg_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_14]	o_dbg_r_raddrg_2P,
 	output						o_dbg_r_rflag_1P,
 	output						o_dbg_r_rflag_2P
 );
@@ -77,19 +78,19 @@ generate
 		begin
 			dual_clock_fifo
 			#(
-				.DATA_WIDTH			(DATA_WIDTH),
-				.ADDR_WIDTH			(ADDR_WIDTH),
-				.LATENCY			(LATENCY+4),
-				.FIFO_MODE			(FIFO_MODE),
-				.RAM_INIT_FILE		(RAM_INIT_FILE),
-				.COMPATIBILITY		(COMPATIBILITY),
-				.OUTPUT_REG			("FALSE"),
-				.CHECK_FULL			("TRUE"),
-				.CHECK_EMPTY		("TRUE"),
-				.AFULL_THRESHOLD	(AFULL_THRESHOLD),
-				.AEMPTY_THRESHOLD	(AEMPTY_THRESHOLD),
-				.AFULL_OFFSET		(AFULL_OFFSET),
-				.AEMPTY_OFFSET		(AEMPTY_OFFSET)
+				.DATA_WIDTH			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_DATA_WIDTH),
+				.ADDR_WIDTH			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_ADDR_WIDTH),
+				.LATENCY			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_LATENCY),
+				.FIFO_MODE			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_FIFO_MODE),
+				.RAM_INIT_FILE		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_RAM_INIT_FILE),
+				.COMPATIBILITY		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_COMPATIBILITY),
+				.OUTPUT_REG			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_OUTPUT_REG),
+				.CHECK_FULL			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_CHECK_FULL),
+				.CHECK_EMPTY		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_CHECK_EMPTY),
+				.AFULL_THRESHOLD	(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AFULL_THRESHOLD),
+				.AEMPTY_THRESHOLD	(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AEMPTY_THRESHOLD),
+				.AFULL_OFFSET		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AFULL_OFFSET),
+				.AEMPTY_OFFSET		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AEMPTY_OFFSET)
 			)
 			inst_dual_clock_fifo
 			(
@@ -114,19 +115,19 @@ generate
 		begin
 			dual_clock_fifo
 			#(
-				.DATA_WIDTH			(DATA_WIDTH),
-				.ADDR_WIDTH			(ADDR_WIDTH),
-				.LATENCY			(LATENCY+2),
-				.FIFO_MODE			(FIFO_MODE),
-				.RAM_INIT_FILE		(RAM_INIT_FILE),
-				.COMPATIBILITY		(COMPATIBILITY),
-				.OUTPUT_REG			(OUTPUT_REG),
-				.CHECK_FULL			("TRUE"),
-				.CHECK_EMPTY		("TRUE"),
-				.AFULL_THRESHOLD	(AFULL_THRESHOLD),
-				.AEMPTY_THRESHOLD	(AEMPTY_THRESHOLD),
-				.AFULL_OFFSET		(AFULL_OFFSET),
-				.AEMPTY_OFFSET		(AEMPTY_OFFSET)
+				.DATA_WIDTH			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_DATA_WIDTH_2),
+				.ADDR_WIDTH			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_ADDR_WIDTH_2),
+				.LATENCY			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_LATENCY_2),
+				.FIFO_MODE			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_FIFO_MODE_2),
+				.RAM_INIT_FILE		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_RAM_INIT_FILE_2),
+				.COMPATIBILITY		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_COMPATIBILITY_2),
+				.OUTPUT_REG			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_OUTPUT_REG_2),
+				.CHECK_FULL			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_CHECK_FULL_2),
+				.CHECK_EMPTY		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_CHECK_EMPTY_2),
+				.AFULL_THRESHOLD	(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AFULL_THRESHOLD_2),
+				.AEMPTY_THRESHOLD	(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AEMPTY_THRESHOLD_2),
+				.AFULL_OFFSET		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AFULL_OFFSET_2),
+				.AEMPTY_OFFSET		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AEMPTY_OFFSET_2)
 			)
 			inst_dual_clock_fifo
 			(
@@ -152,19 +153,19 @@ generate
 	begin
 		dual_clock_fifo
 		#(
-			.DATA_WIDTH			(DATA_WIDTH),
-			.ADDR_WIDTH			(ADDR_WIDTH),
-			.LATENCY			(LATENCY),
-			.FIFO_MODE			(FIFO_MODE),
-			.RAM_INIT_FILE		(RAM_INIT_FILE),
-			.COMPATIBILITY		(COMPATIBILITY),
-			.OUTPUT_REG			("FALSE"),
-			.CHECK_FULL			(CHECK_FULL),
-			.CHECK_EMPTY		(CHECK_EMPTY),
-			.AFULL_THRESHOLD	(AFULL_THRESHOLD),
-			.AEMPTY_THRESHOLD	(AEMPTY_THRESHOLD),
-			.AFULL_OFFSET		(AFULL_OFFSET),
-			.AEMPTY_OFFSET		(AEMPTY_OFFSET)
+			.DATA_WIDTH			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_DATA_WIDTH_3),
+			.ADDR_WIDTH			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_ADDR_WIDTH_3),
+			.LATENCY			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_LATENCY_3),
+			.FIFO_MODE			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_FIFO_MODE_3),
+			.RAM_INIT_FILE		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_RAM_INIT_FILE_3),
+			.COMPATIBILITY		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_COMPATIBILITY_3),
+			.OUTPUT_REG			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_OUTPUT_REG_3),
+			.CHECK_FULL			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_CHECK_FULL_3),
+			.CHECK_EMPTY		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_CHECK_EMPTY_3),
+			.AFULL_THRESHOLD	(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AFULL_THRESHOLD_3),
+			.AEMPTY_THRESHOLD	(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AEMPTY_THRESHOLD_3),
+			.AFULL_OFFSET		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AFULL_OFFSET_3),
+			.AEMPTY_OFFSET		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AEMPTY_OFFSET_3)
 		)
 		inst_dual_clock_fifo
 		(
@@ -189,19 +190,19 @@ generate
 	begin
 		dual_clock_fifo
 		#(
-			.DATA_WIDTH			(DATA_WIDTH),
-			.ADDR_WIDTH			(ADDR_WIDTH),
-			.LATENCY			(LATENCY),
-			.FIFO_MODE			(FIFO_MODE),
-			.RAM_INIT_FILE		(RAM_INIT_FILE),
-			.COMPATIBILITY		(COMPATIBILITY),
-			.OUTPUT_REG			(OUTPUT_REG),
-			.CHECK_FULL			(CHECK_FULL),
-			.CHECK_EMPTY		(CHECK_EMPTY),
-			.AFULL_THRESHOLD	(AFULL_THRESHOLD),
-			.AEMPTY_THRESHOLD	(AEMPTY_THRESHOLD),
-			.AFULL_OFFSET		(AFULL_OFFSET),
-			.AEMPTY_OFFSET		(AEMPTY_OFFSET)
+			.DATA_WIDTH			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_DATA_WIDTH_4),
+			.ADDR_WIDTH			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_ADDR_WIDTH_4),
+			.LATENCY			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_LATENCY_4),
+			.FIFO_MODE			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_FIFO_MODE_4),
+			.RAM_INIT_FILE		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_RAM_INIT_FILE_4),
+			.COMPATIBILITY		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_COMPATIBILITY_4),
+			.OUTPUT_REG			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_OUTPUT_REG_4),
+			.CHECK_FULL			(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_CHECK_FULL_4),
+			.CHECK_EMPTY		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_CHECK_EMPTY_4),
+			.AFULL_THRESHOLD	(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AFULL_THRESHOLD_4),
+			.AEMPTY_THRESHOLD	(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AEMPTY_THRESHOLD_4),
+			.AFULL_OFFSET		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AFULL_OFFSET_4),
+			.AEMPTY_OFFSET		(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_DUAL_CLOCK_FIFO_AEMPTY_OFFSET_4)
 		)
 		inst_dual_clock_fifo
 		(
@@ -245,26 +246,26 @@ endmodule
 
 module dual_clock_fifo
 #(
-	parameter	DATA_WIDTH		= 8,
-	parameter	ADDR_WIDTH		= 8,
-	parameter	LATENCY			= 1,
-	parameter	FIFO_MODE		= "STD_FIFO",
-	parameter	RAM_INIT_FILE	= "",
-	parameter	COMPATIBILITY	= "E",
-	parameter	OUTPUT_REG		= "FALSE",
-	parameter	CHECK_FULL		= "TRUE",
-	parameter	CHECK_EMPTY		= "TRUE",
-	parameter	AFULL_THRESHOLD	= 2**ADDR_WIDTH-1,
-	parameter	AEMPTY_THRESHOLD= 1,
-	parameter	AFULL_OFFSET	= 2,
-	parameter	AEMPTY_OFFSET	= 2
+	parameter	DATA_WIDTH		= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_DATA_WIDTH_2,
+	parameter	ADDR_WIDTH		= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_ADDR_WIDTH_2,
+	parameter	LATENCY			= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_LATENCY_2,
+	parameter	FIFO_MODE		= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_FIFO_MODE_2,
+	parameter	RAM_INIT_FILE	= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_RAM_INIT_FILE_2,
+	parameter	COMPATIBILITY	= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_COMPATIBILITY_2,
+	parameter	OUTPUT_REG		= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_OUTPUT_REG_2,
+	parameter	CHECK_FULL		= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_CHECK_FULL_2,
+	parameter	CHECK_EMPTY		= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_CHECK_EMPTY_2,
+	parameter	AFULL_THRESHOLD	= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_AFULL_THRESHOLD_2,
+	parameter	AEMPTY_THRESHOLD= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_AEMPTY_THRESHOLD_2,
+	parameter	AFULL_OFFSET	= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_AFULL_OFFSET_2,
+	parameter	AEMPTY_OFFSET	= `CFG_DUAL_CLOCK_FIFO_V_PARAMETER_AEMPTY_OFFSET_2
 )
 (
 	input						i_arst,
 	
 	input						i_wclk,
 	input						i_we,
-	input	[DATA_WIDTH-1:0]	i_wdata,
+	input	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_15]	i_wdata,
 	
 	input						i_rclk,
 	input						i_re,
@@ -272,68 +273,68 @@ module dual_clock_fifo
 	
 	output						o_full,
 	output						o_empty,
-	output	[DATA_WIDTH-1:0]	o_rdata,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_16]	o_rdata,
 	
 	output						o_afull,
-	output	[ADDR_WIDTH-1:0]	o_wcnt,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_17]	o_wcnt,
 	output						o_aempty,
-	output	[ADDR_WIDTH-1:0]	o_rcnt,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_18]	o_rcnt,
 	
 	output						o_dbg_w_re,
 	
-	output	[ADDR_WIDTH:0]		o_dbg_w_waddrb_1P,
-	output	[ADDR_WIDTH-1:0]	o_dbg_w_waddrg_1P,
-	output	[ADDR_WIDTH:0]		o_dbg_r_waddrb_1P,
-	output	[ADDR_WIDTH-1:0]	o_dbg_r_waddrg_1P,
-	output	[ADDR_WIDTH-1:0]	o_dbg_r_waddrg_2P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_19]		o_dbg_w_waddrb_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_20]	o_dbg_w_waddrg_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_21]		o_dbg_r_waddrb_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_22]	o_dbg_r_waddrg_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_23]	o_dbg_r_waddrg_2P,
 	output						o_dbg_r_wflag_1P,
 	
-	output	[ADDR_WIDTH:0]		o_dbg_w_raddrb_1P,
-	output	[ADDR_WIDTH-1:0]	o_dbg_w_raddrg_1P,
-	output	[ADDR_WIDTH:0]		o_dbg_r_raddrb_1P,
-	output	[ADDR_WIDTH-1:0]	o_dbg_r_raddrg_1P,
-	output	[ADDR_WIDTH-1:0]	o_dbg_r_raddrg_2P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_24]		o_dbg_w_raddrb_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_25]	o_dbg_w_raddrg_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_26]		o_dbg_r_raddrb_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_27]	o_dbg_r_raddrg_1P,
+	output	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_28]	o_dbg_r_raddrg_2P,
 	output						o_dbg_r_rflag_1P,
 	output						o_dbg_r_rflag_2P
 );
 
-(* async_reg = "true" *)reg		[ADDR_WIDTH:0]	r_waddrb_1P;
+(* async_reg = "true" *)reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_29]	r_waddrb_1P;
 (* async_reg = "true" *)reg						r_wflag_1P;
-(* async_reg = "true" *)reg		[ADDR_WIDTH-1:0]r_waddrg_1P;
-(* async_reg = "true" *)reg		[ADDR_WIDTH-1:0]r_waddrg_2P;
+(* async_reg = "true" *)reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_30]r_waddrg_1P;
+(* async_reg = "true" *)reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_31]r_waddrg_2P;
 
-reg		[ADDR_WIDTH:0]r_raddrb_wclk_1P;
-reg		[ADDR_WIDTH:0]r_raddrb_wclk_neg;
-reg		[ADDR_WIDTH:0]wr_cnt;
+reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_32]r_raddrb_wclk_1P;
+reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_33]r_raddrb_wclk_neg;
+reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_34]wr_cnt;
 
-reg		[ADDR_WIDTH:0]r_waddrb_rclk_1P;
-reg		[ADDR_WIDTH:0]r_waddrb_rclk_neg;
-reg		[ADDR_WIDTH:0]rd_cnt;
+reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_35]r_waddrb_rclk_1P;
+reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_36]r_waddrb_rclk_neg;
+reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_37]rd_cnt;
 
 reg						r_we_1P;
 reg						r_re_1P;
-(* async_reg = "true" *)reg		[ADDR_WIDTH:0]	r_raddrb_1P;
+(* async_reg = "true" *)reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_38]	r_raddrb_1P;
 (* async_reg = "true" *)reg						r_rflag_1P;
-(* async_reg = "true" *)reg		[ADDR_WIDTH-1:0]r_raddrg_1P;
+(* async_reg = "true" *)reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_39]r_raddrg_1P;
 (* async_reg = "true" *)reg						r_rflag_2P;
-(* async_reg = "true" *)reg		[ADDR_WIDTH-1:0]r_raddrg_2P;
+(* async_reg = "true" *)reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_40]r_raddrg_2P;
 
-reg		[LATENCY-1:0]	r_empty;
-reg		[LATENCY:0]		r_full;
+reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_41]	r_empty;
+reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_42]		r_full;
 
 //reg		r_restore_1P;
-reg		[ADDR_WIDTH:0]	r_raddrb_2P;
-reg		[ADDR_WIDTH-1:0]r_raddrg_PP;
-reg		[ADDR_WIDTH:0]	r_raddrb_3P;
-reg		[ADDR_WIDTH-1:0]r_raddrg_3P;
+reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_43]	r_raddrb_2P;
+reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_44]r_raddrg_PP;
+reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_45]	r_raddrb_3P;
+reg		[`CFG_DUAL_CLOCK_FIFO_V_RANGE_46]r_raddrg_3P;
 
-wire	[ADDR_WIDTH:0]	w_waddrb_1P;
+wire	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_47]	w_waddrb_1P;
 wire					w_wflag_1P;
-wire	[ADDR_WIDTH-1:0]w_waddrg_1P;
+wire	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_48]w_waddrg_1P;
 
-wire	[ADDR_WIDTH:0]	w_raddrb_1P;
+wire	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_49]	w_raddrb_1P;
 wire					w_rflag_1P;
-wire	[ADDR_WIDTH-1:0]w_raddrg_1P;
+wire	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_50]w_raddrg_1P;
 
 wire	w_empty;
 wire	w_full;
@@ -343,7 +344,7 @@ wire	w_full_P;
 
 wire					w_we;
 wire					w_re;
-wire	[ADDR_WIDTH-1:0]w_raddr;
+wire	[`CFG_DUAL_CLOCK_FIFO_V_RANGE_51]w_raddr;
 
 assign	w_waddrb_1P					=	r_waddrb_1P + 1'b1;
 assign	w_wflag_1P					=	w_waddrb_1P[ADDR_WIDTH];
@@ -622,10 +623,10 @@ generate
 
 	simple_dual_port_ram
 	#(
-		.DATA_WIDTH(DATA_WIDTH),
-		.ADDR_WIDTH(ADDR_WIDTH),
-		.OUTPUT_REG(OUTPUT_REG),
-		.RAM_INIT_FILE(RAM_INIT_FILE)
+		.DATA_WIDTH(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_SIMPLE_DUAL_PORT_RAM_DATA_WIDTH),
+		.ADDR_WIDTH(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_SIMPLE_DUAL_PORT_RAM_ADDR_WIDTH),
+		.OUTPUT_REG(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_SIMPLE_DUAL_PORT_RAM_OUTPUT_REG),
+		.RAM_INIT_FILE(`CFG_DUAL_CLOCK_FIFO_V_INST_INST_SIMPLE_DUAL_PORT_RAM_RAM_INIT_FILE)
 	)
 	inst_simple_dual_port_ram
 	(

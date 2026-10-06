@@ -1,8 +1,9 @@
+`include "../defines.v"
 
 
 module ser2par_v1 #(
-	parameter I_VID_WIDTH = 16,
-	parameter O_VID_WIDTH = 64
+	parameter I_VID_WIDTH = `CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_PARAMETER_I_VID_WIDTH,
+	parameter O_VID_WIDTH = `CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_PARAMETER_O_VID_WIDTH
 	 
 )(
 input		wire										clk		,    
@@ -11,31 +12,31 @@ input       wire                                        i_valid,
 input		wire										i_frame_start	, //active hgih
 input		wire										i_frame_end	, //active high
 input       wire                                        frame_stable,
-input		wire				[23:0]					frame_pix_num,
-input		wire	[I_VID_WIDTH-1:0] 					i_data,
+input		wire				[`CFG_BITS_24-1:0]					frame_pix_num,
+input		wire	[`CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_RANGE_1] 					i_data,
 
 output		wire										o_valid,
-output		wire	[O_VID_WIDTH-1:0]					o_data,
+output		wire	[`CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_RANGE_2]					o_data,
 output      wire                                        o_frame_start,
 output      wire                                         o_frame_end
 
 
 );
-localparam SHIFT_INT = O_VID_WIDTH/I_VID_WIDTH;
-localparam SHIFT_FLOAT = O_VID_WIDTH%I_VID_WIDTH;
-localparam I_VID_DIV = I_VID_WIDTH/SHIFT_FLOAT;
-localparam MAXI_DATA_WIDTH = max_width(I_VID_WIDTH,O_VID_WIDTH);
-localparam IN_CNT = MAXI_DATA_WIDTH/I_VID_WIDTH;
-localparam OU_CNT = MAXI_DATA_WIDTH/O_VID_WIDTH;
-localparam IN_CNT_WIDTH = $clog2(IN_CNT);
-localparam OU_CNT_WIDTH = $clog2(OU_CNT);
+localparam SHIFT_INT = `CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_LOCALPARAM_SHIFT_INT;
+localparam SHIFT_FLOAT = `CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_LOCALPARAM_SHIFT_FLOAT;
+localparam I_VID_DIV = `CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_LOCALPARAM_I_VID_DIV;
+localparam MAXI_DATA_WIDTH = `CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_LOCALPARAM_MAXI_DATA_WIDTH;
+localparam IN_CNT = `CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_LOCALPARAM_IN_CNT;
+localparam OU_CNT = `CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_LOCALPARAM_OU_CNT;
+localparam IN_CNT_WIDTH = `CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_LOCALPARAM_IN_CNT_WIDTH;
+localparam OU_CNT_WIDTH = `CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_LOCALPARAM_OU_CNT_WIDTH;
 //==================================================================================
 
-reg [MAXI_DATA_WIDTH-1:0] par_pix_data = 'd0;
-reg [MAXI_DATA_WIDTH-1:0] par_pix_data_r0 = 'd0;
-reg [IN_CNT_WIDTH-1:0] r_in_cnt = 'd0;
-reg [IN_CNT_WIDTH-1:0] w_in_cnt;
-reg [OU_CNT_WIDTH-1:0] r_out_cnt = 'd0;
+reg [`CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_RANGE_3] par_pix_data = 'd0;
+reg [`CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_RANGE_4] par_pix_data_r0 = 'd0;
+reg [`CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_RANGE_5] r_in_cnt = 'd0;
+reg [`CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_RANGE_6] w_in_cnt;
+reg [`CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_RANGE_7] r_out_cnt = 'd0;
 reg last_shift = 'd0;
 // reg [1:0] last_shift_r = 'd0;
 reg par_pix_valid = 1'b0;
@@ -134,7 +135,7 @@ begin
         r_out_cnt <= r_out_cnt == OU_CNT-1 ? 0 :r_out_cnt + 1'b1;
 end
 
-reg [1:0] state = 'd0;
+reg [`CFG_BITS_2-1:0] state = 'd0;
 always @( posedge clk )
 begin
     if( i_frame_start ) begin 
@@ -175,7 +176,7 @@ end else begin
         else if( par_valid )
             par_pix_data_r0 <= par_pix_data;
     end
-    reg [1:0] state = 'd0;
+    reg [`CFG_BITS_2-1:0] state = 'd0;
     always @( posedge clk )
     begin
         if( i_frame_start ) begin 
@@ -202,11 +203,11 @@ end
 endgenerate
 //=======================================================================================
  function integer max_width;
- input [I_VID_WIDTH-1:0] indata;
- input [O_VID_WIDTH-1:0]	axi_data;
+ input [`CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_RANGE_8] indata;
+ input [`CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_RANGE_9]	axi_data;
  integer i;
- reg [I_VID_WIDTH-1:0] sub_idata1,sub_idata2;
- reg [I_VID_WIDTH-1:0] max_sub_idata;
+ reg [`CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_RANGE_10] sub_idata1,sub_idata2;
+ reg [`CFG_FRAME_BUFFER_V4_SER2PAR_V1_V_RANGE_11] max_sub_idata;
  begin
 
  for(i = 0;i <= indata;i = i+1 ) begin 

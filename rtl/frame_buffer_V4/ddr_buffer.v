@@ -1,18 +1,19 @@
+`include "../defines.v"
 
 
 `timescale 1ps/1ps
 module ddr_buffer #(
-parameter AXI_DATA_WIDTH = 512, //!AXI接口位宽
-parameter AXI_ADDR_WIDTH = 33,  //!AXI地址位宽
-parameter WR_FIFO_DEPTH	= 1024, //!Write fifo depth   
-parameter RD_FIFO_DEPTH = 1024, //!read fifo depth
-parameter FB_NUM			= 	3,//2 buffer ,3 buffer   
-parameter MAX_VID_WIDTH		=	1920 ,//video width 
-parameter MAX_VID_HIGHT		=	1080 ,//wideo height
-parameter START_ADDR				=	33'h000201900,
-parameter BURST_LEN       = 8'd15,
-parameter I_VID_WIDTH = 16,
-parameter AXI_STRB_WIDTH = AXI_DATA_WIDTH/8//!总共的字节数量，= AXI_DATA_WIDTH/8
+parameter AXI_DATA_WIDTH = `CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_PARAMETER_AXI_DATA_WIDTH, //!AXI接口位宽
+parameter AXI_ADDR_WIDTH = `CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_PARAMETER_AXI_ADDR_WIDTH,  //!AXI地址位宽
+parameter WR_FIFO_DEPTH	= `CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_PARAMETER_WR_FIFO_DEPTH, //!Write fifo depth
+parameter RD_FIFO_DEPTH = `CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_PARAMETER_RD_FIFO_DEPTH, //!read fifo depth
+parameter FB_NUM			= 	`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_PARAMETER_FB_NUM,//2 buffer ,3 buffer
+parameter MAX_VID_WIDTH		=	`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_PARAMETER_MAX_VID_WIDTH ,//video width
+parameter MAX_VID_HIGHT		=	`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_PARAMETER_MAX_VID_HIGHT ,//wideo height
+parameter START_ADDR				=	`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_PARAMETER_START_ADDR,
+parameter BURST_LEN       = `CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_PARAMETER_BURST_LEN,
+parameter I_VID_WIDTH = `CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_PARAMETER_I_VID_WIDTH,
+parameter AXI_STRB_WIDTH = `CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_PARAMETER_AXI_STRB_WIDTH//!总共的字节数量，= AXI_DATA_WIDTH/8
 
 ) (
 
@@ -25,29 +26,29 @@ input											wr_start, // pulse signal
 
 // input		[AXI_ADDR_WIDTH-1:0]				start_wr_addr,
 // input		[AXI_ADDR_WIDTH-1:0]				start_rd_addr,
-input 		[31:0] 								wr_busrt_len,
-input 		[31:0] 								rd_burst_len,
-output		[7:0] test_cnt ,
+input 		[`CFG_BITS_32-1:0] 								wr_busrt_len,
+input 		[`CFG_BITS_32-1:0] 								rd_burst_len,
+output		[`CFG_BITS_8-1:0] test_cnt ,
 
 input                     wr_fifo_rst_p,
 input											wr_fifo_wrclk,
 input											wr_fifo_wren,
 output											wr_fifo_wrfull,
-input	 [AXI_DATA_WIDTH-1:0]					wr_fifo_wrdata, 
+input	 [`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_RANGE_1]					wr_fifo_wrdata,
 input											rd_fifo_rdclk,
 input                       rd_fifo_rst_p,
 output											rd_fifo_rdvalid,
-output	 [AXI_DATA_WIDTH-1:0] 					rd_fifo_rddata,
+output	 [`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_RANGE_2] 					rd_fifo_rddata,
 output wire										rd_fifo_rdempty,
 input	 wire									rd_fifo_rden,
 
-output 	[5:0] 									awid,
-output  [AXI_ADDR_WIDTH-1:0] 					awaddr,
-output  [8-1:0] 					awlen,
-output  [2:0] 									awsize,
-output  [1:0] 									awburst,
-output  [3:0] 									awcache,
-output [2:0]                    awprot,
+output 	[`CFG_BITS_6-1:0] 									awid,
+output  [`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_RANGE_3] 					awaddr,
+output  [`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_RANGE_4] 					awlen,
+output  [`CFG_BITS_3-1:0] 									awsize,
+output  [`CFG_BITS_2-1:0] 									awburst,
+output  [`CFG_BITS_4-1:0] 									awcache,
+output [`CFG_BITS_3-1:0]                    awprot,
 output  										awlock,
 output  										awvalid,
 output  										awcobuf,
@@ -56,38 +57,38 @@ output  										awallstrb,
 output  										awqos,
 input 											awready,
 
-output [5:0] 									arid,
-output  [AXI_ADDR_WIDTH-1:0] 					araddr,
-output  [8-1:0] 					arlen,
-output  [2:0] 									arsize,
-output  [1:0] 									arburst,
+output [`CFG_BITS_6-1:0] 									arid,
+output  [`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_RANGE_5] 					araddr,
+output  [`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_RANGE_6] 					arlen,
+output  [`CFG_BITS_3-1:0] 									arsize,
+output  [`CFG_BITS_2-1:0] 									arburst,
 output  										arlock,
 output  										arvalid,
 output  										arapcmd,
 output 											arqos,
 input 											arready,
-output  [3:0] 									arcache,
-output [2:0]                    arprot,
-output  [AXI_DATA_WIDTH-1:0] 					wdata,  
-output	[31:0]									test_wdata,
-output	[31:0]									test_rdata,
-output  [AXI_STRB_WIDTH-1:0] 					wstrb,
+output  [`CFG_BITS_4-1:0] 									arcache,
+output [`CFG_BITS_3-1:0]                    arprot,
+output  [`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_RANGE_7] 					wdata,
+output	[`CFG_BITS_32-1:0]									test_wdata,
+output	[`CFG_BITS_32-1:0]									test_rdata,
+output  [`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_RANGE_8] 					wstrb,
 output  										wlast,
 output  										wvalid,
 input 											wready,
 
-input [5:0] 									rid,
-input [AXI_DATA_WIDTH-1:0] 						rdata,
+input [`CFG_BITS_6-1:0] 									rid,
+input [`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_RANGE_9] 						rdata,
 input 											rlast,
 input 											rvalid,
 output  										rready,
-input [1:0] 									rresp,
-output[31:0]									wr_fifo_rd_data_test,
-input [5:0] 									bid,
+input [`CFG_BITS_2-1:0] 									rresp,
+output[`CFG_BITS_32-1:0]									wr_fifo_rd_data_test,
+input [`CFG_BITS_6-1:0] 									bid,
 input 											bvalid,
 output  										bready,
 
-output [7:0] test_BURST_LEN
+output [`CFG_BITS_8-1:0] test_BURST_LEN
 );
 assign test_BURST_LEN = BURST_LEN;
 
@@ -106,8 +107,8 @@ wire		                        wr_sw_ack           ;
 wire		                        wr_sw 		          ;
 wire		                        rd_sw			          ;
 wire		                        rd_sw_ack           ;
-wire		[AXI_ADDR_WIDTH-1:0]		wr_start_addr       ;
-wire		[AXI_ADDR_WIDTH-1:0]    rd_start_addr       ; 
+wire		[`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_RANGE_10]		wr_start_addr       ;
+wire		[`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_RANGE_11]    rd_start_addr       ;
 
 //=============================================================  
 //RTL                                                     
@@ -116,10 +117,10 @@ wire		[AXI_ADDR_WIDTH-1:0]    rd_start_addr       ;
 
 
 ddr_wr_buffer1 # (
-    .AXI_DATA_WIDTH(AXI_DATA_WIDTH),
-    .AXI_ADDR_WIDTH(AXI_ADDR_WIDTH),
-    .WR_FIFO_DEPTH(WR_FIFO_DEPTH),
-    .BURST_LEN (BURST_LEN        )
+    .AXI_DATA_WIDTH(`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_INST_U_DDR_WR_BUFFER_AXI_DATA_WIDTH),
+    .AXI_ADDR_WIDTH(`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_INST_U_DDR_WR_BUFFER_AXI_ADDR_WIDTH),
+    .WR_FIFO_DEPTH(`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_INST_U_DDR_WR_BUFFER_WR_FIFO_DEPTH),
+    .BURST_LEN (`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_INST_U_DDR_WR_BUFFER_BURST_LEN        )
   )
 
   u_ddr_wr_buffer (//_inst
@@ -167,10 +168,10 @@ assign test_rdata = rdata[32:0];
 // FIFO RD_PROCESSING
 //=============================================================================================
 ddr_rd_buffer # (
-    .AXI_DATA_WIDTH(AXI_DATA_WIDTH),
-    .AXI_ADDR_WIDTH(AXI_ADDR_WIDTH),
-    .RD_FIFO_DEPTH(RD_FIFO_DEPTH),
-    .BURST_LEN (BURST_LEN        )
+    .AXI_DATA_WIDTH(`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_INST_DDR_RD_BUFFER_INST_AXI_DATA_WIDTH),
+    .AXI_ADDR_WIDTH(`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_INST_DDR_RD_BUFFER_INST_AXI_ADDR_WIDTH),
+    .RD_FIFO_DEPTH(`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_INST_DDR_RD_BUFFER_INST_RD_FIFO_DEPTH),
+    .BURST_LEN (`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_INST_DDR_RD_BUFFER_INST_BURST_LEN        )
   )
   ddr_rd_buffer_inst (
     .axi_clk(axi_clk),
@@ -213,12 +214,12 @@ ddr_rd_buffer # (
 
 
 bank_switch #(
-		.FB_NUM					( FB_NUM),
-		.MAX_VID_WIDTH 	( MAX_VID_WIDTH),
-		.MAX_VID_HIGHT 	( MAX_VID_HIGHT),
-		.START_ADDR			(	START_ADDR 	),
-		.VID_DATA_WIDTH	(I_VID_WIDTH	),
-		.AXI_DATA_WIDTH (AXI_DATA_WIDTH )
+		.FB_NUM					( `CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_INST_U_BANK_SW_FB_NUM),
+		.MAX_VID_WIDTH 	( `CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_INST_U_BANK_SW_MAX_VID_WIDTH),
+		.MAX_VID_HIGHT 	( `CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_INST_U_BANK_SW_MAX_VID_HIGHT),
+		.START_ADDR			(	`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_INST_U_BANK_SW_START_ADDR 	),
+		.VID_DATA_WIDTH	(`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_INST_U_BANK_SW_VID_DATA_WIDTH	),
+		.AXI_DATA_WIDTH (`CFG_FRAME_BUFFER_V4_DDR_BUFFER_V_INST_U_BANK_SW_AXI_DATA_WIDTH )
 )
   u_bank_sw
 (

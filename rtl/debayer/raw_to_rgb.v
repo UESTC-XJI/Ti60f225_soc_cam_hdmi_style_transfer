@@ -1,9 +1,10 @@
+`include "../defines.v"
 module raw_to_rgb
 #(
-	parameter	P_DEPTH			= 10,
-	parameter	PW				= P_DEPTH*2,
-	parameter	LEGACY			= 1'b1,
-	parameter GREEN_FIRST = 1'b1 // Input RAW row zero starts with G (1) or B (0).
+	parameter	P_DEPTH			= `CFG_DEBAYER_RAW_TO_RGB_V_PARAMETER_P_DEPTH,
+	parameter	PW				= `CFG_DEBAYER_RAW_TO_RGB_V_PARAMETER_PW,
+	parameter	LEGACY			= `CFG_DEBAYER_RAW_TO_RGB_V_PARAMETER_LEGACY,
+	parameter GREEN_FIRST = `CFG_DEBAYER_RAW_TO_RGB_V_PARAMETER_GREEN_FIRST // Input RAW row zero starts with G (1) or B (0).
 )
 (
 	input			i_arstn,
@@ -13,19 +14,19 @@ module raw_to_rgb
 	input			i_hsync,
 	input			i_de,
 	input			i_valid,
-	input[PW-1:0]	i_p_11,
-	input[PW-1:0]	i_p_00,	
-	input[PW-1:0]	i_p_01,
+	input[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_1]	i_p_11,
+	input[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_2]	i_p_00,
+	input[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_3]	i_p_01,
 	
 	output			o_vsync,
 	output			o_hsync,
 	output			o_de,
 	output			o_valid,
-	output[10:0]	o_x_cnt,
-	output[10:0]	o_y_cnt,
-	output[PW-1:0]	o_r,
-	output[PW-1:0]	o_g,	
-	output[PW-1:0]	o_b
+	output[`CFG_BITS_11-1:0]	o_x_cnt,
+	output[`CFG_BITS_11-1:0]	o_y_cnt,
+	output[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_4]	o_r,
+	output[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_5]	o_g,
+	output[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_6]	o_b
 );
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,35 +53,35 @@ module raw_to_rgb
 //  G | B | G | B | G | B              R G B | R G B | R G B | R G B | R G B | R G B
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-reg	[10:0]			r_x_cnt;
-reg	[10:0]			r_x_cnt_1P;
-reg	[10:0]			r_x_cnt_2P;
-reg	[10:0]			r_y_cnt;
-reg	[10:0]			r_y_cnt_1P;
-reg	[10:0]			r_y_cnt_2P;
+reg	[`CFG_BITS_11-1:0]			r_x_cnt;
+reg	[`CFG_BITS_11-1:0]			r_x_cnt_1P;
+reg	[`CFG_BITS_11-1:0]			r_x_cnt_2P;
+reg	[`CFG_BITS_11-1:0]			r_y_cnt;
+reg	[`CFG_BITS_11-1:0]			r_y_cnt_1P;
+reg	[`CFG_BITS_11-1:0]			r_y_cnt_2P;
 
-reg	[PW-1:0]		r_r_00_00_1P;
-reg	[PW-1:0]		r_g_00_00_1P;
-reg	[PW-1:0]		r_b_00_00_1P;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_7]		r_r_00_00_1P;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_8]		r_g_00_00_1P;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_9]		r_b_00_00_1P;
 
-reg	[P_DEPTH-1:0]	r_bayer_11_01_0P_0;
-reg	[P_DEPTH-1:0]	r_bayer_11_01_0P_1;
-reg	[P_DEPTH-1:0]	r_bayer_00_01_0P_0;
-reg	[P_DEPTH-1:0]	r_bayer_00_01_0P_1;
-reg	[P_DEPTH-1:0]	r_bayer_01_01_0P_0;
-reg	[P_DEPTH-1:0]	r_bayer_01_01_0P_1;
-reg	[P_DEPTH-1:0]	r_bayer_11_00_1P_0;
-reg	[P_DEPTH-1:0]	r_bayer_11_00_1P_1;
-reg	[P_DEPTH-1:0]	r_bayer_00_00_1P_0;
-reg	[P_DEPTH-1:0]	r_bayer_00_00_1P_1;
-reg	[P_DEPTH-1:0]	r_bayer_01_00_1P_0;
-reg	[P_DEPTH-1:0]	r_bayer_01_00_1P_1;
-reg	[P_DEPTH-1:0]	r_bayer_11_11_2P_0;
-reg	[P_DEPTH-1:0]	r_bayer_11_11_2P_1;
-reg	[P_DEPTH-1:0]	r_bayer_00_11_2P_0;
-reg	[P_DEPTH-1:0]	r_bayer_00_11_2P_1;
-reg	[P_DEPTH-1:0]	r_bayer_01_11_2P_0;
-reg	[P_DEPTH-1:0]	r_bayer_01_11_2P_1;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_10]	r_bayer_11_01_0P_0;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_11]	r_bayer_11_01_0P_1;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_12]	r_bayer_00_01_0P_0;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_13]	r_bayer_00_01_0P_1;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_14]	r_bayer_01_01_0P_0;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_15]	r_bayer_01_01_0P_1;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_16]	r_bayer_11_00_1P_0;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_17]	r_bayer_11_00_1P_1;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_18]	r_bayer_00_00_1P_0;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_19]	r_bayer_00_00_1P_1;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_20]	r_bayer_01_00_1P_0;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_21]	r_bayer_01_00_1P_1;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_22]	r_bayer_11_11_2P_0;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_23]	r_bayer_11_11_2P_1;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_24]	r_bayer_00_11_2P_0;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_25]	r_bayer_00_11_2P_1;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_26]	r_bayer_01_11_2P_0;
+reg	[`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_27]	r_bayer_01_11_2P_1;
 
 reg					r_vsync_00_1P;
 reg					r_hsync_00_1P;
@@ -321,17 +322,17 @@ begin
 			
 	end 
 end 
-wire [P_DEPTH  :0] w_r_00_00_l1 = r_bayer_00_00_1P_1 + r_bayer_00_11_2P_1;
-wire [P_DEPTH  :0] w_b_00_00_l1 = r_bayer_11_00_1P_0  + r_bayer_01_00_1P_0 ;
-wire [P_DEPTH+1:0] w_g_00_00_h1	= r_bayer_11_00_1P_1 + r_bayer_01_00_1P_1 + r_bayer_00_01_0P_0 + r_bayer_00_00_1P_0;	
-wire [P_DEPTH+1:0] w_b_00_00_h1	= r_bayer_01_01_0P_0 + r_bayer_11_00_1P_0 + r_bayer_11_01_0P_0 + r_bayer_01_00_1P_0;
+wire [`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_28] w_r_00_00_l1 = r_bayer_00_00_1P_1 + r_bayer_00_11_2P_1;
+wire [`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_29] w_b_00_00_l1 = r_bayer_11_00_1P_0  + r_bayer_01_00_1P_0 ;
+wire [`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_30] w_g_00_00_h1	= r_bayer_11_00_1P_1 + r_bayer_01_00_1P_1 + r_bayer_00_01_0P_0 + r_bayer_00_00_1P_0;
+wire [`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_31] w_b_00_00_h1	= r_bayer_01_01_0P_0 + r_bayer_11_00_1P_0 + r_bayer_11_01_0P_0 + r_bayer_01_00_1P_0;
 
 
-wire [P_DEPTH+1:0] w_r_00_00_l0	= r_bayer_11_00_1P_1 + r_bayer_01_11_2P_1 + r_bayer_01_00_1P_1 + r_bayer_11_11_2P_1;
-wire [P_DEPTH+1:0] w_g_00_00_l0	= r_bayer_11_00_1P_0 + r_bayer_01_00_1P_0 + r_bayer_00_00_1P_1 + r_bayer_00_11_2P_1;
+wire [`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_32] w_r_00_00_l0	= r_bayer_11_00_1P_1 + r_bayer_01_11_2P_1 + r_bayer_01_00_1P_1 + r_bayer_11_11_2P_1;
+wire [`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_33] w_g_00_00_l0	= r_bayer_11_00_1P_0 + r_bayer_01_00_1P_0 + r_bayer_00_00_1P_1 + r_bayer_00_11_2P_1;
 // At this green pixel, red is vertical and blue is horizontal.
-wire [P_DEPTH  :0] w_r_00_00_h0 = r_bayer_11_00_1P_1 + r_bayer_01_00_1P_1;
-wire [P_DEPTH  :0] w_b_00_00_h0 = r_bayer_00_01_0P_0 + r_bayer_00_00_1P_0;
+wire [`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_34] w_r_00_00_h0 = r_bayer_11_00_1P_1 + r_bayer_01_00_1P_1;
+wire [`CFG_DEBAYER_RAW_TO_RGB_V_RANGE_35] w_b_00_00_h0 = r_bayer_00_01_0P_0 + r_bayer_00_00_1P_0;
 
 always@(posedge i_pclk)
 begin

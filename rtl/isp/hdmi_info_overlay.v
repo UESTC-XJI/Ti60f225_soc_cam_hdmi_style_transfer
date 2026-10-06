@@ -1,45 +1,46 @@
+`include "../defines.v"
 // Two-cycle RGB/VS/HS/DE latency in both enabled and bypass modes.
 // Controls must be coherent in clk domain (use mailbox from future APB clock).
 // Text renderer is external and reserved for a later implementation.
 module hdmi_info_overlay #(
-  parameter FRAME_WIDTH=1920, FRAME_HEIGHT=1080,
-    MARGIN=16, PLOT_HEIGHT=128, BIN_WIDTH=4,
-    TEXT_WIDTH=320, TEXT_HEIGHT=64
+  parameter FRAME_WIDTH=`CFG_ISP_HDMI_INFO_OVERLAY_V_PARAMETER_FRAME_WIDTH, FRAME_HEIGHT=`CFG_ISP_HDMI_INFO_OVERLAY_V_PARAMETER_FRAME_HEIGHT,
+    MARGIN=`CFG_ISP_HDMI_INFO_OVERLAY_V_PARAMETER_MARGIN, PLOT_HEIGHT=`CFG_ISP_HDMI_INFO_OVERLAY_V_PARAMETER_PLOT_HEIGHT, BIN_WIDTH=`CFG_ISP_HDMI_INFO_OVERLAY_V_PARAMETER_BIN_WIDTH,
+    TEXT_WIDTH=`CFG_ISP_HDMI_INFO_OVERLAY_V_PARAMETER_TEXT_WIDTH, TEXT_HEIGHT=`CFG_ISP_HDMI_INFO_OVERLAY_V_PARAMETER_TEXT_HEIGHT
 )(
   input clk,rst_n,i_vs,i_hs,i_de,
-  input [7:0] i_r,i_g,i_b,
+  input [`CFG_BITS_8-1:0] i_r,i_g,i_b,
   input i_hist_enable,i_text_enable,
-  input [1:0] i_hist_mode,
+  input [`CFG_BITS_2-1:0] i_hist_mode,
   input i_text_valid,
-  input [23:0] i_text_rgb,
-  output [11:0] o_x,o_y,
+  input [`CFG_BITS_24-1:0] i_text_rgb,
+  output [`CFG_BITS_12-1:0] o_x,o_y,
   output o_hist_valid,
-  output [15:0] o_hist_samples,
+  output [`CFG_BITS_16-1:0] o_hist_samples,
   output reg o_vs,o_hs,o_de,
-  output reg [7:0] o_r,o_g,o_b
+  output reg [`CFG_BITS_8-1:0] o_r,o_g,o_b
 );
-  localparam PLOT_WIDTH=64*BIN_WIDTH;
-  localparam TOP=FRAME_HEIGHT-MARGIN-PLOT_HEIGHT-2;
-  reg [11:0] x,y;
+  localparam PLOT_WIDTH=`CFG_ISP_HDMI_INFO_OVERLAY_V_LOCALPARAM_PLOT_WIDTH;
+  localparam TOP=`CFG_ISP_HDMI_INFO_OVERLAY_V_LOCALPARAM_TOP;
+  reg [`CFG_BITS_12-1:0] x,y;
   reg vs_d,de_d,hist_enable,text_enable;
-  reg [1:0] mode;
+  reg [`CFG_BITS_2-1:0] mode;
   // At falling VS the histogram also sees the newly latched controls.
   wire frame_start=vs_d && !i_vs;
-  wire [1:0] selected_mode=frame_start ? i_hist_mode : mode;
-  wire [11:0] local_x=x-MARGIN-1;
-  wire [5:0] bin_index=local_x/BIN_WIDTH;
-  wire [7:0] height;
-  hdmi_frame_histogram #(.FRAME_WIDTH(FRAME_WIDTH),.FRAME_HEIGHT(FRAME_HEIGHT),.PLOT_HEIGHT(PLOT_HEIGHT)) histogram(
+  wire [`CFG_BITS_2-1:0] selected_mode=frame_start ? i_hist_mode : mode;
+  wire [`CFG_BITS_12-1:0] local_x=x-MARGIN-1;
+  wire [`CFG_BITS_6-1:0] bin_index=local_x/BIN_WIDTH;
+  wire [`CFG_BITS_8-1:0] height;
+  hdmi_frame_histogram #(.FRAME_WIDTH(`CFG_ISP_HDMI_INFO_OVERLAY_V_INST_HISTOGRAM_FRAME_WIDTH),.FRAME_HEIGHT(`CFG_ISP_HDMI_INFO_OVERLAY_V_INST_HISTOGRAM_FRAME_HEIGHT),.PLOT_HEIGHT(`CFG_ISP_HDMI_INFO_OVERLAY_V_INST_HISTOGRAM_PLOT_HEIGHT)) histogram(
     .clk(clk),.rst_n(rst_n),.i_vs(i_vs),.i_de(i_de),.i_r(i_r),.i_g(i_g),.i_b(i_b),
     .i_mode(selected_mode),.i_read_bin(bin_index),.o_height(height),.o_valid(o_hist_valid),.o_samples(o_hist_samples)
   );
   assign o_x=x;assign o_y=y;
   reg s_vs,s_hs,s_de,s_box,s_border,s_bar,s_text;
-  reg [7:0] s_r,s_g,s_b;
-  reg [23:0] s_text_rgb,s_bar_rgb;
+  reg [`CFG_BITS_8-1:0] s_r,s_g,s_b;
+  reg [`CFG_BITS_24-1:0] s_text_rgb,s_bar_rgb;
   wire in_box=x>=MARGIN && x<MARGIN+PLOT_WIDTH+2 && y>=TOP && y<TOP+PLOT_HEIGHT+2;
   wire border=x==MARGIN || x==MARGIN+PLOT_WIDTH+1 || y==TOP || y==TOP+PLOT_HEIGHT+1;
-  wire [11:0] from_bottom=TOP+PLOT_HEIGHT-y;
+  wire [`CFG_BITS_12-1:0] from_bottom=TOP+PLOT_HEIGHT-y;
   always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
       x<=0;y<=0;vs_d<=0;de_d<=0;hist_enable<=0;text_enable<=0;mode<=0;

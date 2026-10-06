@@ -3,7 +3,7 @@
         {
             "name": "vio0",
             "type": "vio",
-            "uuid": "23fa743774854663a3b313ef066115c4",
+            "uuid": "24046328d81d4bd68d5bfc12db1bcea0",
             "probes": [
                 {
                     "name": "r_gain",
@@ -19,11 +19,6 @@
                     "name": "b_gain",
                     "width": 16,
                     "init": "0x1a9"
-                },
-                {
-                    "name": "gamma_sel",
-                    "width": 1,
-                    "init": "0x0"
                 },
                 {
                     "name": "ae_enable",

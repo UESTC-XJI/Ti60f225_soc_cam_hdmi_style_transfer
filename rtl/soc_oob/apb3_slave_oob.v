@@ -1,3 +1,4 @@
+`include "../defines.v"
 /////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2013-2020 Efinix Inc. All rights reserved.
@@ -36,51 +37,51 @@
 module apb3_slave_oob #(
 	// user parameter starts here
 	//
-	parameter	ADDR_WIDTH	= 12,
-	parameter	DATA_WIDTH	= 32,
-	parameter	NUM_REG		= 12
+	parameter	ADDR_WIDTH	= `CFG_SOC_OOB_APB3_SLAVE_OOB_V_PARAMETER_ADDR_WIDTH,
+	parameter	DATA_WIDTH	= `CFG_SOC_OOB_APB3_SLAVE_OOB_V_PARAMETER_DATA_WIDTH,
+	parameter	NUM_REG		= `CFG_SOC_OOB_APB3_SLAVE_OOB_V_PARAMETER_NUM_REG
 ) (
 	//apb3 port
 	input				clk,
 	input				resetn,
-	input	[ADDR_WIDTH-1:0]	PADDR,
+	input	[`CFG_SOC_OOB_APB3_SLAVE_OOB_V_RANGE_1]	PADDR,
 	input				PSEL,
 	input				PENABLE,
 	output				PREADY,
 	input				PWRITE,
-	input 	[DATA_WIDTH-1:0] 	PWDATA,
-	output	[DATA_WIDTH-1:0] 	PRDATA,
+	input 	[`CFG_SOC_OOB_APB3_SLAVE_OOB_V_RANGE_2] 	PWDATA,
+	output	[`CFG_SOC_OOB_APB3_SLAVE_OOB_V_RANGE_3] 	PRDATA,
 	output				PSLVERROR,
 	
 	// user logic starts here
 	//Input Ports		
-	input 	[31:0]		i_id,					//Bit [31:0]		
+	input 	[`CFG_BITS_32-1:0]		i_id,					//Bit [31:0]
 	
 	//Output Ports
 	//Reg 0	LED Control
-	output	[5:0]		o_LED,					//Bit [3:0]
+	output	[`CFG_BITS_6-1:0]		o_LED,					//Bit [3:0]
 	//Reg 1 Streaming control
 	output 				o_start_dma_stream_in,	//Bit [0]
 	output 				o_start_dma_stream_out,	//Bit [1]
 	output 				o_uvc_resetn,			//Bit [2]
 
 	//Reg 2 RGB Gain Control
-	output 	[2:0]		o_red_gain,				//Bit [2:0]
-	output 	[2:0]		o_green_gain,			//Bit [6:4]
-	output 	[2:0]		o_blue_gain,			//Bit [10:8]
+	output 	[`CFG_BITS_3-1:0]		o_red_gain,				//Bit [2:0]
+	output 	[`CFG_BITS_3-1:0]		o_green_gain,			//Bit [6:4]
+	output 	[`CFG_BITS_3-1:0]		o_blue_gain,			//Bit [10:8]
 	
 	//output				apb3MemoryStart,
 	//output				apb3Interrupt,
-	output 	[31:0] debug_reg,
+	output 	[`CFG_BITS_32-1:0] debug_reg,
 	
-	input	[5:0]		i_switch,
-	input 	[2:0]		i_uvc_status,
-	output 	[2:0]		o_uvc_control,
+	input	[`CFG_BITS_6-1:0]		i_switch,
+	input 	[`CFG_BITS_3-1:0]		i_uvc_status,
+	output 	[`CFG_BITS_3-1:0]		o_uvc_control,
 	
-	output [12:0]	o_uvc_X_START,
-	output [12:0]	o_uvc_X_WIN,
-	output [12:0]	o_uvc_Y_START,
-	output [12:0]	o_uvc_Y_WIN
+	output [`CFG_BITS_13-1:0]	o_uvc_X_START,
+	output [`CFG_BITS_13-1:0]	o_uvc_X_WIN,
+	output [`CFG_BITS_13-1:0]	o_uvc_Y_START,
+	output [`CFG_BITS_13-1:0]	o_uvc_Y_WIN
 	
 	
 	
@@ -89,14 +90,14 @@ module apb3_slave_oob #(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-localparam [1:0]	IDLE   = 2'b00,
-			SETUP  = 2'b01,
-			ACCESS = 2'b10;
+localparam [`CFG_BITS_2-1:0]	IDLE   = `CFG_SOC_OOB_APB3_SLAVE_OOB_V_LOCALPARAM_IDLE,
+			SETUP  = `CFG_SOC_OOB_APB3_SLAVE_OOB_V_LOCALPARAM_SETUP,
+			ACCESS = `CFG_SOC_OOB_APB3_SLAVE_OOB_V_LOCALPARAM_ACCESS;
 
-reg [1:0] 		busState, 
+reg [`CFG_BITS_2-1:0] 		busState,
 			busNext;
-(* async_reg = "true",  syn_ramstyle = "registers" *)  reg [DATA_WIDTH-1:0]	slaveReg [0:NUM_REG-1];
-reg [DATA_WIDTH-1:0]	slaveRegOut;
+(* async_reg = "true",  syn_ramstyle = "registers" *)  reg [`CFG_SOC_OOB_APB3_SLAVE_OOB_V_RANGE_4]	slaveReg [`CFG_SOC_OOB_APB3_SLAVE_OOB_V_RANGE_5];
+reg [`CFG_SOC_OOB_APB3_SLAVE_OOB_V_RANGE_6]	slaveRegOut;
 reg			slaveReady;
 wire	 		actWrite,
 			actRead;

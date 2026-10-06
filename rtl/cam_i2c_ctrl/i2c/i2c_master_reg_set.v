@@ -1,10 +1,11 @@
+`include "../../defines.v"
 
 
 module i2c_master_reg_set #(
-	parameter DATA_LENGTH = 61,
-	parameter I2C_REG_ADDR_WIDTH = 16,
-	parameter I2C_DATA_WIDTH = 8,
-	parameter I2C_DEVICE_ADDR = 8'h20
+	parameter DATA_LENGTH = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_PARAMETER_DATA_LENGTH,
+	parameter I2C_REG_ADDR_WIDTH = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_PARAMETER_I2C_REG_ADDR_WIDTH,
+	parameter I2C_DATA_WIDTH = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_PARAMETER_I2C_DATA_WIDTH,
+	parameter I2C_DEVICE_ADDR = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_PARAMETER_I2C_DEVICE_ADDR
 )(
 	input		wire		clk,
 	input		wire		rst_n,
@@ -14,29 +15,29 @@ module i2c_master_reg_set #(
 	input		wire		wr_done,		//one clock pulse
 	output	reg			wr_en,			//one clock pulse
 	output	reg			rd_en,			//one clock pulse
-	output	wire	[I2C_REG_ADDR_WIDTH-1:0] addr,		//i2c register address
-	output	wire	[I2C_DATA_WIDTH-1:0] dout,		//i2c configure data to the register
-	output	reg		[7:0] dev_addr,
+	output	wire	[`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_RANGE_1] addr,		//i2c register address
+	output	wire	[`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_RANGE_2] dout,		//i2c configure data to the register
+	output	reg		[`CFG_BITS_8-1:0] dev_addr,
 	output reg config_done
 	
 );
-localparam ROM_ADDR_WIDTH = $clog2(DATA_LENGTH);
+localparam ROM_ADDR_WIDTH = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_LOCALPARAM_ROM_ADDR_WIDTH;
 
-wire	[ROM_ADDR_WIDTH-1:0] rom_addr;
-wire	[I2C_REG_ADDR_WIDTH+I2C_DATA_WIDTH:0] rom_dout;
+wire	[`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_RANGE_3] rom_addr;
+wire	[`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_RANGE_4] rom_dout;
 
-reg	[ROM_ADDR_WIDTH-1:0] cnt =0;
-parameter	S0 = 3'd0;  
-parameter	S1 = 3'd1;
-parameter	S2 = 3'd2;
-parameter	S3 = 3'd3;
-parameter	S4 = 3'd4;
-reg	[2:0] state = S0;
+reg	[`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_RANGE_5] cnt =0;
+parameter	S0 = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_PARAMETER_S0;
+parameter	S1 = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_PARAMETER_S1;
+parameter	S2 = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_PARAMETER_S2;
+parameter	S3 = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_PARAMETER_S3;
+parameter	S4 = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_PARAMETER_S4;
+reg	[`CFG_BITS_3-1:0] state = S0;
 
 	i2c_master_reg_rom #(
-		.ROM_SIZE              (25 ),   
-		.TOTAL_ROM_DEPTH       (DATA_LENGTH), // 6*7
-		.ADDR_WIDTH            (8  ) // alt_clogb2(42) 
+		.ROM_SIZE              (`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_INST_U_USER_ROM_ROM_SIZE ),
+		.TOTAL_ROM_DEPTH       (`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_INST_U_USER_ROM_TOTAL_ROM_DEPTH), // 6*7
+		.ADDR_WIDTH            (`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_SET_V_INST_U_USER_ROM_ADDR_WIDTH  ) // alt_clogb2(42)
 	)u_user_rom(
     .clock(clk),
     .addr_ptr(rom_addr),

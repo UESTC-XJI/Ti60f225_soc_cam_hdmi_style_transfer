@@ -1,20 +1,21 @@
+`include "../../defines.v"
 
 
 
 module i2c_16addr_8data #(
-	parameter CLK_DIV = 16'h0005,
-	parameter IRQ_EN  = 1'b0,
-	parameter I2C_EN  = 1'b1,
-	parameter ADDR_WIDTH = 16,
-	parameter DATA_BYTES = 1
+	parameter CLK_DIV = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_CLK_DIV,
+	parameter IRQ_EN  = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_IRQ_EN,
+	parameter I2C_EN  = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_I2C_EN,
+	parameter ADDR_WIDTH = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_ADDR_WIDTH,
+	parameter DATA_BYTES = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_DATA_BYTES
 
 )(
 	input		wire				clk,
 	input		wire				rst_n,
-	input		wire	[DATA_BYTES*8-1:0] 		din,
-	input		wire	[ADDR_WIDTH-1:0] 		addr,
-	output reg	[DATA_BYTES*8-1:0] 		dout,
-	input		wire	[7:0] 		dev_addr,
+	input		wire	[`CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_RANGE_1] 		din,
+	input		wire	[`CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_RANGE_2] 		addr,
+	output reg	[`CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_RANGE_3] 		dout,
+	input		wire	[`CFG_BITS_8-1:0] 		dev_addr,
 	output		reg					init_done,
 	input		wire				wr_en,
 	input		wire				rd_en,
@@ -23,26 +24,26 @@ module i2c_16addr_8data #(
 	output reg wr_error,rd_error,
 	output		wire				dout_valid,
 	
-	output		wire	[2:0]		i2c_address,
+	output		wire	[`CFG_BITS_3-1:0]		i2c_address,
   	output		wire				i2c_write   ,
-  	output		wire	[7:0] 		i2c_writedata, 
+    output		wire	[`CFG_BITS_8-1:0] 		i2c_writedata,
   	output		wire				i2c_chipselect,
   	input		wire				i2c_waitrequest,
-  	input		wire	[7:0] 		i2c_readdata	
+    input		wire	[`CFG_BITS_8-1:0] 		i2c_readdata
 
 );
 //parameter I2C_ADDR = 8'h72;
 
-parameter INIT_IDLE = 3'b000;
-parameter INIT_CNT_H = 3'b001;
-parameter INIT_CNT_L = 3'b010;
-parameter	INIT_CORE_EN = 3'b011;
-parameter INIT_OVER = 3'b100;
-reg	[2:0] init_state = INIT_IDLE;
+parameter INIT_IDLE = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_INIT_IDLE;
+parameter INIT_CNT_H = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_INIT_CNT_H;
+parameter INIT_CNT_L = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_INIT_CNT_L;
+parameter	INIT_CORE_EN = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_INIT_CORE_EN;
+parameter INIT_OVER = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_INIT_OVER;
+reg	[`CFG_BITS_3-1:0] init_state = INIT_IDLE;
 reg	init_cs = 1'b0;
 reg	init_wr = 1'b0;
-reg	[7:0] init_wrdata = 0;
-reg	[2:0] init_addr = 0;
+reg	[`CFG_BITS_8-1:0] init_wrdata = 0;
+reg	[`CFG_BITS_3-1:0] init_addr = 0;
 always @( posedge clk or negedge rst_n)
 begin
 		if( ~rst_n ) begin
@@ -102,22 +103,22 @@ begin
 				init_done <= 1'b1;
 end
 
-parameter S_WR_IDLE 	= 3'b000;
-parameter S_WR_RD_TIP 	= 3'b001;
-parameter S_WR_TIP_WAIT = 3'b010;
-parameter S_WR_TIP_CHK 	= 3'b011;
-parameter S_WR_WR_DATA 	= 3'b100;
-parameter S_WR_CTRL_SET = 3'b101;
-parameter S_WR_SET_WAIT = 3'b110;
-parameter S_WR_WR_OVER 	= 3'b111;
+parameter S_WR_IDLE 	= `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_WR_IDLE;
+parameter S_WR_RD_TIP 	= `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_WR_RD_TIP;
+parameter S_WR_TIP_WAIT = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_WR_TIP_WAIT;
+parameter S_WR_TIP_CHK 	= `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_WR_TIP_CHK;
+parameter S_WR_WR_DATA 	= `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_WR_WR_DATA;
+parameter S_WR_CTRL_SET = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_WR_CTRL_SET;
+parameter S_WR_SET_WAIT = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_WR_SET_WAIT;
+parameter S_WR_WR_OVER 	= `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_WR_WR_OVER;
 
-reg [2:0] wr_state;
-reg	[2:0] wr_addr = 3'b000;
+reg [`CFG_BITS_3-1:0] wr_state;
+reg	[`CFG_BITS_3-1:0] wr_addr = 3'b000;
 reg		  wr_cs = 1'b0;
 reg		  wr_wr = 1'b0;
-reg	[7:0] wr_wrdata = 0;
-reg	[2:0] wr_cnt = 0;
-reg	[2:0] wait_cnt = 0;
+reg	[`CFG_BITS_8-1:0] wr_wrdata = 0;
+reg	[`CFG_BITS_3-1:0] wr_cnt = 0;
+reg	[`CFG_BITS_3-1:0] wait_cnt = 0;
 always @(posedge clk or negedge rst_n) begin
   if(!rst_n) wr_error<=0;
   else if(wr_state==S_WR_IDLE && wr_en) wr_error<=0;
@@ -245,24 +246,24 @@ end
 //================================================================
 //
 //================================================================
-parameter S_RD_IDLE 		= 4'b0000;
-parameter S_RD_RD_TIP 	= 4'b0001;
-parameter S_RD_TIP_WAIT = 4'b0010;
-parameter S_RD_TIP_CHK 	= 4'b0011;
-parameter S_RD_WR_DATA 	= 4'b0100;
-parameter S_RD_CTRL_SET = 4'b0101;
-parameter S_RD_SET_WAIT = 4'b0110;
-parameter S_RD_WR_OVER 	= 4'b0111;
-parameter	S_RD_CFG_SET  = 4'b1000;
-parameter	S_RD_RD_DATA	= 4'b1001;
-parameter S_RD_RD_WAIT = 4'b1010;
-reg	[2:0] rd_addr;
+parameter S_RD_IDLE 		= `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_RD_IDLE;
+parameter S_RD_RD_TIP 	= `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_RD_RD_TIP;
+parameter S_RD_TIP_WAIT = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_RD_TIP_WAIT;
+parameter S_RD_TIP_CHK 	= `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_RD_TIP_CHK;
+parameter S_RD_WR_DATA 	= `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_RD_WR_DATA;
+parameter S_RD_CTRL_SET = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_RD_CTRL_SET;
+parameter S_RD_SET_WAIT = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_RD_SET_WAIT;
+parameter S_RD_WR_OVER 	= `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_RD_WR_OVER;
+parameter	S_RD_CFG_SET  = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_RD_CFG_SET;
+parameter	S_RD_RD_DATA	= `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_RD_RD_DATA;
+parameter S_RD_RD_WAIT = `CFG_CAM_I2C_CTRL_I2C_I2C_16ADDR_8DATA_V_PARAMETER_S_RD_RD_WAIT;
+reg	[`CFG_BITS_3-1:0] rd_addr;
 reg				rd_cs;
 reg				rd_wr;
-reg[7:0]	rd_wrdata;
-reg [3:0] rd_state = S_RD_IDLE;
-reg	[2:0]	rd_cnt = 0;   
-reg	[2:0] rd_wait_cnt = 0;
+reg[`CFG_BITS_8-1:0]	rd_wrdata;
+reg [`CFG_BITS_4-1:0] rd_state = S_RD_IDLE;
+reg	[`CFG_BITS_3-1:0]	rd_cnt = 0;
+reg	[`CFG_BITS_3-1:0] rd_wait_cnt = 0;
 always @(posedge clk or negedge rst_n) begin
   if(!rst_n) begin dout<=0;rd_error<=0;end
   else begin

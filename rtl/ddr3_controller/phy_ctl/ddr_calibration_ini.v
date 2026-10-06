@@ -1,3 +1,4 @@
+`include "../../defines.v"
 //***************************************************************/
 //   ______   _   _   _                  _            _
 //  |  ____| | | (_) | |                | |          | |
@@ -21,43 +22,43 @@
   
   `timescale 1ps/1ps
 module ddr_calibration_ini#(
-parameter                       tCK          = 1500,     
-parameter                       TCQ          = 100,
-parameter                       CK_RATIO     = 4,        
-parameter                       CLK_PERIOD   = 3000,     
-parameter                       BANK_WIDTH   = 3,
-parameter                       COL_WIDTH    = 10,
-parameter                       RANK_RATIO   = 1,        
-parameter                       DQ_WIDTH     = 64,
-parameter                       DQS_WIDTH    = 8,
-parameter                       ROW_WIDTH    = 14,
-parameter                       CS_WIDTH     = 1,
-parameter                       RANKS        = 1,       
-parameter                       CKE_WIDTH    = 1,       
+parameter                       tCK          = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_TCK,
+parameter                       TCQ          = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_TCQ,
+parameter                       CK_RATIO     = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_CK_RATIO,
+parameter                       CLK_PERIOD   = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_CLK_PERIOD,
+parameter                       BANK_WIDTH   = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_BANK_WIDTH,
+parameter                       COL_WIDTH    = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_COL_WIDTH,
+parameter                       RANK_RATIO   = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_RANK_RATIO,
+parameter                       DQ_WIDTH     = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_DQ_WIDTH,
+parameter                       DQS_WIDTH    = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_DQS_WIDTH,
+parameter                       ROW_WIDTH    = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_ROW_WIDTH,
+parameter                       CS_WIDTH     = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_CS_WIDTH,
+parameter                       RANKS        = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_RANKS,
+parameter                       CKE_WIDTH    = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_CKE_WIDTH,
 // DRAM mode settings       
-parameter                       AL           = "0",  
-parameter                       BURST_MODE   = "8",  
-parameter                       nCL          = 5,    
-parameter                       nCWL         = 5,    
-parameter                       tRFC         = 110000,  
-parameter                       RTT_NOM      = "60",    
-parameter                       RTT_WR       = "60"   
+parameter                       AL           = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_AL,
+parameter                       BURST_MODE   = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_BURST_MODE,
+parameter                       nCL          = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_NCL,
+parameter                       nCWL         = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_NCWL,
+parameter                       tRFC         = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_TRFC,
+parameter                       RTT_NOM      = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_RTT_NOM,
+parameter                       RTT_WR       = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_PARAMETER_RTT_WR
 )
 (
 input                           clk,
 input                           rst,
 output  reg                     init_calib_complete, 
-output          [6:0]           init_cur_state, 
+output          [`CFG_BITS_7-1:0]           init_cur_state,
 
-output  reg     [CK_RATIO*ROW_WIDTH-1:0] 
+output  reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_RANGE_1]
                                 phy_address,
-output  reg     [CK_RATIO*BANK_WIDTH-1:0]
+output  reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_RANGE_2]
                                 phy_bank,
-output  reg     [CK_RATIO-1:0]  phy_ras_n,
-output  reg     [CK_RATIO-1:0]  phy_cas_n,
-output  reg     [CK_RATIO-1:0]  phy_we_n,
+output  reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_RANGE_3]  phy_ras_n,
+output  reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_RANGE_4]  phy_cas_n,
+output  reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_RANGE_5]  phy_we_n,
 output  reg                     phy_reset_n,
-output          [CS_WIDTH*RANK_RATIO*CK_RATIO-1:0]   
+output          [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_RANGE_6]
                                 phy_cs_n,
 output  reg                     dqs_locked_start,
 input                           dqs_locked_all_done,
@@ -92,21 +93,21 @@ input                           phy_cmd_full,
 input                           phy_data_full,
 output  reg                     calib_ctl_wren,
 output  reg                     calib_cmd_wren,
-output  reg     [1:0]           calib_seq,
+output  reg     [`CFG_BITS_2-1:0]           calib_seq,
 output  reg                     write_calib,
 output  reg                     read_calib,
 output  reg                     calib_writes, 
-output  reg     [2:0]           calib_cmd,
-output  reg     [3:0]           calib_aux_out,
-output  reg     [1:0]           calib_odt ,
-output  reg     [CK_RATIO-1:0]  calib_cke ,
-output          [1:0]           calib_rank_cnt,
-output  reg     [1:0]           calib_cas_slot,
-output  reg     [5:0]           calib_data_offset_0,
-output  reg     [5:0]           calib_data_offset_1,
-output  reg     [5:0]           calib_data_offset_2,   
+output  reg     [`CFG_BITS_3-1:0]           calib_cmd,
+output  reg     [`CFG_BITS_4-1:0]           calib_aux_out,
+output  reg     [`CFG_BITS_2-1:0]           calib_odt ,
+output  reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_RANGE_7]  calib_cke ,
+output          [`CFG_BITS_2-1:0]           calib_rank_cnt,
+output  reg     [`CFG_BITS_2-1:0]           calib_cas_slot,
+output  reg     [`CFG_BITS_6-1:0]           calib_data_offset_0,
+output  reg     [`CFG_BITS_6-1:0]           calib_data_offset_1,
+output  reg     [`CFG_BITS_6-1:0]           calib_data_offset_2,
 output  reg                     calib_wrdata_en,
-output  reg     [2*CK_RATIO*DQ_WIDTH-1:0] 
+output  reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_CALIBRATION_INI_V_RANGE_8]
                                 phy_wrdata
    
 );  

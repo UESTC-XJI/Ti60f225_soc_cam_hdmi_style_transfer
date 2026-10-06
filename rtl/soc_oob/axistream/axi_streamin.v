@@ -1,3 +1,4 @@
+`include "../../defines.v"
 /////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2013-2021 Efinix Inc. All rights reserved.
@@ -14,7 +15,7 @@
 
 module axi_streamin
 #(
-	parameter FRAME_COUNT = 1*1920*1080
+	parameter FRAME_COUNT = `CFG_SOC_OOB_AXISTREAM_AXI_STREAMIN_V_PARAMETER_FRAME_COUNT
 )
 (
 input 			axi_clk,
@@ -22,75 +23,75 @@ input 			in_clk,
 input 			rstn,
 
 //Frame Size
-input 		[10:0]	x_size,	//h
-input 		[10:0]	y_size,	//v
+input 		[`CFG_BITS_11-1:0]	x_size,	//h
+input 		[`CFG_BITS_11-1:0]	y_size,	//v
 
 input 		stream_en,
 
 input       	in_de,
 input       	in_hs,
 input       	in_vs,
-input	[7:0]	in_rd_00,
-input	[7:0]   in_rd_01,
-input	[7:0]   in_rd_10,
-input	[7:0]   in_rd_11,
+input	[`CFG_BITS_8-1:0]	in_rd_00,
+input	[`CFG_BITS_8-1:0]   in_rd_01,
+input	[`CFG_BITS_8-1:0]   in_rd_10,
+input	[`CFG_BITS_8-1:0]   in_rd_11,
 
 output              out_tvalid,
 input               in_tready,
-output     [31:0]   out_tdata,
-output     [3:0]   	out_tkeep,
-output     [3:0]	out_tdest,
+output     [`CFG_BITS_32-1:0]   out_tdata,
+output     [`CFG_BITS_4-1:0]   	out_tkeep,
+output     [`CFG_BITS_4-1:0]	out_tdest,
 output              out_tlast
 
 );
 
 //Main states
-localparam  IDLE 		 = 3'b000;
-localparam  WAIT_STREAM  = 3'b001;
-localparam  START_STREAM = 3'b010;
-localparam  START_FRAME  = 3'b011;
-localparam  END_FRAME1   = 3'b100;
-localparam  END_FRAME2   = 3'b101;
+localparam  IDLE 		 = `CFG_SOC_OOB_AXISTREAM_AXI_STREAMIN_V_LOCALPARAM_IDLE;
+localparam  WAIT_STREAM  = `CFG_SOC_OOB_AXISTREAM_AXI_STREAMIN_V_LOCALPARAM_WAIT_STREAM;
+localparam  START_STREAM = `CFG_SOC_OOB_AXISTREAM_AXI_STREAMIN_V_LOCALPARAM_START_STREAM;
+localparam  START_FRAME  = `CFG_SOC_OOB_AXISTREAM_AXI_STREAMIN_V_LOCALPARAM_START_FRAME;
+localparam  END_FRAME1   = `CFG_SOC_OOB_AXISTREAM_AXI_STREAMIN_V_LOCALPARAM_END_FRAME1;
+localparam  END_FRAME2   = `CFG_SOC_OOB_AXISTREAM_AXI_STREAMIN_V_LOCALPARAM_END_FRAME2;
 
 
-reg 	[10:0]	r_x_count;
-reg 	[10:0]	r_y_count;
-reg 	[20:0]	r_d_count;
-reg 	[2:0] 	r_axi_state;
+reg 	[`CFG_BITS_11-1:0]	r_x_count;
+reg 	[`CFG_BITS_11-1:0]	r_y_count;
+reg 	[`CFG_BITS_21-1:0]	r_d_count;
+reg 	[`CFG_BITS_3-1:0] 	r_axi_state;
 
-wire 	[31:0]	w_data_out;
-
-
+wire 	[`CFG_BITS_32-1:0]	w_data_out;
 
 
-reg [31:0] r_frame_count;
 
-reg [31:0] r_out_tdata;
+
+reg [`CFG_BITS_32-1:0] r_frame_count;
+
+reg [`CFG_BITS_32-1:0] r_out_tdata;
 reg 	   r_out_tvalid;
 reg 	   r_out_tlast;
-reg [3:0]  r_out_tkeep;
+reg [`CFG_BITS_4-1:0]  r_out_tkeep;
 
 
 
 reg 			r_in_de_1P;
 reg 			r_in_hs_1P;
 reg 			r_in_Vs_1P;
-reg 	[10:0]	r_hs_count;
-reg 	[10:0]	r_vs_count;
-reg 	[10:0]	r_de_count;
+reg 	[`CFG_BITS_11-1:0]	r_hs_count;
+reg 	[`CFG_BITS_11-1:0]	r_vs_count;
+reg 	[`CFG_BITS_11-1:0]	r_de_count;
 
 
-reg 	[31:0]	r_in_buffer;
+reg 	[`CFG_BITS_32-1:0]	r_in_buffer;
 reg		r_de_buffer;
 reg 	r_rd_buffer;
 reg 	r_end_frame;
 
-reg 	[31:0]	debug_data_in_count;
-reg 	[31:0]	debug_data_out_count;
+reg 	[`CFG_BITS_32-1:0]	debug_data_in_count;
+reg 	[`CFG_BITS_32-1:0]	debug_data_out_count;
 
 
-reg 	[31:0]	r_data_in_count;
-reg 	[31:0]	r_data_out_count;
+reg 	[`CFG_BITS_32-1:0]	r_data_in_count;
+reg 	[`CFG_BITS_32-1:0]	r_data_out_count;
 
 (* async_reg = "true" *) reg 	r_stream_en;
 
@@ -300,8 +301,8 @@ begin
 end
 fifo 
 #(
-	.DATA_WIDTH(32),
-    .ADDR_WIDTH(10)
+	.DATA_WIDTH(`CFG_SOC_OOB_AXISTREAM_AXI_STREAMIN_V_INST_INST_FIFO_DATA_DATA_WIDTH),
+    .ADDR_WIDTH(`CFG_SOC_OOB_AXISTREAM_AXI_STREAMIN_V_INST_INST_FIFO_DATA_ADDR_WIDTH)
 )	   
 inst_fifo_data
 (
@@ -317,7 +318,7 @@ inst_fifo_data
 
 reg r_out_tvalid_1P;
 reg r_out_tlast_1P;
-reg [3:0] r_out_tkeep_1P;
+reg [`CFG_BITS_4-1:0] r_out_tkeep_1P;
 
 always @(posedge in_clk or negedge rstn)
 begin

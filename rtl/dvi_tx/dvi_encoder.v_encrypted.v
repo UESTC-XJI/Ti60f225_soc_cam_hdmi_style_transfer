@@ -1,28 +1,29 @@
+`include "../defines.v"
 `timescale 1 ps / 1ps
 module dvi_encoder
 (
 	input           pixelclk,       // system clock
 	input           rst_p,          // reset
-	input[7:0]      i_bdata,       // Blue data in
-	input[7:0]      i_gdata,      // Green data in
-	input[7:0]      i_rdata,        // Red data in
+	input[`CFG_BITS_8-1:0]      i_bdata,       // Blue data in
+	input[`CFG_BITS_8-1:0]      i_gdata,      // Green data in
+	input[`CFG_BITS_8-1:0]      i_rdata,        // Red data in
 	input           i_hs,          // hsync data
 	input           i_vs,          // vsync data
 	input           i_de,             // data enable
-	input     [ 1:0] video_format,
-	input 	  [ 6:0] video_VIC,
-	input     [23:0] audio_L ,
-	input     [23:0] audio_R ,
+	input     [ `CFG_BITS_2-1:0] video_format,
+	input 	  [ `CFG_BITS_7-1:0] video_VIC,
+	input     [`CFG_BITS_24-1:0] audio_L ,
+	input     [`CFG_BITS_24-1:0] audio_R ,
 	input            audio_valid,
-	input  [19:0]    audio_N,
-	input  [19:0]    audio_CTS,
-	input [3:0]      audio_sample_frequency,     
-	input [3:0]      audio_word_length,
+	input  [`CFG_BITS_20-1:0]    audio_N,
+	input  [`CFG_BITS_20-1:0]    audio_CTS,
+	input [`CFG_BITS_4-1:0]      audio_sample_frequency,
+	input [`CFG_BITS_4-1:0]      audio_word_length,
 
-	output          [9:0]tmds_data0,
-    output          [9:0]tmds_data1,
-    output          [9:0]tmds_data2,
-    output          [9:0]tmds_clk
+	output          [`CFG_BITS_10-1:0]tmds_data0,
+    output          [`CFG_BITS_10-1:0]tmds_data1,
+    output          [`CFG_BITS_10-1:0]tmds_data2,
+    output          [`CFG_BITS_10-1:0]tmds_clk
 
 );
 

@@ -1,3 +1,4 @@
+`include "../../defines.v"
 //***************************************************************/
 //   ______   _   _   _                  _            _
 //  |  ____| | | (_) | |                | |          | |
@@ -21,10 +22,10 @@
 `timescale 1ps/1ps
 
 module ddr_phy_wrlvl # (
-parameter                       TCQ         = 100,
-parameter                       DQ_WIDTH    = 64,
-parameter                       DRAM_WIDTH  = 8,
-parameter                       DQS_WIDTH   = 2
+parameter                       TCQ         = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_PARAMETER_TCQ,
+parameter                       DQ_WIDTH    = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_PARAMETER_DQ_WIDTH,
+parameter                       DRAM_WIDTH  = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_PARAMETER_DRAM_WIDTH,
+parameter                       DQS_WIDTH   = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_PARAMETER_DQS_WIDTH
 )
 (
 input                           clk,
@@ -34,75 +35,75 @@ input                           write_calib,
 input                           wl_sm_start,
 input                           dq_bit_sample_ok,
 
-output          [7:0]           wrlvl_dq_check,
+output          [`CFG_BITS_8-1:0]           wrlvl_dq_check,
 output  reg                     dqs_invert ,
 output  reg                     dq_check_en ,
 output  reg                     wrlvl_rank_done ,
 output  reg                     wr_level_done ,
 output  reg                     wrlvl_shift_ena,  
-output  reg     [2:0]           wrlvl_phise_shift,
-output  reg     [2:0]           wrlvl_shift
+output  reg     [`CFG_BITS_3-1:0]           wrlvl_phise_shift,
+output  reg     [`CFG_BITS_3-1:0]           wrlvl_shift
    );
 
 //Parameter Define
-localparam              PHISE_TAPS     = 8;
-localparam              PLL_SHIFT_NUM  = 4;
-localparam              WL_DQS_NUM     = 16;
-localparam              PLL_BLANK_NUM  = 64;
+localparam              PHISE_TAPS     = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_PHISE_TAPS;
+localparam              PLL_SHIFT_NUM  = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_PLL_SHIFT_NUM;
+localparam              WL_DQS_NUM     = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_WL_DQS_NUM;
+localparam              PLL_BLANK_NUM  = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_PLL_BLANK_NUM;
 
-localparam              PLL_SHIFT_WTH  = clogb2(PLL_SHIFT_NUM); 
-localparam              WL_DQS_WTH     = clogb2(WL_DQS_NUM); 
-localparam              TAP_WTH        = clogb2(PHISE_TAPS);
-localparam              BLANK_NUM_WTH  = clogb2(PLL_BLANK_NUM);
+localparam              PLL_SHIFT_WTH  = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_PLL_SHIFT_WTH;
+localparam              WL_DQS_WTH     = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_WL_DQS_WTH;
+localparam              TAP_WTH        = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_TAP_WTH;
+localparam              BLANK_NUM_WTH  = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_BLANK_NUM_WTH;
  
-localparam              IDLE           = 3'h0;
-localparam              WLDQSEN_WAIT   = 3'h1;
-localparam              DQS_WAIT       = 3'h2;
-localparam              WL_EADG_CHECK  = 3'h3;
-localparam              PLL_SHIFT      = 3'h4;
-localparam              SEND_DQS_INC   = 3'h5;
-localparam              SEND_DQS_INVERT= 3'h6;
-localparam              DQ_CHECK_DONE  = 3'h7;
+localparam              IDLE           = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_IDLE;
+localparam              WLDQSEN_WAIT   = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_WLDQSEN_WAIT;
+localparam              DQS_WAIT       = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_DQS_WAIT;
+localparam              WL_EADG_CHECK  = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_WL_EADG_CHECK;
+localparam              PLL_SHIFT      = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_PLL_SHIFT;
+localparam              SEND_DQS_INC   = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_SEND_DQS_INC;
+localparam              SEND_DQS_INVERT= `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_SEND_DQS_INVERT;
+localparam              DQ_CHECK_DONE  = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_LOCALPARAM_DQ_CHECK_DONE;
 
 //Register Define
-reg     [2:0]                   cur_state;
-reg     [2:0]                   next_state;  
-reg     [WL_DQS_WTH-1:0]        wrlvl_check_cnt;
-reg     [PLL_SHIFT_WTH-1:0]     pll_shift_cnt;
-reg     [2:0]                   wr_level_shift_cnt;
-reg     [BLANK_NUM_WTH-1:0]     pll_blank_cnt;
+reg     [`CFG_BITS_3-1:0]                   cur_state;
+reg     [`CFG_BITS_3-1:0]                   next_state;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_RANGE_1]        wrlvl_check_cnt;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_RANGE_2]     pll_shift_cnt;
+reg     [`CFG_BITS_3-1:0]                   wr_level_shift_cnt;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_RANGE_3]     pll_blank_cnt;
 (* async_reg = "true" *)reg                             dq_bit_ok_r1;
 reg                             dq_bit_ok_r2;
 reg                             dq_bit_ok_r3;
-reg     [7:0]                   dq_dynmic_shift;
+reg     [`CFG_BITS_8-1:0]                   dq_dynmic_shift;
 reg                             check_err;
 reg                             check_err_r;
-reg     [TAP_WTH-1:0]           rising_tap;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_RANGE_4]           rising_tap;
 reg                             rising_tap_vld;
-reg     [TAP_WTH-1:0]           next_rising_tap;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_RANGE_5]           next_rising_tap;
 reg                             next_rising_tap_vld;
-reg     [TAP_WTH-1:0]           first_rising_tap;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_RANGE_6]           first_rising_tap;
 reg                             first_rising_tap_vld;
-reg     [TAP_WTH-1:0]           failling_tap;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_RANGE_7]           failling_tap;
 reg                             failling_tap_vld;
-reg     [TAP_WTH-1:0]           next_failling_tap;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_RANGE_8]           next_failling_tap;
 reg                             next_failling_tap_vld;
 reg                             replace_flag;
-reg     [TAP_WTH-1:0]           calibrate_tap;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_RANGE_9]           calibrate_tap;
 reg                             last_flag;
 reg                             clean_flag;
-reg     [3:0]                   check_err_cnt;
+reg     [`CFG_BITS_4-1:0]                   check_err_cnt;
 reg                             dqs_invert_r1;
 reg                             dqs_invert_r2;
 
 //Wire Define
-wire    [TAP_WTH-1:0]           calibrate_1tmp;
-wire    [TAP_WTH-1:0]           calibrate_2tmp;
-wire    [TAP_WTH-1:0]           calibrate_3tmp;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_RANGE_10]           calibrate_1tmp;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_RANGE_11]           calibrate_2tmp;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_RANGE_12]           calibrate_3tmp;
 wire                            case_1tmp;
 wire                            case_2tmp;
 wire                            case_3tmp;
-wire    [TAP_WTH-1:0]           tap_cnt;  
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRLVL_V_RANGE_13]           tap_cnt;
 wire                            dqs_invert_edge;
 //wire    [7:0]                 check_debug = 8'b01111111;
 //Encryption begin

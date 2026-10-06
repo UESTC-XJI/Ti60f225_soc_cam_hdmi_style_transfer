@@ -1,32 +1,33 @@
+`include "../defines.v"
 
 module packet_assembler (
     input wire clk,
     input wire rst_p,
     input wire data_island_period,
-    input wire [23:0] header, // See Table 5-8 Packet Types
-    input wire [55:0] sub0,
-    input wire [55:0] sub1,
-    input wire [55:0] sub2,
-    input wire [55:0] sub3,
+    input wire [`CFG_BITS_24-1:0] header, // See Table 5-8 Packet Types
+    input wire [`CFG_BITS_56-1:0] sub0,
+    input wire [`CFG_BITS_56-1:0] sub1,
+    input wire [`CFG_BITS_56-1:0] sub2,
+    input wire [`CFG_BITS_56-1:0] sub3,
 
     output wire packet_header,   
-    output wire [3:0] ch1_packet_data ,
-    output wire [3:0] ch2_packet_data,
-    output reg  [4:0] cnt
+    output wire [`CFG_BITS_4-1:0] ch1_packet_data ,
+    output wire [`CFG_BITS_4-1:0] ch2_packet_data,
+    output reg  [`CFG_BITS_5-1:0] cnt
     
     // output wire [8:0] packet_data // See Figure 5-4 Data Island Packet and ECC Structure
 );
-wire [55:0] sub [3:0];
+wire [`CFG_BITS_56-1:0] sub [`CFG_BITS_4-1:0];
 
 // BCH packets 0 to 3 are transferred two bits at a time, see Section 5.2.3.4 for further information.
-wire [5:0] counter_t2 = {cnt, 1'b0};
-wire [5:0] counter_t2_p1 = {cnt, 1'b1};
+wire [`CFG_BITS_6-1:0] counter_t2 = {cnt, 1'b0};
+wire [`CFG_BITS_6-1:0] counter_t2_p1 = {cnt, 1'b1};
 
 // Initialize parity bits to 0
-reg [7:0] parity [4:0] = {8'd0, 8'd0, 8'd0, 8'd0, 8'd0};
+reg [`CFG_BITS_8-1:0] parity [`CFG_BITS_5-1:0] = {8'd0, 8'd0, 8'd0, 8'd0, 8'd0};
 
 
-wire [63:0] bch [3:0];
+wire [`CFG_BITS_64-1:0] bch [`CFG_BITS_4-1:0];
 
 assign sub[0] = sub0;
 assign sub[1] = sub1;
@@ -48,18 +49,18 @@ assign bch[0] = {parity[0], sub[0]};
 assign bch[1] = {parity[1], sub[1]};
 assign bch[2] = {parity[2], sub[2]};
 assign bch[3] = {parity[3], sub[3]};
-wire [31:0] bch4 = {parity[4], header};
+wire [`CFG_BITS_32-1:0] bch4 = {parity[4], header};
 // assign packet_data = {bch[3][counter_t2_p1], bch[2][counter_t2_p1], bch[1][counter_t2_p1], bch[0][counter_t2_p1], bch[3][counter_t2], bch[2][counter_t2], bch[1][counter_t2], bch[0][counter_t2], bch4[cnt]};
 assign packet_header   =  bch4[cnt];
 assign ch1_packet_data = {bch[3][counter_t2]   , bch[2][counter_t2]   , bch[1][counter_t2]   , bch[0][counter_t2]   };
 assign ch2_packet_data = {bch[3][counter_t2_p1], bch[2][counter_t2_p1], bch[1][counter_t2_p1], bch[0][counter_t2_p1]};
 
 
-wire [7:0] parity_next [4:0];
+wire [`CFG_BITS_8-1:0] parity_next [`CFG_BITS_5-1:0];
 
 // The parity needs to be calculated 2 bits at a time for blocks 0 to 3.
 // There's 56 bits being sent 2 bits at a time over TMDS channels 1 & 2, so the parity bits wouldn't be ready in time otherwise.
-wire [7:0] parity_next_next [3:0];
+wire [`CFG_BITS_8-1:0] parity_next_next [`CFG_BITS_4-1:0];
 
 genvar i;
 generate
@@ -96,8 +97,8 @@ end
 
 
 
-function [7:0] next_ecc;
-input [7:0] ecc, next_bch_bit;
+function [`CFG_BITS_8-1:0] next_ecc;
+input [`CFG_BITS_8-1:0] ecc, next_bch_bit;
 begin
     next_ecc = (ecc >> 1) ^ ((ecc[0] ^ next_bch_bit) ? 8'b10000011 : 8'd0);
 end

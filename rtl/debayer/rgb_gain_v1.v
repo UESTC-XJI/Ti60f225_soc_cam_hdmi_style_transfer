@@ -1,8 +1,9 @@
+`include "../defines.v"
 module rgb_gain_v1
 #(
-	parameter	P_DEPTH			= 8,
-	parameter	Q_WIDTH			= 16,	// Q8.8定点
-	parameter GREEN_FIRST = 1'b1 // 1: even G/B, odd R/G; 0: even B/G, odd G/R (low/high)
+	parameter	P_DEPTH			= `CFG_DEBAYER_RGB_GAIN_V1_V_PARAMETER_P_DEPTH,
+	parameter	Q_WIDTH			= `CFG_DEBAYER_RGB_GAIN_V1_V_PARAMETER_Q_WIDTH,	// Q8.8定点
+	parameter GREEN_FIRST = `CFG_DEBAYER_RGB_GAIN_V1_V_PARAMETER_GREEN_FIRST // 1: even G/B, odd R/G; 0: even B/G, odd G/R (low/high)
 )
 (
 	input               i_pclk,
@@ -12,17 +13,17 @@ module rgb_gain_v1
 	input               i_vs,
 	input				i_de,
 	input				i_valid,
-	input [P_DEPTH*2-1:0]  		i_data,
+	input [`CFG_DEBAYER_RGB_GAIN_V1_V_RANGE_1]  		i_data,
 
-	input [Q_WIDTH-1:0]	gain_r,
-	input [Q_WIDTH-1:0]	gain_g,
-	input [Q_WIDTH-1:0]	gain_b,
+	input [`CFG_DEBAYER_RGB_GAIN_V1_V_RANGE_2]	gain_r,
+	input [`CFG_DEBAYER_RGB_GAIN_V1_V_RANGE_3]	gain_g,
+	input [`CFG_DEBAYER_RGB_GAIN_V1_V_RANGE_4]	gain_b,
 
 	output  reg            	o_hs,
 	output	reg				o_vs,
 	output	reg				o_de,
 	output	reg				o_valid,
-	output  reg [P_DEPTH*2-1:0]  	o_data,
+	output  reg [`CFG_DEBAYER_RGB_GAIN_V1_V_RANGE_5]  	o_data,
 	output wire                 o_raw_row_odd
 );
 
@@ -63,11 +64,11 @@ begin
 		r_line_cnt 	<= ~r_line_cnt;
 end
 
-wire [P_DEPTH-1:0] pix_high = i_data[P_DEPTH*2-1:P_DEPTH];
-wire [P_DEPTH-1:0] pix_low  = i_data[P_DEPTH-1:0];
+wire [`CFG_DEBAYER_RGB_GAIN_V1_V_RANGE_6] pix_high = i_data[P_DEPTH*2-1:P_DEPTH];
+wire [`CFG_DEBAYER_RGB_GAIN_V1_V_RANGE_7] pix_low  = i_data[P_DEPTH-1:0];
 
-reg [Q_WIDTH+P_DEPTH-1:0] mul_high;
-reg [Q_WIDTH+P_DEPTH-1:0] mul_low;
+reg [`CFG_DEBAYER_RGB_GAIN_V1_V_RANGE_8] mul_high;
+reg [`CFG_DEBAYER_RGB_GAIN_V1_V_RANGE_9] mul_low;
 
 //多路选择对应通道增益
 always @(*) begin
@@ -88,10 +89,10 @@ always @(*) begin
 end
 
 //Q8.8 右移8位 + 10bit饱和
-wire [P_DEPTH-1:0] out_high = (|mul_high[Q_WIDTH+P_DEPTH-1:P_DEPTH+8] ) ? 2**P_DEPTH-1 : mul_high[P_DEPTH+8-1:8];
-wire [P_DEPTH-1:0] out_low  = (|mul_low[Q_WIDTH+P_DEPTH-1:P_DEPTH+8]  ) ? 2**P_DEPTH-1 : mul_low[P_DEPTH+8-1:8];
+wire [`CFG_DEBAYER_RGB_GAIN_V1_V_RANGE_10] out_high = (|mul_high[Q_WIDTH+P_DEPTH-1:P_DEPTH+8] ) ? 2**P_DEPTH-1 : mul_high[P_DEPTH+8-1:8];
+wire [`CFG_DEBAYER_RGB_GAIN_V1_V_RANGE_11] out_low  = (|mul_low[Q_WIDTH+P_DEPTH-1:P_DEPTH+8]  ) ? 2**P_DEPTH-1 : mul_low[P_DEPTH+8-1:8];
 
-wire [P_DEPTH*2-1:0] w_data_filtered = {out_high,out_low};
+wire [`CFG_DEBAYER_RGB_GAIN_V1_V_RANGE_12] w_data_filtered = {out_high,out_low};
 
 always @( posedge i_pclk )
 begin

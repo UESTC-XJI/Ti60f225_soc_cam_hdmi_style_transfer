@@ -1,21 +1,22 @@
+`include "../defines.v"
 module imx185_config
 #(
-	parameter I2C_ID		= 7'h1A,
-	parameter INITIAL_CODE	= "imx185_1080p_reg.mem",
-	parameter MEM_DEPTH		= 423,
-	parameter REGISTER_BYTE	= 3
+	parameter I2C_ID		= `CFG_CAM_IMX185_CONFIG_V_PARAMETER_I2C_ID,
+	parameter INITIAL_CODE	= `CFG_CAM_IMX185_CONFIG_V_PARAMETER_INITIAL_CODE,
+	parameter MEM_DEPTH		= `CFG_CAM_IMX185_CONFIG_V_PARAMETER_MEM_DEPTH,
+	parameter REGISTER_BYTE	= `CFG_CAM_IMX185_CONFIG_V_PARAMETER_REGISTER_BYTE
 )
 (
 	input	i_arst,
 	input	i_sysclk,
 	input	i_pll_locked,
-	output	[2:0]o_state,
+	output	[`CFG_BITS_3-1:0]o_state,
 	output	o_confdone,
 	
 	input	i_dbg_we,
-	input	[7:0]i_dbg_din,
-	input	[9:0]i_dbg_addr,
-	output	[7:0]o_dbg_dout,
+	input	[`CFG_BITS_8-1:0]i_dbg_din,
+	input	[`CFG_BITS_10-1:0]i_dbg_addr,
+	output	[`CFG_BITS_8-1:0]o_dbg_dout,
 	input	i_dbg_reconfig,
 	
 	input	i_sda,
@@ -25,52 +26,52 @@ module imx185_config
 	output	o_rstn
 );
 
-localparam	DEVICE_ADDRESS	= 8'h00;
-localparam	ADDRESSING		= 7;
-localparam	SYSCLK_FREQ		= 25;
-localparam	MODE			= "STANDARD";
-localparam	SLAVE_ENABLE	= "FALSE";
-localparam	tSYSCLK			= 1000/SYSCLK_FREQ;
+localparam	DEVICE_ADDRESS	= `CFG_CAM_IMX185_CONFIG_V_LOCALPARAM_DEVICE_ADDRESS;
+localparam	ADDRESSING		= `CFG_CAM_IMX185_CONFIG_V_LOCALPARAM_ADDRESSING;
+localparam	SYSCLK_FREQ		= `CFG_CAM_IMX185_CONFIG_V_LOCALPARAM_SYSCLK_FREQ;
+localparam	MODE			= `CFG_CAM_IMX185_CONFIG_V_LOCALPARAM_MODE;
+localparam	SLAVE_ENABLE	= `CFG_CAM_IMX185_CONFIG_V_LOCALPARAM_SLAVE_ENABLE;
+localparam	tSYSCLK			= `CFG_CAM_IMX185_CONFIG_V_LOCALPARAM_TSYSCLK;
 
-localparam	s_IDLE		= 3'b001;
-localparam	s_CONFIG	= 3'b010;
-localparam	s_DONE		= 3'b000;
-localparam	s_WAIT		= 3'b011;
-localparam	s_LAST		= 3'b101; // debug
+localparam	s_IDLE		= `CFG_CAM_IMX185_CONFIG_V_LOCALPARAM_S_IDLE;
+localparam	s_CONFIG	= `CFG_CAM_IMX185_CONFIG_V_LOCALPARAM_S_CONFIG;
+localparam	s_DONE		= `CFG_CAM_IMX185_CONFIG_V_LOCALPARAM_S_DONE;
+localparam	s_WAIT		= `CFG_CAM_IMX185_CONFIG_V_LOCALPARAM_S_WAIT;
+localparam	s_LAST		= `CFG_CAM_IMX185_CONFIG_V_LOCALPARAM_S_LAST; // debug
 
 reg		r_m_en_1P;
 reg		r_m_wr_1P;
-wire	[7:0]w_opn008_reg;
+wire	[`CFG_BITS_8-1:0]w_opn008_reg;
 reg		r_last_1P;
 wire	w_ack;
 wire	w_last;
-wire	[7:0]w_data;
+wire	[`CFG_BITS_8-1:0]w_data;
 
-reg		[2:0]r_i2c_config_state_1P;
-reg		[9:0]r_addr_1P;
-reg		[1:0]r_byte_cnt_1P;
-reg		[8:0]r_reg_cnt_1P;
+reg		[`CFG_BITS_3-1:0]r_i2c_config_state_1P;
+reg		[`CFG_BITS_10-1:0]r_addr_1P;
+reg		[`CFG_BITS_2-1:0]r_byte_cnt_1P;
+reg		[`CFG_BITS_9-1:0]r_reg_cnt_1P;
 reg		r_state_1P;
 reg		r_confdone_1P;
 
-reg		[5:0]r_timer_1P;
+reg		[`CFG_BITS_6-1:0]r_timer_1P;
 reg		r_rstn_1P;
 
-reg		[15:0]r_clk_div_1P;
+reg		[`CFG_BITS_16-1:0]r_clk_div_1P;
 reg		r_clk_div_2P;
 reg		r_clk_div_3P;
-reg		[7:0]r_ms_dly_1P;
+reg		[`CFG_BITS_8-1:0]r_ms_dly_1P;
 
 reg		r_dbg_reconfig_1P;
 reg		r_dbg_reconfig_2P;
 
 i2c_wrapper
 #(
-	.DEVICE_ADDRESS	(DEVICE_ADDRESS),
-	.ADDRESSING		(ADDRESSING),
-	.SYSCLK_FREQ	(SYSCLK_FREQ),
-	.MODE			(MODE),
-	.SLAVE_ENABLE	(SLAVE_ENABLE)
+	.DEVICE_ADDRESS	(`CFG_CAM_IMX185_CONFIG_V_INST_INST_I2C_DEVICE_ADDRESS),
+	.ADDRESSING		(`CFG_CAM_IMX185_CONFIG_V_INST_INST_I2C_ADDRESSING),
+	.SYSCLK_FREQ	(`CFG_CAM_IMX185_CONFIG_V_INST_INST_I2C_SYSCLK_FREQ),
+	.MODE			(`CFG_CAM_IMX185_CONFIG_V_INST_INST_I2C_MODE),
+	.SLAVE_ENABLE	(`CFG_CAM_IMX185_CONFIG_V_INST_INST_I2C_SLAVE_ENABLE)
 )
 inst_i2c
 (
@@ -92,13 +93,13 @@ inst_i2c
 
 true_dual_port_ram
 #(
-	.DATA_WIDTH(8),
-	.ADDR_WIDTH(10),
-	.WRITE_MODE_1("WRITE_FIRST"),
-	.WRITE_MODE_2("WRITE_FIRST"),
-	.OUTPUT_REG_1("TRUE"),
-	.OUTPUT_REG_2("TRUE"),
-	.RAM_INIT_FILE(INITIAL_CODE)		// Initial code file
+	.DATA_WIDTH(`CFG_CAM_IMX185_CONFIG_V_INST_INST_IMX185_REG_DATA_WIDTH),
+	.ADDR_WIDTH(`CFG_CAM_IMX185_CONFIG_V_INST_INST_IMX185_REG_ADDR_WIDTH),
+	.WRITE_MODE_1(`CFG_CAM_IMX185_CONFIG_V_INST_INST_IMX185_REG_WRITE_MODE_1),
+	.WRITE_MODE_2(`CFG_CAM_IMX185_CONFIG_V_INST_INST_IMX185_REG_WRITE_MODE_2),
+	.OUTPUT_REG_1(`CFG_CAM_IMX185_CONFIG_V_INST_INST_IMX185_REG_OUTPUT_REG_1),
+	.OUTPUT_REG_2(`CFG_CAM_IMX185_CONFIG_V_INST_INST_IMX185_REG_OUTPUT_REG_2),
+	.RAM_INIT_FILE(`CFG_CAM_IMX185_CONFIG_V_INST_INST_IMX185_REG_RAM_INIT_FILE)		// Initial code file
 )
 inst_imx185_reg
 (

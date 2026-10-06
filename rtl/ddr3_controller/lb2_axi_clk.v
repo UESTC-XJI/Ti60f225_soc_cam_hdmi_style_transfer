@@ -1,3 +1,4 @@
+`include "../defines.v"
 //***************************************************************/
 //   ______   _   _   _                  _            _
 //  |  ____| | | (_) | |                | |          | |
@@ -21,13 +22,13 @@
 
 
 module lb2_axi_clk #(
-parameter                       USER_DW    = 256,
-parameter                       USER_MW    = 32,
-parameter                       BANK_WIDTH = 3,
-parameter                       COL_WIDTH  = 12,
-parameter                       RANK_WIDTH = 2,
-parameter                       ROW_WIDTH  = 16,
-parameter                       ADDR_WIDTH = RANK_WIDTH + BANK_WIDTH + ROW_WIDTH + COL_WIDTH
+parameter                       USER_DW    = `CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_PARAMETER_USER_DW,
+parameter                       USER_MW    = `CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_PARAMETER_USER_MW,
+parameter                       BANK_WIDTH = `CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_PARAMETER_BANK_WIDTH,
+parameter                       COL_WIDTH  = `CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_PARAMETER_COL_WIDTH,
+parameter                       RANK_WIDTH = `CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_PARAMETER_RANK_WIDTH,
+parameter                       ROW_WIDTH  = `CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_PARAMETER_ROW_WIDTH,
+parameter                       ADDR_WIDTH = `CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_PARAMETER_ADDR_WIDTH
 )
 (
 input                           axi_clk, 
@@ -35,33 +36,33 @@ input                           core_clk,
 input                           rstn,   
 input                           axi_rstn,   
 input                           axi_user_en,  
-input           [2:0]           axi_user_cmd,
-input           [ADDR_WIDTH-1:0]axi_user_addr, 
+input           [`CFG_BITS_3-1:0]           axi_user_cmd,
+input           [`CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_RANGE_1]axi_user_addr,
 output                          axi_user_ready, 
 
 input                           axi_user_wren,   
-input           [USER_DW-1:0]   axi_user_wdata,
-input           [USER_MW-1:0]   axi_user_mask,
+input           [`CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_RANGE_2]   axi_user_wdata,
+input           [`CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_RANGE_3]   axi_user_mask,
 input                           axi_user_end,                                 
 output                          axi_user_wrdy,  
    
-output          [USER_DW-1:0]   axi_user_rd_data,      
+output          [`CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_RANGE_4]   axi_user_rd_data,
 output                          axi_user_rd_end,       
 output                          axi_user_rd_valid, 
 
 //----------------local bus----------------//
 output                          lb_user_en,  
-output          [2:0]           lb_user_cmd,
-output          [ADDR_WIDTH-1:0]lb_user_addr, 
+output          [`CFG_BITS_3-1:0]           lb_user_cmd,
+output          [`CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_RANGE_5]lb_user_addr,
 input                           lb_user_ready, 
 
 output                          lb_user_wren,   
-output          [USER_DW-1:0]   lb_user_wdata,
-output          [USER_MW-1:0]   lb_user_mask,
+output          [`CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_RANGE_6]   lb_user_wdata,
+output          [`CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_RANGE_7]   lb_user_mask,
 output                          lb_user_end,                                 
 input                           lb_user_wrdy,  
    
-input           [USER_DW-1:0]   lb_user_rd_data,      
+input           [`CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_RANGE_8]   lb_user_rd_data,
 input                           lb_user_rd_end,       
 input                           lb_user_rd_valid
 
@@ -73,25 +74,25 @@ input                           lb_user_rd_valid
 
 //Wire Define
 wire                            u1_wrreq;
-wire    [ADDR_WIDTH+2:0]        u1_data;
+wire    [`CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_RANGE_9]        u1_data;
 wire                            u1_almfull;
 wire                            u1_full;
 wire                            u1_progfull;
 wire                            u1_empty;
 wire                            u1_rdreq;
-wire    [ADDR_WIDTH+2:0]        u1_q;
+wire    [`CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_RANGE_10]        u1_q;
 
 wire                            u2_wrreq;
-wire    [USER_DW+USER_MW:0]     u2_data;
-wire    [USER_DW+USER_MW:0]     u2_q;
+wire    [`CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_RANGE_11]     u2_data;
+wire    [`CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_RANGE_12]     u2_q;
 wire                            u2_almfull;
 wire                            u2_full;
 wire                            u2_empty;
 wire                            u2_rdreq;
 
 wire                            u3_wrreq;
-wire    [USER_DW:0]             u3_data;
-wire    [USER_DW:0]             u3_q;
+wire    [`CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_RANGE_13]             u3_data;
+wire    [`CFG_DDR3_CONTROLLER_LB2_AXI_CLK_V_RANGE_14]             u3_q;
 wire                            u3_almfull;
 wire                            u3_full;
 wire                            u3_empty;

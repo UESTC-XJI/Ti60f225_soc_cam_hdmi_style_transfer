@@ -1,48 +1,49 @@
+`include "../defines.v"
 // Unless otherwise specified, all "See X" references will refer to the HDMI v1.4a specification.
 
 // See Section 5.3.4
 // 2-channel L-PCM or IEC 61937 audio in IEC 60958 frames with consumer grade IEC 60958-3.
 module audio_packet 
 #(
-    parameter CHANNEL_NUM = 2,
+    parameter CHANNEL_NUM = `CFG_DVI_TX_AUDIO_PACKET_SV_PARAMETER_CHANNEL_NUM,
     // A thorough explanation of the below parameters can be found in IEC 60958-3 5.2, 5.3.
 
     // 0 = Consumer, 1 = Professional
-    parameter bit GRADE = 1'b0,
+    parameter bit GRADE = `CFG_DVI_TX_AUDIO_PACKET_SV_PARAMETER_GRADE,
 
     // 0 = LPCM, 1 = IEC 61937 compressed
-    parameter bit SAMPLE_WORD_TYPE = 1'b0,
+    parameter bit SAMPLE_WORD_TYPE = `CFG_DVI_TX_AUDIO_PACKET_SV_PARAMETER_SAMPLE_WORD_TYPE,
 
     // 0 = asserted, 1 = not asserted
-    parameter bit COPYRIGHT_NOT_ASSERTED = 1'b1,
+    parameter bit COPYRIGHT_NOT_ASSERTED = `CFG_DVI_TX_AUDIO_PACKET_SV_PARAMETER_COPYRIGHT_NOT_ASSERTED,
 
     // 000 = no pre-emphasis, 001 = 50μs/15μs pre-emphasis
-    parameter bit [2:0] PRE_EMPHASIS = 3'b000,
+    parameter bit [`CFG_BITS_3-1:0] PRE_EMPHASIS = `CFG_DVI_TX_AUDIO_PACKET_SV_PARAMETER_PRE_EMPHASIS,
 
     // Only one valid value
-    parameter bit [1:0] MODE = 2'b00,
+    parameter bit [`CFG_BITS_2-1:0] MODE = `CFG_DVI_TX_AUDIO_PACKET_SV_PARAMETER_MODE,
 
     // Set to all 0s for general device.
-    parameter bit [7:0] CATEGORY_CODE = 8'd0,
+    parameter bit [`CFG_BITS_8-1:0] CATEGORY_CODE = `CFG_DVI_TX_AUDIO_PACKET_SV_PARAMETER_CATEGORY_CODE,
 
     // TODO: not really sure what this is...
     // 0 = "Do no take into account"
-    parameter bit [3:0] SOURCE_NUMBER = 4'd0,
+    parameter bit [`CFG_BITS_4-1:0] SOURCE_NUMBER = `CFG_DVI_TX_AUDIO_PACKET_SV_PARAMETER_SOURCE_NUMBER,
 
     // 0000 = 44.1 kHz
-    parameter bit [3:0] SAMPLING_FREQUENCY = 4'b0000,
+    parameter bit [`CFG_BITS_4-1:0] SAMPLING_FREQUENCY = `CFG_DVI_TX_AUDIO_PACKET_SV_PARAMETER_SAMPLING_FREQUENCY,
 
     // Normal accuracy: +/- 1000 * 10E-6 (00), High accuracy +/- 50 * 10E-6 (01)
-    parameter bit [1:0] CLOCK_ACCURACY = 2'b00,
+    parameter bit [`CFG_BITS_2-1:0] CLOCK_ACCURACY = `CFG_DVI_TX_AUDIO_PACKET_SV_PARAMETER_CLOCK_ACCURACY,
 
     // 3-bit representation of the number of bits to subtract (except 101 is actually subtract 0) with LSB first, followed by maxmium length of 20 bits (0) or 24 bits (1)
-    parameter bit [3:0] WORD_LENGTH = 0,
+    parameter bit [`CFG_BITS_4-1:0] WORD_LENGTH = `CFG_DVI_TX_AUDIO_PACKET_SV_PARAMETER_WORD_LENGTH,
 
     // Frequency prior to conversion in a consumer playback system. 0000 = not indicated.
-    parameter bit [3:0] ORIGINAL_SAMPLING_FREQUENCY = 4'b0000,
+    parameter bit [`CFG_BITS_4-1:0] ORIGINAL_SAMPLING_FREQUENCY = `CFG_DVI_TX_AUDIO_PACKET_SV_PARAMETER_ORIGINAL_SAMPLING_FREQUENCY,
 
     // 2-channel = 0, >= 3-channel = 1
-    parameter bit LAYOUT = 1'b0
+    parameter bit LAYOUT = `CFG_DVI_TX_AUDIO_PACKET_SV_PARAMETER_LAYOUT
 
 )
 (
@@ -50,46 +51,46 @@ module audio_packet
     input wire rst_p,
 
     // See IEC 60958-1 4.4 and Annex A. 0 indicates the signal is suitable for decoding to an analog audio signal.
-    input wire [3:0] valid_bit_l,
-    input wire [3:0] valid_bit_r,
+    input wire [`CFG_BITS_4-1:0] valid_bit_l,
+    input wire [`CFG_BITS_4-1:0] valid_bit_r,
     // See IEC 60958-3 Section 6. 0 indicates that no user data is being sent
-    input wire [3:0] user_data_bit_l,
-    input wire [3:0] user_data_bit_r,
-    input wire [3:0] audio_word_length,
-    input wire [3:0] audio_sample_frequency,
+    input wire [`CFG_BITS_4-1:0] user_data_bit_l,
+    input wire [`CFG_BITS_4-1:0] user_data_bit_r,
+    input wire [`CFG_BITS_4-1:0] audio_word_length,
+    input wire [`CFG_BITS_4-1:0] audio_sample_frequency,
     input wire       audio_valid,
-    input wire [23:0] audio_L0,
-    input wire [23:0] audio_L1,
-    input wire [23:0] audio_L2,
-    input wire [23:0] audio_L3,
-    input wire [23:0] audio_R0,
-    input wire [23:0] audio_R1,
-    input wire [23:0] audio_R2,
-    input wire [23:0] audio_R3,
+    input wire [`CFG_BITS_24-1:0] audio_L0,
+    input wire [`CFG_BITS_24-1:0] audio_L1,
+    input wire [`CFG_BITS_24-1:0] audio_L2,
+    input wire [`CFG_BITS_24-1:0] audio_L3,
+    input wire [`CFG_BITS_24-1:0] audio_R0,
+    input wire [`CFG_BITS_24-1:0] audio_R1,
+    input wire [`CFG_BITS_24-1:0] audio_R2,
+    input wire [`CFG_BITS_24-1:0] audio_R3,
 
 
-    input wire [3:0] audio_sample_word_present,
+    input wire [`CFG_BITS_4-1:0] audio_sample_word_present,
 
-    output reg [23:0] header,
-    output reg [55:0] sub0,
-    output reg [55:0] sub1,
-    output reg [55:0] sub2,
-    output reg [55:0] sub3,
+    output reg [`CFG_BITS_24-1:0] header,
+    output reg [`CFG_BITS_56-1:0] sub0,
+    output reg [`CFG_BITS_56-1:0] sub1,
+    output reg [`CFG_BITS_56-1:0] sub2,
+    output reg [`CFG_BITS_56-1:0] sub3,
     output reg pkt_valid
   
 );
 
 // Left/right channel for stereo audio
-localparam  CHANNEL_LEFT = 4'd1;
-localparam  CHANNEL_RIGHT = 4'd2;
-localparam  CHANNEL_STATUS_LENGTH = 8'd192;
-reg [55:0] sub [3:0];
-wire [23:0] w_header;
+localparam  CHANNEL_LEFT = `CFG_DVI_TX_AUDIO_PACKET_SV_LOCALPARAM_CHANNEL_LEFT;
+localparam  CHANNEL_RIGHT = `CFG_DVI_TX_AUDIO_PACKET_SV_LOCALPARAM_CHANNEL_RIGHT;
+localparam  CHANNEL_STATUS_LENGTH = `CFG_DVI_TX_AUDIO_PACKET_SV_LOCALPARAM_CHANNEL_STATUS_LENGTH;
+reg [`CFG_BITS_56-1:0] sub [`CFG_BITS_4-1:0];
+wire [`CFG_BITS_24-1:0] w_header;
 // See IEC 60958-1 5.1, Table 2
-wire [192-1:0] channel_status_left;
-wire [192-1:0] channel_status_right;
-reg [192-1:0] channel_status_left_r;
-reg [192-1:0] channel_status_right_r;
+wire [`CFG_DVI_TX_AUDIO_PACKET_SV_RANGE_1] channel_status_left;
+wire [`CFG_DVI_TX_AUDIO_PACKET_SV_RANGE_2] channel_status_right;
+reg [`CFG_DVI_TX_AUDIO_PACKET_SV_RANGE_3] channel_status_left_r;
+reg [`CFG_DVI_TX_AUDIO_PACKET_SV_RANGE_4] channel_status_right_r;
 assign channel_status_left = {152'd0,
                                  ORIGINAL_SAMPLING_FREQUENCY, audio_word_length,//byte 4
                                 2'b00,CLOCK_ACCURACY, audio_sample_frequency, //byte 3
@@ -107,12 +108,12 @@ assign channel_status_right = {152'd0,
 // See HDMI 1.4a Table 5-12: Audio Sample Packet Header.
 assign w_header[19:12] = {4'b0000, {3'b000, LAYOUT}};
 assign w_header[7:0] = 8'd2;
-wire [3:0] parity_bit_l;
-wire [3:0] parity_bit_r;
-reg [7:0] aligned_frame_counter [3:0] = {8'd0,8'd0,8'd0,8'd0};
-reg [7:0] cnt = 'd0;
-wire [23:0] audio_R [3:0];
-wire [23:0] audio_L [3:0];
+wire [`CFG_BITS_4-1:0] parity_bit_l;
+wire [`CFG_BITS_4-1:0] parity_bit_r;
+reg [`CFG_BITS_8-1:0] aligned_frame_counter [`CFG_BITS_4-1:0] = {8'd0,8'd0,8'd0,8'd0};
+reg [`CFG_BITS_8-1:0] cnt = 'd0;
+wire [`CFG_BITS_24-1:0] audio_R [`CFG_BITS_4-1:0];
+wire [`CFG_BITS_24-1:0] audio_L [`CFG_BITS_4-1:0];
 
 // initial begin
 //     audio_R[0] = audio_R0;

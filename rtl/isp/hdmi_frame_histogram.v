@@ -1,39 +1,40 @@
+`include "../defines.v"
 // Display-source histogram, never includes the overlay itself.
 // Single-pixel samples every 16 columns / 8 rows. VS is active high.
 // Blank-time shared divider scales each bin to the tallest bin, not probability.
 module hdmi_frame_histogram #(
-  parameter FRAME_WIDTH=1920, FRAME_HEIGHT=1080, PLOT_HEIGHT=128
+  parameter FRAME_WIDTH=`CFG_ISP_HDMI_FRAME_HISTOGRAM_V_PARAMETER_FRAME_WIDTH, FRAME_HEIGHT=`CFG_ISP_HDMI_FRAME_HISTOGRAM_V_PARAMETER_FRAME_HEIGHT, PLOT_HEIGHT=`CFG_ISP_HDMI_FRAME_HISTOGRAM_V_PARAMETER_PLOT_HEIGHT
 )(
   input clk,rst_n,i_vs,i_de,
-  input [7:0] i_r,i_g,i_b,
-  input [1:0] i_mode, // 0=Y, 1=R, 2=G, 3=B; already frame-latched
-  input [5:0] i_read_bin,
-  output [7:0] o_height,
+  input [`CFG_BITS_8-1:0] i_r,i_g,i_b,
+  input [`CFG_BITS_2-1:0] i_mode, // 0=Y, 1=R, 2=G, 3=B; already frame-latched
+  input [`CFG_BITS_6-1:0] i_read_bin,
+  output [`CFG_BITS_8-1:0] o_height,
   output reg o_valid,
-  output reg [15:0] o_samples
+  output reg [`CFG_BITS_16-1:0] o_samples
 );
-  reg [15:0] counts[0:63];
-  reg [7:0] heights[0:63];
-  reg [11:0] x,y;
+  reg [`CFG_BITS_16-1:0] counts[`CFG_RANGE_0_63];
+  reg [`CFG_BITS_8-1:0] heights[`CFG_RANGE_0_63];
+  reg [`CFG_BITS_12-1:0] x,y;
   reg vs_d,de_d,started,bad;
-  reg [15:0] samples,peak;
-  reg [1:0] frame_mode,last_mode,state;
-  localparam IDLE=0,SCAN=1,LOAD=2,DIVIDE=3;
-  reg [5:0] index;
-  reg [4:0] bit_index;
+  reg [`CFG_BITS_16-1:0] samples,peak;
+  reg [`CFG_BITS_2-1:0] frame_mode,last_mode,state;
+  localparam IDLE=`CFG_ISP_HDMI_FRAME_HISTOGRAM_V_LOCALPARAM_IDLE,SCAN=`CFG_ISP_HDMI_FRAME_HISTOGRAM_V_LOCALPARAM_SCAN,LOAD=`CFG_ISP_HDMI_FRAME_HISTOGRAM_V_LOCALPARAM_LOAD,DIVIDE=`CFG_ISP_HDMI_FRAME_HISTOGRAM_V_LOCALPARAM_DIVIDE;
+  reg [`CFG_BITS_6-1:0] index;
+  reg [`CFG_BITS_5-1:0] bit_index;
   reg sample_pending;
-  reg [5:0] sample_bin;
-  reg [23:0] dividend,quotient;
-  reg [16:0] remainder;
-  wire [9:0] luma={2'b0,i_r}+{1'b0,i_g,1'b0}+{2'b0,i_b};
-  wire [7:0] value=frame_mode==1 ? i_r : frame_mode==2 ? i_g : frame_mode==3 ? i_b : luma[9:2];
+  reg [`CFG_BITS_6-1:0] sample_bin;
+  reg [`CFG_BITS_24-1:0] dividend,quotient;
+  reg [`CFG_BITS_17-1:0] remainder;
+  wire [`CFG_BITS_10-1:0] luma={2'b0,i_r}+{1'b0,i_g,1'b0}+{2'b0,i_b};
+  wire [`CFG_BITS_8-1:0] value=frame_mode==1 ? i_r : frame_mode==2 ? i_g : frame_mode==3 ? i_b : luma[9:2];
   wire line_end=de_d && !i_de;
   wire complete=y==FRAME_HEIGHT || (line_end && y==FRAME_HEIGHT-1);
   wire sample_pixel=started && !i_vs && i_de && state==IDLE &&
     x<FRAME_WIDTH && y<FRAME_HEIGHT && x[3:0]==0 && y[2:0]==0;
-  wire [16:0] trial={remainder[15:0],dividend[23]};
+  wire [`CFG_BITS_17-1:0] trial={remainder[15:0],dividend[23]};
   wire subtract=trial>={1'b0,peak};
-  wire [23:0] next_q={quotient[22:0],subtract};
+  wire [`CFG_BITS_24-1:0] next_q={quotient[22:0],subtract};
   assign o_height=o_valid ? heights[i_read_bin] : 8'd0;
   integer n;
   always @(posedge clk or negedge rst_n) begin

@@ -10,7 +10,8 @@ config_path = ROOT / 'debug.json'
 config = json.loads(config_path.read_text(encoding='utf-8'))
 vio = next(core for core in config['debug_cores'] if core['name'] == 'vio0')
 existing = {probe['name'] for probe in vio['probes']}
-added = False
+added = any(p['name'] == 'gamma_sel' for p in vio['probes'])
+vio['probes'] = [p for p in vio['probes'] if p['name'] != 'gamma_sel']
 for name, width, initial in [
     ('osd_hist_enable', 1, '0x1'), ('osd_hist_mode', 2, '0x0'), ('osd_text_enable', 1, '0x0'),
     ('osd_hist_valid', 1, None), ('osd_hist_samples', 16, None),

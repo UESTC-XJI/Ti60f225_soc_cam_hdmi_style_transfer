@@ -1,3 +1,4 @@
+`include "../defines.v"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -37,53 +38,53 @@ module top_soc_oob (
 	//Memory Interface
 	output              io_ddrA_arw_valid,
 	input               io_ddrA_arw_ready,
-	output     [31:0]   io_ddrA_arw_payload_addr,
-	output     [7:0]    io_ddrA_arw_payload_id,
-	output     [3:0]    io_ddrA_arw_payload_region,
-	output     [7:0]    io_ddrA_arw_payload_len,
-	output     [2:0]    io_ddrA_arw_payload_size,
-	output     [1:0]    io_ddrA_arw_payload_burst,
-	output     [0:0]    io_ddrA_arw_payload_lock,
-	output     [3:0]    io_ddrA_arw_payload_cache,
-	output     [3:0]    io_ddrA_arw_payload_qos,
-	output     [2:0]    io_ddrA_arw_payload_prot,
+	output     [`CFG_BITS_32-1:0]   io_ddrA_arw_payload_addr,
+	output     [`CFG_BITS_8-1:0]    io_ddrA_arw_payload_id,
+	output     [`CFG_BITS_4-1:0]    io_ddrA_arw_payload_region,
+	output     [`CFG_BITS_8-1:0]    io_ddrA_arw_payload_len,
+	output     [`CFG_BITS_3-1:0]    io_ddrA_arw_payload_size,
+	output     [`CFG_BITS_2-1:0]    io_ddrA_arw_payload_burst,
+	output     [`CFG_BITS_1-1:0]    io_ddrA_arw_payload_lock,
+	output     [`CFG_BITS_4-1:0]    io_ddrA_arw_payload_cache,
+	output     [`CFG_BITS_4-1:0]    io_ddrA_arw_payload_qos,
+	output     [`CFG_BITS_3-1:0]    io_ddrA_arw_payload_prot,
 	output              io_ddrA_arw_payload_write,
 	output              io_ddrA_w_valid,
 	input               io_ddrA_w_ready,
-	output     [AXI_DBW-1:0]  io_ddrA_w_payload_data,
-	output     [15:0]   io_ddrA_w_payload_strb,
+	output     [`CFG_SOC_OOB_TOP_SOC_OOB_V_RANGE_1]  io_ddrA_w_payload_data,
+	output     [`CFG_BITS_16-1:0]   io_ddrA_w_payload_strb,
 	output              io_ddrA_w_payload_last,
 	input               io_ddrA_b_valid,
 	output              io_ddrA_b_ready,
-	input      [7:0]    io_ddrA_b_payload_id,
-	input      [1:0]    io_ddrA_b_payload_resp,
+	input      [`CFG_BITS_8-1:0]    io_ddrA_b_payload_id,
+	input      [`CFG_BITS_2-1:0]    io_ddrA_b_payload_resp,
 	input               io_ddrA_r_valid,
 	output              io_ddrA_r_ready,
-	input      [AXI_DBW-1:0]  io_ddrA_r_payload_data,
-	input      [7:0]    io_ddrA_r_payload_id,
-	input      [1:0]    io_ddrA_r_payload_resp,
+	input      [`CFG_SOC_OOB_TOP_SOC_OOB_V_RANGE_2]  io_ddrA_r_payload_data,
+	input      [`CFG_BITS_8-1:0]    io_ddrA_r_payload_id,
+	input      [`CFG_BITS_2-1:0]    io_ddrA_r_payload_resp,
 	input               io_ddrA_r_payload_last,
-	output     [7:0]    io_ddrA_w_payload_id,
+	output     [`CFG_BITS_8-1:0]    io_ddrA_w_payload_id,
 
 
 	//user custom ports
-	output	[5:0]		o_LED,					//Bit [3:0]
-	input	[5:0]		i_switch,
+	output	[`CFG_BITS_6-1:0]		o_LED,					//Bit [3:0]
+	input	[`CFG_BITS_6-1:0]		i_switch,
 	
 	//Reg 2 RGB Gain Control
-	output 	[2:0]		o_red_gain,				//Bit [2:0]
-	output 	[2:0]		o_green_gain,			//Bit [6:4]
-	output 	[2:0]		o_blue_gain,				//Bit [10:8]
+	output 	[`CFG_BITS_3-1:0]		o_red_gain,				//Bit [2:0]
+	output 	[`CFG_BITS_3-1:0]		o_green_gain,			//Bit [6:4]
+	output 	[`CFG_BITS_3-1:0]		o_blue_gain,				//Bit [10:8]
 	
 	//UVC Control
-	input 	[2:0]		i_uvc_status,
-	output 	[2:0]		o_uvc_control,
+	input 	[`CFG_BITS_3-1:0]		i_uvc_status,
+	output 	[`CFG_BITS_3-1:0]		o_uvc_control,
 	output				o_uvc_resetn,
 	
-	output [12:0]		o_uvc_X_START,
-	output [12:0]		o_uvc_X_WIN,
-	output [12:0]		o_uvc_Y_START,
-	output [12:0]		o_uvc_Y_WIN,
+	output [`CFG_BITS_13-1:0]		o_uvc_X_START,
+	output [`CFG_BITS_13-1:0]		o_uvc_X_WIN,
+	output [`CFG_BITS_13-1:0]		o_uvc_Y_START,
+	output [`CFG_BITS_13-1:0]		o_uvc_Y_WIN,
 	
 	
 	//SOC Ports
@@ -105,25 +106,25 @@ module top_soc_oob (
 	  
 	  
 	//Video Stream Input
-	input [10:0] 		in_0_x_wr,
-	input [10:0] 		in_0_y_wr,
+	input [`CFG_BITS_11-1:0] 		in_0_x_wr,
+	input [`CFG_BITS_11-1:0] 		in_0_y_wr,
 	input				in_0_wr_en,
 	input				in_0_vs,
 	input				in_0_hs,
-	input [7:0]			in_0_wr_00,
-	input [7:0]			in_0_wr_01,
-	input [7:0]			in_0_wr_10,
-	input [7:0]			in_0_wr_11,
+	input [`CFG_BITS_8-1:0]			in_0_wr_00,
+	input [`CFG_BITS_8-1:0]			in_0_wr_01,
+	input [`CFG_BITS_8-1:0]			in_0_wr_10,
+	input [`CFG_BITS_8-1:0]			in_0_wr_11,
 	
 	//Video Stream Output
 	output          	out_0_de,
 	output				out_0_valid,
 	output          	out_0_hsync,
 	output          	out_0_vsync,
-	output [7:0] 		out_0_rd_00,
-	output [7:0] 		out_0_rd_01,
-	output [7:0] 		out_0_rd_10,
-	output [7:0] 		out_0_rd_11,
+	output [`CFG_BITS_8-1:0] 		out_0_rd_00,
+	output [`CFG_BITS_8-1:0] 		out_0_rd_01,
+	output [`CFG_BITS_8-1:0] 		out_0_rd_10,
+	output [`CFG_BITS_8-1:0] 		out_0_rd_11,
 	
 	
 	//SD Interface
@@ -132,9 +133,9 @@ module top_soc_oob (
 	input                  sd_cmd_i,
 	output  wire           sd_cmd_o,
 	output  wire           sd_cmd_oe,
-	input           [3:0]  sd_dat_i,
-	output  wire    [3:0]  sd_dat_o,
-	output  wire    [3:0]  sd_dat_oe,
+	input           [`CFG_BITS_4-1:0]  sd_dat_i,
+	output  wire    [`CFG_BITS_4-1:0]  sd_dat_o,
+	output  wire    [`CFG_BITS_4-1:0]  sd_dat_oe,
 	input                  sd_wp,
 	input                  sd_cd_n,
 	
@@ -158,17 +159,17 @@ module top_soc_oob (
 );
 /////////////////////////////////////////////////////////////////////////////
 
-parameter	MAX_HRES		= 11'd1920;
-parameter	MAX_VRES		= 11'd1080;
-parameter	HSP				= 8'd44;
-parameter	HBP				= 8'd148;
-parameter	HFP				= 8'd88;
-parameter	VSP				= 6'd5;
-parameter	VBP				= 6'd36;
-parameter	VFP				= 6'd4;
+parameter	MAX_HRES		= `CFG_SOC_OOB_TOP_SOC_OOB_V_PARAMETER_MAX_HRES;
+parameter	MAX_VRES		= `CFG_SOC_OOB_TOP_SOC_OOB_V_PARAMETER_MAX_VRES;
+parameter	HSP				= `CFG_SOC_OOB_TOP_SOC_OOB_V_PARAMETER_HSP;
+parameter	HBP				= `CFG_SOC_OOB_TOP_SOC_OOB_V_PARAMETER_HBP;
+parameter	HFP				= `CFG_SOC_OOB_TOP_SOC_OOB_V_PARAMETER_HFP;
+parameter	VSP				= `CFG_SOC_OOB_TOP_SOC_OOB_V_PARAMETER_VSP;
+parameter	VBP				= `CFG_SOC_OOB_TOP_SOC_OOB_V_PARAMETER_VBP;
+parameter	VFP				= `CFG_SOC_OOB_TOP_SOC_OOB_V_PARAMETER_VFP;
 
-localparam  VIDEOIN_WIDTH  = 128;
-localparam  VIDEOOUT_WIDTH =  128;
+localparam  VIDEOIN_WIDTH  = `CFG_SOC_OOB_TOP_SOC_OOB_V_LOCALPARAM_VIDEOIN_WIDTH;
+localparam  VIDEOOUT_WIDTH =  `CFG_SOC_OOB_TOP_SOC_OOB_V_LOCALPARAM_VIDEOOUT_WIDTH;
 
 
 

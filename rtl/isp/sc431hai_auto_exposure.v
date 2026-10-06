@@ -1,78 +1,79 @@
+`include "../defines.v"
 // Linear mode: exposure in half-lines, limit 4..(2*VTS-11).
 // Read actual VTS/exposure first. Sensor analog/digital gains remain fixed.
 // Every change uses Group Hold and starts at a sensor frame boundary.
 module sc431hai_auto_exposure #(
-  parameter WAIT_FRAMES=2, TIMEOUT_CYCLES=250000,
-  parameter FILTER_SHIFT=2, CONFIRM_FRAMES=2, DEADBAND=12, SETTLE_BAND=6,
-  parameter SMALL_STEP_SHIFT=6, LARGE_STEP_SHIFT=5, LARGE_ERROR=32,
-  parameter RELEASE_FRAMES=8, PREDICTIVE_ENABLE=0, FIXED_STEP_ENABLE=1, RECOVERY_FRAMES=32, FAST_RECOVERY_FRAMES=4, EXPOSURE_PRIORITY_ENABLE=1
+  parameter WAIT_FRAMES=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_WAIT_FRAMES, TIMEOUT_CYCLES=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_TIMEOUT_CYCLES,
+  parameter FILTER_SHIFT=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_FILTER_SHIFT, CONFIRM_FRAMES=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_CONFIRM_FRAMES, DEADBAND=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_DEADBAND, SETTLE_BAND=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_SETTLE_BAND,
+  parameter SMALL_STEP_SHIFT=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_SMALL_STEP_SHIFT, LARGE_STEP_SHIFT=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_LARGE_STEP_SHIFT, LARGE_ERROR=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_LARGE_ERROR,
+  parameter RELEASE_FRAMES=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_RELEASE_FRAMES, PREDICTIVE_ENABLE=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_PREDICTIVE_ENABLE, FIXED_STEP_ENABLE=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_FIXED_STEP_ENABLE, RECOVERY_FRAMES=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_RECOVERY_FRAMES, FAST_RECOVERY_FRAMES=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_FAST_RECOVERY_FRAMES, EXPOSURE_PRIORITY_ENABLE=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_PARAMETER_EXPOSURE_PRIORITY_ENABLE
 )(
   input clk,rst_n,i_config_done,i_enable,i_sensor_frame_start,
   input i_stats_valid,i_highlights,
-  input [7:0] i_mean,i_target,
+  input [`CFG_BITS_8-1:0] i_mean,i_target,
   output reg o_wr_en,o_rd_en,
-  output reg [15:0] o_addr,
-  output reg [7:0] o_data,
+  output reg [`CFG_BITS_16-1:0] o_addr,
+  output reg [`CFG_BITS_8-1:0] o_data,
   input i_wr_done,i_rd_done,i_wr_error,i_rd_error,
-  input [7:0] i_read_data,
-  output reg [15:0] o_exposure,o_vts,
-  output reg [7:0] o_mean,
+  input [`CFG_BITS_8-1:0] i_read_data,
+  output reg [`CFG_BITS_16-1:0] o_exposure,o_vts,
+  output reg [`CFG_BITS_8-1:0] o_mean,
   output o_ready,o_at_limit,
   output reg o_error,
   input i_high_protect,
-  input [9:0] i_high_permille,
-  input [7:0] i_high_limit,
+  input [`CFG_BITS_10-1:0] i_high_permille,
+  input [`CFG_BITS_8-1:0] i_high_limit,
   output o_exposure_constrained,
   output reg o_highlight_limited
 );
-  localparam BOOT=0,READ_SEND=1,READ_WAIT=2,LIMITS=3,READY=4,
-    WAIT_FRAME=5,WRITE_SEND=6,WRITE_WAIT=7,FAULT=8,
-    PREDICT_DIVIDE=9,PREDICT_APPLY=10;
-  reg [3:0] state;
-  reg [2:0] index;
-  reg [7:0] exp_hi,exp_mid,exp_lo,cooldown;
-  reg [15:0] pending;
+  localparam BOOT=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_LOCALPARAM_BOOT,READ_SEND=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_LOCALPARAM_READ_SEND,READ_WAIT=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_LOCALPARAM_READ_WAIT,LIMITS=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_LOCALPARAM_LIMITS,READY=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_LOCALPARAM_READY,
+    WAIT_FRAME=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_LOCALPARAM_WAIT_FRAME,WRITE_SEND=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_LOCALPARAM_WRITE_SEND,WRITE_WAIT=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_LOCALPARAM_WRITE_WAIT,FAULT=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_LOCALPARAM_FAULT,
+    PREDICT_DIVIDE=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_LOCALPARAM_PREDICT_DIVIDE,PREDICT_APPLY=`CFG_ISP_SC431HAI_AUTO_EXPOSURE_V_LOCALPARAM_PREDICT_APPLY;
+  reg [`CFG_BITS_4-1:0] state;
+  reg [`CFG_BITS_3-1:0] index;
+  reg [`CFG_BITS_8-1:0] exp_hi,exp_mid,exp_lo,cooldown;
+  reg [`CFG_BITS_16-1:0] pending;
   reg group_failed;
   // Learn a safe ceiling after a highlight-driven reduction. Releasing the
   // latch must not immediately restore the large mean-driven exposure jump.
   reg ceiling_valid,pending_high;
-  reg [15:0] highlight_ceiling,unsafe_exposure;
-  reg [7:0] safe_scene_mean;
+  reg [`CFG_BITS_16-1:0] highlight_ceiling,unsafe_exposure;
+  reg [`CFG_BITS_8-1:0] safe_scene_mean;
   reg safe_scene_valid;
-  reg [7:0] scene_change_count;
-  reg [7:0] recovery_count,ceiling_limit;
+  reg [`CFG_BITS_8-1:0] scene_change_count;
+  reg [`CFG_BITS_8-1:0] recovery_count,ceiling_limit;
   reg recovery_was_fast,release_was_low;
   wire ceiling_active=(PREDICTIVE_ENABLE || FIXED_STEP_ENABLE) && i_high_protect && ceiling_valid &&
     ceiling_limit==(i_high_limit==0 ? 8'd1 : i_high_limit);
-  reg [31:0] timer;
-  wire [16:0] max_wide={o_vts,1'b0}-17'd11;
-  wire [15:0] maximum=max_wide[15:0];
-  wire [7:0] target=i_target<16 ? 8'd16 : (i_target>224 ? 8'd224 : i_target);
+  reg [`CFG_BITS_32-1:0] timer;
+  wire [`CFG_BITS_17-1:0] max_wide={o_vts,1'b0}-17'd11;
+  wire [`CFG_BITS_16-1:0] maximum=max_wide[15:0];
+  wire [`CFG_BITS_8-1:0] target=i_target<16 ? 8'd16 : (i_target>224 ? 8'd224 : i_target);
   // Q8.4 / Q10.4 EWMA: retain sub-code precision without pixel-path changes.
   reg filter_valid;
-  reg [11:0] mean_filter;
-  reg [13:0] high_filter;
-  reg [7:0] previous_mean;
-  reg [1:0] last_direction;
-  reg [1:0] brightness_direction;
-  reg [7:0] confirm_count,release_count;
-  wire [19:0] mean_mix=mean_filter*((1<<FILTER_SHIFT)-1)+{i_mean,4'b0};
-  wire [21:0] high_mix=high_filter*((1<<FILTER_SHIFT)-1)+{i_high_permille,4'b0};
-  wire [19:0] mean_shifted=mean_mix>>FILTER_SHIFT;
-  wire [21:0] high_shifted=high_mix>>FILTER_SHIFT;
-  wire [8:0] mean_change=i_mean>previous_mean ? {1'b0,i_mean}-{1'b0,previous_mean} :
+  reg [`CFG_BITS_12-1:0] mean_filter;
+  reg [`CFG_BITS_14-1:0] high_filter;
+  reg [`CFG_BITS_8-1:0] previous_mean;
+  reg [`CFG_BITS_2-1:0] last_direction;
+  reg [`CFG_BITS_2-1:0] brightness_direction;
+  reg [`CFG_BITS_8-1:0] confirm_count,release_count;
+  wire [`CFG_BITS_20-1:0] mean_mix=mean_filter*((1<<FILTER_SHIFT)-1)+{i_mean,4'b0};
+  wire [`CFG_BITS_22-1:0] high_mix=high_filter*((1<<FILTER_SHIFT)-1)+{i_high_permille,4'b0};
+  wire [`CFG_BITS_20-1:0] mean_shifted=mean_mix>>FILTER_SHIFT;
+  wire [`CFG_BITS_22-1:0] high_shifted=high_mix>>FILTER_SHIFT;
+  wire [`CFG_BITS_9-1:0] mean_change=i_mean>previous_mean ? {1'b0,i_mean}-{1'b0,previous_mean} :
     {1'b0,previous_mean}-{1'b0,i_mean};
   // A late exposure response must not be mixed with an old exposure's mean.
   // Re-seed and confirm again when accepted measurements change substantially.
   wire mean_jump=(PREDICTIVE_ENABLE || FIXED_STEP_ENABLE) && filter_valid && mean_change>DEADBAND;
-  wire [11:0] mean_next=(filter_valid && !mean_jump) ? mean_shifted[11:0] : {i_mean,4'b0};
-  wire [13:0] high_next=filter_valid ? high_shifted[13:0] : {i_high_permille,4'b0};
-  wire [7:0] mean_control=(mean_next+12'd8)>>4;
-  wire [9:0] high_control=high_next[13:4];
-  wire [8:0] mean_error=mean_control>target ? {1'b0,mean_control}-{1'b0,target} :
+  wire [`CFG_BITS_12-1:0] mean_next=(filter_valid && !mean_jump) ? mean_shifted[11:0] : {i_mean,4'b0};
+  wire [`CFG_BITS_14-1:0] high_next=filter_valid ? high_shifted[13:0] : {i_high_permille,4'b0};
+  wire [`CFG_BITS_8-1:0] mean_control=(mean_next+12'd8)>>4;
+  wire [`CFG_BITS_10-1:0] high_control=high_next[13:4];
+  wire [`CFG_BITS_9-1:0] mean_error=mean_control>target ? {1'b0,mean_control}-{1'b0,target} :
     {1'b0,target}-{1'b0,mean_control};
-  function [15:0] fixed_step_lookup;
-    input [8:0] error;
+  function [`CFG_BITS_16-1:0] fixed_step_lookup;
+    input [`CFG_BITS_9-1:0] error;
     begin
       if(error<=4) fixed_step_lookup=0;
       else if(error<=6) fixed_step_lookup=2;
@@ -84,27 +85,27 @@ module sc431hai_auto_exposure #(
       else fixed_step_lookup=512;
     end
   endfunction
-  wire [15:0] brightness_step=fixed_step_lookup(mean_error);
-  wire [15:0] small_step=(o_exposure>>SMALL_STEP_SHIFT)==0 ? 16'd1 : (o_exposure>>SMALL_STEP_SHIFT);
-  wire [15:0] large_step=(o_exposure>>LARGE_STEP_SHIFT)==0 ? 16'd1 : (o_exposure>>LARGE_STEP_SHIFT);
-  wire [7:0] high_limit=i_high_limit==0 ? 8'd1 : i_high_limit;
-  wire [7:0] high_release=high_limit>>1;
+  wire [`CFG_BITS_16-1:0] brightness_step=fixed_step_lookup(mean_error);
+  wire [`CFG_BITS_16-1:0] small_step=(o_exposure>>SMALL_STEP_SHIFT)==0 ? 16'd1 : (o_exposure>>SMALL_STEP_SHIFT);
+  wire [`CFG_BITS_16-1:0] large_step=(o_exposure>>LARGE_STEP_SHIFT)==0 ? 16'd1 : (o_exposure>>LARGE_STEP_SHIFT);
+  wire [`CFG_BITS_8-1:0] high_limit=i_high_limit==0 ? 8'd1 : i_high_limit;
+  wire [`CFG_BITS_8-1:0] high_release=high_limit>>1;
   // Low highlight occupancy permits faster bounded recovery. Between half the
   // limit and the limit, keep probing rather than permanently freezing AE.
   wire recovery_headroom=high_control<{2'b0,high_limit} && i_high_permille<{2'b0,high_limit};
   wire recovery_fast=high_control<={2'b0,high_release} && i_high_permille<={2'b0,high_release};
-  wire [15:0] recovery_raw=o_exposure>>(recovery_fast ? 4 : 5);
-  wire [15:0] recovery_fixed=recovery_fast ?
+  wire [`CFG_BITS_16-1:0] recovery_raw=o_exposure>>(recovery_fast ? 4 : 5);
+  wire [`CFG_BITS_16-1:0] recovery_fixed=recovery_fast ?
     (brightness_step>128 ? 16'd128 : brightness_step) :
     (brightness_step>32 ? 16'd32 : brightness_step);
-  wire [15:0] recovery_step=FIXED_STEP_ENABLE ? recovery_fixed :
+  wire [`CFG_BITS_16-1:0] recovery_step=FIXED_STEP_ENABLE ? recovery_fixed :
     (recovery_raw<4 ? 16'd4 : recovery_raw);
   wire priority_active=EXPOSURE_PRIORITY_ENABLE && FIXED_STEP_ENABLE;
-  wire [16:0] safe_gap=unsafe_exposure>o_exposure ? {1'b0,unsafe_exposure}-{1'b0,o_exposure} : 17'd0;
-  wire [15:0] boundary_step=safe_gap<=4 ? 16'd0 :
+  wire [`CFG_BITS_17-1:0] safe_gap=unsafe_exposure>o_exposure ? {1'b0,unsafe_exposure}-{1'b0,o_exposure} : 17'd0;
+  wire [`CFG_BITS_16-1:0] boundary_step=safe_gap<=4 ? 16'd0 :
     (safe_gap<=6 ? 16'd1 : ((safe_gap-17'd4)>>1));
-  wire [15:0] guarded_recovery_step=priority_active && boundary_step<recovery_step ? boundary_step : recovery_step;
-  wire [7:0] scene_high_limit=high_limit<4 ? 8'd0 : high_limit>>2;
+  wire [`CFG_BITS_16-1:0] guarded_recovery_step=priority_active && boundary_step<recovery_step ? boundary_step : recovery_step;
+  wire [`CFG_BITS_8-1:0] scene_high_limit=high_limit<4 ? 8'd0 : high_limit>>2;
   // At tiny exposures the black pedestal masks scene changes: a dark scene
   // cannot drop another eight codes below an already dark safe reference.
   // Persistent zero highlights and a near-black mean invalidate that stale
@@ -115,47 +116,47 @@ module sc431hai_auto_exposure #(
   wire scene_became_dark=(dark_floor_escape || (safe_scene_valid &&
     ({1'b0,mean_control}+9'd8)<{1'b0,safe_scene_mean})) &&
     high_control<={2'b0,scene_high_limit} && i_high_permille<={2'b0,scene_high_limit};
-  wire [16:0] recovery_candidate={1'b0,o_exposure}+{1'b0,guarded_recovery_step};
+  wire [`CFG_BITS_17-1:0] recovery_candidate={1'b0,o_exposure}+{1'b0,guarded_recovery_step};
   wire high_over=i_high_protect && high_control>{2'b0,high_limit};
   wire high_hold=i_high_protect && o_highlight_limited &&
     (RELEASE_FRAMES!=1 || high_control>{2'b0,high_release});
-  wire [9:0] severe_limit={2'b0,high_limit}+
+  wire [`CFG_BITS_10-1:0] severe_limit={2'b0,high_limit}+
     (high_limit<8 ? 10'd4 : {3'b0,high_limit[7:1]});
-  wire [15:0] high_fixed=high_control>severe_limit ? 16'd32 : 16'd8;
-  wire [15:0] step=FIXED_STEP_ENABLE ?
+  wire [`CFG_BITS_16-1:0] high_fixed=high_control>severe_limit ? 16'd32 : 16'd8;
+  wire [`CFG_BITS_16-1:0] step=FIXED_STEP_ENABLE ?
     (high_over ? high_fixed : brightness_step) :
     ((high_over ? high_control>severe_limit : mean_error>=LARGE_ERROR) ? large_step : small_step);
-  wire [8:0] start_band=FIXED_STEP_ENABLE ? 9'd4 : DEADBAND;
-  wire [8:0] settle_band=FIXED_STEP_ENABLE ? 9'd4 : SETTLE_BAND;
-  reg [1:0] direction;
-  reg [16:0] candidate;
-  reg [15:0] next_exposure;
+  wire [`CFG_BITS_9-1:0] start_band=FIXED_STEP_ENABLE ? 9'd4 : DEADBAND;
+  wire [`CFG_BITS_9-1:0] settle_band=FIXED_STEP_ENABLE ? 9'd4 : SETTLE_BAND;
+  reg [`CFG_BITS_2-1:0] direction;
+  reg [`CFG_BITS_17-1:0] candidate;
+  reg [`CFG_BITS_16-1:0] next_exposure;
   // One 24-cycle divider per confirmed correction. No video-path division.
-  reg [23:0] pred_dividend,pred_quotient,pred_estimate;
-  reg [7:0] pred_divisor;
-  reg [8:0] pred_remainder;
-  reg [4:0] pred_bit;
-  reg [15:0] pred_base;
-  reg [1:0] pred_direction;
+  reg [`CFG_BITS_24-1:0] pred_dividend,pred_quotient,pred_estimate;
+  reg [`CFG_BITS_8-1:0] pred_divisor;
+  reg [`CFG_BITS_9-1:0] pred_remainder;
+  reg [`CFG_BITS_5-1:0] pred_bit;
+  reg [`CFG_BITS_16-1:0] pred_base;
+  reg [`CFG_BITS_2-1:0] pred_direction;
   reg pred_large;
-  wire [8:0] pred_trial={pred_remainder[7:0],pred_dividend[23]};
+  wire [`CFG_BITS_9-1:0] pred_trial={pred_remainder[7:0],pred_dividend[23]};
   wire pred_subtract=pred_trial>={1'b0,pred_divisor};
-  wire [23:0] pred_next_q={pred_quotient[22:0],pred_subtract};
-  wire [15:0] pred_goal=pred_estimate>{8'b0,maximum} ? maximum :
+  wire [`CFG_BITS_24-1:0] pred_next_q={pred_quotient[22:0],pred_subtract};
+  wire [`CFG_BITS_16-1:0] pred_goal=pred_estimate>{8'b0,maximum} ? maximum :
     (pred_estimate<24'd4 ? 16'd4 : pred_estimate[15:0]);
-  wire [15:0] pred_distance=pred_goal>pred_base ? pred_goal-pred_base : pred_base-pred_goal;
-  wire [15:0] pred_half=pred_distance<2 ? 16'd1 : (pred_distance>>1);
+  wire [`CFG_BITS_16-1:0] pred_distance=pred_goal>pred_base ? pred_goal-pred_base : pred_base-pred_goal;
+  wire [`CFG_BITS_16-1:0] pred_half=pred_distance<2 ? 16'd1 : (pred_distance>>1);
   // Large changes: at most double exposure or reduce it by 25%. Near target:
   // at most 12.5%. Half-distance naturally shrinks further near convergence.
-  wire [15:0] pred_cap_raw=pred_large ?
+  wire [`CFG_BITS_16-1:0] pred_cap_raw=pred_large ?
     (pred_direction==1 ? pred_base : (pred_base>>2)) : (pred_base>>3);
-  wire [15:0] pred_cap=pred_cap_raw==0 ? 16'd1 : pred_cap_raw;
-  wire [15:0] pred_step=pred_half>pred_cap ? pred_cap : pred_half;
-  wire [16:0] pred_candidate=pred_direction==1 ? {1'b0,pred_base}+{1'b0,pred_step} :
+  wire [`CFG_BITS_16-1:0] pred_cap=pred_cap_raw==0 ? 16'd1 : pred_cap_raw;
+  wire [`CFG_BITS_16-1:0] pred_step=pred_half>pred_cap ? pred_cap : pred_half;
+  wire [`CFG_BITS_17-1:0] pred_candidate=pred_direction==1 ? {1'b0,pred_base}+{1'b0,pred_step} :
     {1'b0,pred_base}-{1'b0,pred_step};
-  wire [15:0] pred_unbounded=pred_candidate<4 ? 16'd4 :
+  wire [`CFG_BITS_16-1:0] pred_unbounded=pred_candidate<4 ? 16'd4 :
     (pred_candidate>max_wide ? maximum : pred_candidate[15:0]);
-  wire [15:0] pred_result=(pred_direction==1 && ceiling_active &&
+  wire [`CFG_BITS_16-1:0] pred_result=(pred_direction==1 && ceiling_active &&
     pred_unbounded>highlight_ceiling) ?
     (highlight_ceiling<o_exposure ? o_exposure : highlight_ceiling) : pred_unbounded;
   // A brightness-based reduction is also safe when highlights are excessive.

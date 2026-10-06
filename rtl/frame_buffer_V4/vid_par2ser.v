@@ -1,6 +1,7 @@
+`include "../defines.v"
 module vid_par2ser#(
-    parameter I_VID_WIDTH = 128,
-    parameter O_VID_WIDTH = 48
+    parameter I_VID_WIDTH = `CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_PARAMETER_I_VID_WIDTH,
+    parameter O_VID_WIDTH = `CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_PARAMETER_O_VID_WIDTH
     
 
 )(
@@ -9,28 +10,28 @@ module vid_par2ser#(
 
     input frame_period,
     input rd_fifo_rdvalid,
-    input [I_VID_WIDTH-1:0]rd_fifo_rddata ,
+    input [`CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_RANGE_1]rd_fifo_rddata ,
     input rd_fifo_rdempty,
     output   rd_fifo_rden ,
 
     output reg tx_fifo_valid = 'd0,
     input       wr_fifo_full,
-    output wire [O_VID_WIDTH-1:0] tx_fifo_wrdata
+    output wire [`CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_RANGE_2] tx_fifo_wrdata
 );
 
-localparam MAXI_DATA_WIDTH = max_width(I_VID_WIDTH,O_VID_WIDTH);
-localparam IN_CNT = MAXI_DATA_WIDTH/I_VID_WIDTH;
-localparam OU_CNT = MAXI_DATA_WIDTH/O_VID_WIDTH;
-localparam IN_CNT_WIDTH = $clog2(IN_CNT);
-localparam OU_CNT_WIDTH = $clog2(OU_CNT);
+localparam MAXI_DATA_WIDTH = `CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_LOCALPARAM_MAXI_DATA_WIDTH;
+localparam IN_CNT = `CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_LOCALPARAM_IN_CNT;
+localparam OU_CNT = `CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_LOCALPARAM_OU_CNT;
+localparam IN_CNT_WIDTH = `CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_LOCALPARAM_IN_CNT_WIDTH;
+localparam OU_CNT_WIDTH = `CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_LOCALPARAM_OU_CNT_WIDTH;
 
 
 reg frame_period_r0 = 1'b0;
 reg frame_period_r1 = 1'b0;
-reg [MAXI_DATA_WIDTH-1:0] data_buffer = 'd0;
-reg [MAXI_DATA_WIDTH-1:0] data_buffer1 = 'd0;
-reg [IN_CNT_WIDTH-1:0] shift_in = 'd0;
-reg [OU_CNT_WIDTH-1:0] shift_out = 'd0;
+reg [`CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_RANGE_3] data_buffer = 'd0;
+reg [`CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_RANGE_4] data_buffer1 = 'd0;
+reg [`CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_RANGE_5] shift_in = 'd0;
+reg [`CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_RANGE_6] shift_out = 'd0;
 reg dirty_data = 'd0;
 reg pipe_en = 'd0;
 reg tx_valid_en = 'd0;
@@ -150,11 +151,11 @@ assign tx_fifo_wrdata = data_buffer1[MAXI_DATA_WIDTH-1:MAXI_DATA_WIDTH-O_VID_WID
 
 //=======================================================================================
 function integer max_width;
-input [I_VID_WIDTH-1:0] indata;
-input [O_VID_WIDTH-1:0]	axi_data;
+input [`CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_RANGE_7] indata;
+input [`CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_RANGE_8]	axi_data;
 integer i;
-reg [I_VID_WIDTH-1:0] sub_idata1,sub_idata2;
-reg [I_VID_WIDTH-1:0] max_sub_idata;
+reg [`CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_RANGE_9] sub_idata1,sub_idata2;
+reg [`CFG_FRAME_BUFFER_V4_VID_PAR2SER_V_RANGE_10] max_sub_idata;
 begin
 
 for(i = 0;i <= indata;i = i+1 ) begin 

@@ -1,3 +1,4 @@
+`include "../defines.v"
 /////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2013-2019 Efinix Inc. All rights reserved.
@@ -12,17 +13,17 @@
 
 module i2c_wrapper
 #(
-	parameter	DEVICE_ADDRESS	= 8'h00,		// TODO
-	parameter	ADDRESSING		= 7,			// 7/10
+	parameter	DEVICE_ADDRESS	= `CFG_CAM_I2C_PHY_V_PARAMETER_DEVICE_ADDRESS,		// TODO
+	parameter	ADDRESSING		= `CFG_CAM_I2C_PHY_V_PARAMETER_ADDRESSING,			// 7/10
 												// 10-bit, ADDRESS_CYCLE = 2, S11110AAWK_AAAAAAAAK_RRRRRRRRK TODO
 												// 7-bit, SAAAAAAAWK_RRRRRRRRK
-	parameter	SYSCLK_FREQ		= 100,			// MHz
-	parameter	MODE			= "ULTRA_FAST",	// STANDARD		100kbit/s
+	parameter	SYSCLK_FREQ		= `CFG_CAM_I2C_PHY_V_PARAMETER_SYSCLK_FREQ,			// MHz
+	parameter	MODE			= `CFG_CAM_I2C_PHY_V_PARAMETER_MODE,	// STANDARD		100kbit/s
 												// FAST			400kbit/s
 												// FAST_PLUS	1Mbit/s
 												// HIGH_SPEED	3.4Mbit/s
 												// ULTRA_FAST	5Mbit/s
-	parameter	SLAVE_ENABLE	= "FALSE"
+	parameter	SLAVE_ENABLE	= `CFG_CAM_I2C_PHY_V_PARAMETER_SLAVE_ENABLE
 )
 (
 	input	i_arst,
@@ -31,16 +32,16 @@ module i2c_wrapper
 	input	i_m_en,
 	input	i_m_wr,
 	input	i_last,
-	input	[ADDRESSING-1:0]i_addr,
-	input	[7:0]i_data,
+	input	[`CFG_CAM_I2C_PHY_V_RANGE_1]i_addr,
+	input	[`CFG_BITS_8-1:0]i_data,
 //	output	o_s_en,
 //	output	o_s_wr,
 	output	o_ack,
 	output	o_last,
-	output	[7:0]o_data,
+	output	[`CFG_BITS_8-1:0]o_data,
 	
-	output	[3:0]o_dbg_i2c_state,
-	output	[7:0]o_dbg_rsr,
+	output	[`CFG_BITS_4-1:0]o_dbg_i2c_state,
+	output	[`CFG_BITS_8-1:0]o_dbg_rsr,
 	
 	input	i_sda,
 	output	o_sda_oe,
@@ -53,11 +54,11 @@ generate
 	begin
 		i2c_phy
 		#(
-			.DEVICE_ADDRESS	(DEVICE_ADDRESS),
-			.ADDRESSING		(ADDRESSING),
-			.SYSCLK_FREQ	(SYSCLK_FREQ),
-			.I2C_FREQ		(400),
-			.SLAVE_ENABLE	(SLAVE_ENABLE)
+			.DEVICE_ADDRESS	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_FAST_DEVICE_ADDRESS),
+			.ADDRESSING		(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_FAST_ADDRESSING),
+			.SYSCLK_FREQ	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_FAST_SYSCLK_FREQ),
+			.I2C_FREQ		(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_FAST_I2C_FREQ),
+			.SLAVE_ENABLE	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_FAST_SLAVE_ENABLE)
 		)
 		inst_i2c_fast
 		(
@@ -85,11 +86,11 @@ generate
 	begin
 		i2c_phy
 		#(
-			.DEVICE_ADDRESS	(DEVICE_ADDRESS),
-			.ADDRESSING		(ADDRESSING),
-			.SYSCLK_FREQ	(SYSCLK_FREQ),
-			.I2C_FREQ		(1000),
-			.SLAVE_ENABLE	(SLAVE_ENABLE)
+			.DEVICE_ADDRESS	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_FAST_PLUS_DEVICE_ADDRESS),
+			.ADDRESSING		(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_FAST_PLUS_ADDRESSING),
+			.SYSCLK_FREQ	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_FAST_PLUS_SYSCLK_FREQ),
+			.I2C_FREQ		(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_FAST_PLUS_I2C_FREQ),
+			.SLAVE_ENABLE	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_FAST_PLUS_SLAVE_ENABLE)
 		)
 		inst_i2c_fast_plus
 		(
@@ -117,11 +118,11 @@ generate
 	begin
 		i2c_phy
 		#(
-			.DEVICE_ADDRESS	(DEVICE_ADDRESS),
-			.ADDRESSING		(ADDRESSING),
-			.SYSCLK_FREQ	(SYSCLK_FREQ),
-			.I2C_FREQ		(3400),
-			.SLAVE_ENABLE	(SLAVE_ENABLE)
+			.DEVICE_ADDRESS	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_HIGH_SPEED_DEVICE_ADDRESS),
+			.ADDRESSING		(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_HIGH_SPEED_ADDRESSING),
+			.SYSCLK_FREQ	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_HIGH_SPEED_SYSCLK_FREQ),
+			.I2C_FREQ		(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_HIGH_SPEED_I2C_FREQ),
+			.SLAVE_ENABLE	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_HIGH_SPEED_SLAVE_ENABLE)
 		)
 		inst_i2c_high_speed
 		(
@@ -149,11 +150,11 @@ generate
 	begin
 		i2c_phy
 		#(
-			.DEVICE_ADDRESS	(DEVICE_ADDRESS),
-			.ADDRESSING		(ADDRESSING),
-			.SYSCLK_FREQ	(SYSCLK_FREQ),
-			.I2C_FREQ		(5000),
-			.SLAVE_ENABLE	(SLAVE_ENABLE)
+			.DEVICE_ADDRESS	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_ULTRA_FAST_DEVICE_ADDRESS),
+			.ADDRESSING		(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_ULTRA_FAST_ADDRESSING),
+			.SYSCLK_FREQ	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_ULTRA_FAST_SYSCLK_FREQ),
+			.I2C_FREQ		(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_ULTRA_FAST_I2C_FREQ),
+			.SLAVE_ENABLE	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_ULTRA_FAST_SLAVE_ENABLE)
 		)
 		inst_i2c_ultra_fast
 		(
@@ -181,11 +182,11 @@ generate
 	begin
 		i2c_phy
 		#(
-			.DEVICE_ADDRESS	(DEVICE_ADDRESS),
-			.ADDRESSING		(ADDRESSING),
-			.SYSCLK_FREQ	(SYSCLK_FREQ),
-			.I2C_FREQ		(100),
-			.SLAVE_ENABLE	(SLAVE_ENABLE)
+			.DEVICE_ADDRESS	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_STANDARD_DEVICE_ADDRESS),
+			.ADDRESSING		(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_STANDARD_ADDRESSING),
+			.SYSCLK_FREQ	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_STANDARD_SYSCLK_FREQ),
+			.I2C_FREQ		(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_STANDARD_I2C_FREQ),
+			.SLAVE_ENABLE	(`CFG_CAM_I2C_PHY_V_INST_INST_I2C_STANDARD_SLAVE_ENABLE)
 		)
 		inst_i2c_standard
 		(
@@ -215,13 +216,13 @@ endmodule
 
 module i2c_phy
 #(
-	parameter	DEVICE_ADDRESS	= 8'h00,	// TODO
-	parameter	ADDRESSING		= 7,		// 7/10
+	parameter	DEVICE_ADDRESS	= `CFG_CAM_I2C_PHY_V_PARAMETER_DEVICE_ADDRESS_2,	// TODO
+	parameter	ADDRESSING		= `CFG_CAM_I2C_PHY_V_PARAMETER_ADDRESSING_2,		// 7/10
 											// 10-bit, ADDRESS_CYCLE = 2, S11110AAWK_AAAAAAAAK_RRRRRRRRK TODO
 											// 7-bit, SAAAAAAAWK_RRRRRRRRK
-	parameter	SYSCLK_FREQ		= 100,		// MHz
-	parameter	I2C_FREQ		= 100,		// KHz
-	parameter	SLAVE_ENABLE	= "FALSE"
+	parameter	SYSCLK_FREQ		= `CFG_CAM_I2C_PHY_V_PARAMETER_SYSCLK_FREQ_2,		// MHz
+	parameter	I2C_FREQ		= `CFG_CAM_I2C_PHY_V_PARAMETER_I2C_FREQ,		// KHz
+	parameter	SLAVE_ENABLE	= `CFG_CAM_I2C_PHY_V_PARAMETER_SLAVE_ENABLE_2
 )
 (
 	input	i_arst,
@@ -230,16 +231,16 @@ module i2c_phy
 	input	i_m_en,
 	input	i_m_wr,
 	input	i_last,
-	input	[ADDRESSING-1:0]i_addr,
-	input	[7:0]i_data,
+	input	[`CFG_CAM_I2C_PHY_V_RANGE_2]i_addr,
+	input	[`CFG_BITS_8-1:0]i_data,
 //	output	o_s_en,
 //	output	o_s_wr,
 	output	o_ack,
 	output	o_last,
-	output	[7:0]o_data,
+	output	[`CFG_BITS_8-1:0]o_data,
 	
-	output	[3:0]o_dbg_i2c_state,
-	output	[7:0]o_dbg_rsr,
+	output	[`CFG_BITS_4-1:0]o_dbg_i2c_state,
+	output	[`CFG_BITS_8-1:0]o_dbg_rsr,
 	
 	input	i_sda,
 	output	o_sda_oe,
@@ -257,46 +258,46 @@ function integer log2;
 	end
 endfunction
 
-localparam	s_IDLE			= 5'b00000;
+localparam	s_IDLE			= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_IDLE;
 
-localparam	s_M_START		= 5'b00001;
-localparam	s_M_ADDR		= 5'b00010;
-localparam	s_M_ADDR_ACK	= 5'b00011;
-localparam	s_M_ADDR10		= 5'b01001;
-localparam	s_M_ADDR10_ACK	= 5'b01010;
-localparam	s_M_WR			= 5'b00100;
-localparam	s_M_WR_ACK		= 5'b00101;
-localparam	s_M_RD			= 5'b00110;
-localparam	s_M_RD_ACK		= 5'b00111;
-localparam	s_M_START_R		= 5'b01000;
-localparam	s_M_STOP		= 5'b01001;
+localparam	s_M_START		= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_M_START;
+localparam	s_M_ADDR		= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_M_ADDR;
+localparam	s_M_ADDR_ACK	= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_M_ADDR_ACK;
+localparam	s_M_ADDR10		= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_M_ADDR10;
+localparam	s_M_ADDR10_ACK	= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_M_ADDR10_ACK;
+localparam	s_M_WR			= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_M_WR;
+localparam	s_M_WR_ACK		= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_M_WR_ACK;
+localparam	s_M_RD			= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_M_RD;
+localparam	s_M_RD_ACK		= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_M_RD_ACK;
+localparam	s_M_START_R		= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_M_START_R;
+localparam	s_M_STOP		= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_M_STOP;
 
-localparam	s_S_START		= 5'b10001;
-localparam	s_S_ADDR		= 5'b10010;
-localparam	s_S_ADDR_ACK	= 5'b10011;
-localparam	s_S_ADDR10		= 5'b11001;
-localparam	s_S_ADDR10_ACK	= 5'b11010;
-localparam	s_S_WR			= 5'b10100;
-localparam	s_S_WR_ACK		= 5'b10101;
-localparam	s_S_RD			= 5'b10110;
-localparam	s_S_RD_ACK		= 5'b10111;
-localparam	s_S_START_R		= 5'b11000;
-localparam	s_S_STOP		= 5'b11001;
+localparam	s_S_START		= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_S_START;
+localparam	s_S_ADDR		= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_S_ADDR;
+localparam	s_S_ADDR_ACK	= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_S_ADDR_ACK;
+localparam	s_S_ADDR10		= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_S_ADDR10;
+localparam	s_S_ADDR10_ACK	= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_S_ADDR10_ACK;
+localparam	s_S_WR			= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_S_WR;
+localparam	s_S_WR_ACK		= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_S_WR_ACK;
+localparam	s_S_RD			= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_S_RD;
+localparam	s_S_RD_ACK		= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_S_RD_ACK;
+localparam	s_S_START_R		= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_S_START_R;
+localparam	s_S_STOP		= `CFG_CAM_I2C_PHY_V_LOCALPARAM_S_S_STOP;
 
-localparam	b_CLK	= log2(SYSCLK_FREQ*1000/I2C_FREQ)-1'b1;
+localparam	b_CLK	= `CFG_CAM_I2C_PHY_V_LOCALPARAM_B_CLK;
 
-reg		[3:0]r_i2c_state_1P;
-reg		[15:0]r_i2c_clk_1P;
+reg		[`CFG_BITS_4-1:0]r_i2c_state_1P;
+reg		[`CFG_BITS_16-1:0]r_i2c_clk_1P;
 reg		r_sda_oe_1P;
 reg		r_scl_oe_1P;
 
-reg		[2:0]r_bit_cnt_1P;
+reg		[`CFG_BITS_3-1:0]r_bit_cnt_1P;
 reg		r_wr_1P;
-reg		[ADDRESSING-1:0]r_addr_1P;
-reg		[7:0]r_wdata_1P;
-reg		[7:0]r_wsr_1P;
-reg		[7:0]r_rsr_1P;
-reg		[7:0]r_rdata_1P;
+reg		[`CFG_CAM_I2C_PHY_V_RANGE_3]r_addr_1P;
+reg		[`CFG_BITS_8-1:0]r_wdata_1P;
+reg		[`CFG_BITS_8-1:0]r_wsr_1P;
+reg		[`CFG_BITS_8-1:0]r_rsr_1P;
+reg		[`CFG_BITS_8-1:0]r_rdata_1P;
 
 reg		r_slave_ack_1P;
 reg		r_slave_last_1P;

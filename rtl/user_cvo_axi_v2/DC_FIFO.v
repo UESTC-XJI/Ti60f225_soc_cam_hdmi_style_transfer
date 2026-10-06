@@ -1,3 +1,4 @@
+`include "../defines.v"
 
 `timescale 1ns/100ps
 
@@ -113,13 +114,13 @@
 */
 module DC_FIFO
 # (
-  	parameter     FIFO_MODE     = "Normal"            , //"Normal"; //"ShowAhead"
-    parameter     DATA_WIDTH    = 128                 ,
-    parameter     FIFO_DEPTH    = 128                 ,
+    parameter     FIFO_MODE     = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_PARAMETER_FIFO_MODE            , //"Normal"; //"ShowAhead"
+    parameter     DATA_WIDTH    = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_PARAMETER_DATA_WIDTH                 ,
+    parameter     FIFO_DEPTH    = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_PARAMETER_FIFO_DEPTH                 ,
 
-    parameter     AW_C          = $clog2(FIFO_DEPTH)  ,   
-    parameter     DW_C          = DATA_WIDTH          ,
-    parameter     DD_C          = 2**AW_C         
+    parameter     AW_C          = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_PARAMETER_AW_C  ,
+    parameter     DW_C          = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_PARAMETER_DW_C          ,
+    parameter     DD_C          = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_PARAMETER_DD_C
   )
 (   
   //System Signal
@@ -127,21 +128,21 @@ module DC_FIFO
   //Write Signal                             
   input                 WrClk   , //(I)Wirte Clock
   input                 WrEn    , //(I)Write Enable
-  output  [AW_C  :0]    WrDNum  , //(O)Write Data Number In Fifo
+  output  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_1]    WrDNum  , //(O)Write Data Number In Fifo
   output                WrFull  , //(O)Write Full 
-  input   [DW_C -1:0]   WrData  , //(I)Write Data
+  input   [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_2]   WrData  , //(I)Write Data
   //Read Signal                            
   input                 RdClk   , //(I)Read Clock
   input                 RdEn    , //(I)Read Enable
-  output  [AW_C  :0]    RdDNum  , //(O)Radd Data Number In Fifo
+  output  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_3]    RdDNum  , //(O)Radd Data Number In Fifo
   output                RdEmpty , //(O)Read FifoEmpty
   output                DataVal , //(O)Data Valid 
-  output  [DW_C-1 :0]   RdData    //(O)Read Data
+  output  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_4]   RdData    //(O)Read Data
 );
 
 //Define  Parameter
   /////////////////////////////////////////////////////////
-  localparam    TCo_C       = 1  ;    
+  localparam    TCo_C       = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_LOCALPARAM_TCO_C  ;
 
   /////////////////////////////////////////////////////////
 
@@ -150,8 +151,8 @@ module DC_FIFO
 //保证两个时钟域都接收到了复位信号，才释放同步复位信号	
 //********************************************************/ 
   /////////////////////////////////////////////////////////
- (* async_reg = "true" *) reg   [1:0]         WrClkRstGen   = 2'h3;
- (* async_reg = "true" *) reg   [1:0]         RdClkRstGen   = 2'h3;
+ (* async_reg = "true" *) reg   [`CFG_BITS_2-1:0]         WrClkRstGen   = 2'h3;
+ (* async_reg = "true" *) reg   [`CFG_BITS_2-1:0]         RdClkRstGen   = 2'h3;
   
   always @( posedge   WrClk or posedge Reset)
   begin
@@ -190,11 +191,11 @@ module DC_FIFO
 //********************************************************/ 
   ///////////////////////////////////////////////////////// 
   wire                FifoWrEn    = WrEn & (~WrFull) ;
-  wire  [AW_C :0]     WrNextAddr  ;   
-  wire  [AW_C :0]     FifoWrAddr  ;   
+  wire  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_5]     WrNextAddr  ;
+  wire  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_6]     FifoWrAddr  ;
   wire                FifoWrFull  ;   
 
-  FifoAddrCnt     # ( .CounterWidth_C (AW_C))
+  FifoAddrCnt     # ( .CounterWidth_C (`CFG_USER_CVO_AXI_V2_DC_FIFO_V_INST_U1_WRADDRCNT_COUNTERWIDTH_C))
   U1_WrAddrCnt
   (   
     //System Signal
@@ -208,7 +209,7 @@ module DC_FIFO
   );
 
   ///////////////////////////////////////////////////////// 
-  reg [DW_C-1:0]      FifoBuff [DD_C-1:0];
+  reg [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_7]      FifoBuff [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_8];
 
   always @( posedge   WrClk)  
   begin
@@ -230,10 +231,10 @@ module DC_FIFO
   wire                FifoEmpty   ;  
   wire                FifoRdEn    ;
                                   
-  wire  [AW_C :0]     RdNextAddr  ;
-  wire  [AW_C :0]     FifoRdAddr  ;
+  wire  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_9]     RdNextAddr  ;
+  wire  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_10]     FifoRdAddr  ;
 
-  FifoAddrCnt     # ( .CounterWidth_C (AW_C))
+  FifoAddrCnt     # ( .CounterWidth_C (`CFG_USER_CVO_AXI_V2_DC_FIFO_V_INST_U2_RDADDRCNT_COUNTERWIDTH_C))
   U2_RdAddrCnt
   (   
     //System Signal
@@ -247,7 +248,7 @@ module DC_FIFO
   );
 
   /////////////////////////////////////////////////////////   
-  reg   [DW_C-1 :0]   FifoRdData  ;  
+  reg   [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_11]   FifoRdData  ;
 
   always @( posedge   RdClk) 
   begin
@@ -275,9 +276,9 @@ module DC_FIFO
   end */
   
   
-  (* async_reg = "true" *) reg   [AW_C:0]      RdAddrOut   = {AW_C+1{1'h0}}; 
-  (* async_reg = "true" *) reg   [AW_C:0]      WrRdAddr_meta    = {AW_C+1{1'h0}}; 
-  (* async_reg = "true" *) reg   [AW_C:0]      WrRdAddr    = {AW_C+1{1'h0}}; 
+  (* async_reg = "true" *) reg   [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_12]      RdAddrOut   = {AW_C+1{1'h0}};
+  (* async_reg = "true" *) reg   [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_13]      WrRdAddr_meta    = {AW_C+1{1'h0}};
+  (* async_reg = "true" *) reg   [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_14]      WrRdAddr    = {AW_C+1{1'h0}};
   
   always @( posedge   WrClk)   
   begin
@@ -293,17 +294,17 @@ module DC_FIFO
 
   ///////////////////////////////////////////////////////// 
   //把读写地址的格雷码转化为16进制  
-  wire  [AW_C-1:0]    WrRdAHex  ;
-  wire  [AW_C-1:0]    WrWrAHex  ;
+  wire  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_15]    WrRdAHex  ;
+  wire  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_16]    WrWrAHex  ;
 
-  GrayDecode #(AW_C)  WRAGray2Hex (WrRdAddr   [AW_C-1:0] , WrRdAHex[AW_C-1:0])  ;
-  GrayDecode #(AW_C)  WWAGray2Hex (FifoWrAddr [AW_C-1:0] , WrWrAHex[AW_C-1:0])  ;
+  GrayDecode #(`CFG_USER_CVO_AXI_V2_DC_FIFO_V_INST_WRAGRAY2HEX_ARG_0)  WRAGray2Hex (WrRdAddr   [AW_C-1:0] , WrRdAHex[AW_C-1:0])  ;
+  GrayDecode #(`CFG_USER_CVO_AXI_V2_DC_FIFO_V_INST_WWAGRAY2HEX_ARG_0)  WWAGray2Hex (FifoWrAddr [AW_C-1:0] , WrWrAHex[AW_C-1:0])  ;
 
   /////////////////////////////////////////////////////////   
   //写时钟域中计算读写地址差
-  reg   [AW_C:0]    WrAddrDiff  = {AW_C+1{1'h0}}  ;
+  reg   [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_17]    WrAddrDiff  = {AW_C+1{1'h0}}  ;
 
-  wire  [AW_C:0]    Calc_WrAddrDiff =  ( {FifoWrAddr[AW_C]  , WrWrAHex  } 
+  wire  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_18]    Calc_WrAddrDiff =  ( {FifoWrAddr[AW_C]  , WrWrAHex  }
                                     +  { {AW_C{1'h0}}       , FifoWrEn  } ) ; 
   always @( posedge   WrClk)  
   begin
@@ -324,7 +325,7 @@ module DC_FIFO
   ///////////////////////////////////////////////////////// 
   //产生 WrFull 的清除信号 （ WrFullClr ）
   //当 FifoRdAddr 发生变化，产生 WrFullClr 
-  reg   [AW_C:0]      WrRdAddrReg = {AW_C+1{1'h0}}; 
+  reg   [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_19]      WrRdAddrReg = {AW_C+1{1'h0}};
   reg                 WrFullClr   = 1'h0;   
                                   
   always @( posedge   WrClk)      
@@ -386,8 +387,8 @@ module DC_FIFO
     else              RdWrAddr  <= # TCo_C FifoWrAddr [AW_C:0]  ;   
   end   */
   
-  (* async_reg = "true" *)  reg   [AW_C :0]     RdWrAddr  = {AW_C+1{1'h0}}; 
-  (* async_reg = "true" *)  reg   [AW_C :0]     RdWrAddr_meta  = {AW_C+1{1'h0}};
+  (* async_reg = "true" *)  reg   [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_20]     RdWrAddr  = {AW_C+1{1'h0}};
+  (* async_reg = "true" *)  reg   [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_21]     RdWrAddr_meta  = {AW_C+1{1'h0}};
   
   always @( posedge   RdClk)    
   begin
@@ -421,17 +422,17 @@ module DC_FIFO
   endgenerate
 
   /////////////////////////////////////////////////////////   
-  wire  [AW_C-1:0]    RdWrAHex;
-  wire  [AW_C-1:0]    RdRdAHex;
+  wire  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_22]    RdWrAHex;
+  wire  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_23]    RdRdAHex;
 
-  GrayDecode # (AW_C) RWAGray2Hex (RdWrAddr   [AW_C-1:0] , RdWrAHex[AW_C-1:0] );
-  GrayDecode # (AW_C) RRAGray2Hex (RdAddrOut  [AW_C-1:0] , RdRdAHex[AW_C-1:0] );
+  GrayDecode # (`CFG_USER_CVO_AXI_V2_DC_FIFO_V_INST_RWAGRAY2HEX_ARG_0) RWAGray2Hex (RdWrAddr   [AW_C-1:0] , RdWrAHex[AW_C-1:0] );
+  GrayDecode # (`CFG_USER_CVO_AXI_V2_DC_FIFO_V_INST_RRAGRAY2HEX_ARG_0) RRAGray2Hex (RdAddrOut  [AW_C-1:0] , RdRdAHex[AW_C-1:0] );
 
   ///////////////////////////////////////////////////////// 
   //在读时钟域计算地址差  
-  reg   [AW_C:0]      RdAddrDiff  = {AW_C+1{1'h0}} ;
+  reg   [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_24]      RdAddrDiff  = {AW_C+1{1'h0}} ;
 
-  wire  [AW_C:0]      Calc_RdAddrDiff = ( {RdAddrOut[AW_C] , RdRdAHex } 
+  wire  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_25]      Calc_RdAddrDiff = ( {RdAddrOut[AW_C] , RdRdAHex }
                                       + { {AW_C{1'h0}}     , ReadEn   } ) ;
   always @( posedge   RdClk)  
   begin
@@ -453,7 +454,7 @@ module DC_FIFO
 //********************************************************/
   ///////////////////////////////////////////////////////// 
   //产生 RdEmpty 的清除信号  
-  reg   [AW_C:0]      RdWrAddrReg = {AW_C+1{1'h0}}; 
+  reg   [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_26]      RdWrAddrReg = {AW_C+1{1'h0}};
   reg                 EmptyClr    = 1'h0;
                       
   always @( posedge   RdClk)    
@@ -570,8 +571,8 @@ endmodule
 
 module FifoAddrCnt
 # (
-    parameter CounterWidth_C  = 9   ,
-    parameter CW_C            = CounterWidth_C
+    parameter CounterWidth_C  = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_PARAMETER_COUNTERWIDTH_C   ,
+    parameter CW_C            = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_PARAMETER_CW_C
   )
 (   
   //System Signal
@@ -580,13 +581,13 @@ module FifoAddrCnt
   //Counter Signal            
   input             ClkEn     , //(I)Clock Enable 
   input             FifoFlag  , //(I)Fifo Flag
-  output  [CW_C:0]  AddrCnt   , //(O)Address Counter
-  output  [CW_C:0]  Addess      //(O)Address Output
+  output  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_27]  AddrCnt   , //(O)Address Counter
+  output  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_28]  Addess      //(O)Address Output
 );
 
 //Define  Parameter
   /////////////////////////////////////////////////////////
-localparam    TCo_C       = 1;    
+localparam    TCo_C       = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_LOCALPARAM_TCO_C_2;
 
 //111111111111111111111111111111111111111111111111111111111
 //	
@@ -595,10 +596,10 @@ localparam    TCo_C       = 1;
 //********************************************************/ 
 
   /////////////////////////////////////////////////////////
-  wire [CW_C-1:0]   GrayAddrCnt;
+  wire [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_29]   GrayAddrCnt;
   wire              CarryOut;
 
-  GrayCnt #(.CounterWidth_C (CW_C))
+  GrayCnt #(.CounterWidth_C (`CFG_USER_CVO_AXI_V2_DC_FIFO_V_INST_U1_ADDRCNT_COUNTERWIDTH_C))
   U1_AddrCnt
   (   
     //System Signal
@@ -622,7 +623,7 @@ localparam    TCo_C       = 1;
   end
 
   /////////////////////////////////////////////////////////
-  (* async_reg = "true" *)reg  [CW_C:0]  AddrOut;    //(O)Address Output
+  (* async_reg = "true" *)reg  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_30]  AddrOut;    //(O)Address Output
 
   always @(posedge SysClk)
   begin
@@ -662,8 +663,8 @@ endmodule
 
 module GrayCnt
 # (
-    parameter   CounterWidth_C    = 9   ,
-    parameter   CW_C              = CounterWidth_C
+    parameter   CounterWidth_C    = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_PARAMETER_COUNTERWIDTH_C_2   ,
+    parameter   CW_C              = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_PARAMETER_CW_C_2
   )
 ( 
   //System Signal
@@ -674,12 +675,12 @@ module GrayCnt
   input                 ClkEn     , //(I)Clock Enable 
   input                 CarryIn   , //(I)Carry input
   output                CarryOut  , //(O)Carry output
-  output  [CW_C-1:0]    Count       //(O)Counter Value Output
+  output  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_31]    Count       //(O)Counter Value Output
 );
 
 //Define  Parameter
   /////////////////////////////////////////////////////////
-localparam    TCo_C       = 1;    
+localparam    TCo_C       = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_LOCALPARAM_TCO_C_3;
 
 //111111111111111111111111111111111111111111111111111111111
 //	
@@ -688,10 +689,10 @@ localparam    TCo_C       = 1;
 //********************************************************/ 
 
   /////////////////////////////////////////////////////////
-  wire  [CW_C:0  ]  CryIn  ;
-  wire  [CW_C-1:0]  CryOut ;
+  wire  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_32  ]  CryIn  ;
+  wire  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_33]  CryOut ;
 
-  reg   [CW_C-1:0]  GrayCnt;
+  reg   [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_34]  GrayCnt;
 
   assign CryIn[0] = CarryIn;
 
@@ -766,21 +767,21 @@ endmodule
 
 module GrayDecode
 # (
-    parameter DataWidht_C = 8
+    parameter DataWidht_C = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_PARAMETER_DATAWIDHT_C
   )
 (   
-  input   [DataWidht_C-1:0]  GrayIn,
-  output  [DataWidht_C-1:0]  HexOut
+  input   [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_35]  GrayIn,
+  output  [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_36]  HexOut
 );
 
  	//Define  Parameter
   /////////////////////////////////////////////////////////
-	parameter		TCo_C   		= 1;    
+	parameter		TCo_C   		= `CFG_USER_CVO_AXI_V2_DC_FIFO_V_PARAMETER_TCO_C;
 		
-	localparam DW_C = DataWidht_C;
+	localparam DW_C = `CFG_USER_CVO_AXI_V2_DC_FIFO_V_LOCALPARAM_DW_C;
 	
   /////////////////////////////////////////////////////////
-  reg [DW_C-1:0] Hex; 
+  reg [`CFG_USER_CVO_AXI_V2_DC_FIFO_V_RANGE_37] Hex;
 
   integer i;
 

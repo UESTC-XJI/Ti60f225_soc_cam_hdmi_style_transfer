@@ -1,3 +1,4 @@
+`include "../../defines.v"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -29,31 +30,31 @@ rd_pointer
 );    
  
 // FIFO constants
-parameter DATA_WIDTH = 8;
-parameter ADDR_WIDTH = 8;
-parameter RAM_DEPTH = (1 << ADDR_WIDTH);
+parameter DATA_WIDTH = `CFG_SOC_OOB_AXISTREAM_FIFO_V_PARAMETER_DATA_WIDTH;
+parameter ADDR_WIDTH = `CFG_SOC_OOB_AXISTREAM_FIFO_V_PARAMETER_ADDR_WIDTH;
+parameter RAM_DEPTH = `CFG_SOC_OOB_AXISTREAM_FIFO_V_PARAMETER_RAM_DEPTH;
 // Port Declarations
 input clk ;
 input nrst ;
 input we ;
 input re ;
-input [DATA_WIDTH-1:0] data_in ;
+input [`CFG_SOC_OOB_AXISTREAM_FIFO_V_RANGE_1] data_in ;
 output full ;
 output empty ;
-output [DATA_WIDTH-1:0] data_out ;
+output [`CFG_SOC_OOB_AXISTREAM_FIFO_V_RANGE_2] data_out ;
 //output [ADDR_WIDTH:0] status_cnt;
 //output 	      underflow_err;
 //output 	      overflow_err;
-output reg [ADDR_WIDTH-1:0] wr_pointer;
-output reg [ADDR_WIDTH-1:0] rd_pointer;
-output reg [ADDR_WIDTH :0]  status_cnt;
+output reg [`CFG_SOC_OOB_AXISTREAM_FIFO_V_RANGE_3] wr_pointer;
+output reg [`CFG_SOC_OOB_AXISTREAM_FIFO_V_RANGE_4] rd_pointer;
+output reg [`CFG_SOC_OOB_AXISTREAM_FIFO_V_RANGE_5]  status_cnt;
 output reg 		    underflow_err;
 output reg 		    overflow_err;
    
 
 //-----------Internal variables-------------------
 //reg [DATA_WIDTH-1:0] data_out ;
-wire [DATA_WIDTH-1:0] data_ram ;
+wire [`CFG_SOC_OOB_AXISTREAM_FIFO_V_RANGE_6] data_ram ;
    
 //-----------Variable assignments---------------
 assign full = (status_cnt == (RAM_DEPTH-1));
@@ -119,9 +120,9 @@ always @(posedge clk)
        overflow_err <= full && we;
 
    
-vga_buffer #(.DATA_WIDTH(DATA_WIDTH),
-	     .ADDR_WIDTH(ADDR_WIDTH),
-	     .RAM_DEPTH(RAM_DEPTH)) vga_buffer_in0 (
+vga_buffer #(.DATA_WIDTH(`CFG_SOC_OOB_AXISTREAM_FIFO_V_INST_VGA_BUFFER_IN0_DATA_WIDTH),
+	     .ADDR_WIDTH(`CFG_SOC_OOB_AXISTREAM_FIFO_V_INST_VGA_BUFFER_IN0_ADDR_WIDTH),
+	     .RAM_DEPTH(`CFG_SOC_OOB_AXISTREAM_FIFO_V_INST_VGA_BUFFER_IN0_RAM_DEPTH)) vga_buffer_in0 (
 .mem_wr_clk (clk),
 .mem_rd_clk (clk),
 .mem_wr_rst_n (nrst),

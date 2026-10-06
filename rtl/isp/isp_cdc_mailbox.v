@@ -1,14 +1,15 @@
+`include "../defines.v"
 // Bundled-data clock crossing. Source holds payload until destination ack.
 // Both resets must be asserted together on a system reset.
-module isp_cdc_mailbox #(parameter WIDTH=9)(
+module isp_cdc_mailbox #(parameter WIDTH=`CFG_ISP_ISP_CDC_MAILBOX_V_PARAMETER_WIDTH)(
   input s_clk, s_rst_n, s_valid,
-  input [WIDTH-1:0] s_data,
+  input [`CFG_ISP_ISP_CDC_MAILBOX_V_RANGE_1] s_data,
   output s_ready,
   input d_clk, d_rst_n,
   output reg d_valid,
-  output reg [WIDTH-1:0] d_data
+  output reg [`CFG_ISP_ISP_CDC_MAILBOX_V_RANGE_2] d_data
 );
-  reg [WIDTH-1:0] held;
+  reg [`CFG_ISP_ISP_CDC_MAILBOX_V_RANGE_3] held;
   reg request, acknowledge;
   (* ASYNC_REG="TRUE" *) reg ack_meta, ack_sync;
   (* ASYNC_REG="TRUE" *) reg req_meta, req_sync;

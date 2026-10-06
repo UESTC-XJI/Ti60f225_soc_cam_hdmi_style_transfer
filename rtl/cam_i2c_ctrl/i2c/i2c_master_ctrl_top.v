@@ -1,10 +1,11 @@
+`include "../../defines.v"
 module i2c_master_ctrl_top #(
-	parameter DATA_LENGTH = 165,
-	parameter I2C_REG_ADDR_WIDTH = 16,
-	parameter I2C_DATA_WIDTH = 8,
-	parameter I2C_DEVICE_ADDR = 8'h60,
-	parameter CLK_DIV = 16'h0020,
-	parameter RUNTIME_ENABLE = 1'b0
+	parameter DATA_LENGTH = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_PARAMETER_DATA_LENGTH,
+	parameter I2C_REG_ADDR_WIDTH = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_PARAMETER_I2C_REG_ADDR_WIDTH,
+	parameter I2C_DATA_WIDTH = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_PARAMETER_I2C_DATA_WIDTH,
+	parameter I2C_DEVICE_ADDR = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_PARAMETER_I2C_DEVICE_ADDR,
+	parameter CLK_DIV = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_PARAMETER_CLK_DIV,
+	parameter RUNTIME_ENABLE = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_PARAMETER_RUNTIME_ENABLE
 
 )(
 input		wire	clk,
@@ -18,11 +19,11 @@ input  sda_pad_i,       // SDA-line input
 output sda_pad_o,       // SDA-line output (always 1'b0)
 output sda_padoen_o,    // SDA-line output enable (active low)
 input runtime_wr_en,runtime_rd_en,
-input [15:0] runtime_addr,
-input [7:0] runtime_data,
+input [`CFG_BITS_16-1:0] runtime_addr,
+input [`CFG_BITS_8-1:0] runtime_data,
 output config_done,runtime_wr_done,runtime_rd_done,
 output runtime_wr_error,runtime_rd_error,
-output [7:0] runtime_read_data
+output [`CFG_BITS_8-1:0] runtime_read_data
     
 );
 
@@ -31,22 +32,22 @@ wire	wr_done;
 wire	rd_done;
 wire	wr_en;
 wire	rd_en;
-wire	[I2C_REG_ADDR_WIDTH-1:0] 	addr;  
-wire	[I2C_DATA_WIDTH-1:0] 	set_data;
-wire	[I2C_DATA_WIDTH-1:0] 	get_data;
+wire	[`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_RANGE_1] 	addr;
+wire	[`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_RANGE_2] 	set_data;
+wire	[`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_RANGE_3] 	get_data;
 wire			get_valid;
-wire	[7:0] 	dev_addr;
+wire	[`CFG_BITS_8-1:0] 	dev_addr;
 
-wire	 [2:0] 	i2c_addr;
+wire	 [`CFG_BITS_3-1:0] 	i2c_addr;
 wire			 i2c_waitrequest;
-wire	 [7:0]	i2c_readdata;
-wire	 [7:0]	i2c_writedata;
+wire	 [`CFG_BITS_8-1:0]	i2c_readdata;
+wire	 [`CFG_BITS_8-1:0]	i2c_writedata;
 wire			 i2c_read;
 wire			 i2c_write;
 wire			 i2c_chipselect;
 wire cfg_wr_en,cfg_rd_en;
-wire [I2C_REG_ADDR_WIDTH-1:0] cfg_addr;
-wire [I2C_DATA_WIDTH-1:0] cfg_data;
+wire [`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_RANGE_4] cfg_addr;
+wire [`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_RANGE_5] cfg_data;
 wire wr_error,rd_error,tx_i2c_irq;
 wire runtime_selected=RUNTIME_ENABLE && config_done;
 assign wr_en=runtime_selected ? runtime_wr_en : cfg_wr_en;
@@ -60,10 +61,10 @@ assign runtime_rd_error=rd_error;
 assign runtime_read_data=get_data;
 //==================================================
 i2c_master_reg_set #(
-	.DATA_LENGTH (DATA_LENGTH),
-	.I2C_REG_ADDR_WIDTH (I2C_REG_ADDR_WIDTH),
-	.I2C_DATA_WIDTH (I2C_DATA_WIDTH),
-	.I2C_DEVICE_ADDR (I2C_DEVICE_ADDR)
+	.DATA_LENGTH (`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_INST_U_REG_SET_DATA_LENGTH),
+	.I2C_REG_ADDR_WIDTH (`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_INST_U_REG_SET_I2C_REG_ADDR_WIDTH),
+	.I2C_DATA_WIDTH (`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_INST_U_REG_SET_I2C_DATA_WIDTH),
+	.I2C_DEVICE_ADDR (`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_INST_U_REG_SET_I2C_DEVICE_ADDR)
 ) u_reg_set(
 	/*i*/	.clk(clk ),
 	/*i*/	.rst_n(rst_n),
@@ -81,9 +82,9 @@ i2c_master_reg_set #(
 
 
 i2c_16addr_8data #(
-    .CLK_DIV(CLK_DIV),
-    .IRQ_EN(1'b0),
-    .I2C_EN(1'b1)//,
+    .CLK_DIV(`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_INST_U_I2C_CTRL_CLK_DIV),
+    .IRQ_EN(`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_INST_U_I2C_CTRL_IRQ_EN),
+    .I2C_EN(`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_CTRL_TOP_V_INST_U_I2C_CTRL_I2C_EN)//,
     // .ADDR_WIDTH(16)//,
     // .DATA_BYTES(1)
 	) u_i2c_ctrl(

@@ -1,3 +1,4 @@
+`include "../../defines.v"
 //***************************************************************/
 //   ______   _   _   _                  _            _
 //  |  ____| | | (_) | |                | |          | |
@@ -22,13 +23,13 @@
 `timescale 1ps/1ps
 
 module ddr_phy_wrcal # (
-parameter                       TCQ            = 100,    
-parameter                       CK_RATIO       = 2,      
-parameter                       DQ_WIDTH       = 64,
-parameter                       DQS_WIDTH      = 8,
-parameter                       DQS_CNT_WIDTH  = 3,
-parameter                       CLK_PERIOD     = 2500, 
-parameter                       DRAM_WIDTH     = 8
+parameter                       TCQ            = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRCAL_V_PARAMETER_TCQ,
+parameter                       CK_RATIO       = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRCAL_V_PARAMETER_CK_RATIO,
+parameter                       DQ_WIDTH       = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRCAL_V_PARAMETER_DQ_WIDTH,
+parameter                       DQS_WIDTH      = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRCAL_V_PARAMETER_DQS_WIDTH,
+parameter                       DQS_CNT_WIDTH  = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRCAL_V_PARAMETER_DQS_CNT_WIDTH,
+parameter                       CLK_PERIOD     = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRCAL_V_PARAMETER_CLK_PERIOD,
+parameter                       DRAM_WIDTH     = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRCAL_V_PARAMETER_DRAM_WIDTH
 )
 (
 input                           clk,
@@ -48,7 +49,7 @@ output  reg                     temp_wrcal_done,
 output  reg                     wrcal_sanity_chk_done,
 input                           prech_done,
 
-input           [2*CK_RATIO*DQ_WIDTH-1:0] 
+input           [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_WRCAL_V_RANGE_1]
                                 rd_data,
 input                           wrlvl_byte_done,
 output  reg                     wrlvl_byte_redo,

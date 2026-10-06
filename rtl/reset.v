@@ -1,3 +1,4 @@
+`include "defines.v"
 /////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2013-2020 Efinix Inc. All rights reserved.
@@ -12,15 +13,15 @@
 
 module reset_ctrl
 #(
-	parameter	NUM_RST			= 1,
-	parameter	CYCLE			= 1,
-	parameter	IN_RST_ACTIVE	= 1'b1,
-	parameter	OUT_RST_ACTIVE	= 1'b1
+	parameter	NUM_RST			= `CFG_RESET_V_PARAMETER_NUM_RST,
+	parameter	CYCLE			= `CFG_RESET_V_PARAMETER_CYCLE,
+	parameter	IN_RST_ACTIVE	= `CFG_RESET_V_PARAMETER_IN_RST_ACTIVE,
+	parameter	OUT_RST_ACTIVE	= `CFG_RESET_V_PARAMETER_OUT_RST_ACTIVE
 )
 (
-	input	[NUM_RST-1:0]	i_arst,
-	input	[NUM_RST-1:0]	i_clk,
-	output	[NUM_RST-1:0]	o_srst
+	input	[`CFG_RESET_V_RANGE_1]	i_arst,
+	input	[`CFG_RESET_V_RANGE_2]	i_clk,
+	output	[`CFG_RESET_V_RANGE_3]	o_srst
 );
 
 genvar i;
@@ -33,9 +34,9 @@ generate
 			begin
 				reset
 				#(
-					.IN_RST_ACTIVE	("HIGH"),
-					.OUT_RST_ACTIVE	("HIGH"),
-					.CYCLE			(CYCLE)
+					.IN_RST_ACTIVE	(`CFG_RESET_V_INST_INST_SYSCLK_RSTN_IN_RST_ACTIVE),
+					.OUT_RST_ACTIVE	(`CFG_RESET_V_INST_INST_SYSCLK_RSTN_OUT_RST_ACTIVE),
+					.CYCLE			(`CFG_RESET_V_INST_INST_SYSCLK_RSTN_CYCLE)
 				)
 				inst_sysclk_rstn
 				(
@@ -48,9 +49,9 @@ generate
 			begin
 				reset
 				#(
-					.IN_RST_ACTIVE	("HIGH"),
-					.OUT_RST_ACTIVE	("LOW"),
-					.CYCLE			(CYCLE)
+					.IN_RST_ACTIVE	(`CFG_RESET_V_INST_INST_SYSCLK_RSTN_IN_RST_ACTIVE_2),
+					.OUT_RST_ACTIVE	(`CFG_RESET_V_INST_INST_SYSCLK_RSTN_OUT_RST_ACTIVE_2),
+					.CYCLE			(`CFG_RESET_V_INST_INST_SYSCLK_RSTN_CYCLE_2)
 				)
 				inst_sysclk_rstn
 				(
@@ -66,9 +67,9 @@ generate
 			begin
 				reset
 				#(
-					.IN_RST_ACTIVE	("LOW"),
-					.OUT_RST_ACTIVE	("HIGH"),
-					.CYCLE			(CYCLE)
+					.IN_RST_ACTIVE	(`CFG_RESET_V_INST_INST_SYSCLK_RSTN_IN_RST_ACTIVE_3),
+					.OUT_RST_ACTIVE	(`CFG_RESET_V_INST_INST_SYSCLK_RSTN_OUT_RST_ACTIVE_3),
+					.CYCLE			(`CFG_RESET_V_INST_INST_SYSCLK_RSTN_CYCLE_3)
 				)
 				inst_sysclk_rstn
 				(
@@ -81,9 +82,9 @@ generate
 			begin
 				reset
 				#(
-					.IN_RST_ACTIVE	("LOW"),
-					.OUT_RST_ACTIVE	("LOW"),
-					.CYCLE			(CYCLE)
+					.IN_RST_ACTIVE	(`CFG_RESET_V_INST_INST_SYSCLK_RSTN_IN_RST_ACTIVE_4),
+					.OUT_RST_ACTIVE	(`CFG_RESET_V_INST_INST_SYSCLK_RSTN_OUT_RST_ACTIVE_4),
+					.CYCLE			(`CFG_RESET_V_INST_INST_SYSCLK_RSTN_CYCLE_4)
 				)
 				inst_sysclk_rstn
 				(
@@ -101,9 +102,9 @@ endmodule
 
 module reset
 #(
-	parameter	IN_RST_ACTIVE	= "LOW",
-	parameter	OUT_RST_ACTIVE	= "HIGH",
-	parameter	CYCLE			= 1
+	parameter	IN_RST_ACTIVE	= `CFG_RESET_V_PARAMETER_IN_RST_ACTIVE_2,
+	parameter	OUT_RST_ACTIVE	= `CFG_RESET_V_PARAMETER_OUT_RST_ACTIVE_2,
+	parameter	CYCLE			= `CFG_RESET_V_PARAMETER_CYCLE_2
 )
 (
 	input	i_arst,
@@ -112,7 +113,7 @@ module reset
 	output	o_srst
 );
 
-reg		[CYCLE-1:0]r_srst_1P;
+reg		[`CFG_RESET_V_RANGE_4]r_srst_1P;
 
 genvar i;
 generate

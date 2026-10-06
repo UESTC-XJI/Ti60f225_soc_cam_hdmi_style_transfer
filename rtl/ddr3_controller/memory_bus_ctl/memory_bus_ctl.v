@@ -1,3 +1,4 @@
+`include "../../defines.v"
 //***************************************************************/
 //   ______   _   _   _                  _            _
 //  |  ____| | | (_) | |                | |          | |
@@ -22,72 +23,72 @@
 `timescale 1ps/1ps
 
 module memory_bus_ctl #(
-parameter                       TCQ           = 100,        
-parameter                       BANK_WIDTH    = 3, 
-parameter                       RANK_WIDTH    = 2, 
-parameter                       ROW_WIDTH     = 16, 
-parameter                       CK_RATIO      = 4,            
-parameter                       BM_CNT_WIDTH  = 2,
-parameter                       BUF_AW        = 8,
-parameter                       BUF_OFTW      = 1,
-parameter                       ERR_AW        = 31,  
-parameter                       RANKS         = 4,          
-parameter                       RANK_RATIO    = 1,           
-parameter                       COL_WIDTH     = 12,         
-parameter                       CS_WIDTH      = 4, 
-parameter                       PAYLOAD_WIDTH = 64,   
-parameter                       DATA_WIDTH    = 64,         
-parameter                       DQ_WIDTH      = 64,         
-parameter                       DQS_WIDTH     = 8,
-parameter                       BURST_MODE    = "8", 
-parameter                       RTT_NOM       = "40",       
-parameter                       RTT_WR        = "120", 
-parameter                       ORDERING      = "NORM",     
-parameter                       CL            = 5,         
-parameter                       CWL           = 5,            
-parameter                       tCK           = 2500 ,        
-parameter                       tCKE          = 10000,        
-parameter                       tFAW          = 40000,        
-parameter                       tRAS          = 37500,       
-parameter                       tRCD          = 12500,        
-parameter                       tREFI         = 7800000,      
-parameter                       tRFC          = 110000,       
-parameter                       tRP           = 12500,       
-parameter                       tRRD          = 10000,       
-parameter                       tRTP          = 7500,         
-parameter                       tWTR          = 7500,         
-parameter                       tZQCS         = 64,           
-parameter                       tZQI          = 128_000_000,  
-parameter                       tPRDI         = 1_000_000   
+parameter                       TCQ           = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TCQ,
+parameter                       BANK_WIDTH    = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_BANK_WIDTH,
+parameter                       RANK_WIDTH    = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_RANK_WIDTH,
+parameter                       ROW_WIDTH     = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_ROW_WIDTH,
+parameter                       CK_RATIO      = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_CK_RATIO,
+parameter                       BM_CNT_WIDTH  = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_BM_CNT_WIDTH,
+parameter                       BUF_AW        = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_BUF_AW,
+parameter                       BUF_OFTW      = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_BUF_OFTW,
+parameter                       ERR_AW        = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_ERR_AW,
+parameter                       RANKS         = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_RANKS,
+parameter                       RANK_RATIO    = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_RANK_RATIO,
+parameter                       COL_WIDTH     = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_COL_WIDTH,
+parameter                       CS_WIDTH      = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_CS_WIDTH,
+parameter                       PAYLOAD_WIDTH = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_PAYLOAD_WIDTH,
+parameter                       DATA_WIDTH    = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_DATA_WIDTH,
+parameter                       DQ_WIDTH      = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_DQ_WIDTH,
+parameter                       DQS_WIDTH     = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_DQS_WIDTH,
+parameter                       BURST_MODE    = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_BURST_MODE,
+parameter                       RTT_NOM       = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_RTT_NOM,
+parameter                       RTT_WR        = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_RTT_WR,
+parameter                       ORDERING      = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_ORDERING,
+parameter                       CL            = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_CL,
+parameter                       CWL           = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_CWL,
+parameter                       tCK           = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TCK ,
+parameter                       tCKE          = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TCKE,
+parameter                       tFAW          = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TFAW,
+parameter                       tRAS          = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TRAS,
+parameter                       tRCD          = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TRCD,
+parameter                       tREFI         = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TREFI,
+parameter                       tRFC          = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TRFC,
+parameter                       tRP           = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TRP,
+parameter                       tRRD          = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TRRD,
+parameter                       tRTP          = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TRTP,
+parameter                       tWTR          = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TWTR,
+parameter                       tZQCS         = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TZQCS,
+parameter                       tZQI          = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TZQI,
+parameter                       tPRDI         = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_TPRDI
 )
 (
 input                           clk,
 input                           rst,
-input           [2:0]           cmd,
-input           [BUF_AW-1:0]    data_buf_addr,
-input           [BANK_WIDTH-1:0]bank,
-input           [COL_WIDTH-1:0] col,
-input           [RANK_WIDTH-1:0]rank,
-input           [ROW_WIDTH-1:0] row,
+input           [`CFG_BITS_3-1:0]           cmd,
+input           [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_1]    data_buf_addr,
+input           [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_2]bank,
+input           [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_3] col,
+input           [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_4]rank,
+input           [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_5] row,
 input                           use_addr,
-input           [2*CK_RATIO*PAYLOAD_WIDTH-1:0] 
+input           [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_6]
                                 wr_data,
-input           [2*CK_RATIO*DATA_WIDTH/8-1:0]  
+input           [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_7]
                                 wr_data_mask,
 output                          accept,
 output                          accept_ns,
-output          [BM_CNT_WIDTH-1:0]
+output          [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_8]
                                 bank_mach_next,
-output  wire    [2*CK_RATIO*PAYLOAD_WIDTH-1:0] 
+output  wire    [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_9]
                                 rd_data,
-output          [BUF_AW-1:0]    rd_data_addr,
+output          [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_10]    rd_data_addr,
 output                          rd_data_en,
 output                          rd_data_end,
-output          [BUF_OFTW-1:0]  rd_data_offset,   
-output  reg     [BUF_AW-1:0]    wr_data_addr,
+output          [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_11]  rd_data_offset,
+output  reg     [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_12]    wr_data_addr,
 output  reg                     wr_data_en,
-output  reg     [BUF_OFTW-1:0]  wr_data_offset,
-output          [31:0]          mc_debug_port,
+output  reg     [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_13]  wr_data_offset,
+output          [`CFG_BITS_32-1:0]          mc_debug_port,
   
 input                           app_ref_req,
 input                           app_zq_req,
@@ -95,44 +96,44 @@ input                           app_sr_req,
 output                          app_sr_active,
 output                          app_ref_ack,
 output                          app_zq_ack,   
-output  reg     [CK_RATIO-1:0]  mc_ras_n,
-output  reg     [CK_RATIO-1:0]  mc_cas_n,
-output  reg     [CK_RATIO-1:0]  mc_we_n,
-output  reg     [CK_RATIO*ROW_WIDTH-1:0]   
+output  reg     [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_14]  mc_ras_n,
+output  reg     [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_15]  mc_cas_n,
+output  reg     [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_16]  mc_we_n,
+output  reg     [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_17]
                                 mc_address,
-output  reg     [CK_RATIO*BANK_WIDTH-1:0]  
+output  reg     [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_18]
                                 mc_bank,
-output  reg     [CS_WIDTH*RANK_RATIO*CK_RATIO-1:0] 
+output  reg     [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_19]
                                 mc_cs_n,
-output  reg     [1:0]           mc_odt,
-output  reg     [CK_RATIO-1:0]  mc_cke,
+output  reg     [`CFG_BITS_2-1:0]           mc_odt,
+output  reg     [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_20]  mc_cke,
 output  wire                    mc_reset_n,
-output  wire    [2*CK_RATIO*DQ_WIDTH-1:0]  
+output  wire    [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_21]
                                 mc_wrdata,
-output  wire    [2*CK_RATIO*DQ_WIDTH/8-1:0]
+output  wire    [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_22]
                                 mc_wrdata_mask,
 output  reg                     mc_wrdata_en,
  
 output                          mc_cmd_wren,
 output                          mc_ctl_wren,
-output  reg     [2:0]           mc_cmd,
+output  reg     [`CFG_BITS_3-1:0]           mc_cmd,
 
-output  reg     [1:0]           mc_cas_slot,
-output  reg     [3:0]           mc_aux_out0,
-output  reg     [3:0]           mc_aux_out1,
-output  reg     [1:0]           mc_rank_cnt,
+output  reg     [`CFG_BITS_2-1:0]           mc_cas_slot,
+output  reg     [`CFG_BITS_4-1:0]           mc_aux_out0,
+output  reg     [`CFG_BITS_4-1:0]           mc_aux_out1,
+output  reg     [`CFG_BITS_2-1:0]           mc_rank_cnt,
     
 input                           phy_mc_ctl_full,
 input                           phy_mc_cmd_full,
 input                           phy_mc_data_full,
-input           [2*CK_RATIO*DQ_WIDTH-1:0]
+input           [`CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_RANGE_23]
                                 phy_rd_data,
 input                           phy_rddata_valid,
 input                           cal_done
     
   );
 //***************************************************************/
-parameter               BANK_CTL_NUM          = 4;  
+parameter               BANK_CTL_NUM          = `CFG_DDR3_CONTROLLER_MEMORY_BUS_CTL_MEMORY_BUS_CTL_V_PARAMETER_BANK_CTL_NUM;
 //Encryption begin
 `pragma protect begin_protected
 `pragma protect version=1

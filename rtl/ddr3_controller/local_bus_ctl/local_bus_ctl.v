@@ -1,3 +1,4 @@
+`include "../../defines.v"
 //***************************************************************/
 //   ______   _   _   _                  _            _
 //  |  ____| | | (_) | |                | |          | |
@@ -22,57 +23,57 @@
 `timescale 1 ps / 1 ps
 
 module local_bus_ctl #(
-parameter                       TCQ        = 100,
-parameter                       CK_RATIO   = 2, 
-parameter                       USER_DW    = 256,
-parameter                       USER_MW    = 32,
-parameter                       BANK_WIDTH = 3,
-parameter                       COL_WIDTH  = 12,
-parameter                       CWL        = 5,
-parameter                       BUF_AW     = 5,
-parameter                       RANKS      = 4,
-parameter                       RANK_WIDTH = 2,
-parameter                       ROW_WIDTH  = 16,
-parameter                       ADDR_WIDTH = RANK_WIDTH + BANK_WIDTH + ROW_WIDTH + COL_WIDTH,
-parameter                       MEM_ADDR_ORDER = "BANK_ROW_COLUMN"
+parameter                       TCQ        = `CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_PARAMETER_TCQ,
+parameter                       CK_RATIO   = `CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_PARAMETER_CK_RATIO,
+parameter                       USER_DW    = `CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_PARAMETER_USER_DW,
+parameter                       USER_MW    = `CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_PARAMETER_USER_MW,
+parameter                       BANK_WIDTH = `CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_PARAMETER_BANK_WIDTH,
+parameter                       COL_WIDTH  = `CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_PARAMETER_COL_WIDTH,
+parameter                       CWL        = `CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_PARAMETER_CWL,
+parameter                       BUF_AW     = `CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_PARAMETER_BUF_AW,
+parameter                       RANKS      = `CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_PARAMETER_RANKS,
+parameter                       RANK_WIDTH = `CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_PARAMETER_RANK_WIDTH,
+parameter                       ROW_WIDTH  = `CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_PARAMETER_ROW_WIDTH,
+parameter                       ADDR_WIDTH = `CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_PARAMETER_ADDR_WIDTH,
+parameter                       MEM_ADDR_ORDER = `CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_PARAMETER_MEM_ADDR_ORDER
 )
 (
 
 input                           clk, 
 input                           rst,   
 input                           mc_user_en,  
-input           [2:0]           mc_user_cmd,
-input           [ADDR_WIDTH-1:0]mc_user_addr, 
+input           [`CFG_BITS_3-1:0]           mc_user_cmd,
+input           [`CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_RANGE_1]mc_user_addr,
 output                          mc_user_ready, 
 
 input                           mc_user_wren,   
-input           [USER_DW-1:0]   mc_user_wdata,
-input           [USER_MW-1:0]   mc_user_mask,
+input           [`CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_RANGE_2]   mc_user_wdata,
+input           [`CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_RANGE_3]   mc_user_mask,
 input                           mc_user_end,                                 
 output                          mc_user_wrdy,  
    
-output          [USER_DW-1:0]   mc_user_rd_data,      
+output          [`CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_RANGE_4]   mc_user_rd_data,
 output                          mc_user_rd_end,       
 output                          mc_user_rd_valid,      
 
-input           [BUF_AW-1:0]    wr_data_addr, 
+input           [`CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_RANGE_5]    wr_data_addr,
 input                           wr_data_en,             
 input                           wr_data_offset,           
-output reg      [USER_DW-1:0]   wr_data,          
-output reg      [USER_MW-1:0]   wr_data_mask,     
-input           [USER_DW-1:0]   rd_data,           
-input           [BUF_AW-1:0]    rd_data_addr, 
+output reg      [`CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_RANGE_6]   wr_data,
+output reg      [`CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_RANGE_7]   wr_data_mask,
+input           [`CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_RANGE_8]   rd_data,
+input           [`CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_RANGE_9]    rd_data_addr,
 input                           rd_data_en,             
 input                           rd_data_end,            
 input                           rd_data_offset,  
 
-output          [BANK_WIDTH-1:0]mc_bank,                 
-output          [2:0]           mc_cmd,                    
-output          [COL_WIDTH-1:0] mc_col,                   
-output          [BUF_AW-1:0]    mc_data_buf_addr,
+output          [`CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_RANGE_10]mc_bank,
+output          [`CFG_BITS_3-1:0]           mc_cmd,
+output          [`CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_RANGE_11] mc_col,
+output          [`CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_RANGE_12]    mc_data_buf_addr,
 
-output          [RANK_WIDTH-1:0]mc_rank,                           
-output          [ROW_WIDTH-1:0] mc_row,                                   
+output          [`CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_RANGE_13]mc_rank,
+output          [`CFG_DDR3_CONTROLLER_LOCAL_BUS_CTL_LOCAL_BUS_CTL_V_RANGE_14] mc_row,
 output                          mc_use_addr,  
 input                           accept_ns             
 

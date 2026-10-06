@@ -1,3 +1,4 @@
+`include "../../defines.v"
 //***************************************************************/
 //   ______   _   _   _                  _            _
 //  |  ____| | | (_) | |                | |          | |
@@ -21,12 +22,12 @@
 
 `timescale 1ps/1ps
 module ddr_mpr_rdlvl # (
-parameter                       TCQ               = 100,
-parameter                       DQS_CNT_WIDTH     = 3,
-parameter                       CK_RATIO          = 4,
-parameter                       DRAM_WIDTH        = 8,      // # of DQ per DQS
-parameter                       DQ_WIDTH          = 64,
-parameter                       DQS_WIDTH         = 2
+parameter                       TCQ               = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_PARAMETER_TCQ,
+parameter                       DQS_CNT_WIDTH     = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_PARAMETER_DQS_CNT_WIDTH,
+parameter                       CK_RATIO          = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_PARAMETER_CK_RATIO,
+parameter                       DRAM_WIDTH        = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_PARAMETER_DRAM_WIDTH,      // # of DQ per DQS
+parameter                       DQ_WIDTH          = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_PARAMETER_DQ_WIDTH,
+parameter                       DQS_WIDTH         = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_PARAMETER_DQS_WIDTH
 )
 (
 input                           clk,
@@ -34,7 +35,7 @@ input                           rst,
 input                           mpr_rdlvl_en,
 
 input                           phy_rddata_valid,
-input           [2*CK_RATIO*DQ_WIDTH-1:0]     
+input           [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_1]
                                 phy_rd_data,
 output  reg                     mpr_rdlvl_dly
 
@@ -42,14 +43,14 @@ output  reg                     mpr_rdlvl_dly
 //Parameter Define
 
 //Register Define
-reg     [DRAM_WIDTH-1:0]        mux_rd_fall0_r;
-reg     [DRAM_WIDTH-1:0]        mux_rd_fall1_r;
-reg     [DRAM_WIDTH-1:0]        mux_rd_rise0_r;
-reg     [DRAM_WIDTH-1:0]        mux_rd_rise1_r;
-reg     [DRAM_WIDTH-1:0]        mux_rd_fall2_r;
-reg     [DRAM_WIDTH-1:0]        mux_rd_fall3_r;
-reg     [DRAM_WIDTH-1:0]        mux_rd_rise2_r;
-reg     [DRAM_WIDTH-1:0]        mux_rd_rise3_r;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_2]        mux_rd_fall0_r;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_3]        mux_rd_fall1_r;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_4]        mux_rd_rise0_r;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_5]        mux_rd_rise1_r;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_6]        mux_rd_fall2_r;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_7]        mux_rd_fall3_r;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_8]        mux_rd_rise2_r;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_9]        mux_rd_rise3_r;
 reg                             mpr_rd_rise0_prev_r;
 reg                             mpr_rd_fall0_prev_r;
 reg                             mpr_rd_rise1_prev_r;
@@ -64,21 +65,21 @@ reg                             rd_active_r2;
 reg                             rd_active_r3;
 reg                             rd_active_r4;
 reg                             rd_active_r5;
-reg     [3:0]                   mpr_rdlvl_cnt;
-reg     [2:0]                   stable_idel_cnt;
+reg     [`CFG_BITS_4-1:0]                   mpr_rdlvl_cnt;
+reg     [`CFG_BITS_3-1:0]                   stable_idel_cnt;
 reg                             inhibit_edge_detect_r;
 reg                             idel_mpr_pat_detect_r;
 
 //Wire Define   
-wire    [DQ_WIDTH-1:0]          rd_data_rise0;
-wire    [DQ_WIDTH-1:0]          rd_data_fall0;
-wire    [DQ_WIDTH-1:0]          rd_data_rise1;
-wire    [DQ_WIDTH-1:0]          rd_data_fall1;
-wire    [DQ_WIDTH-1:0]          rd_data_rise2;
-wire    [DQ_WIDTH-1:0]          rd_data_fall2;
-wire    [DQ_WIDTH-1:0]          rd_data_rise3;
-wire    [DQ_WIDTH-1:0]          rd_data_fall3;
-wire    [DQS_CNT_WIDTH:0]       rd_mux_sel_r;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_10]          rd_data_rise0;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_11]          rd_data_fall0;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_12]          rd_data_rise1;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_13]          rd_data_fall1;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_14]          rd_data_rise2;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_15]          rd_data_fall2;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_16]          rd_data_rise3;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_17]          rd_data_fall3;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_MPR_RDLVL_V_RANGE_18]       rd_mux_sel_r;
 
 //Encryption begin
 `pragma protect begin_protected

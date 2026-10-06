@@ -1,0 +1,517 @@
+[
+  {
+    "file": "rtl/cam/i2c_phy.v",
+    "config_expressions": 62,
+    "fixed_ranges": 15
+  },
+  {
+    "file": "rtl/cam/imx185_config.v",
+    "config_expressions": 27,
+    "fixed_ranges": 13
+  },
+  {
+    "file": "rtl/cam/piv2_config.v",
+    "config_expressions": 30,
+    "fixed_ranges": 19
+  },
+  {
+    "file": "rtl/cam_i2c_ctrl/i2c/i2c_16addr_8data.v",
+    "config_expressions": 32,
+    "fixed_ranges": 17
+  },
+  {
+    "file": "rtl/cam_i2c_ctrl/i2c/i2c_8addr_8data.v",
+    "config_expressions": 23,
+    "fixed_ranges": 20
+  },
+  {
+    "file": "rtl/cam_i2c_ctrl/i2c/i2c_master_ctrl_top.v",
+    "config_expressions": 18,
+    "fixed_ranges": 7
+  },
+  {
+    "file": "rtl/cam_i2c_ctrl/i2c/i2c_master_reg_rom.v",
+    "config_expressions": 11,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/cam_i2c_ctrl/i2c/i2c_master_reg_set.v",
+    "config_expressions": 18,
+    "fixed_ranges": 2
+  },
+  {
+    "file": "rtl/cam_i2c_ctrl/i2c_master/i2c_master_bit_ctrl.v",
+    "config_expressions": 18,
+    "fixed_ranges": 22
+  },
+  {
+    "file": "rtl/cam_i2c_ctrl/i2c_master/i2c_master_byte_ctrl.v",
+    "config_expressions": 6,
+    "fixed_ranges": 13
+  },
+  {
+    "file": "rtl/cam_i2c_ctrl/i2c_master/i2c_master_defines.v",
+    "config_expressions": 0,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/cam_i2c_ctrl/i2c_master/i2c_master_top.v",
+    "config_expressions": 0,
+    "fixed_ranges": 10
+  },
+  {
+    "file": "rtl/cam_i2c_ctrl/i2c_master/oc_i2c_master.v",
+    "config_expressions": 0,
+    "fixed_ranges": 3
+  },
+  {
+    "file": "rtl/cam_i2c_ctrl/i2c_master/timescale.v",
+    "config_expressions": 0,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/csi_rx_controller.sv",
+    "config_expressions": 282,
+    "fixed_ranges": 88
+  },
+  {
+    "file": "rtl/ddr3_controller/axi4_bus_ctl/axi4_bus_ctl.v",
+    "config_expressions": 20,
+    "fixed_ranges": 17
+  },
+  {
+    "file": "rtl/ddr3_controller/axi4_bus_ctl/axi_upsizer.v",
+    "config_expressions": 786,
+    "fixed_ranges": 11
+  },
+  {
+    "file": "rtl/ddr3_controller/common/efx_fifo_v2.3/efx_fifo_wrapper.v",
+    "config_expressions": 206,
+    "fixed_ranges": 20
+  },
+  {
+    "file": "rtl/ddr3_controller/common/simple_dual_port_ram.v",
+    "config_expressions": 14,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/ddr3_controller/ddr3_top.v",
+    "config_expressions": 73,
+    "fixed_ranges": 24
+  },
+  {
+    "file": "rtl/ddr3_controller/lb2_axi_clk.v",
+    "config_expressions": 21,
+    "fixed_ranges": 2
+  },
+  {
+    "file": "rtl/ddr3_controller/local_bus_ctl/local_bus_ctl.v",
+    "config_expressions": 27,
+    "fixed_ranges": 2
+  },
+  {
+    "file": "rtl/ddr3_controller/memory_bus_ctl/memory_bus_ctl.v",
+    "config_expressions": 61,
+    "fixed_ranges": 8
+  },
+  {
+    "file": "rtl/ddr3_controller/phy_ctl/ddr_calibration_ini.v",
+    "config_expressions": 28,
+    "fixed_ranges": 10
+  },
+  {
+    "file": "rtl/ddr3_controller/phy_ctl/ddr_mpr_rdlvl.v",
+    "config_expressions": 24,
+    "fixed_ranges": 2
+  },
+  {
+    "file": "rtl/ddr3_controller/phy_ctl/ddr_phy_if.v",
+    "config_expressions": 111,
+    "fixed_ranges": 24
+  },
+  {
+    "file": "rtl/ddr3_controller/phy_ctl/ddr_phy_rdlvl_dqs.v",
+    "config_expressions": 36,
+    "fixed_ranges": 10
+  },
+  {
+    "file": "rtl/ddr3_controller/phy_ctl/ddr_phy_wrcal.v",
+    "config_expressions": 8,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/ddr3_controller/phy_ctl/ddr_phy_wrlvl.v",
+    "config_expressions": 33,
+    "fixed_ranges": 8
+  },
+  {
+    "file": "rtl/ddr3_controller/phy_ctl/phy_ctl.v",
+    "config_expressions": 84,
+    "fixed_ranges": 40
+  },
+  {
+    "file": "rtl/debayer/debayer_top_2to1.v",
+    "config_expressions": 10,
+    "fixed_ranges": 16
+  },
+  {
+    "file": "rtl/debayer/line_buffer.v",
+    "config_expressions": 28,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/debayer/raw_to_rgb.v",
+    "config_expressions": 39,
+    "fixed_ranges": 8
+  },
+  {
+    "file": "rtl/debayer/rgb_gain.v",
+    "config_expressions": 19,
+    "fixed_ranges": 3
+  },
+  {
+    "file": "rtl/debayer/rgb_gain_v1.v",
+    "config_expressions": 15,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/debayer/true_dual_port_ram.v",
+    "config_expressions": 19,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/dual_clock_fifo.v",
+    "config_expressions": 133,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/dvi_tx/audio_clock_regeneration_packet.sv",
+    "config_expressions": 2,
+    "fixed_ranges": 10
+  },
+  {
+    "file": "rtl/dvi_tx/audio_infoframe_packet.sv",
+    "config_expressions": 11,
+    "fixed_ranges": 19
+  },
+  {
+    "file": "rtl/dvi_tx/audio_packet.sv",
+    "config_expressions": 20,
+    "fixed_ranges": 40
+  },
+  {
+    "file": "rtl/dvi_tx/auxiliary_video_information_info_frame.sv",
+    "config_expressions": 18,
+    "fixed_ranges": 26
+  },
+  {
+    "file": "rtl/dvi_tx/DC_FIFO.v",
+    "config_expressions": 60,
+    "fixed_ranges": 2
+  },
+  {
+    "file": "rtl/dvi_tx/dvi_encoder.v_encrypted.v",
+    "config_expressions": 0,
+    "fixed_ranges": 15
+  },
+  {
+    "file": "rtl/dvi_tx/ecc_calc_v1.v",
+    "config_expressions": 0,
+    "fixed_ranges": 7
+  },
+  {
+    "file": "rtl/dvi_tx/efx_fifo.v",
+    "config_expressions": 181,
+    "fixed_ranges": 16
+  },
+  {
+    "file": "rtl/dvi_tx/efx_fifo_define.vh",
+    "config_expressions": 18,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/dvi_tx/encode.v_encrypted.v",
+    "config_expressions": 1,
+    "fixed_ranges": 3
+  },
+  {
+    "file": "rtl/dvi_tx/packet_assembler.sv",
+    "config_expressions": 0,
+    "fixed_ranges": 23
+  },
+  {
+    "file": "rtl/dvi_tx/Sc_Fifo_Slr8.v",
+    "config_expressions": 39,
+    "fixed_ranges": 1
+  },
+  {
+    "file": "rtl/dvi_tx/simple_dual_port_ram/simple_dual_port_ram.v",
+    "config_expressions": 13,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/dvi_tx/simple_dual_port_ram/simple_dual_port_ram_tb.v",
+    "config_expressions": 11,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/dvi_tx/simple_dual_port_ram.v",
+    "config_expressions": 13,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/dvi_tx/tx_aux.v_encrypted.v",
+    "config_expressions": 0,
+    "fixed_ranges": 11
+  },
+  {
+    "file": "rtl/efx_dsi_tx.sv",
+    "config_expressions": 489,
+    "fixed_ranges": 162
+  },
+  {
+    "file": "rtl/frame_buffer_V4/axi_ram.v",
+    "config_expressions": 40,
+    "fixed_ranges": 25
+  },
+  {
+    "file": "rtl/frame_buffer_V4/bank_switch.v",
+    "config_expressions": 11,
+    "fixed_ranges": 6
+  },
+  {
+    "file": "rtl/frame_buffer_V4/color_bar_rgb.v",
+    "config_expressions": 44,
+    "fixed_ranges": 16
+  },
+  {
+    "file": "rtl/frame_buffer_V4/color_bar_tb.v",
+    "config_expressions": 19,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/frame_buffer_V4/data_tx.v",
+    "config_expressions": 19,
+    "fixed_ranges": 12
+  },
+  {
+    "file": "rtl/frame_buffer_V4/DC_FIFO.v",
+    "config_expressions": 60,
+    "fixed_ranges": 2
+  },
+  {
+    "file": "rtl/frame_buffer_V4/ddr_buffer.v",
+    "config_expressions": 36,
+    "fixed_ranges": 20
+  },
+  {
+    "file": "rtl/frame_buffer_V4/ddr_rd_buffer.v",
+    "config_expressions": 25,
+    "fixed_ranges": 17
+  },
+  {
+    "file": "rtl/frame_buffer_V4/ddr_wr_buffer.v",
+    "config_expressions": 27,
+    "fixed_ranges": 19
+  },
+  {
+    "file": "rtl/frame_buffer_V4/ddr_wr_buffer_v1.v",
+    "config_expressions": 27,
+    "fixed_ranges": 19
+  },
+  {
+    "file": "rtl/frame_buffer_V4/frame_buffer.v",
+    "config_expressions": 46,
+    "fixed_ranges": 23
+  },
+  {
+    "file": "rtl/frame_buffer_V4/frame_info_det.v",
+    "config_expressions": 7,
+    "fixed_ranges": 10
+  },
+  {
+    "file": "rtl/frame_buffer_V4/lpddr4_mixer_tb.v",
+    "config_expressions": 54,
+    "fixed_ranges": 27
+  },
+  {
+    "file": "rtl/frame_buffer_V4/lpddr4_tb.v",
+    "config_expressions": 64,
+    "fixed_ranges": 15
+  },
+  {
+    "file": "rtl/frame_buffer_V4/par2ser.v",
+    "config_expressions": 5,
+    "fixed_ranges": 1
+  },
+  {
+    "file": "rtl/frame_buffer_V4/rst_n_piple.v",
+    "config_expressions": 2,
+    "fixed_ranges": 1
+  },
+  {
+    "file": "rtl/frame_buffer_V4/ser2par.v",
+    "config_expressions": 9,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/frame_buffer_V4/ser2par_v1.v",
+    "config_expressions": 21,
+    "fixed_ranges": 3
+  },
+  {
+    "file": "rtl/frame_buffer_V4/user_cvo_axi_v1/cvo_axi_v1.v",
+    "config_expressions": 26,
+    "fixed_ranges": 14
+  },
+  {
+    "file": "rtl/frame_buffer_V4/user_cvo_axi_v1/DC_FIFO.v",
+    "config_expressions": 60,
+    "fixed_ranges": 2
+  },
+  {
+    "file": "rtl/frame_buffer_V4/vid_check.v",
+    "config_expressions": 0,
+    "fixed_ranges": 2
+  },
+  {
+    "file": "rtl/frame_buffer_V4/vid_par2ser.v",
+    "config_expressions": 17,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/frame_buffer_V4/vid_rx_align_v1.v",
+    "config_expressions": 11,
+    "fixed_ranges": 2
+  },
+  {
+    "file": "rtl/isp/ae_frame_stats.v",
+    "config_expressions": 6,
+    "fixed_ranges": 18
+  },
+  {
+    "file": "rtl/isp/auto_tone_lift.v",
+    "config_expressions": 3,
+    "fixed_ranges": 11
+  },
+  {
+    "file": "rtl/isp/hdmi_frame_histogram.v",
+    "config_expressions": 7,
+    "fixed_ranges": 21
+  },
+  {
+    "file": "rtl/isp/hdmi_info_overlay.v",
+    "config_expressions": 12,
+    "fixed_ranges": 15
+  },
+  {
+    "file": "rtl/isp/hdmi_info_overlay_apb.v",
+    "config_expressions": 0,
+    "fixed_ranges": 6
+  },
+  {
+    "file": "rtl/isp/isp_cdc_mailbox.v",
+    "config_expressions": 4,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/isp/lift_tables.vh",
+    "config_expressions": 0,
+    "fixed_ranges": 6
+  },
+  {
+    "file": "rtl/isp/luma_color_suppress.v",
+    "config_expressions": 0,
+    "fixed_ranges": 16
+  },
+  {
+    "file": "rtl/isp/luma_tone_map.v",
+    "config_expressions": 1,
+    "fixed_ranges": 17
+  },
+  {
+    "file": "rtl/isp/sc431hai_auto_exposure.v",
+    "config_expressions": 26,
+    "fixed_ranges": 76
+  },
+  {
+    "file": "rtl/mipi_config/panel_config.v",
+    "config_expressions": 18,
+    "fixed_ranges": 15
+  },
+  {
+    "file": "rtl/mipi_config/true_dual_port_ram.v",
+    "config_expressions": 19,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/reset.v",
+    "config_expressions": 23,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/simple_dual_port_ram.v",
+    "config_expressions": 14,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/soc_oob/apb3_slave_oob.v",
+    "config_expressions": 12,
+    "fixed_ranges": 15
+  },
+  {
+    "file": "rtl/soc_oob/axistream/axi_streamin.v",
+    "config_expressions": 9,
+    "fixed_ranges": 26
+  },
+  {
+    "file": "rtl/soc_oob/axistream/axi_streamout.v",
+    "config_expressions": 13,
+    "fixed_ranges": 30
+  },
+  {
+    "file": "rtl/soc_oob/axistream/axi_streamout_div4.v",
+    "config_expressions": 13,
+    "fixed_ranges": 30
+  },
+  {
+    "file": "rtl/soc_oob/axistream/fifo.v",
+    "config_expressions": 12,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/soc_oob/axistream/vga_buffer.v",
+    "config_expressions": 10,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/soc_oob/top_soc_oob.v",
+    "config_expressions": 12,
+    "fixed_ranges": 40
+  },
+  {
+    "file": "rtl/ti60f225_oob_top.v",
+    "config_expressions": 105,
+    "fixed_ranges": 94
+  },
+  {
+    "file": "rtl/true_dual_port_ram.v",
+    "config_expressions": 19,
+    "fixed_ranges": 0
+  },
+  {
+    "file": "rtl/user_cvo_axi_v2/cvo_axi_v2.v",
+    "config_expressions": 26,
+    "fixed_ranges": 22
+  },
+  {
+    "file": "rtl/user_cvo_axi_v2/DC_FIFO.v",
+    "config_expressions": 60,
+    "fixed_ranges": 2
+  },
+  {
+    "file": "rtl/user_dual_port_ram.v",
+    "config_expressions": 13,
+    "fixed_ranges": 0
+  }
+]

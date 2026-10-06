@@ -1,3 +1,4 @@
+`include "../../defines.v"
 // (C) 2001-2016 Intel Corporation. All rights reserved.
 // Your use of Intel Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
@@ -26,11 +27,11 @@ module oc_i2c_master (
     
     
     output wb_ack_o ,
-    input [2:0] wb_adr_i  ,
+    input [`CFG_BITS_3-1:0] wb_adr_i  ,
     input wb_clk_i ,
     //input wb_cyc_i ,
-    input [31:0] wb_dat_i ,
-    output [31:0] wb_dat_o ,
+    input [`CFG_BITS_32-1:0] wb_dat_i ,
+    output [`CFG_BITS_32-1:0] wb_dat_o ,
     //wb_err_o ,
     input wb_rst_i ,
     input wb_stb_i,

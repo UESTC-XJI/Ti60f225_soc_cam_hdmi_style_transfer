@@ -1,3 +1,4 @@
+`include "../defines.v"
 //***************************************************************/
 //   ______   _   _   _                  _            _
 //  |  ____| | | (_) | |                | |          | |
@@ -23,29 +24,29 @@
 `timescale 1 ps / 1 ps
 
 module ddr3_top #(
-parameter                       TCQ                = 100,
-parameter                       ASYN_AXI_CLK       = `ASYN_AXI_CLK,        // # of memory CKs per fabric CLK
-parameter                       CK_RATIO           = `CK_RATIO,        // # of memory CKs per fabric CLK
-parameter                       RANK_RATIO         = 1,                // # of unique CS outputs per rank
-parameter                       RANKS              = `RANKS,
-parameter                       CK_WIDTH           = `CK_WIDTH,        // # of CK/CK# outputs to memory   
-parameter                       CKE_WIDTH          = `CKE_WIDTH,       // # of cke outputs
-parameter                       CS_WIDTH           = `CS_WIDTH,        // # of unique CS outputs
-parameter                       BANK_WIDTH         = `BANK_WIDTH,      // # of bank bits
-parameter                       ROW_WIDTH          = `ROW_WIDTH,       // DRAM address bus width
-parameter                       COL_WIDTH          = `COL_WIDTH,       // column address width
-parameter                       DM_WIDTH           = `DM_WIDTH,        // # of DM (data mask)
-parameter                       DQS_WIDTH          = `DQS_WIDTH,       // # of DQS (strobe)
-parameter                       DQ_WIDTH           = `DQ_WIDTH,        // # of DQ (data)
-parameter                       ODT_WIDTH          = `ODT_WIDTH,
-parameter                       DQ_CNT_WIDTH       = `DQ_CNT_WIDTH,    // = ceil(log2(DQ_WIDTH))
-parameter                       DQS_CNT_WIDTH      = `DQS_CNT_WIDTH,   // = ceil(log2(DQS_WIDTH))  
-parameter                       DRAM_WIDTH         = `DRAM_WIDTH,      // # of DQ per DQS   
-parameter                       DATA_WIDTH         = `DATA_WIDTH,
-parameter                       ADDR_WIDTH         = `ADDR_WIDTH,    
-parameter                       AXI_ID_WIDTH       = `AXI_ID_WIDTH,
-parameter                       AXI_ADDR_WIDTH     = `AXI_ADDR_WIDTH,
-parameter                       AXI_DATA_WIDTH     = `AXI_DATA_WIDTH
+parameter                       TCQ                = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TCQ,
+parameter                       ASYN_AXI_CLK       = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_ASYN_AXI_CLK,        // # of memory CKs per fabric CLK
+parameter                       CK_RATIO           = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_CK_RATIO,        // # of memory CKs per fabric CLK
+parameter                       RANK_RATIO         = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_RANK_RATIO,                // # of unique CS outputs per rank
+parameter                       RANKS              = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_RANKS,
+parameter                       CK_WIDTH           = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_CK_WIDTH,        // # of CK/CK# outputs to memory
+parameter                       CKE_WIDTH          = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_CKE_WIDTH,       // # of cke outputs
+parameter                       CS_WIDTH           = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_CS_WIDTH,        // # of unique CS outputs
+parameter                       BANK_WIDTH         = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_BANK_WIDTH,      // # of bank bits
+parameter                       ROW_WIDTH          = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_ROW_WIDTH,       // DRAM address bus width
+parameter                       COL_WIDTH          = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_COL_WIDTH,       // column address width
+parameter                       DM_WIDTH           = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_DM_WIDTH,        // # of DM (data mask)
+parameter                       DQS_WIDTH          = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_DQS_WIDTH,       // # of DQS (strobe)
+parameter                       DQ_WIDTH           = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_DQ_WIDTH,        // # of DQ (data)
+parameter                       ODT_WIDTH          = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_ODT_WIDTH,
+parameter                       DQ_CNT_WIDTH       = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_DQ_CNT_WIDTH,    // = ceil(log2(DQ_WIDTH))
+parameter                       DQS_CNT_WIDTH      = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_DQS_CNT_WIDTH,   // = ceil(log2(DQS_WIDTH))
+parameter                       DRAM_WIDTH         = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_DRAM_WIDTH,      // # of DQ per DQS
+parameter                       DATA_WIDTH         = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_DATA_WIDTH,
+parameter                       ADDR_WIDTH         = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_ADDR_WIDTH,
+parameter                       AXI_ID_WIDTH       = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_AXI_ID_WIDTH,
+parameter                       AXI_ADDR_WIDTH     = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_AXI_ADDR_WIDTH,
+parameter                       AXI_DATA_WIDTH     = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_AXI_DATA_WIDTH
 )
 (
 // Clock and reset ports
@@ -58,38 +59,38 @@ input                           tx_cal_clk_90edge,   // SDRAM CK @ 400MHz
 input                           rstn,
 
 // PLL status flags  
-output          [2:0]           pll_shift,  
-output          [4:0]           pll_shift_sel,
+output          [`CFG_BITS_3-1:0]           pll_shift,
+output          [`CFG_BITS_5-1:0]           pll_shift_sel,
 output                          pll_shift_ena,  
 // memory interface ports
 
 output                          ddr_ck_hi,
 output                          ddr_ck_lo,
 output                          ddr_reset_n,
-output          [CKE_WIDTH-1:0] ddr_cke,     
-output          [ROW_WIDTH-1:0] ddr_addr,
-output          [BANK_WIDTH-1:0]ddr_ba,
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_1] ddr_cke,
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_2] ddr_addr,
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_3]ddr_ba,
 output                          ddr_cas_n,
-output          [CS_WIDTH*RANK_RATIO-1:0] 
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_4]
                                 ddr_cs_n,
 output                          ddr_ras_n,
 output                          ddr_we_n,
 
-input           [DQS_WIDTH-1:0] ddr_dqs_in_hi,
-input           [DQS_WIDTH-1:0] ddr_dqs_in_lo,
-input           [DQ_WIDTH-1:0]  ddr_dq_in_hi,
-input           [DQ_WIDTH-1:0]  ddr_dq_in_lo,
+input           [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_5] ddr_dqs_in_hi,
+input           [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_6] ddr_dqs_in_lo,
+input           [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_7]  ddr_dq_in_hi,
+input           [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_8]  ddr_dq_in_lo,
 
-output          [DQS_WIDTH-1:0] ddr_dqs_oe,
-output          [DQS_WIDTH-1:0] ddr_dqs_oe_n,
-output          [DQ_WIDTH-1:0]  ddr_dq_oe,    
-output          [DQS_WIDTH-1:0] ddr_dqs_out_hi,
-output          [DQS_WIDTH-1:0] ddr_dqs_out_lo,
-output          [DQ_WIDTH-1:0]  ddr_dq_out_hi,
-output          [DQ_WIDTH-1:0]  ddr_dq_out_lo,
-output          [DM_WIDTH-1:0]  ddr_dm_hi,
-output          [DM_WIDTH-1:0]  ddr_dm_lo,
-output          [ODT_WIDTH-1:0] ddr_odt,
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_9] ddr_dqs_oe,
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_10] ddr_dqs_oe_n,
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_11]  ddr_dq_oe,
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_12] ddr_dqs_out_hi,
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_13] ddr_dqs_out_lo,
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_14]  ddr_dq_out_hi,
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_15]  ddr_dq_out_lo,
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_16]  ddr_dm_hi,
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_17]  ddr_dm_lo,
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_18] ddr_odt,
 
 input                           app_sr_req,
 output                          app_sr_active,
@@ -99,95 +100,95 @@ input                           app_zq_req,
 output                          app_zq_ack,
 
 // Slave Interface Write Address Ports
-input           [AXI_ID_WIDTH-1:0]      
+input           [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_19]
                                 s_axi_awid,
-input           [AXI_ADDR_WIDTH-1:0]    
+input           [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_20]
                                 s_axi_awaddr,
-input           [7:0]           s_axi_awlen,
-input           [2:0]           s_axi_awsize,
-input           [1:0]           s_axi_awburst,
-input           [0:0]           s_axi_awlock,
-input           [3:0]           s_axi_awcache,
-input           [2:0]           s_axi_awprot,
-input           [3:0]           s_axi_awqos,
+input           [`CFG_BITS_8-1:0]           s_axi_awlen,
+input           [`CFG_BITS_3-1:0]           s_axi_awsize,
+input           [`CFG_BITS_2-1:0]           s_axi_awburst,
+input           [`CFG_BITS_1-1:0]           s_axi_awlock,
+input           [`CFG_BITS_4-1:0]           s_axi_awcache,
+input           [`CFG_BITS_3-1:0]           s_axi_awprot,
+input           [`CFG_BITS_4-1:0]           s_axi_awqos,
 input                           s_axi_awvalid,
 output                          s_axi_awready,
 // Slave Interface Write Data Ports
-input           [AXI_DATA_WIDTH-1:0]    
+input           [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_21]
                                 s_axi_wdata,
-input           [AXI_DATA_WIDTH/8-1:0]  
+input           [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_22]
                                 s_axi_wstrb,
 input                           s_axi_wlast,
 input                           s_axi_wvalid,
 output                          s_axi_wready,
 // Slave Interface Write Response Ports
 input                           s_axi_bready,
-output          [AXI_ID_WIDTH-1:0]      
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_23]
                                 s_axi_bid,
-output          [1:0]           s_axi_bresp,
+output          [`CFG_BITS_2-1:0]           s_axi_bresp,
 output                          s_axi_bvalid,
 // Slave Interface Read Address Ports
-input           [AXI_ID_WIDTH-1:0]      
+input           [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_24]
                                 s_axi_arid,
-input           [AXI_ADDR_WIDTH-1:0]    
+input           [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_25]
                                 s_axi_araddr,
-input           [7:0]           s_axi_arlen,
-input           [2:0]           s_axi_arsize,
-input           [1:0]           s_axi_arburst,
-input           [0:0]           s_axi_arlock,
-input           [3:0]           s_axi_arcache,
-input           [2:0]           s_axi_arprot,
-input           [3:0]           s_axi_arqos,
+input           [`CFG_BITS_8-1:0]           s_axi_arlen,
+input           [`CFG_BITS_3-1:0]           s_axi_arsize,
+input           [`CFG_BITS_2-1:0]           s_axi_arburst,
+input           [`CFG_BITS_1-1:0]           s_axi_arlock,
+input           [`CFG_BITS_4-1:0]           s_axi_arcache,
+input           [`CFG_BITS_3-1:0]           s_axi_arprot,
+input           [`CFG_BITS_4-1:0]           s_axi_arqos,
 input                           s_axi_arvalid,
 output                          s_axi_arready,
 // Slave Interface Read Data Ports
 input                           s_axi_rready,
-output          [AXI_ID_WIDTH-1:0]      
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_26]
                                 s_axi_rid,
-output          [AXI_DATA_WIDTH-1:0]    
+output          [`CFG_DDR3_CONTROLLER_DDR3_TOP_V_RANGE_27]
                                 s_axi_rdata,
-output          [1:0]           s_axi_rresp,
+output          [`CFG_BITS_2-1:0]           s_axi_rresp,
 output                          s_axi_rlast,
 output                          s_axi_rvalid,
 // debug port 
-output          [7:0]           wrlvl_dq_check,    
-output          [7:0]           rd_level_dqs_check,     
-output          [2:0]           rdlvl_shift,     
-output          [2:0]           wrlvl_shift,     
-output          [6:0]           init_cur_state,      
+output          [`CFG_BITS_8-1:0]           wrlvl_dq_check,
+output          [`CFG_BITS_8-1:0]           rd_level_dqs_check,
+output          [`CFG_BITS_3-1:0]           rdlvl_shift,
+output          [`CFG_BITS_3-1:0]           wrlvl_shift,
+output          [`CFG_BITS_7-1:0]           init_cur_state,
 output                          idelay_ld,    
 output                          mpr_rdlvl_dly, 
-output          [35:0]          ddr_debug_port,    
+output          [`CFG_BITS_36-1:0]          ddr_debug_port,
 // Calibration status and resultant outputs   
 output                          cal_done
    );
    
 //Parameter Define
-parameter               tCKE    = `tCKE  ;        // memory tCKE paramter in pS
-parameter               tFAW    = `tFAW  ;        // memory tRAW paramter in pS.
-parameter               tRAS    = `tRAS  ;        // memory tRAS paramter in pS.
-parameter               tRCD    = `tRCD  ;        // memory tRCD paramter in pS.
-parameter               tREFI   = `tREFI ;        // memory tREFI paramter in pS.
-parameter               tRFC    = `tRFC  ;        // memory tRFC paramter in pS.
-parameter               tRP     = `tRP   ;        // memory tRP paramter in pS.
-parameter               tRRD    = `tRRD  ;        // memory tRRD paramter in pS.
-parameter               tRTP    = `tRTP  ;        // memory tRTP paramter in pS.
-parameter               tWTR    = `tWTR  ;        // memory tWTR paramter in pS.
-parameter               tZQI    = `tZQI  ;        // memory tZQI paramter in nS.
-parameter               tZQCS   = `tZQCS ;        // memory tZQCS paramter in clock cycles.
-parameter               tCK     = `tCK ;        // pS
-parameter               CWL     = `CWL ;
-parameter               CL      = `CL  ;
-parameter               nAL     = `nAL ;   // Additive latency (in clk cyc)
+parameter               tCKE    = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TCKE  ;        // memory tCKE paramter in pS
+parameter               tFAW    = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TFAW  ;        // memory tRAW paramter in pS.
+parameter               tRAS    = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TRAS  ;        // memory tRAS paramter in pS.
+parameter               tRCD    = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TRCD  ;        // memory tRCD paramter in pS.
+parameter               tREFI   = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TREFI ;        // memory tREFI paramter in pS.
+parameter               tRFC    = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TRFC  ;        // memory tRFC paramter in pS.
+parameter               tRP     = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TRP   ;        // memory tRP paramter in pS.
+parameter               tRRD    = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TRRD  ;        // memory tRRD paramter in pS.
+parameter               tRTP    = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TRTP  ;        // memory tRTP paramter in pS.
+parameter               tWTR    = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TWTR  ;        // memory tWTR paramter in pS.
+parameter               tZQI    = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TZQI  ;        // memory tZQI paramter in nS.
+parameter               tZQCS   = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TZQCS ;        // memory tZQCS paramter in clock cycles.
+parameter               tCK     = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TCK ;        // pS
+parameter               CWL     = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_CWL ;
+parameter               CL      = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_CL  ;
+parameter               nAL     = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_NAL ;   // Additive latency (in clk cyc)
 
-parameter               RTT_NOM          = `RTT_NOM;
-parameter               RTT_WR           = `RTT_WR;
-parameter               BURST_MODE       = `BURST_MODE;     // Burst length
+parameter               RTT_NOM          = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_RTT_NOM;
+parameter               RTT_WR           = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_RTT_WR;
+parameter               BURST_MODE       = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_BURST_MODE;     // Burst length
   
-parameter               MEM_ADDR_ORDER   = `MEM_ADDR_ORDER;
-parameter               RX_CLK_SEL       =  5'b00001 << `RX_CLK_SEL;         //5'b00100; //rx_cal_clk  PLL out sel
-parameter               TX_CLK_SEL       =  5'b00001 << `TX_CLK_SEL;         //5'b01000; //tx_cal_clk  PLL out sel
-parameter               TX_CLK_90EDGE_SEL=  5'b00001 << `TX_CLK_90EDGE_SEL;  //5'b00001; //tx_cal_clk_90edge  PLL out sel  
+parameter               MEM_ADDR_ORDER   = `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_MEM_ADDR_ORDER;
+parameter               RX_CLK_SEL       =  `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_RX_CLK_SEL;         //5'b00100; //rx_cal_clk  PLL out sel
+parameter               TX_CLK_SEL       =  `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TX_CLK_SEL;         //5'b01000; //tx_cal_clk  PLL out sel
+parameter               TX_CLK_90EDGE_SEL=  `CFG_DDR3_CONTROLLER_DDR3_TOP_V_PARAMETER_TX_CLK_90EDGE_SEL;  //5'b00001; //tx_cal_clk_90edge  PLL out sel
 
 //Encryption begin
 `pragma protect begin_protected

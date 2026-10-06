@@ -1,3 +1,4 @@
+`include "../../defines.v"
 // (C) 2001-2016 Intel Corporation. All rights reserved.
 // Your use of Intel Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
@@ -97,7 +98,7 @@ module i2c_master_byte_ctrl (
 	input nReset;  // asynchronous active low reset
 	input ena;     // core enable signal
 
-	input [15:0] clk_cnt; // 4x SCL
+	input [`CFG_BITS_16-1:0] clk_cnt; // 4x SCL
 
 	// control inputs
 	input       start;
@@ -105,7 +106,7 @@ module i2c_master_byte_ctrl (
 	input       read;
 	input       write;
 	input       ack_in;
-	input [7:0] din;
+	input [`CFG_BITS_8-1:0] din;
 
 	// status outputs
 	output       cmd_ack;
@@ -114,7 +115,7 @@ module i2c_master_byte_ctrl (
 	reg ack_out;
 	output       i2c_busy;
 	output       i2c_al;
-	output [7:0] dout;
+	output [`CFG_BITS_8-1:0] dout;
 
 	// I2C signals
 	input  scl_i;
@@ -130,25 +131,25 @@ module i2c_master_byte_ctrl (
 	//
 
 	// statemachine
-	parameter [4:0] ST_IDLE  = 5'b0_0000;
-	parameter [4:0] ST_START = 5'b0_0001;
-	parameter [4:0] ST_READ  = 5'b0_0010;
-	parameter [4:0] ST_WRITE = 5'b0_0100;
-	parameter [4:0] ST_ACK   = 5'b0_1000;
-	parameter [4:0] ST_STOP  = 5'b1_0000;
+	parameter [`CFG_BITS_5-1:0] ST_IDLE  = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BYTE_CTRL_V_PARAMETER_ST_IDLE;
+	parameter [`CFG_BITS_5-1:0] ST_START = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BYTE_CTRL_V_PARAMETER_ST_START;
+	parameter [`CFG_BITS_5-1:0] ST_READ  = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BYTE_CTRL_V_PARAMETER_ST_READ;
+	parameter [`CFG_BITS_5-1:0] ST_WRITE = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BYTE_CTRL_V_PARAMETER_ST_WRITE;
+	parameter [`CFG_BITS_5-1:0] ST_ACK   = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BYTE_CTRL_V_PARAMETER_ST_ACK;
+	parameter [`CFG_BITS_5-1:0] ST_STOP  = `CFG_CAM_I2C_CTRL_I2C_MASTER_I2C_MASTER_BYTE_CTRL_V_PARAMETER_ST_STOP;
 
 	// signals for bit_controller
-	reg  [3:0] core_cmd;
+	reg  [`CFG_BITS_4-1:0] core_cmd;
 	reg        core_txd;
 	wire       core_ack, core_rxd;
 
 	// signals for shift register
-	reg [7:0] sr; //8bit shift register
+	reg [`CFG_BITS_8-1:0] sr; //8bit shift register
 	reg       shift, ld;
 
 	// signals for state machine
 	wire       go;
-	reg  [2:0] dcnt;
+	reg  [`CFG_BITS_3-1:0] dcnt;
 	wire       cnt_done;
 
 	//
@@ -209,7 +210,7 @@ module i2c_master_byte_ctrl (
 	//
 	// state machine
 	//
-	reg [4:0] c_state; // synopsis enum_state
+	reg [`CFG_BITS_5-1:0] c_state; // synopsis enum_state
 
 	always @(posedge clk or negedge nReset)
 	  if (!nReset)

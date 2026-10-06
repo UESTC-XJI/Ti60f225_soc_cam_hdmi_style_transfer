@@ -1,18 +1,19 @@
+`include "../defines.v"
 // Optional APB3 register bank for the future CPU integration.
 // Status inputs must already be synchronized into pclk; control outputs go
 // through a coherent mailbox to the pixel clock, as in the current top level.
 module hdmi_info_overlay_apb(
   input pclk,preset_n,psel,penable,pwrite,
-  input [11:0] paddr,
-  input [31:0] pwdata,
-  output reg [31:0] prdata,
+  input [`CFG_BITS_12-1:0] paddr,
+  input [`CFG_BITS_32-1:0] pwdata,
+  output reg [`CFG_BITS_32-1:0] prdata,
   output pready,pslverr,
   output o_hist_enable,o_text_enable,
-  output [1:0] o_hist_mode,
+  output [`CFG_BITS_2-1:0] o_hist_mode,
   input i_hist_valid,
-  input [15:0] i_hist_samples
+  input [`CFG_BITS_16-1:0] i_hist_samples
 );
-  reg [3:0] control;
+  reg [`CFG_BITS_4-1:0] control;
   wire control_address=paddr==12'h000;
   wire valid_address=control_address || paddr==12'h004 || paddr==12'h008;
   assign pready=1'b1;

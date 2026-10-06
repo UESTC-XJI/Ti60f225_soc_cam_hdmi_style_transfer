@@ -1,7 +1,8 @@
+`include "../defines.v"
 module panel_config
 #(
-	parameter INITIAL_CODE	= "NT35596_1080p_reg.mem",
-	parameter REG_DEPTH		= 9'd502
+	parameter INITIAL_CODE	= `CFG_MIPI_CONFIG_PANEL_CONFIG_V_PARAMETER_INITIAL_CODE,
+	parameter REG_DEPTH		= `CFG_MIPI_CONFIG_PANEL_CONFIG_V_PARAMETER_REG_DEPTH
 )
 (
 	input		i_axi_clk,
@@ -10,62 +11,62 @@ module panel_config
 	input		i_axi_awready,
 	input		i_axi_wready,
 	input		i_axi_bvalid,
-	output reg	[6:0]o_axi_awaddr,
+	output reg	[`CFG_BITS_7-1:0]o_axi_awaddr,
 	output reg	o_axi_awvalid,
-	output reg	[31:0]o_axi_wdata,
+	output reg	[`CFG_BITS_32-1:0]o_axi_wdata,
 	output reg	o_axi_wvalid,
 	output reg	o_axi_bready,
 	
 	input		i_axi_arready,
-	input		[31:0]i_axi_rdata,
+	input		[`CFG_BITS_32-1:0]i_axi_rdata,
 	input		i_axi_rvalid,
-	output reg	[6:0]o_axi_araddr,
+	output reg	[`CFG_BITS_7-1:0]o_axi_araddr,
 	output reg	o_axi_arvalid,
 	output reg	o_axi_rready,
 	
 	output		o_addr_cnt,
-	output		[3:0]o_state,
+	output		[`CFG_BITS_4-1:0]o_state,
 	output		o_confdone,
 	
 	input		i_dbg_we,
-	input		[39:0]i_dbg_din,
-	input		[8:0]i_dbg_addr,
-	output		[39:0]o_dbg_dout,
+	input		[`CFG_BITS_40-1:0]i_dbg_din,
+	input		[`CFG_BITS_9-1:0]i_dbg_addr,
+	output		[`CFG_BITS_40-1:0]o_dbg_dout,
 	input		i_dbg_reconfig
 );
 
-localparam	IDLE 		= 4'b0000;
-localparam	WRITE_ADDR 	= 4'b0001;
-localparam	PRE_WRITE 	= 4'b0010;
-localparam	WRITE 		= 4'b0011;
-localparam	POST_WRITE 	= 4'b0100;
-localparam	READ_ADDR 	= 4'b1001;
-localparam	PRE_READ 	= 4'b1010;
-localparam	READ 		= 4'b1011;
-localparam	POST_READ 	= 4'b1100;
+localparam	IDLE 		= `CFG_MIPI_CONFIG_PANEL_CONFIG_V_LOCALPARAM_IDLE;
+localparam	WRITE_ADDR 	= `CFG_MIPI_CONFIG_PANEL_CONFIG_V_LOCALPARAM_WRITE_ADDR;
+localparam	PRE_WRITE 	= `CFG_MIPI_CONFIG_PANEL_CONFIG_V_LOCALPARAM_PRE_WRITE;
+localparam	WRITE 		= `CFG_MIPI_CONFIG_PANEL_CONFIG_V_LOCALPARAM_WRITE;
+localparam	POST_WRITE 	= `CFG_MIPI_CONFIG_PANEL_CONFIG_V_LOCALPARAM_POST_WRITE;
+localparam	READ_ADDR 	= `CFG_MIPI_CONFIG_PANEL_CONFIG_V_LOCALPARAM_READ_ADDR;
+localparam	PRE_READ 	= `CFG_MIPI_CONFIG_PANEL_CONFIG_V_LOCALPARAM_PRE_READ;
+localparam	READ 		= `CFG_MIPI_CONFIG_PANEL_CONFIG_V_LOCALPARAM_READ;
+localparam	POST_READ 	= `CFG_MIPI_CONFIG_PANEL_CONFIG_V_LOCALPARAM_POST_READ;
 
-reg 	[3:0]r_state;
+reg 	[`CFG_BITS_4-1:0]r_state;
 reg 	r_done;
 reg 	r_confdone;
-reg 	[21:0]r_timer;
-reg 	[15:0]r_addr;
-reg 	[31:0]r_read_reg;
-reg		[2:0]r_cnt;
+reg 	[`CFG_BITS_22-1:0]r_timer;
+reg 	[`CFG_BITS_16-1:0]r_addr;
+reg 	[`CFG_BITS_32-1:0]r_read_reg;
+reg		[`CFG_BITS_3-1:0]r_cnt;
 
-wire	[39:0]w_reg;
-wire	[39:0]w_reg_default;
+wire	[`CFG_BITS_40-1:0]w_reg;
+wire	[`CFG_BITS_40-1:0]w_reg_default;
 
 assign	o_addr_cnt	= r_addr[0];
 
 true_dual_port_ram
 #(
-	.DATA_WIDTH(40),
-	.ADDR_WIDTH(9),
-	.WRITE_MODE_1("WRITE_FIRST"),
-	.WRITE_MODE_2("WRITE_FIRST"),
-	.OUTPUT_REG_1("TRUE"),
-	.OUTPUT_REG_2("TRUE"),
-	.RAM_INIT_FILE(INITIAL_CODE)		// Initial code file   ("piv2_720p_reg.mem")
+	.DATA_WIDTH(`CFG_MIPI_CONFIG_PANEL_CONFIG_V_INST_INST_PIV2_REG_DATA_WIDTH),
+	.ADDR_WIDTH(`CFG_MIPI_CONFIG_PANEL_CONFIG_V_INST_INST_PIV2_REG_ADDR_WIDTH),
+	.WRITE_MODE_1(`CFG_MIPI_CONFIG_PANEL_CONFIG_V_INST_INST_PIV2_REG_WRITE_MODE_1),
+	.WRITE_MODE_2(`CFG_MIPI_CONFIG_PANEL_CONFIG_V_INST_INST_PIV2_REG_WRITE_MODE_2),
+	.OUTPUT_REG_1(`CFG_MIPI_CONFIG_PANEL_CONFIG_V_INST_INST_PIV2_REG_OUTPUT_REG_1),
+	.OUTPUT_REG_2(`CFG_MIPI_CONFIG_PANEL_CONFIG_V_INST_INST_PIV2_REG_OUTPUT_REG_2),
+	.RAM_INIT_FILE(`CFG_MIPI_CONFIG_PANEL_CONFIG_V_INST_INST_PIV2_REG_RAM_INIT_FILE)		// Initial code file   ("piv2_720p_reg.mem")
 )
 inst_piv2_reg
 (

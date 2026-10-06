@@ -1,62 +1,63 @@
+`include "../defines.v"
 `timescale 1ns / 1ps
 
 module axi_ram #
 (
     // Width of data bus in bits
-    parameter DATA_WIDTH = 32,
+    parameter DATA_WIDTH = `CFG_FRAME_BUFFER_V4_AXI_RAM_V_PARAMETER_DATA_WIDTH,
     // Width of address bus in bits
-    parameter ADDR_WIDTH = 16,
+    parameter ADDR_WIDTH = `CFG_FRAME_BUFFER_V4_AXI_RAM_V_PARAMETER_ADDR_WIDTH,
     // Width of wstrb (width of data bus in words)
-    parameter STRB_WIDTH = (DATA_WIDTH/8),
+    parameter STRB_WIDTH = `CFG_FRAME_BUFFER_V4_AXI_RAM_V_PARAMETER_STRB_WIDTH,
     // Width of ID signal
-    parameter ID_WIDTH = 8,
+    parameter ID_WIDTH = `CFG_FRAME_BUFFER_V4_AXI_RAM_V_PARAMETER_ID_WIDTH,
     // Extra pipeline register on output
-    parameter PIPELINE_OUTPUT = 0
+    parameter PIPELINE_OUTPUT = `CFG_FRAME_BUFFER_V4_AXI_RAM_V_PARAMETER_PIPELINE_OUTPUT
 )
 (
     input  wire                   clk,
     input  wire                   rst,
 
-    input  wire [ID_WIDTH-1:0]    s_axi_awid,
-    input  wire [ADDR_WIDTH-1:0]  s_axi_awaddr,
-    input  wire [7:0]             s_axi_awlen,
-    input  wire [2:0]             s_axi_awsize,
-    input  wire [1:0]             s_axi_awburst,
+    input  wire [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_1]    s_axi_awid,
+    input  wire [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_2]  s_axi_awaddr,
+    input  wire [`CFG_BITS_8-1:0]             s_axi_awlen,
+    input  wire [`CFG_BITS_3-1:0]             s_axi_awsize,
+    input  wire [`CFG_BITS_2-1:0]             s_axi_awburst,
     input  wire                   s_axi_awlock,
-    input  wire [3:0]             s_axi_awcache,
-    input  wire [2:0]             s_axi_awprot,
+    input  wire [`CFG_BITS_4-1:0]             s_axi_awcache,
+    input  wire [`CFG_BITS_3-1:0]             s_axi_awprot,
     input  wire                   s_axi_awvalid,
     output wire                   s_axi_awready,
-    input  wire [DATA_WIDTH-1:0]  s_axi_wdata,
-    input  wire [STRB_WIDTH-1:0]  s_axi_wstrb,
+    input  wire [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_3]  s_axi_wdata,
+    input  wire [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_4]  s_axi_wstrb,
     input  wire                   s_axi_wlast,
     input  wire                   s_axi_wvalid,
     output wire                   s_axi_wready,
-    output wire [ID_WIDTH-1:0]    s_axi_bid,
-    output wire [1:0]             s_axi_bresp,
+    output wire [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_5]    s_axi_bid,
+    output wire [`CFG_BITS_2-1:0]             s_axi_bresp,
     output wire                   s_axi_bvalid,
     input  wire                   s_axi_bready,
-    input  wire [ID_WIDTH-1:0]    s_axi_arid,
-    input  wire [ADDR_WIDTH-1:0]  s_axi_araddr,
-    input  wire [7:0]             s_axi_arlen,
-    input  wire [2:0]             s_axi_arsize,
-    input  wire [1:0]             s_axi_arburst,
+    input  wire [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_6]    s_axi_arid,
+    input  wire [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_7]  s_axi_araddr,
+    input  wire [`CFG_BITS_8-1:0]             s_axi_arlen,
+    input  wire [`CFG_BITS_3-1:0]             s_axi_arsize,
+    input  wire [`CFG_BITS_2-1:0]             s_axi_arburst,
     input  wire                   s_axi_arlock,
-    input  wire [3:0]             s_axi_arcache,
-    input  wire [2:0]             s_axi_arprot,
+    input  wire [`CFG_BITS_4-1:0]             s_axi_arcache,
+    input  wire [`CFG_BITS_3-1:0]             s_axi_arprot,
     input  wire                   s_axi_arvalid,
     output wire                   s_axi_arready,
-    output wire [ID_WIDTH-1:0]    s_axi_rid,
-    output wire [DATA_WIDTH-1:0]  s_axi_rdata,
-    output wire [1:0]             s_axi_rresp,
+    output wire [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_8]    s_axi_rid,
+    output wire [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_9]  s_axi_rdata,
+    output wire [`CFG_BITS_2-1:0]             s_axi_rresp,
     output wire                   s_axi_rlast,
     output wire                   s_axi_rvalid,
     input  wire                   s_axi_rready
 );
 
-parameter VALID_ADDR_WIDTH = ADDR_WIDTH - $clog2(STRB_WIDTH);
-parameter WORD_WIDTH = STRB_WIDTH;
-parameter WORD_SIZE = DATA_WIDTH/WORD_WIDTH;
+parameter VALID_ADDR_WIDTH = `CFG_FRAME_BUFFER_V4_AXI_RAM_V_PARAMETER_VALID_ADDR_WIDTH;
+parameter WORD_WIDTH = `CFG_FRAME_BUFFER_V4_AXI_RAM_V_PARAMETER_WORD_WIDTH;
+parameter WORD_SIZE = `CFG_FRAME_BUFFER_V4_AXI_RAM_V_PARAMETER_WORD_SIZE;
 
 // bus width assertions
 initial begin
@@ -71,51 +72,51 @@ initial begin
     end
 end
 
-localparam [0:0]
-    READ_STATE_IDLE = 1'd0,
-    READ_STATE_BURST = 1'd1;
+localparam [`CFG_BITS_1-1:0]
+    READ_STATE_IDLE = `CFG_FRAME_BUFFER_V4_AXI_RAM_V_LOCALPARAM_READ_STATE_IDLE,
+    READ_STATE_BURST = `CFG_FRAME_BUFFER_V4_AXI_RAM_V_LOCALPARAM_READ_STATE_BURST;
 
-reg [0:0] read_state_reg = READ_STATE_IDLE, read_state_next;
+reg [`CFG_BITS_1-1:0] read_state_reg = READ_STATE_IDLE, read_state_next;
 
-localparam [1:0]
-    WRITE_STATE_IDLE = 2'd0,
-    WRITE_STATE_BURST = 2'd1,
-    WRITE_STATE_RESP = 2'd2;
+localparam [`CFG_BITS_2-1:0]
+    WRITE_STATE_IDLE = `CFG_FRAME_BUFFER_V4_AXI_RAM_V_LOCALPARAM_WRITE_STATE_IDLE,
+    WRITE_STATE_BURST = `CFG_FRAME_BUFFER_V4_AXI_RAM_V_LOCALPARAM_WRITE_STATE_BURST,
+    WRITE_STATE_RESP = `CFG_FRAME_BUFFER_V4_AXI_RAM_V_LOCALPARAM_WRITE_STATE_RESP;
 
-reg [1:0] write_state_reg = WRITE_STATE_IDLE, write_state_next;
+reg [`CFG_BITS_2-1:0] write_state_reg = WRITE_STATE_IDLE, write_state_next;
 
 reg mem_wr_en;
 reg mem_rd_en;
 
-reg [ID_WIDTH-1:0] read_id_reg = {ID_WIDTH{1'b0}}, read_id_next;
-reg [ADDR_WIDTH-1:0] read_addr_reg = {ADDR_WIDTH{1'b0}}, read_addr_next;
-reg [7:0] read_count_reg = 8'd0, read_count_next;
-reg [2:0] read_size_reg = 3'd0, read_size_next;
-reg [1:0] read_burst_reg = 2'd0, read_burst_next;
-reg [ID_WIDTH-1:0] write_id_reg = {ID_WIDTH{1'b0}}, write_id_next;
-reg [ADDR_WIDTH-1:0] write_addr_reg = {ADDR_WIDTH{1'b0}}, write_addr_next;
-reg [7:0] write_count_reg = 8'd0, write_count_next;
-reg [2:0] write_size_reg = 3'd0, write_size_next;
-reg [1:0] write_burst_reg = 2'd0, write_burst_next;
+reg [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_10] read_id_reg = {ID_WIDTH{1'b0}}, read_id_next;
+reg [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_11] read_addr_reg = {ADDR_WIDTH{1'b0}}, read_addr_next;
+reg [`CFG_BITS_8-1:0] read_count_reg = 8'd0, read_count_next;
+reg [`CFG_BITS_3-1:0] read_size_reg = 3'd0, read_size_next;
+reg [`CFG_BITS_2-1:0] read_burst_reg = 2'd0, read_burst_next;
+reg [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_12] write_id_reg = {ID_WIDTH{1'b0}}, write_id_next;
+reg [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_13] write_addr_reg = {ADDR_WIDTH{1'b0}}, write_addr_next;
+reg [`CFG_BITS_8-1:0] write_count_reg = 8'd0, write_count_next;
+reg [`CFG_BITS_3-1:0] write_size_reg = 3'd0, write_size_next;
+reg [`CFG_BITS_2-1:0] write_burst_reg = 2'd0, write_burst_next;
 
 reg s_axi_awready_reg = 1'b0, s_axi_awready_next;
 reg s_axi_wready_reg = 1'b0, s_axi_wready_next;
-reg [ID_WIDTH-1:0] s_axi_bid_reg = {ID_WIDTH{1'b0}}, s_axi_bid_next;
+reg [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_14] s_axi_bid_reg = {ID_WIDTH{1'b0}}, s_axi_bid_next;
 reg s_axi_bvalid_reg = 1'b0, s_axi_bvalid_next;
 reg s_axi_arready_reg = 1'b0, s_axi_arready_next;
-reg [ID_WIDTH-1:0] s_axi_rid_reg = {ID_WIDTH{1'b0}}, s_axi_rid_next;
-wire [DATA_WIDTH-1:0] s_axi_rdata_reg;
+reg [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_15] s_axi_rid_reg = {ID_WIDTH{1'b0}}, s_axi_rid_next;
+wire [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_16] s_axi_rdata_reg;
 reg s_axi_rlast_reg = 1'b0, s_axi_rlast_next;
 reg s_axi_rvalid_reg = 1'b0, s_axi_rvalid_next;
-reg [ID_WIDTH-1:0] s_axi_rid_pipe_reg = {ID_WIDTH{1'b0}};
-reg [DATA_WIDTH-1:0] s_axi_rdata_pipe_reg = {DATA_WIDTH{1'b0}};
+reg [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_17] s_axi_rid_pipe_reg = {ID_WIDTH{1'b0}};
+reg [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_18] s_axi_rdata_pipe_reg = {DATA_WIDTH{1'b0}};
 reg s_axi_rlast_pipe_reg = 1'b0;
 reg s_axi_rvalid_pipe_reg = 1'b0;
 
-wire [VALID_ADDR_WIDTH-1:0] s_axi_awaddr_valid = s_axi_awaddr >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
-wire [VALID_ADDR_WIDTH-1:0] s_axi_araddr_valid = s_axi_araddr >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
-wire [VALID_ADDR_WIDTH-1:0] read_addr_valid = read_addr_reg >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
-wire [VALID_ADDR_WIDTH-1:0] write_addr_valid = write_addr_reg >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
+wire [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_19] s_axi_awaddr_valid = s_axi_awaddr >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
+wire [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_20] s_axi_araddr_valid = s_axi_araddr >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
+wire [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_21] read_addr_valid = read_addr_reg >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
+wire [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_22] write_addr_valid = write_addr_reg >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
 
 assign s_axi_awready = s_axi_awready_reg;
 assign s_axi_wready = s_axi_wready_reg;
@@ -318,7 +319,7 @@ generate
 genvar i;
 for(i = 0; i < WORD_WIDTH; i = i + 1) begin:RAM_GEN
     mem_u#(
-        .ADDR_WIDTH                 (VALID_ADDR_WIDTH           )
+        .ADDR_WIDTH                 (`CFG_FRAME_BUFFER_V4_AXI_RAM_V_INST_MEM_U_INST_ADDR_WIDTH           )
     )
     mem_u_inst
     (
@@ -336,19 +337,19 @@ endgenerate
 endmodule
 
 module mem_u#(
-    parameter ADDR_WIDTH = 16
+    parameter ADDR_WIDTH = `CFG_FRAME_BUFFER_V4_AXI_RAM_V_PARAMETER_ADDR_WIDTH_2
 )
 (
 input                           clk,
 input                           wen,
-input           [ADDR_WIDTH-1:0]waddr,
-input           [7:0]           wdata,
+input           [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_23]waddr,
+input           [`CFG_BITS_8-1:0]           wdata,
 input                           ren,
-input           [ADDR_WIDTH-1:0]raddr,
-output  reg     [7:0]           rdata
+input           [`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_24]raddr,
+output  reg     [`CFG_BITS_8-1:0]           rdata
 );
 // (* RAM_STYLE="BLOCK" *)
-reg [7:0] mem[(2**ADDR_WIDTH)-1:0];
+reg [`CFG_BITS_8-1:0] mem[`CFG_FRAME_BUFFER_V4_AXI_RAM_V_RANGE_25];
 
 always @(posedge clk) begin
     if(wen)  

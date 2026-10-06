@@ -1,12 +1,13 @@
+`include "../defines.v"
 module ecc_calc_v1(  
     input clk,
 input rst_p,
-input [55:0] idata,
+input [`CFG_BITS_56-1:0] idata,
 input valid,
-output reg[7:0]  ecc = 'd0
+output reg[`CFG_BITS_8-1:0]  ecc = 'd0
 );
-reg [55:0] idata_r = 'd0;
-reg [7:0] cnt = 'd0;
+reg [`CFG_BITS_56-1:0] idata_r = 'd0;
+reg [`CFG_BITS_8-1:0] cnt = 'd0;
 
 always @( posedge clk )
 begin
@@ -22,7 +23,7 @@ else
     idata_r <= idata_r >>1;
 end
 wire din = idata_r[0];
-wire [7:0] parity_next;
+wire [`CFG_BITS_8-1:0] parity_next;
 always @( posedge clk or posedge rst_p )
 begin
 if( valid ) begin
@@ -46,8 +47,8 @@ end
 assign parity_next = next_ecc(ecc, din);
 
 
-function  [7:0] next_ecc;
-input [7:0] ecc, next_bch_bit;
+function  [`CFG_BITS_8-1:0] next_ecc;
+input [`CFG_BITS_8-1:0] ecc, next_bch_bit;
 begin
     next_ecc = (ecc >> 1) ^ ((ecc[0] ^ next_bch_bit) ? 8'b10000011 : 8'd0);
 end

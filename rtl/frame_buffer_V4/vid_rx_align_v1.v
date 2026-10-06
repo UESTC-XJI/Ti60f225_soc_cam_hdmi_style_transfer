@@ -1,9 +1,10 @@
+`include "../defines.v"
 
 
 module vid_rx_align_v1 #(
-	parameter I_VID_WIDTH = 16,
-    parameter SIM_EN = 1'b1,
-	parameter AXI_DDR_WIDTH = 256
+	parameter I_VID_WIDTH = `CFG_FRAME_BUFFER_V4_VID_RX_ALIGN_V1_V_PARAMETER_I_VID_WIDTH,
+    parameter SIM_EN = `CFG_FRAME_BUFFER_V4_VID_RX_ALIGN_V1_V_PARAMETER_SIM_EN,
+	parameter AXI_DDR_WIDTH = `CFG_FRAME_BUFFER_V4_VID_RX_ALIGN_V1_V_PARAMETER_AXI_DDR_WIDTH
 	 
 )(
 input		wire										clk		,    
@@ -11,15 +12,15 @@ input		wire										rst_n	,
 input		wire										i_vs	, //active hgih
 input       wire                                        i_hs    ,
 input		wire										i_de	, //active high
-input		wire	[I_VID_WIDTH-1:0] 					vin     ,
+input		wire	[`CFG_FRAME_BUFFER_V4_VID_RX_ALIGN_V1_V_RANGE_1] 					vin     ,
 
 output		wire										fifo_wr_en,
-output		wire		[AXI_DDR_WIDTH-1:0]				fifo_wr_data ,
+output		wire		[`CFG_FRAME_BUFFER_V4_VID_RX_ALIGN_V1_V_RANGE_2]				fifo_wr_data ,
 output		wire										frame_start,
 output		wire										fifo_rst_p,
-output		wire				[23:0]					frame_pix_num,
+output		wire				[`CFG_BITS_24-1:0]					frame_pix_num,
 output      wire									    frame_stable,
-output      wire    [31:0]                              ddr_frame_len		
+output      wire    [`CFG_BITS_32-1:0]                              ddr_frame_len
 
 
 );
@@ -33,15 +34,15 @@ output      wire    [31:0]                              ddr_frame_len
 
 
 wire                    fi_valid;
-wire [I_VID_WIDTH-1:0]  fi_data;
+wire [`CFG_FRAME_BUFFER_V4_VID_RX_ALIGN_V1_V_RANGE_3]  fi_data;
 // wire [63:0]             ser2par_data;
 // wire                    ser2par_valid;
 wire                    ser2par_sop;
 wire                    ser2par_eop;
 frame_info_det #(
-    .I_VID_WIDTH(I_VID_WIDTH),
-    .SIM_EN(SIM_EN),
-    .AXI_DDR_WIDTH(AXI_DDR_WIDTH)
+    .I_VID_WIDTH(`CFG_FRAME_BUFFER_V4_VID_RX_ALIGN_V1_V_INST_U_FRAME_INFO_DET_I_VID_WIDTH),
+    .SIM_EN(`CFG_FRAME_BUFFER_V4_VID_RX_ALIGN_V1_V_INST_U_FRAME_INFO_DET_SIM_EN),
+    .AXI_DDR_WIDTH(`CFG_FRAME_BUFFER_V4_VID_RX_ALIGN_V1_V_INST_U_FRAME_INFO_DET_AXI_DDR_WIDTH)
 )u_frame_info_det(
 /*i*/.clk			    (clk		    ),    
 /*i*/.rst_n			    (rst_n	        ),
@@ -64,8 +65,8 @@ frame_info_det #(
 
 
 ser2par_v1 # (
-    .I_VID_WIDTH(I_VID_WIDTH),
-    .O_VID_WIDTH(AXI_DDR_WIDTH)
+    .I_VID_WIDTH(`CFG_FRAME_BUFFER_V4_VID_RX_ALIGN_V1_V_INST_SER2PAR_24_128_INST_I_VID_WIDTH),
+    .O_VID_WIDTH(`CFG_FRAME_BUFFER_V4_VID_RX_ALIGN_V1_V_INST_SER2PAR_24_128_INST_O_VID_WIDTH)
 )ser2par_24_128_inst (
     .clk            (clk            ),
     .rst_n          (rst_n          ),

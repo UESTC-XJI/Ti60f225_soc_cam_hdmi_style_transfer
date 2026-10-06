@@ -1,17 +1,18 @@
+`include "../defines.v"
 
 `timescale 1 ps / 1ps
 
 module encode #(
-  parameter CH_NUM = 0
+  parameter CH_NUM = `CFG_DVI_TX_ENCODE_V_ENCRYPTED_V_PARAMETER_CH_NUM
 )(
   input            clk,    // pixel clock input
   input            rst_p,    // async. reset input (active high)
-  input      [7:0] din,      // data inputs: expect registered
-  input      [9:0] aux_data,
+  input      [`CFG_BITS_8-1:0] din,      // data inputs: expect registered
+  input      [`CFG_BITS_10-1:0] aux_data,
   input            c0,       // c0 input
   input            c1,       // c1 input
   input            de,       // de input
-  output reg [9:0] dout      // data outputs
+  output reg [`CFG_BITS_10-1:0] dout      // data outputs
 );
 
 //Encryption begin

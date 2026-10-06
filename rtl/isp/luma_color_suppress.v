@@ -1,28 +1,29 @@
+`include "../defines.v"
 // Three pixel-clock stages, with sync/DE delayed exactly like RGB.
 // Strength 0..128 removes up to approximately 50% of the selected channel.
 // Highlight ramp: Y=192..255. Shadow ramp: Y=64..0.
 module luma_color_suppress(
   input clk,rst_n,i_enable,
-  input [7:0] i_high_green,i_dark_red,
+  input [`CFG_BITS_8-1:0] i_high_green,i_dark_red,
   input i_vs,i_hs,i_de,
-  input [7:0] i_r,i_g,i_b,
+  input [`CFG_BITS_8-1:0] i_r,i_g,i_b,
   output reg o_vs,o_hs,o_de,
-  output reg [7:0] o_r,o_g,o_b
+  output reg [`CFG_BITS_8-1:0] o_r,o_g,o_b
 );
   reg vs_d,enabled;
-  reg [7:0] high_strength,dark_strength;
-  wire [9:0] weighted_y={2'b0,i_r}+{1'b0,i_g,1'b0}+{2'b0,i_b};
-  wire [7:0] luminance=weighted_y[9:2];
-  wire [8:0] high_delta=luminance>192 ? {1'b0,luminance}-9'd192 : 9'd0;
-  wire [8:0] dark_delta=luminance<64 ? 9'd64-{1'b0,luminance} : 9'd0;
-  wire [8:0] shadow_weight=dark_delta<<2;
-  reg [7:0] high_weight,dark_weight,r1,g1,b1,r2,g2,b2;
-  reg [15:0] red_cut,green_cut;
-  reg [2:0] sync1,sync2;
-  wire [8:0] red_factor=9'd256-{1'b0,red_cut[15:8]};
-  wire [8:0] green_factor=9'd256-{1'b0,green_cut[15:8]};
-  wire [16:0] red_product=r2*red_factor;
-  wire [16:0] green_product=g2*green_factor;
+  reg [`CFG_BITS_8-1:0] high_strength,dark_strength;
+  wire [`CFG_BITS_10-1:0] weighted_y={2'b0,i_r}+{1'b0,i_g,1'b0}+{2'b0,i_b};
+  wire [`CFG_BITS_8-1:0] luminance=weighted_y[9:2];
+  wire [`CFG_BITS_9-1:0] high_delta=luminance>192 ? {1'b0,luminance}-9'd192 : 9'd0;
+  wire [`CFG_BITS_9-1:0] dark_delta=luminance<64 ? 9'd64-{1'b0,luminance} : 9'd0;
+  wire [`CFG_BITS_9-1:0] shadow_weight=dark_delta<<2;
+  reg [`CFG_BITS_8-1:0] high_weight,dark_weight,r1,g1,b1,r2,g2,b2;
+  reg [`CFG_BITS_16-1:0] red_cut,green_cut;
+  reg [`CFG_BITS_3-1:0] sync1,sync2;
+  wire [`CFG_BITS_9-1:0] red_factor=9'd256-{1'b0,red_cut[15:8]};
+  wire [`CFG_BITS_9-1:0] green_factor=9'd256-{1'b0,green_cut[15:8]};
+  wire [`CFG_BITS_17-1:0] red_product=r2*red_factor;
+  wire [`CFG_BITS_17-1:0] green_product=g2*green_factor;
   always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
       vs_d<=0;enabled<=0;high_strength<=0;dark_strength<=0;

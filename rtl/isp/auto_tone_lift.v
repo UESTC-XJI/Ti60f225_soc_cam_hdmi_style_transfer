@@ -1,22 +1,23 @@
+`include "../defines.v"
 // Display-luma loop only: never changes sensor exposure or the RAW mean.
 // Post-lift samples include the real curve and RGB headroom limiting.
 module auto_tone_lift #(
-  parameter WAIT_FRAMES=2, CONFIRM_FRAMES=2, DEADBAND=3
+  parameter WAIT_FRAMES=`CFG_ISP_AUTO_TONE_LIFT_V_PARAMETER_WAIT_FRAMES, CONFIRM_FRAMES=`CFG_ISP_AUTO_TONE_LIFT_V_PARAMETER_CONFIRM_FRAMES, DEADBAND=`CFG_ISP_AUTO_TONE_LIFT_V_PARAMETER_DEADBAND
 )(
   input clk,rst_n,i_enable,i_valid,i_can_lift,
-  input [7:0] i_mean,i_target,i_max_strength,i_manual_strength,
-  output [7:0] o_strength,
+  input [`CFG_BITS_8-1:0] i_mean,i_target,i_max_strength,i_manual_strength,
+  output [`CFG_BITS_8-1:0] o_strength,
   output o_at_max
 );
-  reg [7:0] automatic_strength,cooldown,confirm_count;
-  reg [1:0] previous_direction;
-  wire [7:0] maximum=i_max_strength>128 ? 8'd128 : i_max_strength;
-  wire [7:0] target=i_target<16 ? 8'd16 : (i_target>224 ? 8'd224 : i_target);
-  wire [8:0] error=i_mean>target ? {1'b0,i_mean}-{1'b0,target} : {1'b0,target}-{1'b0,i_mean};
-  wire [7:0] step=!i_can_lift ? 8'd16 : error>=24 ? 8'd16 : (error>=12 ? 8'd8 : (error>=6 ? 8'd4 : 8'd1));
-  wire [1:0] direction=!i_can_lift ? (automatic_strength!=0 ? 2'd2 : 2'd0) : error<=DEADBAND ? 2'd0 : (i_mean<target ? 2'd1 : 2'd2);
-  wire [8:0] increase={1'b0,automatic_strength}+{1'b0,step};
-  wire [7:0] next_strength=direction==1 ? (increase>{1'b0,maximum} ? maximum : increase[7:0]) :
+  reg [`CFG_BITS_8-1:0] automatic_strength,cooldown,confirm_count;
+  reg [`CFG_BITS_2-1:0] previous_direction;
+  wire [`CFG_BITS_8-1:0] maximum=i_max_strength>128 ? 8'd128 : i_max_strength;
+  wire [`CFG_BITS_8-1:0] target=i_target<16 ? 8'd16 : (i_target>224 ? 8'd224 : i_target);
+  wire [`CFG_BITS_9-1:0] error=i_mean>target ? {1'b0,i_mean}-{1'b0,target} : {1'b0,target}-{1'b0,i_mean};
+  wire [`CFG_BITS_8-1:0] step=!i_can_lift ? 8'd16 : error>=24 ? 8'd16 : (error>=12 ? 8'd8 : (error>=6 ? 8'd4 : 8'd1));
+  wire [`CFG_BITS_2-1:0] direction=!i_can_lift ? (automatic_strength!=0 ? 2'd2 : 2'd0) : error<=DEADBAND ? 2'd0 : (i_mean<target ? 2'd1 : 2'd2);
+  wire [`CFG_BITS_9-1:0] increase={1'b0,automatic_strength}+{1'b0,step};
+  wire [`CFG_BITS_8-1:0] next_strength=direction==1 ? (increase>{1'b0,maximum} ? maximum : increase[7:0]) :
     (automatic_strength>step ? automatic_strength-step : 8'd0);
   assign o_strength=i_enable ? (automatic_strength>maximum ? maximum : automatic_strength) :
     (i_manual_strength>128 ? 8'd128 : i_manual_strength);

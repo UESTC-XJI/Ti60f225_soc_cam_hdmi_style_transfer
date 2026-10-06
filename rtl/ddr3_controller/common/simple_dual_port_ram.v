@@ -1,25 +1,26 @@
+`include "../../defines.v"
 
 module simple_dual_port_ram
 #(
-   parameter DATA_WIDTH       = 8,
-   parameter ADDR_WIDTH       = 9,
-   parameter OUTPUT_REG       = "TRUE",
-   parameter RAM_INIT_FILE    = "",
-   parameter RAM_INIT_RADIX   = "HEX"
+   parameter DATA_WIDTH       = `CFG_DDR3_CONTROLLER_COMMON_SIMPLE_DUAL_PORT_RAM_V_PARAMETER_DATA_WIDTH,
+   parameter ADDR_WIDTH       = `CFG_DDR3_CONTROLLER_COMMON_SIMPLE_DUAL_PORT_RAM_V_PARAMETER_ADDR_WIDTH,
+   parameter OUTPUT_REG       = `CFG_DDR3_CONTROLLER_COMMON_SIMPLE_DUAL_PORT_RAM_V_PARAMETER_OUTPUT_REG,
+   parameter RAM_INIT_FILE    = `CFG_DDR3_CONTROLLER_COMMON_SIMPLE_DUAL_PORT_RAM_V_PARAMETER_RAM_INIT_FILE,
+   parameter RAM_INIT_RADIX   = `CFG_DDR3_CONTROLLER_COMMON_SIMPLE_DUAL_PORT_RAM_V_PARAMETER_RAM_INIT_RADIX
 )
 (
-   input [(DATA_WIDTH-1):0]   wdata,
-   input [(ADDR_WIDTH-1):0]   waddr, raddr,
+   input [`CFG_DDR3_CONTROLLER_COMMON_SIMPLE_DUAL_PORT_RAM_V_RANGE_1]   wdata,
+   input [`CFG_DDR3_CONTROLLER_COMMON_SIMPLE_DUAL_PORT_RAM_V_RANGE_2]   waddr, raddr,
    input                      we, wclk, re, rclk,
-   output [(DATA_WIDTH-1):0]  rdata
+   output [`CFG_DDR3_CONTROLLER_COMMON_SIMPLE_DUAL_PORT_RAM_V_RANGE_3]  rdata
 );
 
-   localparam MEMORY_DEPTH = 2**ADDR_WIDTH;
-   localparam MAX_DATA     = (1<<ADDR_WIDTH)-1;
+   localparam MEMORY_DEPTH = `CFG_DDR3_CONTROLLER_COMMON_SIMPLE_DUAL_PORT_RAM_V_LOCALPARAM_MEMORY_DEPTH;
+   localparam MAX_DATA     = `CFG_DDR3_CONTROLLER_COMMON_SIMPLE_DUAL_PORT_RAM_V_LOCALPARAM_MAX_DATA;
    
-   reg [DATA_WIDTH-1:0] ram[MEMORY_DEPTH-1:0];
-   wire [DATA_WIDTH-1:0] r_rdata_1P;
-   reg [DATA_WIDTH-1:0] r_rdata_2P;
+   reg [`CFG_DDR3_CONTROLLER_COMMON_SIMPLE_DUAL_PORT_RAM_V_RANGE_4] ram[`CFG_DDR3_CONTROLLER_COMMON_SIMPLE_DUAL_PORT_RAM_V_RANGE_5];
+   wire [`CFG_DDR3_CONTROLLER_COMMON_SIMPLE_DUAL_PORT_RAM_V_RANGE_6] r_rdata_1P;
+   reg [`CFG_DDR3_CONTROLLER_COMMON_SIMPLE_DUAL_PORT_RAM_V_RANGE_7] r_rdata_2P;
 //Encryption begin
 `pragma protect begin_protected
 `pragma protect version=1

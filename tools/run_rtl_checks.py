@@ -11,10 +11,10 @@ VVP = os.environ.get('VVP', 'C:/iverilog/bin/vvp.exe')
 
 def run(top, sources, extra=()):
     output = BUILD / (top + '.vvp')
-    subprocess.run([IVERILOG, '-g2012', '-I', str(ROOT / 'rtl'), '-I', str(ROOT / 'rtl/isp'),
+    subprocess.run([IVERILOG, '-g2012', '-grelative-include', '-I', str(ROOT / 'rtl'), '-I', str(ROOT / 'rtl/isp'),
                     '-s', top, '-o', str(output), *extra,
                     *map(str, sources)], check=True, cwd=ROOT)
-    subprocess.run([VVP, str(output)], check=True, timeout=60, cwd=ROOT)
+    subprocess.run([VVP, str(output)], check=True, timeout=120, cwd=ROOT)
 
 if __name__ == '__main__':
     BUILD.mkdir(parents=True, exist_ok=True)

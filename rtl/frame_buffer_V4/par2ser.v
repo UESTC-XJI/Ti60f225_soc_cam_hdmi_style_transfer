@@ -1,8 +1,9 @@
+`include "../defines.v"
 
 
 module par2ser #(
-    parameter I_DATA_WIDTH = 512,
-    parameter O_DATA_WIDTH = 24
+    parameter I_DATA_WIDTH = `CFG_FRAME_BUFFER_V4_PAR2SER_V_PARAMETER_I_DATA_WIDTH,
+    parameter O_DATA_WIDTH = `CFG_FRAME_BUFFER_V4_PAR2SER_V_PARAMETER_O_DATA_WIDTH
 
 )(
     input clk,
@@ -10,19 +11,19 @@ module par2ser #(
 
     input                       frame_period,
     input                       rd_fifo_rdvalid,
-    input [I_DATA_WIDTH-1:0]    rd_fifo_rddata ,
+    input [`CFG_FRAME_BUFFER_V4_PAR2SER_V_RANGE_1]    rd_fifo_rddata ,
     input                       rd_fifo_rdempty,
     output reg                  rd_fifo_rden = 'd0,
 
     output reg                  tx_fifo_valid = 'd0,
     input                       wr_fifo_full,
-    output [O_DATA_WIDTH-1:0] tx_fifo_wrdata
+    output [`CFG_FRAME_BUFFER_V4_PAR2SER_V_RANGE_2] tx_fifo_wrdata
 );
 
 reg frame_period_r0 = 1'b0;
 reg frame_period_r1 = 1'b0;
-reg [4:0] pre_state = 'd0;
-reg [128-1:0] rx_data = 'd0;
+reg [`CFG_BITS_5-1:0] pre_state = 'd0;
+reg [`CFG_FRAME_BUFFER_V4_PAR2SER_V_RANGE_3] rx_data = 'd0;
 always @( posedge clk or negedge rst_n )
 begin
     if( !rst_n ) begin

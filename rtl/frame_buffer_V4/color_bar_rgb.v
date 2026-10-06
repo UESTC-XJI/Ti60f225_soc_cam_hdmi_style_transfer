@@ -1,35 +1,36 @@
+`include "../defines.v"
 
 	module color_bar_rgb #(
-			parameter HS_POLORY =1'b1,
-			parameter VS_POLORY = 1'b1,
-			parameter NUM_OF_PIXERS_PER_CLOCK = 2'b01,
-			parameter H_FRONT_PORCH 	= 13'd100,
-			parameter H_SYNC 			= 13'd100,
-			parameter H_VALID 			= 13'd384,
-			parameter H_BACK_PORCH 		= 13'd100,
-			parameter V_FRONT_PORCH 	= 13'd4,
-			parameter V_SYNC 			= 13'd5,
-			parameter V_VALID 			= 13'd288,
-			parameter V_BACK_PORCH 		= 13'd4,
-			parameter TEST_MODE 		= 2'd0
+			parameter HS_POLORY =`CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_PARAMETER_HS_POLORY,
+			parameter VS_POLORY = `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_PARAMETER_VS_POLORY,
+			parameter NUM_OF_PIXERS_PER_CLOCK = `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_PARAMETER_NUM_OF_PIXERS_PER_CLOCK,
+			parameter H_FRONT_PORCH 	= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_PARAMETER_H_FRONT_PORCH,
+			parameter H_SYNC 			= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_PARAMETER_H_SYNC,
+			parameter H_VALID 			= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_PARAMETER_H_VALID,
+			parameter H_BACK_PORCH 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_PARAMETER_H_BACK_PORCH,
+			parameter V_FRONT_PORCH 	= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_PARAMETER_V_FRONT_PORCH,
+			parameter V_SYNC 			= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_PARAMETER_V_SYNC,
+			parameter V_VALID 			= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_PARAMETER_V_VALID,
+			parameter V_BACK_PORCH 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_PARAMETER_V_BACK_PORCH,
+			parameter TEST_MODE 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_PARAMETER_TEST_MODE
 	)(
 	input		wire			clk,
 	input 		wire 			rst_n,
 	//`ifdef TEST_MODE == 2'b11
-	input  wire [7:0]           i_rdata,
-	input  wire [7:0] 			i_gdata,
-	input  wire [7:0] 			i_bdata,
+	input  wire [`CFG_BITS_8-1:0]           i_rdata,
+	input  wire [`CFG_BITS_8-1:0] 			i_gdata,
+	input  wire [`CFG_BITS_8-1:0] 			i_bdata,
 	//`endif
-	output 	reg	[15:0] h_cnt = 0,
-	output  reg	[15:0] v_cnt = 0,
+	output 	reg	[`CFG_BITS_16-1:0] h_cnt = 0,
+	output  reg	[`CFG_BITS_16-1:0] v_cnt = 0,
 	output	reg					hs = 0,
 	output	reg					vs  = 0,
 	output	reg					de = 1'b0,
-	output wire [1:0]     		w_h_state,
-	output wire [1:0] 			w_v_state,
-	output	reg [7:0] 			rgb_r = 8'd0,    //像素数据、红色分量
-	output	reg [7:0] 			rgb_g = 8'd0,    //像素数据、绿色分量
-	output 	reg [7:0] 			rgb_b = 8'd0     //像素数据、蓝色分量
+	output wire [`CFG_BITS_2-1:0]     		w_h_state,
+	output wire [`CFG_BITS_2-1:0] 			w_v_state,
+	output	reg [`CFG_BITS_8-1:0] 			rgb_r = 8'd0,    //像素数据、红色分量
+	output	reg [`CFG_BITS_8-1:0] 			rgb_g = 8'd0,    //像素数据、绿色分量
+	output 	reg [`CFG_BITS_8-1:0] 			rgb_b = 8'd0     //像素数据、蓝色分量
 	
 	);
 
@@ -37,43 +38,43 @@
 //=========================================================
 //
 //=========================================================
-	localparam WHITE_R 		= 8'hff;
-	localparam WHITE_G 		= 8'hff;
-	localparam WHITE_B 		= 8'hff;
-	localparam YELLOW_R 	= 8'hff;
-	localparam YELLOW_G 	= 8'hff;
-	localparam YELLOW_B 	= 8'h00;                              	
-	localparam CYAN_R 		= 8'h00;
-	localparam CYAN_G 		= 8'hff;
-	localparam CYAN_B 		= 8'hff;                             	
-	localparam GREEN_R 		= 8'h00;
-	localparam GREEN_G 		= 8'hff;
-	localparam GREEN_B 		= 8'h00;
-	localparam MAGENTA_R 	= 8'hff;
-	localparam MAGENTA_G 	= 8'h00;
-	localparam MAGENTA_B 	= 8'hff;
-	localparam RED_R 		= 8'hff;
-	localparam RED_G 		= 8'h00;
-	localparam RED_B 		= 8'h00;
-	localparam BLUE_R 		= 8'h00;
-	localparam BLUE_G 		= 8'h00;
-	localparam BLUE_B 		= 8'hff;
-	localparam BLACK_R 		= 8'h00;
-	localparam BLACK_G 		= 8'h00;
-	localparam BLACK_B 		= 8'h00;
+	localparam WHITE_R 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_WHITE_R;
+	localparam WHITE_G 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_WHITE_G;
+	localparam WHITE_B 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_WHITE_B;
+	localparam YELLOW_R 	= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_YELLOW_R;
+	localparam YELLOW_G 	= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_YELLOW_G;
+	localparam YELLOW_B 	= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_YELLOW_B;
+	localparam CYAN_R 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_CYAN_R;
+	localparam CYAN_G 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_CYAN_G;
+	localparam CYAN_B 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_CYAN_B;
+	localparam GREEN_R 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_GREEN_R;
+	localparam GREEN_G 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_GREEN_G;
+	localparam GREEN_B 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_GREEN_B;
+	localparam MAGENTA_R 	= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_MAGENTA_R;
+	localparam MAGENTA_G 	= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_MAGENTA_G;
+	localparam MAGENTA_B 	= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_MAGENTA_B;
+	localparam RED_R 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_RED_R;
+	localparam RED_G 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_RED_G;
+	localparam RED_B 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_RED_B;
+	localparam BLUE_R 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_BLUE_R;
+	localparam BLUE_G 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_BLUE_G;
+	localparam BLUE_B 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_BLUE_B;
+	localparam BLACK_R 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_BLACK_R;
+	localparam BLACK_G 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_BLACK_G;
+	localparam BLACK_B 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_BLACK_B;
 	
 	
-	localparam S_H_BACK_PORCH 	= 2'd0;
-	localparam S_H_SYNC 		= 2'd1;
-	localparam S_H_VALID 		= 2'd2;
-	localparam S_H_FRONT_PORCH 	= 2'd3;
-	localparam S_V_BACK_PORCH 	= 2'd0;
-	localparam S_V_SYNC 		= 2'd1;
-	localparam S_V_VALID 		= 2'd2;
-	localparam S_V_FRONT_PORCH 	= 2'd3;
+	localparam S_H_BACK_PORCH 	= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_S_H_BACK_PORCH;
+	localparam S_H_SYNC 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_S_H_SYNC;
+	localparam S_H_VALID 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_S_H_VALID;
+	localparam S_H_FRONT_PORCH 	= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_S_H_FRONT_PORCH;
+	localparam S_V_BACK_PORCH 	= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_S_V_BACK_PORCH;
+	localparam S_V_SYNC 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_S_V_SYNC;
+	localparam S_V_VALID 		= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_S_V_VALID;
+	localparam S_V_FRONT_PORCH 	= `CFG_FRAME_BUFFER_V4_COLOR_BAR_RGB_V_LOCALPARAM_S_V_FRONT_PORCH;
 	
-	reg	[1:0] 	h_state = S_H_SYNC;
-	reg	[1:0] 	v_state = S_H_SYNC;
+	reg	[`CFG_BITS_2-1:0] 	h_state = S_H_SYNC;
+	reg	[`CFG_BITS_2-1:0] 	v_state = S_H_SYNC;
 	reg	hs_r1 = 1'b0;
 	reg vs_r1 = 1'b0;
 	reg	de_r1 = 1'b0;
@@ -177,7 +178,7 @@
 			endcase
 		end 
 	end
-	reg [23:0] data = 24'd0;
+	reg [`CFG_BITS_24-1:0] data = 24'd0;
 
 	generate
 	    if(TEST_MODE  == 2'b00 ) begin : V_MIRROR_P//===========================================================
@@ -195,9 +196,9 @@
 		end else if( TEST_MODE == 2'b01 )begin : Clor //===============================================================
 			wire pos_vs;
 			assign pos_vs = {vs,vs_r1} == 2'b01 ;
-			reg [5:0] frame_cnt = 6'd0;
-			reg [23:0] data_buf = 24'd0;
-			reg [2:0] color_state = 2'b00;
+			reg [`CFG_BITS_6-1:0] frame_cnt = 6'd0;
+			reg [`CFG_BITS_24-1:0] data_buf = 24'd0;
+			reg [`CFG_BITS_3-1:0] color_state = 2'b00;
 			always @( posedge clk or negedge rst_n )
 			begin 
 				if( ~rst_n )

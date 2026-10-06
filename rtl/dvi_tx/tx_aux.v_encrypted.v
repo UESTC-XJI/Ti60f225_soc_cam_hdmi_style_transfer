@@ -1,18 +1,19 @@
+`include "../defines.v"
 
 module tx_aux( 
 input            clk,    // pixel clock input
 input            rst_p,    // async. reset input (active high)
 input            i_hs,
 input            i_vs,
-input     [ 1:0] video_format,
-input     [ 6:0] video_VIC,
-input     [23:0] audio_L ,
-input     [23:0] audio_R ,
+input     [ `CFG_BITS_2-1:0] video_format,
+input     [ `CFG_BITS_7-1:0] video_VIC,
+input     [`CFG_BITS_24-1:0] audio_L ,
+input     [`CFG_BITS_24-1:0] audio_R ,
 input            audio_valid,
-input  [19:0]    audio_N,
-input  [19:0]    audio_CTS,
-input [3:0]      audio_sample_frequency,     
-input [3:0]      audio_word_length,
+input  [`CFG_BITS_20-1:0]    audio_N,
+input  [`CFG_BITS_20-1:0]    audio_CTS,
+input [`CFG_BITS_4-1:0]      audio_sample_frequency,
+input [`CFG_BITS_4-1:0]      audio_word_length,
 
 
 input            island_preamble,
@@ -22,9 +23,9 @@ input            island_trail_gb,
 input            video_preamble ,
 input            video_lead_gb 	,
 
-output reg [9:0]    ch0_dout,
-output reg [9:0]    ch1_dout,
-output reg [9:0]    ch2_dout
+output reg [`CFG_BITS_10-1:0]    ch0_dout,
+output reg [`CFG_BITS_10-1:0]    ch1_dout,
+output reg [`CFG_BITS_10-1:0]    ch2_dout
 );
 
 //Encryption begin

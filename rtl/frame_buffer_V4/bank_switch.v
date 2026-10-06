@@ -1,12 +1,13 @@
+`include "../defines.v"
 
 
 module bank_switch #(
-		parameter FB_NUM = 2,
-		parameter MAX_VID_WIDTH = 1920,
-		parameter MAX_VID_HIGHT = 1080,
-		parameter START_ADDR= 0,
-		parameter VID_DATA_WIDTH= 16,
-		parameter AXI_DATA_WIDTH = 256
+		parameter FB_NUM = `CFG_FRAME_BUFFER_V4_BANK_SWITCH_V_PARAMETER_FB_NUM,
+		parameter MAX_VID_WIDTH = `CFG_FRAME_BUFFER_V4_BANK_SWITCH_V_PARAMETER_MAX_VID_WIDTH,
+		parameter MAX_VID_HIGHT = `CFG_FRAME_BUFFER_V4_BANK_SWITCH_V_PARAMETER_MAX_VID_HIGHT,
+		parameter START_ADDR= `CFG_FRAME_BUFFER_V4_BANK_SWITCH_V_PARAMETER_START_ADDR,
+		parameter VID_DATA_WIDTH= `CFG_FRAME_BUFFER_V4_BANK_SWITCH_V_PARAMETER_VID_DATA_WIDTH,
+		parameter AXI_DATA_WIDTH = `CFG_FRAME_BUFFER_V4_BANK_SWITCH_V_PARAMETER_AXI_DATA_WIDTH
 		
 )
 
@@ -17,24 +18,24 @@ input	wire		rst_n,//!复位，低电平有效
 input	wire		wr_sw,//!写bank切换请求信号,电平有效
 input	wire		rd_sw,//!读bank切换请求信号,电平有效
 
-output	reg	[1:0]	wr_bank,
-output	reg	[1:0]	rd_bank,
+output	reg	[`CFG_BITS_2-1:0]	wr_bank,
+output	reg	[`CFG_BITS_2-1:0]	rd_bank,
 output	reg			rd_sw_ack,
 output	reg			wr_sw_ack,
-output	reg[31:0] 	rd_start_addr,
-output	reg[31:0]	wr_start_addr
+output	reg[`CFG_BITS_32-1:0] 	rd_start_addr,
+output	reg[`CFG_BITS_32-1:0]	wr_start_addr
 
 
 
 
 );                       
-localparam AXI_BYTE_NUMBER = AXI_DATA_WIDTH/8  ;
-localparam FRAME_LEN =   MAX_VID_WIDTH*MAX_VID_HIGHT*VID_DATA_WIDTH/8 + 32'h200;  
+localparam AXI_BYTE_NUMBER = `CFG_FRAME_BUFFER_V4_BANK_SWITCH_V_LOCALPARAM_AXI_BYTE_NUMBER  ;
+localparam FRAME_LEN =   `CFG_FRAME_BUFFER_V4_BANK_SWITCH_V_LOCALPARAM_FRAME_LEN;
 
-localparam FRAME_1ST_START_ADDR = START_ADDR;
-localparam FRAME_2ND_START_ADDR = FRAME_LEN + START_ADDR ;
+localparam FRAME_1ST_START_ADDR = `CFG_FRAME_BUFFER_V4_BANK_SWITCH_V_LOCALPARAM_FRAME_1ST_START_ADDR;
+localparam FRAME_2ND_START_ADDR = `CFG_FRAME_BUFFER_V4_BANK_SWITCH_V_LOCALPARAM_FRAME_2ND_START_ADDR ;
 
-localparam FRAME_3RD_START_ADDR = FRAME_LEN+ FRAME_2ND_START_ADDR;
+localparam FRAME_3RD_START_ADDR = `CFG_FRAME_BUFFER_V4_BANK_SWITCH_V_LOCALPARAM_FRAME_3RD_START_ADDR;
 
 
 	
@@ -95,9 +96,9 @@ localparam FRAME_3RD_START_ADDR = FRAME_LEN+ FRAME_2ND_START_ADDR;
 		
 		
 	end else if( FB_NUM == 3 ) begin :three_fb
-		reg	[1:0] 	dirt_bank = 2'b10;
+		reg	[`CFG_BITS_2-1:0] 	dirt_bank = 2'b10;
 		reg			dirt_en = 1'b1;
-		reg	[1:0]	clean_bank = 2'b00;
+		reg	[`CFG_BITS_2-1:0]	clean_bank = 2'b00;
 		reg			clean_en = 1'b0;
 		wire		pos_wr_sw_en;
 		wire		pos_rd_sw_en;

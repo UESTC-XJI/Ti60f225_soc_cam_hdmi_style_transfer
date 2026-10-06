@@ -1,3 +1,4 @@
+`include "../../defines.v"
 //***************************************************************/
 //   ______   _   _   _                  _            _
 //  |  ____| | | (_) | |                | |          | |
@@ -22,82 +23,82 @@
 `timescale 1ps/1ps
 
 module ddr_phy_rdlvl_dqs #(
-parameter                       TCQ             = 100,
-parameter                       DQS_CHECK_TIME  = 512,
-parameter                       DQS_CNT_WIDTH   = 3,
-parameter                       DQS_WIDTH       = 2
+parameter                       TCQ             = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_PARAMETER_TCQ,
+parameter                       DQS_CHECK_TIME  = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_PARAMETER_DQS_CHECK_TIME,
+parameter                       DQS_CNT_WIDTH   = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_PARAMETER_DQS_CNT_WIDTH,
+parameter                       DQS_WIDTH       = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_PARAMETER_DQS_WIDTH
 )
 (
 input                           clk,
 input                           rst,
 input                           rd_dqs_start,
-input           [1:0]           dqs_bit_sample_err,
+input           [`CFG_BITS_2-1:0]           dqs_bit_sample_err,
 
-output          [7:0]           rd_level_dqs_check,
+output          [`CFG_BITS_8-1:0]           rd_level_dqs_check,
 output  reg                     rdlvl_dqs_check_ena,
 output  reg                     rd_level_dqs_done,
 output  reg                     rdlvl_all_dqs_done,
 output  reg                     rdlvl_dqs_shift_ena,
-output  reg     [2:0]           rdlvl_dqs_phise_shift,
-output  reg     [2:0]           rdlvl_shift
+output  reg     [`CFG_BITS_3-1:0]           rdlvl_dqs_phise_shift,
+output  reg     [`CFG_BITS_3-1:0]           rdlvl_shift
 );
 
 //Parameter Define
-localparam              PHISE_TAPS     = 8;
-localparam              PLL_SHIFT_NUM  = 4;
-localparam              WIAT_CNT       = 25;
-localparam              PLL_BLANK_NUM  = 64;
-localparam              TAP_WTH        = clogb2(PHISE_TAPS);
-localparam              WIAT_WTH       = clogb2(WIAT_CNT);
-localparam              DQS_CHECK_WTH  = clogb2(DQS_CHECK_TIME); 
-localparam              PLL_SHIFT_WTH  = clogb2(PLL_SHIFT_NUM); 
-localparam              BLANK_NUM_WTH  = clogb2(PLL_BLANK_NUM);
+localparam              PHISE_TAPS     = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_PHISE_TAPS;
+localparam              PLL_SHIFT_NUM  = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_PLL_SHIFT_NUM;
+localparam              WIAT_CNT       = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_WIAT_CNT;
+localparam              PLL_BLANK_NUM  = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_PLL_BLANK_NUM;
+localparam              TAP_WTH        = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_TAP_WTH;
+localparam              WIAT_WTH       = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_WIAT_WTH;
+localparam              DQS_CHECK_WTH  = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_DQS_CHECK_WTH;
+localparam              PLL_SHIFT_WTH  = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_PLL_SHIFT_WTH;
+localparam              BLANK_NUM_WTH  = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_BLANK_NUM_WTH;
             
-localparam              IDLE           = 3'h0;
-localparam              RD_DQS_WAIT    = 3'h1;
-localparam              RD_DQS_CHECK   = 3'h2;
-localparam              PLL_SHIFT      = 3'h3;
-localparam              RD_DQS_LOOP    = 3'h4;
-localparam              PLL_BLANK      = 3'h5;
-localparam              DQS_CHECK_DONE = 3'h6;
+localparam              IDLE           = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_IDLE;
+localparam              RD_DQS_WAIT    = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_RD_DQS_WAIT;
+localparam              RD_DQS_CHECK   = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_RD_DQS_CHECK;
+localparam              PLL_SHIFT      = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_PLL_SHIFT;
+localparam              RD_DQS_LOOP    = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_RD_DQS_LOOP;
+localparam              PLL_BLANK      = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_PLL_BLANK;
+localparam              DQS_CHECK_DONE = `CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_LOCALPARAM_DQS_CHECK_DONE;
 
 //Register Define
-reg     [2:0]                   cur_state;
-reg     [2:0]                   next_state;
-(* async_reg = "true" *)reg     [1:0]                   dqs_bit_sample_r1;
-reg     [1:0]                   dqs_bit_sample_r2;
-reg     [1:0]                   dqs_bit_sample_r3;
-reg     [1:0]                   dqs_bit_sample_r4;
-reg     [WIAT_WTH-1:0]          wait_cnt;
-reg     [DQS_CHECK_WTH-1:0]     rd_level_dqs_cnt;
-reg     [PLL_SHIFT_WTH-1:0]     pll_shift_cnt;
-reg     [TAP_WTH-1:0]           rd_level_shift_cnt;
-reg     [BLANK_NUM_WTH-1:0]     pll_blank_cnt;
-reg     [PHISE_TAPS-1:0]        dqs_dynmic_shift;
+reg     [`CFG_BITS_3-1:0]                   cur_state;
+reg     [`CFG_BITS_3-1:0]                   next_state;
+(* async_reg = "true" *)reg     [`CFG_BITS_2-1:0]                   dqs_bit_sample_r1;
+reg     [`CFG_BITS_2-1:0]                   dqs_bit_sample_r2;
+reg     [`CFG_BITS_2-1:0]                   dqs_bit_sample_r3;
+reg     [`CFG_BITS_2-1:0]                   dqs_bit_sample_r4;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_1]          wait_cnt;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_2]     rd_level_dqs_cnt;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_3]     pll_shift_cnt;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_4]           rd_level_shift_cnt;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_5]     pll_blank_cnt;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_6]        dqs_dynmic_shift;
 reg                             check_err;
 reg                             check_err_r;
-reg     [TAP_WTH-1:0]           rising_tap;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_7]           rising_tap;
 reg                             rising_tap_vld;
-reg     [TAP_WTH-1:0]           next_rising_tap;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_8]           next_rising_tap;
 reg                             next_rising_tap_vld;
-reg     [TAP_WTH-1:0]           first_rising_tap;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_9]           first_rising_tap;
 reg                             first_rising_tap_vld;
-reg     [TAP_WTH-1:0]           failling_tap;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_10]           failling_tap;
 reg                             failling_tap_vld;
-reg     [TAP_WTH-1:0]           next_failling_tap;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_11]           next_failling_tap;
 reg                             next_failling_tap_vld;
 reg                             replace_flag;
-reg     [TAP_WTH-1:0]           calibrate_tap;
+reg     [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_12]           calibrate_tap;
 reg                             last_flag;
 reg                             clean_flag;
 //Wire Define
-wire    [TAP_WTH-1:0]           calibrate_1tmp;
-wire    [TAP_WTH-1:0]           calibrate_2tmp;
-wire    [TAP_WTH-1:0]           calibrate_3tmp;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_13]           calibrate_1tmp;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_14]           calibrate_2tmp;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_15]           calibrate_3tmp;
 wire                            case_1tmp;
 wire                            case_2tmp;
 wire                            case_3tmp;
-wire    [TAP_WTH-1:0]           tap_cnt;  
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_DDR_PHY_RDLVL_DQS_V_RANGE_16]           tap_cnt;
 
 //Encryption begin
 `pragma protect begin_protected

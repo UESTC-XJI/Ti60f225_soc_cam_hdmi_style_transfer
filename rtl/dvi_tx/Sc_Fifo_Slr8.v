@@ -1,3 +1,4 @@
+`include "../defines.v"
 
 ///////////////////////////////////////////////////////////
 /**********************************************************
@@ -29,18 +30,18 @@ module  Sc_Fifo_Slr8 #(
 
   //Define  Parameter
   /////////////////////////////////////////////////////////
-  parameter   OUT_REG       = "No"  ; //"Yes" Output Register Eanble ; "No"  Output Register Disble
-  parameter   DATA_WIDTH    = 256   ; //Data Width
-  parameter   DATA_DEPTH    = 8     ; //Address Width
-  parameter   INITIAL_VALUE = 8'h0  ;
+  parameter   OUT_REG       = `CFG_DVI_TX_SC_FIFO_SLR8_V_PARAMETER_OUT_REG  ; //"Yes" Output Register Eanble ; "No"  Output Register Disble
+  parameter   DATA_WIDTH    = `CFG_DVI_TX_SC_FIFO_SLR8_V_PARAMETER_DATA_WIDTH   ; //Data Width
+  parameter   DATA_DEPTH    = `CFG_DVI_TX_SC_FIFO_SLR8_V_PARAMETER_DATA_DEPTH     ; //Address Width
+  parameter   INITIAL_VALUE = `CFG_DVI_TX_SC_FIFO_SLR8_V_PARAMETER_INITIAL_VALUE  ;
 
-  localparam  ADDR_WIDTH    = $clog2(DATA_DEPTH)  ;
-  localparam  SRL8_NUMBER   = (DATA_DEPTH / 8) + (((DATA_DEPTH % 8) == 0) ? 0 : 1 ) ;
+  localparam  ADDR_WIDTH    = `CFG_DVI_TX_SC_FIFO_SLR8_V_LOCALPARAM_ADDR_WIDTH  ;
+  localparam  SRL8_NUMBER   = `CFG_DVI_TX_SC_FIFO_SLR8_V_LOCALPARAM_SRL8_NUMBER ;
 
 
-  localparam  DW  = DATA_WIDTH    ;
-  localparam  AW  = ADDR_WIDTH    ;
-  localparam  SN  = SRL8_NUMBER   ;
+  localparam  DW  = `CFG_DVI_TX_SC_FIFO_SLR8_V_LOCALPARAM_DW    ;
+  localparam  AW  = `CFG_DVI_TX_SC_FIFO_SLR8_V_LOCALPARAM_AW    ;
+  localparam  SN  = `CFG_DVI_TX_SC_FIFO_SLR8_V_LOCALPARAM_SN   ;
 
   /////////////////////////////////////////////////////////
 
@@ -49,10 +50,10 @@ module  Sc_Fifo_Slr8 #(
   input             Sys_Clk     ; //System Clock
   input             Sync_Clr    ; //Sync Reset
   input             I_Wr_En     ; //(I) Write Enable
-  input   [DW-1:0]  I_Wr_Data   ; //(I) Write Data
+  input   [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_1]  I_Wr_Data   ; //(I) Write Data
   input             I_Rd_En     ; //(I) Read Enable
-  output  [DW-1:0]  O_Rd_Data   ; //(O) Read Data
-  output  [AW  :0]  O_Data_Num  ; //(O) Ram Data Number
+  output  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_2]  O_Rd_Data   ; //(O) Read Data
+  output  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_3]  O_Data_Num  ; //(O) Ram Data Number
   output            O_Wr_Full   ; //(O) FIFO Write Full
   output            O_Rd_Empty  ; //(O) FIFO Write Empty
   output            O_Fifo_Err  ; //(O) FIFO Error
@@ -63,7 +64,7 @@ module  Sc_Fifo_Slr8 #(
 //********************************************************/
   /////////////////////////////////////////////////////////
   wire            Wr_En     = I_Wr_En     ; //Write Enable
-  wire  [DW-1:0]  Wr_Data   = I_Wr_Data   ; //Write Data
+  wire  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_4]  Wr_Data   = I_Wr_Data   ; //Write Data
   wire            Rd_En     = I_Rd_En     ; //Read Enable
 
   /////////////////////////////////////////////////////////
@@ -80,7 +81,7 @@ module  Sc_Fifo_Slr8 #(
   wire  Fifo_Rd_En  = Rd_En & ( ~Rd_Empty ) ;
 
   /////////////////////////////////////////////////////////
-  reg   [AW:0]  Data_Num  = {AW+1{1'h0}}  ;
+  reg   [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_5]  Data_Num  = {AW+1{1'h0}}  ;
 
   always @(posedge Sys_Clk)
   begin
@@ -93,12 +94,12 @@ module  Sc_Fifo_Slr8 #(
   end
 
   /////////////////////////////////////////////////////////
-  wire    [AW  :0]  Out_Sel  ;
+  wire    [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_6]  Out_Sel  ;
 
   assign  Out_Sel = (|Data_Num)   ? ( DATA_DEPTH  - Data_Num) : {AW+1{1'h0}} ;
 
   /////////////////////////////////////////////////////////
-  wire    [AW:0]    O_Data_Num  = Data_Num  ; //(O)Data Number In Fifo
+  wire    [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_7]    O_Data_Num  = Data_Num  ; //(O)Data Number In Fifo
 
   /////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////
@@ -109,16 +110,16 @@ module  Sc_Fifo_Slr8 #(
 //
 //********************************************************/
   /////////////////////////////////////////////////////////
-  wire  [   2:0]  Shift_Out_Sel   = Out_Sel[2:0]  ;
+  wire  [   `CFG_BITS_3-1:0]  Shift_Out_Sel   = Out_Sel[2:0]  ;
   wire            Shift_Clk_En    = Fifo_Wr_En    ;
 
-  wire  [DW-1:0]  Shift_Data_In   [SN-1:0]  ;
-  wire  [DW-1:0]  Shift_Data_Out  [SN-1:0]  ;
-  wire  [DW-1:0]  Shift_Q7_Out    [SN  :0]  ; //(O)Shift Output
+  wire  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_8]  Shift_Data_In   [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_9]  ;
+  wire  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_10]  Shift_Data_Out  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_11]  ;
+  wire  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_12]  Shift_Q7_Out    [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_13]  ; //(O)Shift Output
 
-  wire  [DW-1:0]  SftReg_Data_In   [SN-1:0]  ;
-  wire  [DW-1:0]  SftReg_Data_Out  [SN-1:0]  ;
-  wire  [DW-1:0]  SftReg_Q7_Out    [SN  :0]  ; //(O)Shift Output
+  wire  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_14]  SftReg_Data_In   [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_15]  ;
+  wire  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_16]  SftReg_Data_Out  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_17]  ;
+  wire  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_18]  SftReg_Q7_Out    [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_19]  ; //(O)Shift Output
 
   genvar  i , j ;
   generate
@@ -135,9 +136,9 @@ module  Sc_Fifo_Slr8 #(
 
         EFX_SRL8
         #(
-            .CLK_POLARITY ( 1'b1            ) , // clk polarity
-            .CE_POLARITY  ( 1'b1            ) , // clk polarity
-            .INIT         ( INITIAL_VALUE   )   // 8-bit initial value
+            .CLK_POLARITY ( `CFG_DVI_TX_SC_FIFO_SLR8_V_INST_SRL8_INST_CLK_POLARITY            ) , // clk polarity
+            .CE_POLARITY  ( `CFG_DVI_TX_SC_FIFO_SLR8_V_INST_SRL8_INST_CE_POLARITY            ) , // clk polarity
+            .INIT         ( `CFG_DVI_TX_SC_FIFO_SLR8_V_INST_SRL8_INST_INIT   )   // 8-bit initial value
         )
         srl8_inst
         (
@@ -163,8 +164,8 @@ module  Sc_Fifo_Slr8 #(
 //
 //********************************************************/
   /////////////////////////////////////////////////////////
-  reg   [DW-1:0]  Data_Out  = {DW{1'h0}}  ;
-  reg   [DW-1:0]  Shift_Out = {DW{1'h0}}  ;
+  reg   [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_20]  Data_Out  = {DW{1'h0}}  ;
+  reg   [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_21]  Shift_Out = {DW{1'h0}}  ;
 
   always @(posedge  Sys_Clk )
   begin
@@ -179,7 +180,7 @@ module  Sc_Fifo_Slr8 #(
   end
 
   /////////////////////////////////////////////////////////
-  reg  [DW-1:0]  Rd_Data   ;
+  reg  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_22]  Rd_Data   ;
 
   always @ ( * )
   begin
@@ -189,7 +190,7 @@ module  Sc_Fifo_Slr8 #(
   end
 
   /////////////////////////////////////////////////////////
-  wire  [DW-1:0]  O_Rd_Data   = Rd_Data ; //(O) Read Data
+  wire  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_23]  O_Rd_Data   = Rd_Data ; //(O) Read Data
 
   /////////////////////////////////////////////////////////
 //333333333333333333333333333333333333333333333333333333333
@@ -198,8 +199,8 @@ module  Sc_Fifo_Slr8 #(
 //
 //********************************************************/
   /////////////////////////////////////////////////////////
-  localparam  [AW:0]  FULL_ENTER      = DATA_DEPTH  - {{AW{1'h0}},1'h1} ;
-  localparam  [AW:0]  EMPTY_ENTER     = {{AW{1'h0}} , 1'h1  }  ;
+  localparam  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_24]  FULL_ENTER      = `CFG_DVI_TX_SC_FIFO_SLR8_V_LOCALPARAM_FULL_ENTER ;
+  localparam  [`CFG_DVI_TX_SC_FIFO_SLR8_V_RANGE_25]  EMPTY_ENTER     = `CFG_DVI_TX_SC_FIFO_SLR8_V_LOCALPARAM_EMPTY_ENTER  ;
 
   /////////////////////////////////////////////////////////
   always @(posedge Sys_Clk)

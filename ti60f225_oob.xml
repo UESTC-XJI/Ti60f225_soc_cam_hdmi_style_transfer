@@ -7,6 +7,7 @@
     </efx:device_info>
     <efx:design_info def_veri_version="sv_09" def_vhdl_version="vhdl_2008" unified_flow="false" partition_interface_allowed_off_perimeter="true">
         <efx:top_module name="ti60f225_oob_top"/>
+        <efx:design_file name="rtl/defines.v" version="default" library="default"/>
         <efx:design_file name="rtl/ti60f225_oob_top.v" version="default" library="default"/>
         <efx:design_file name="rtl/user_dual_port_ram.v" version="default" library="default"/>
         <efx:design_file name="rtl/dual_clock_fifo.v" version="default" library="default"/>
@@ -50,7 +51,6 @@
         <efx:design_file name="rtl/dvi_tx/encode.v_encrypted.v" version="default" library="default"/>
         <efx:design_file name="rtl/dvi_tx/tx_aux.v_encrypted.v" version="default" library="default"/>
         <efx:design_file name="rtl/dvi_tx/dvi_encoder.v_encrypted.v" version="default" library="default"/>
-        <efx:design_file name="rtl/gamma_conrrection/gamma_correction.v" version="default" library="default"/>
         <efx:design_file name="debug_top.v" version="default" library="default"/>
         <efx:design_file name="rtl/debayer/rgb_gain_v1.v" version="default" library="default"/>
         <efx:design_file name="rtl/csi_rx_controller.sv" version="default" library="default"/>

@@ -1,30 +1,31 @@
+`include "../defines.v"
 // Four stages, one common RGB scale: lift shadows/midtones without channel clipping.
 // LUT curve leaves codes <=16 unchanged. Strength 0..128 blends to the full curve.
 // Gain is limited by the brightest channel's headroom, preserving RGB ratios.
-module luma_tone_map #(parameter HIGHLIGHT_SAFE=0)(
+module luma_tone_map #(parameter HIGHLIGHT_SAFE=`CFG_ISP_LUMA_TONE_MAP_V_PARAMETER_HIGHLIGHT_SAFE)(
   input clk,rst_n,i_enable,
-  input [7:0] i_strength,
+  input [`CFG_BITS_8-1:0] i_strength,
   input i_vs,i_hs,i_de,
-  input [7:0] i_r,i_g,i_b,
+  input [`CFG_BITS_8-1:0] i_r,i_g,i_b,
   output reg o_vs,o_hs,o_de,
-  output reg [7:0] o_r,o_g,o_b
+  output reg [`CFG_BITS_8-1:0] o_r,o_g,o_b
 );
   `include "lift_tables.vh"
   reg vs_d,enabled;
-  reg [7:0] strength;
-  wire [9:0] weighted_y={2'b0,i_r}+{1'b0,i_g,1'b0}+{2'b0,i_b};
-  wire [7:0] luminance=weighted_y[9:2];
-  wire [7:0] max_rg=i_r>i_g ? i_r : i_g;
-  wire [7:0] maximum=max_rg>i_b ? max_rg : i_b;
-  reg [7:0] r1,g1,b1,r2,g2,b2,r3,g3,b3;
-  reg [2:0] sync1,sync2,sync3;
-  reg [8:0] extra1;
-  reg [9:0] cap1,cap2,factor3;
-  reg [16:0] lift2;
-  wire [9:0] requested=10'd256+{1'b0,lift2[15:7]};
-  wire [17:0] red_product=r3*factor3;
-  wire [17:0] green_product=g3*factor3;
-  wire [17:0] blue_product=b3*factor3;
+  reg [`CFG_BITS_8-1:0] strength;
+  wire [`CFG_BITS_10-1:0] weighted_y={2'b0,i_r}+{1'b0,i_g,1'b0}+{2'b0,i_b};
+  wire [`CFG_BITS_8-1:0] luminance=weighted_y[9:2];
+  wire [`CFG_BITS_8-1:0] max_rg=i_r>i_g ? i_r : i_g;
+  wire [`CFG_BITS_8-1:0] maximum=max_rg>i_b ? max_rg : i_b;
+  reg [`CFG_BITS_8-1:0] r1,g1,b1,r2,g2,b2,r3,g3,b3;
+  reg [`CFG_BITS_3-1:0] sync1,sync2,sync3;
+  reg [`CFG_BITS_9-1:0] extra1;
+  reg [`CFG_BITS_10-1:0] cap1,cap2,factor3;
+  reg [`CFG_BITS_17-1:0] lift2;
+  wire [`CFG_BITS_10-1:0] requested=10'd256+{1'b0,lift2[15:7]};
+  wire [`CFG_BITS_18-1:0] red_product=r3*factor3;
+  wire [`CFG_BITS_18-1:0] green_product=g3*factor3;
+  wire [`CFG_BITS_18-1:0] blue_product=b3*factor3;
   always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
       vs_d<=0;enabled<=0;strength<=0;

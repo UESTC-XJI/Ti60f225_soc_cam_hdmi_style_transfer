@@ -1,3 +1,4 @@
+`include "../../defines.v"
 /////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2013-2018 Efinix Inc. All rights reserved.
@@ -19,26 +20,26 @@
 // efx_run.py script assumes top-level testbench module named sim
 module sim
 #(
-	parameter DATA_WIDTH=8,
-	parameter ADDR_WIDTH=9,
-	parameter OUTPUT_REG="FALSE",
-	parameter RAM_INIT_FILE="ram_init_file.mem"
+	parameter DATA_WIDTH=`CFG_DVI_TX_SIMPLE_DUAL_PORT_RAM_SIMPLE_DUAL_PORT_RAM_TB_V_PARAMETER_DATA_WIDTH,
+	parameter ADDR_WIDTH=`CFG_DVI_TX_SIMPLE_DUAL_PORT_RAM_SIMPLE_DUAL_PORT_RAM_TB_V_PARAMETER_ADDR_WIDTH,
+	parameter OUTPUT_REG=`CFG_DVI_TX_SIMPLE_DUAL_PORT_RAM_SIMPLE_DUAL_PORT_RAM_TB_V_PARAMETER_OUTPUT_REG,
+	parameter RAM_INIT_FILE=`CFG_DVI_TX_SIMPLE_DUAL_PORT_RAM_SIMPLE_DUAL_PORT_RAM_TB_V_PARAMETER_RAM_INIT_FILE
 )
 ();
 
-reg [DATA_WIDTH-1:0] wdata, expected;
-reg [ADDR_WIDTH-1:0] waddr, raddr;
+reg [`CFG_DVI_TX_SIMPLE_DUAL_PORT_RAM_SIMPLE_DUAL_PORT_RAM_TB_V_RANGE_1] wdata, expected;
+reg [`CFG_DVI_TX_SIMPLE_DUAL_PORT_RAM_SIMPLE_DUAL_PORT_RAM_TB_V_RANGE_2] waddr, raddr;
 reg wclk, we, rclk, re, clock;
-wire [DATA_WIDTH-1:0] rdata;
+wire [`CFG_DVI_TX_SIMPLE_DUAL_PORT_RAM_SIMPLE_DUAL_PORT_RAM_TB_V_RANGE_3] rdata;
 integer cycle_count;
 
 // Instantiate the DUT (design under test)
 simple_dual_port_ram
 #(
-	.DATA_WIDTH(DATA_WIDTH),
-	.ADDR_WIDTH(ADDR_WIDTH),
-	.OUTPUT_REG(OUTPUT_REG),
-	.RAM_INIT_FILE(RAM_INIT_FILE)
+	.DATA_WIDTH(`CFG_DVI_TX_SIMPLE_DUAL_PORT_RAM_SIMPLE_DUAL_PORT_RAM_TB_V_INST_DUT_DATA_WIDTH),
+	.ADDR_WIDTH(`CFG_DVI_TX_SIMPLE_DUAL_PORT_RAM_SIMPLE_DUAL_PORT_RAM_TB_V_INST_DUT_ADDR_WIDTH),
+	.OUTPUT_REG(`CFG_DVI_TX_SIMPLE_DUAL_PORT_RAM_SIMPLE_DUAL_PORT_RAM_TB_V_INST_DUT_OUTPUT_REG),
+	.RAM_INIT_FILE(`CFG_DVI_TX_SIMPLE_DUAL_PORT_RAM_SIMPLE_DUAL_PORT_RAM_TB_V_INST_DUT_RAM_INIT_FILE)
 )
 dut
 (

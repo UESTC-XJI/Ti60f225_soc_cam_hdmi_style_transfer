@@ -1,7 +1,8 @@
+`include "../defines.v"
 module rgb_gain
 #(
-	parameter	P_DEPTH			= 10,
-	parameter	PW				= 20
+	parameter	P_DEPTH			= `CFG_DEBAYER_RGB_GAIN_V_PARAMETER_P_DEPTH,
+	parameter	PW				= `CFG_DEBAYER_RGB_GAIN_V_PARAMETER_PW
 )
 (
 	input               i_pclk,
@@ -11,40 +12,40 @@ module rgb_gain
 	input               i_vs,
 	input				i_de,
 	input				i_valid,
-	input [PW-1:0]  	i_data,
-    input [2:0]         blue_gain,
-    input [2:0]         green_gain,
-    input [2:0]         red_gain,
+	input [`CFG_DEBAYER_RGB_GAIN_V_RANGE_1]  	i_data,
+    input [`CFG_BITS_3-1:0]         blue_gain,
+    input [`CFG_BITS_3-1:0]         green_gain,
+    input [`CFG_BITS_3-1:0]         red_gain,
 	
 	output  reg            	o_hs,
 	output	reg				o_vs,
 	output	reg				o_de,
 	output	reg				o_valid,
-	output  reg [PW-1:0]  	o_data
+	output  reg [`CFG_DEBAYER_RGB_GAIN_V_RANGE_2]  	o_data
 );
 
-wire	[PW-1:0] 		w_data_filtered;
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_3] 		w_data_filtered;
 		
-wire	[P_DEPTH:0] 	odd_line_byte_1;
-wire	[P_DEPTH:0] 	odd_line_byte_0;
-		
-
-wire	[P_DEPTH-1:0] 	odd_line_pix_1;
-wire	[P_DEPTH-1:0] 	odd_line_pix_0;
-		
-wire	[P_DEPTH:0] 	even_line_byte_1;
-wire	[P_DEPTH:0] 	even_line_byte_0;
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_4] 	odd_line_byte_1;
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_5] 	odd_line_byte_0;
 		
 
-wire	[P_DEPTH-1:0] 	even_line_pix_1;
-wire	[P_DEPTH-1:0] 	even_line_pix_0;
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_6] 	odd_line_pix_1;
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_7] 	odd_line_pix_0;
 		
-wire	[P_DEPTH-1:0] 	byte_1_div_1;
-wire	[P_DEPTH-1:0] 	byte_1_div_2;
-wire	[P_DEPTH-1:0] 	byte_1_div_4;
-wire	[P_DEPTH-1:0] 	byte_0_div_1;
-wire	[P_DEPTH-1:0] 	byte_0_div_2;
-wire	[P_DEPTH-1:0] 	byte_0_div_4;
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_8] 	even_line_byte_1;
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_9] 	even_line_byte_0;
+		
+
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_10] 	even_line_pix_1;
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_11] 	even_line_pix_0;
+		
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_12] 	byte_1_div_1;
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_13] 	byte_1_div_2;
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_14] 	byte_1_div_4;
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_15] 	byte_0_div_1;
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_16] 	byte_0_div_2;
+wire	[`CFG_DEBAYER_RGB_GAIN_V_RANGE_17] 	byte_0_div_4;
 
 reg						r_line_cnt;
 

@@ -1,31 +1,32 @@
+`include "../defines.v"
 // Central 50% mean plus optional full-frame highlight fraction.
 // Default dual-pixel mode meters before tone; single-pixel mean-only mode
 // meters the actual post-lift display output.
 // Two pixels sampled every eight pair-clocks and eight rows (32,400 at 1080p).
 // One sequential divider computes both results; no pixel-path division.
 module ae_frame_stats #(
-  parameter FRAME_WIDTH=1920, FRAME_HEIGHT=1080, MIN_SAMPLES=64,
-    PIXELS_PER_CLOCK=2, MEAN_ONLY=0, FULL_FRAME_MEAN=0
+  parameter FRAME_WIDTH=`CFG_ISP_AE_FRAME_STATS_V_PARAMETER_FRAME_WIDTH, FRAME_HEIGHT=`CFG_ISP_AE_FRAME_STATS_V_PARAMETER_FRAME_HEIGHT, MIN_SAMPLES=`CFG_ISP_AE_FRAME_STATS_V_PARAMETER_MIN_SAMPLES,
+    PIXELS_PER_CLOCK=`CFG_ISP_AE_FRAME_STATS_V_PARAMETER_PIXELS_PER_CLOCK, MEAN_ONLY=`CFG_ISP_AE_FRAME_STATS_V_PARAMETER_MEAN_ONLY, FULL_FRAME_MEAN=`CFG_ISP_AE_FRAME_STATS_V_PARAMETER_FULL_FRAME_MEAN
 )(
   input clk, rst_n, i_vs, i_de,
-  input [47:0] i_rgb,
-  input [7:0] i_high_threshold,
+  input [`CFG_BITS_48-1:0] i_rgb,
+  input [`CFG_BITS_8-1:0] i_high_threshold,
   output reg o_valid,
-  output reg [7:0] o_mean,
+  output reg [`CFG_BITS_8-1:0] o_mean,
   output reg o_highlights,
-  output reg [9:0] o_high_permille
+  output reg [`CFG_BITS_10-1:0] o_high_permille
 );
   reg vs_d,de_d;
-  reg [11:0] x,y;
-  reg [23:0] sum;
-  reg [15:0] samples,full_samples,full_hot;
+  reg [`CFG_BITS_12-1:0] x,y;
+  reg [`CFG_BITS_24-1:0] sum;
+  reg [`CFG_BITS_16-1:0] samples,full_samples,full_hot;
   reg overflow,frame_started,frame_bad;
-  reg [7:0] threshold;
-  wire [9:0] luma0={2'b0,i_rgb[7:0]}+{1'b0,i_rgb[15:8],1'b0}+{2'b0,i_rgb[23:16]};
-  wire [9:0] luma1={2'b0,i_rgb[31:24]}+{1'b0,i_rgb[39:32],1'b0}+{2'b0,i_rgb[47:40]};
+  reg [`CFG_BITS_8-1:0] threshold;
+  wire [`CFG_BITS_10-1:0] luma0={2'b0,i_rgb[7:0]}+{1'b0,i_rgb[15:8],1'b0}+{2'b0,i_rgb[23:16]};
+  wire [`CFG_BITS_10-1:0] luma1={2'b0,i_rgb[31:24]}+{1'b0,i_rgb[39:32],1'b0}+{2'b0,i_rgb[47:40]};
   wire hot0=i_rgb[7:0]>=threshold || i_rgb[15:8]>=threshold || i_rgb[23:16]>=threshold;
   wire hot1=i_rgb[31:24]>=threshold || i_rgb[39:32]>=threshold || i_rgb[47:40]>=threshold;
-  wire [1:0] hot_increment={1'b0,hot0}+{1'b0,hot1};
+  wire [`CFG_BITS_2-1:0] hot_increment={1'b0,hot0}+{1'b0,hot1};
   wire line_end=de_d && !i_de;
   wire complete_frame=y==FRAME_HEIGHT || (line_end && y==FRAME_HEIGHT-1);
   wire take_full=frame_started && !i_vs && i_de && x<FRAME_WIDTH/PIXELS_PER_CLOCK &&
@@ -33,14 +34,14 @@ module ae_frame_stats #(
   wire in_roi=x>=FRAME_WIDTH/(4*PIXELS_PER_CLOCK) && x<(FRAME_WIDTH*3)/(4*PIXELS_PER_CLOCK) &&
     y>=FRAME_HEIGHT/4 && y<(FRAME_HEIGHT*3)/4;
   reg dividing,div_ratio;
-  reg [4:0] bit_count;
-  reg [25:0] dividend,quotient,hot_scaled;
-  reg [15:0] divisor,full_divisor;
-  reg [16:0] remainder;
-  wire [16:0] trial={remainder[15:0],dividend[25]};
+  reg [`CFG_BITS_5-1:0] bit_count;
+  reg [`CFG_BITS_26-1:0] dividend,quotient,hot_scaled;
+  reg [`CFG_BITS_16-1:0] divisor,full_divisor;
+  reg [`CFG_BITS_17-1:0] remainder;
+  wire [`CFG_BITS_17-1:0] trial={remainder[15:0],dividend[25]};
   wire subtract=trial>={1'b0,divisor};
-  wire [25:0] next_q={quotient[24:0],subtract};
-  wire [25:0] hot_times_1000={10'b0,full_hot}*26'd1000;
+  wire [`CFG_BITS_26-1:0] next_q={quotient[24:0],subtract};
+  wire [`CFG_BITS_26-1:0] hot_times_1000={10'b0,full_hot}*26'd1000;
   always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
       vs_d<=0;de_d<=0;x<=0;y<=0;sum<=0;samples<=0;full_samples<=0;full_hot<=0;

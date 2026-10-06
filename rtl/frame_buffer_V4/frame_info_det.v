@@ -1,9 +1,10 @@
+`include "../defines.v"
 
 
 module frame_info_det #(
-	parameter I_VID_WIDTH = 16,
-	parameter SIM_EN = 1'b1,
-	parameter AXI_DDR_WIDTH = 256
+	parameter I_VID_WIDTH = `CFG_FRAME_BUFFER_V4_FRAME_INFO_DET_V_PARAMETER_I_VID_WIDTH,
+	parameter SIM_EN = `CFG_FRAME_BUFFER_V4_FRAME_INFO_DET_V_PARAMETER_SIM_EN,
+	parameter AXI_DDR_WIDTH = `CFG_FRAME_BUFFER_V4_FRAME_INFO_DET_V_PARAMETER_AXI_DDR_WIDTH
 
 )(
 input		wire									clk	,    
@@ -11,30 +12,30 @@ input		wire									rst_n,
 input		wire									i_vs, //active hgih
 input     	wire 									i_hs,
 input		wire									i_de, //active high
-input      	wire [I_VID_WIDTH-1:0]					i_data,
+input      	wire [`CFG_FRAME_BUFFER_V4_FRAME_INFO_DET_V_RANGE_1]					i_data,
 
-output reg			[23:0]							frame_pix_num_o,
+output reg			[`CFG_BITS_24-1:0]							frame_pix_num_o,
 output reg											frame_stable,
 output wire											frame_start,
-output reg  [31:0] 									ddr_frame_len,
+output reg  [`CFG_BITS_32-1:0] 									ddr_frame_len,
 output reg   										o_pixel_start = 'd0,
 output reg   										o_pixel_end = 'd0,
 output wire   										fifo_rst_p,
 output reg  										o_valid,
-output reg  			[I_VID_WIDTH-1:0] 			o_data
+output reg  			[`CFG_FRAME_BUFFER_V4_FRAME_INFO_DET_V_RANGE_2] 			o_data
 );
-localparam  VID_DATA_BYTE = I_VID_WIDTH/8;
-localparam  AXI_DATA_BYTE = AXI_DDR_WIDTH/8;
+localparam  VID_DATA_BYTE = `CFG_FRAME_BUFFER_V4_FRAME_INFO_DET_V_LOCALPARAM_VID_DATA_BYTE;
+localparam  AXI_DATA_BYTE = `CFG_FRAME_BUFFER_V4_FRAME_INFO_DET_V_LOCALPARAM_AXI_DATA_BYTE;
   
   reg												vs_r0 = 1'b0;
   wire 												neg_vs;
   wire												pos_vs;
-  reg						[1:0]					frame_num = 'd0;  
-  reg						[23:0]				frame_pix_num = 'd0; 
-  reg						[23:0] 				frame_len_d0 = 'd0;
-  reg						[23:0] 				frame_len_d1 = 'd0; 
-  reg						[23:0] 				frame_len_d2 = 'd0; 
-  reg [31:0] 									total_frame_bytes = 'd0;
+  reg						[`CFG_BITS_2-1:0]					frame_num = 'd0;
+  reg						[`CFG_BITS_24-1:0]				frame_pix_num = 'd0;
+  reg						[`CFG_BITS_24-1:0] 				frame_len_d0 = 'd0;
+  reg						[`CFG_BITS_24-1:0] 				frame_len_d1 = 'd0;
+  reg						[`CFG_BITS_24-1:0] 				frame_len_d2 = 'd0;
+  reg [`CFG_BITS_32-1:0] 									total_frame_bytes = 'd0;
   reg  											negtive_sync = 'd0;
   always @( posedge clk )
   begin
@@ -90,7 +91,7 @@ reg pixel_start_en = 'd0;
   end
 wire pixel_start = pixel_start_en & i_de & frame_stable;
 wire pixel_end = frame_pix_num == frame_pix_num_o-1 && frame_stable;
-reg [2:0] fifo_rst_r = 'd0;
+reg [`CFG_BITS_3-1:0] fifo_rst_r = 'd0;
 always @( posedge clk )
 begin
 	fifo_rst_r <=  {fifo_rst_r[1:0],w_frame_start};
@@ -151,7 +152,7 @@ reg frame_end_r1 = 'd0;
 			total_frame_bytes = frame_pix_num * VID_DATA_BYTE;
   end
 
-  wire  [31:0] 									w_frame_len;
+  wire  [`CFG_BITS_32-1:0] 									w_frame_len;
   generate
 	if( AXI_DDR_WIDTH == 64 ) begin 
 		assign w_frame_len = {3'd0,total_frame_bytes[31:3] + |total_frame_bytes[2:0]};

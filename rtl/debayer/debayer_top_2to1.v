@@ -1,6 +1,7 @@
+`include "../defines.v"
 module debayer_top_2to1
 #(
-	parameter RAW_GREEN_FIRST = 1'b1
+	parameter RAW_GREEN_FIRST = `CFG_DEBAYER_DEBAYER_TOP_2TO1_V_PARAMETER_RAW_GREEN_FIRST
 )
 (
 	input			in_pclk,
@@ -10,19 +11,19 @@ module debayer_top_2to1
 	input			raw_hs_i,
 	input			raw_de_i,
 	input			raw_valid_i,
-	input	[15:0]	raw_datax4_i,
-	input [15:0] r_gain,
-	input [15:0] g_gain,
-	input [15:0] b_gain,
+	input	[`CFG_BITS_16-1:0]	raw_datax4_i,
+	input [`CFG_BITS_16-1:0] r_gain,
+	input [`CFG_BITS_16-1:0] g_gain,
+	input [`CFG_BITS_16-1:0] b_gain,
 	
 	output				rgb_vs_o,
 	output				rgb_hs_o,
 	output				rgb_de_o,
 	output				rgb_valid_o,
-	output [15:0] 	rgb_bout,
-	output [15:0] 	rgb_gout,
-	output [15:0] 	rgb_rout,
-	output	[24*2-1:0]	rgb_datax2_o, //b,g,r,b,g,r
+	output [`CFG_BITS_16-1:0] 	rgb_bout,
+	output [`CFG_BITS_16-1:0] 	rgb_gout,
+	output [`CFG_BITS_16-1:0] 	rgb_rout,
+	output	[`CFG_DEBAYER_DEBAYER_TOP_2TO1_V_RANGE_1]	rgb_datax2_o, //b,g,r,b,g,r
 	output wire             raw_row_odd_o
 );
 // wire [2:0]w_r_gain,w_g_gain,w_b_gain;
@@ -34,13 +35,13 @@ wire	        w_gain_vs;
 wire	        w_gain_hs;
 wire	        w_gain_ah;
 wire	        w_gain_de;
-wire	[15:0]	w_gain_data;
+wire	[`CFG_BITS_16-1:0]	w_gain_data;
 
 rgb_gain_v1
 #(
-	.P_DEPTH(8	),
-	.Q_WIDTH(16	),
-	.GREEN_FIRST(RAW_GREEN_FIRST)
+	.P_DEPTH(`CFG_DEBAYER_DEBAYER_TOP_2TO1_V_INST_INST_RGB_GAIN_P_DEPTH	),
+	.Q_WIDTH(`CFG_DEBAYER_DEBAYER_TOP_2TO1_V_INST_INST_RGB_GAIN_Q_WIDTH	),
+	.GREEN_FIRST(`CFG_DEBAYER_DEBAYER_TOP_2TO1_V_INST_INST_RGB_GAIN_GREEN_FIRST)
 )
 inst_rgb_gain
 (
@@ -70,14 +71,14 @@ inst_rgb_gain
 		wire	    	w_debayer_lb_vs;
 		wire	    	w_debayer_lb_ah;
 		wire	    	w_debayer_lb_de;
-		wire	[15:0]	w_debayer_lb_p_11;
-		wire	[15:0]	w_debayer_lb_p_00;
-		wire	[15:0]	w_debayer_lb_p_01;
+		wire	[`CFG_BITS_16-1:0]	w_debayer_lb_p_11;
+		wire	[`CFG_BITS_16-1:0]	w_debayer_lb_p_00;
+		wire	[`CFG_BITS_16-1:0]	w_debayer_lb_p_01;
 
 		line_buffer
 		#(
-			.P_DEPTH	(8),
-			.X_CNT_WIDTH(10)
+			.P_DEPTH	(`CFG_DEBAYER_DEBAYER_TOP_2TO1_V_INST_INST_LINE_BUFFER_DEBAYER_P_DEPTH),
+			.X_CNT_WIDTH(`CFG_DEBAYER_DEBAYER_TOP_2TO1_V_INST_INST_LINE_BUFFER_DEBAYER_X_CNT_WIDTH)
 		)
 		inst_line_buffer_debayer
 		(
@@ -102,16 +103,16 @@ inst_rgb_gain
 		wire	w_debayer_vs;
 		wire	w_debayer_ah;
 		wire	w_debayer_de;
-		wire	[10:0]	w_debayer_x;
-		wire	[10:0]	w_debayer_y;
-		wire	[15:0]	w_debayer_r;
-		wire	[15:0]	w_debayer_g;
-		wire	[15:0]	w_debayer_b;
+		wire	[`CFG_BITS_11-1:0]	w_debayer_x;
+		wire	[`CFG_BITS_11-1:0]	w_debayer_y;
+		wire	[`CFG_BITS_16-1:0]	w_debayer_r;
+		wire	[`CFG_BITS_16-1:0]	w_debayer_g;
+		wire	[`CFG_BITS_16-1:0]	w_debayer_b;
 		raw_to_rgb
 		#(
-			.P_DEPTH	(8),
-			.LEGACY		(1'b1),
-			.GREEN_FIRST(RAW_GREEN_FIRST)
+			.P_DEPTH	(`CFG_DEBAYER_DEBAYER_TOP_2TO1_V_INST_INST_RAW_TO_RGB_P_DEPTH),
+			.LEGACY		(`CFG_DEBAYER_DEBAYER_TOP_2TO1_V_INST_INST_RAW_TO_RGB_LEGACY),
+			.GREEN_FIRST(`CFG_DEBAYER_DEBAYER_TOP_2TO1_V_INST_INST_RAW_TO_RGB_GREEN_FIRST)
 		)
 		inst_raw_to_rgb
 		(

@@ -1,3 +1,4 @@
+`include "../../defines.v"
 //***************************************************************/
 //   ______   _   _   _                  _            _
 //  |  ____| | | (_) | |                | |          | |
@@ -22,35 +23,35 @@
 
 module phy_ctl # (
 
-parameter                       DEBUG_WIDTH     = 25,
-parameter                       TCQ             = 100,     
-parameter                       AL              = "0",     
-parameter                       BANK_WIDTH      = 3,       
-parameter                       BURST_MODE      = "8",     
-parameter                       CK_WIDTH        = 1,       
-parameter                       CL              = 5,
-parameter                       COL_WIDTH       = 12,      
-parameter                       CS_WIDTH        = 1,       
-parameter                       CKE_WIDTH       = 1,       
-parameter                       CWL             = 5,
-parameter                       DM_WIDTH        = 8,       
-parameter                       DQ_WIDTH        = 64,      
-parameter                       DQS_CNT_WIDTH   = 3,       
-parameter                       DQS_WIDTH       = 8,       
-parameter                       DRAM_WIDTH      = 8,       
-parameter                       RX_CLK_SEL        = 5'b00100, //rx_cal_clk  PLL out sel
-parameter                       TX_CLK_SEL        = 5'b01000, //tx_cal_clk  PLL out sel
-parameter                       TX_CLK_90EDGE_SEL = 5'b00001, //tx_cal_clk_90edge  PLL out sel
-parameter                       CK_RATIO        = 4,       
-parameter                       RANK_RATIO      = 1,       
-parameter                       RTT_NOM         = "60",    
-parameter                       RTT_WR          = "120",   
-parameter                       tCK             = 2500,    
-parameter                       tRFC            = 110000,  
-parameter                       tREFI           = 7800000, 
-parameter                       RANKS           = 4,
-parameter                       ODT_WIDTH       = 1,
-parameter                       ROW_WIDTH       = 16      
+parameter                       DEBUG_WIDTH     = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_DEBUG_WIDTH,
+parameter                       TCQ             = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_TCQ,
+parameter                       AL              = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_AL,
+parameter                       BANK_WIDTH      = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_BANK_WIDTH,
+parameter                       BURST_MODE      = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_BURST_MODE,
+parameter                       CK_WIDTH        = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_CK_WIDTH,
+parameter                       CL              = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_CL,
+parameter                       COL_WIDTH       = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_COL_WIDTH,
+parameter                       CS_WIDTH        = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_CS_WIDTH,
+parameter                       CKE_WIDTH       = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_CKE_WIDTH,
+parameter                       CWL             = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_CWL,
+parameter                       DM_WIDTH        = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_DM_WIDTH,
+parameter                       DQ_WIDTH        = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_DQ_WIDTH,
+parameter                       DQS_CNT_WIDTH   = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_DQS_CNT_WIDTH,
+parameter                       DQS_WIDTH       = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_DQS_WIDTH,
+parameter                       DRAM_WIDTH      = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_DRAM_WIDTH,
+parameter                       RX_CLK_SEL        = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_RX_CLK_SEL, //rx_cal_clk  PLL out sel
+parameter                       TX_CLK_SEL        = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_TX_CLK_SEL, //tx_cal_clk  PLL out sel
+parameter                       TX_CLK_90EDGE_SEL = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_TX_CLK_90EDGE_SEL, //tx_cal_clk_90edge  PLL out sel
+parameter                       CK_RATIO        = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_CK_RATIO,
+parameter                       RANK_RATIO      = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_RANK_RATIO,
+parameter                       RTT_NOM         = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_RTT_NOM,
+parameter                       RTT_WR          = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_RTT_WR,
+parameter                       tCK             = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_TCK,
+parameter                       tRFC            = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_TRFC,
+parameter                       tREFI           = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_TREFI,
+parameter                       RANKS           = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_RANKS,
+parameter                       ODT_WIDTH       = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_ODT_WIDTH,
+parameter                       ROW_WIDTH       = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_PARAMETER_ROW_WIDTH
 )
 (
 input                           core_clk,            // CORE CLK @ 100MHz
@@ -64,145 +65,145 @@ input                           tx_data_rst,
 input                           rst,
 input                           tx_clk_rst,
 // PLL status flags  
-output  reg [2:0]               pll_shift,  
-output  reg [4:0]               pll_shift_sel,
+output  reg [`CFG_BITS_3-1:0]               pll_shift,
+output  reg [`CFG_BITS_5-1:0]               pll_shift_sel,
 output                          pll_shift_ena,   
 // debug port 
-output      [2:0]               rdlvl_shift, 
-output      [2:0]               wrlvl_shift, 
-output      [DEBUG_WIDTH-1:0]   ddr_phy_debug, 
+output      [`CFG_BITS_3-1:0]               rdlvl_shift,
+output      [`CFG_BITS_3-1:0]               wrlvl_shift,
+output      [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_1]   ddr_phy_debug,
 output                          phy_mc_ctl_full,
 output                          phy_mc_cmd_full,
 output                          phy_mc_data_full,
 output                          init_calib_complete,
 output                          phy_rddata_valid,
-output      [2*CK_RATIO*DQ_WIDTH-1:0]           
+output      [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_2]
                                 phy_rd_data,
-input       [CK_RATIO-1:0]      mc_ras_n,
-input       [CK_RATIO-1:0]      mc_cas_n,
-input       [CK_RATIO-1:0]      mc_we_n,
-input       [CK_RATIO*ROW_WIDTH-1:0]             
+input       [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_3]      mc_ras_n,
+input       [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_4]      mc_cas_n,
+input       [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_5]      mc_we_n,
+input       [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_6]
                                 mc_address,
-input       [CK_RATIO*BANK_WIDTH-1:0]            
+input       [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_7]
                                 mc_bank,
-input       [CS_WIDTH*RANK_RATIO*CK_RATIO-1:0] 
+input       [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_8]
                                 mc_cs_n,
 input                           mc_reset_n,
-input       [1:0]               mc_odt,
-input       [CK_RATIO*CKE_WIDTH-1:0]      
+input       [`CFG_BITS_2-1:0]               mc_odt,
+input       [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_9]
                                 mc_cke,
 
-input       [3:0]               mc_aux_out0,
-input       [3:0]               mc_aux_out1,
+input       [`CFG_BITS_4-1:0]               mc_aux_out0,
+input       [`CFG_BITS_4-1:0]               mc_aux_out1,
 input                           mc_cmd_wren,
 input                           mc_ctl_wren,
-input       [2:0]               mc_cmd,
-input       [1:0]               mc_cas_slot,
-input       [5:0]               mc_data_offset,
-input       [5:0]               mc_data_offset_1,
-input       [5:0]               mc_data_offset_2,
-input       [1:0]               mc_rank_cnt,
+input       [`CFG_BITS_3-1:0]               mc_cmd,
+input       [`CFG_BITS_2-1:0]               mc_cas_slot,
+input       [`CFG_BITS_6-1:0]               mc_data_offset,
+input       [`CFG_BITS_6-1:0]               mc_data_offset_1,
+input       [`CFG_BITS_6-1:0]               mc_data_offset_2,
+input       [`CFG_BITS_2-1:0]               mc_rank_cnt,
 input                           mc_wrdata_en,
-input       [2*CK_RATIO*DQ_WIDTH-1:0]     
+input       [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_10]
                                 mc_wrdata,
-input       [2*CK_RATIO*(DQ_WIDTH/8)-1:0] 
+input       [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_11]
                                 mc_wrdata_mask,
 // DDR bus signals
 output                          ddr3_ck_hi,
 output                          ddr3_ck_lo,
-output      [CKE_WIDTH-1:0]     ddr3_cke,
+output      [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_12]     ddr3_cke,
 output                          ddr3_reset_n,
-output      [CS_WIDTH*RANK_RATIO-1:0]
+output      [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_13]
                                 ddr3_cs_n,
 output                          ddr3_ras_n,
 output                          ddr3_cas_n,
 output                          ddr3_we_n,
-output      [BANK_WIDTH-1:0]    ddr3_ba,
-output      [ROW_WIDTH-1:0]     ddr3_addr,
+output      [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_14]    ddr3_ba,
+output      [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_15]     ddr3_addr,
 
 output                          ddr3_dqs_oe,
 output                          ddr3_dq_oe,
-input       [DQS_WIDTH-1:0]     ddr3_dqs_in_hi,
-input       [DQS_WIDTH-1:0]     ddr3_dqs_in_lo,
-input       [DQ_WIDTH-1:0]      ddr3_dq_in_hi,
-input       [DQ_WIDTH-1:0]      ddr3_dq_in_lo,
+input       [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_16]     ddr3_dqs_in_hi,
+input       [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_17]     ddr3_dqs_in_lo,
+input       [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_18]      ddr3_dq_in_hi,
+input       [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_19]      ddr3_dq_in_lo,
         
-output      [DQS_WIDTH-1:0]     ddr3_dqs_out_hi,
-output      [DQS_WIDTH-1:0]     ddr3_dqs_out_lo,
-output      [DQ_WIDTH-1:0]      ddr3_dq_out_hi,
-output      [DQ_WIDTH-1:0]      ddr3_dq_out_lo,
-output      [DM_WIDTH-1:0]      ddr3_dm_hi,
-output      [DM_WIDTH-1:0]      ddr3_dm_lo,
-output      [ODT_WIDTH-1:0]     ddr3_odt  
+output      [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_20]     ddr3_dqs_out_hi,
+output      [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_21]     ddr3_dqs_out_lo,
+output      [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_22]      ddr3_dq_out_hi,
+output      [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_23]      ddr3_dq_out_lo,
+output      [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_24]      ddr3_dm_hi,
+output      [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_25]      ddr3_dm_lo,
+output      [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_26]     ddr3_odt
   
   );
 //Parameter Define
-localparam              CLK_PERIOD = tCK * CK_RATIO;
+localparam              CLK_PERIOD = `CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_LOCALPARAM_CLK_PERIOD;
 
 //Register Define
 
 //Wire Define 
-wire    [2*CK_RATIO*DQ_WIDTH-1:0]phy_wrdata;
-wire    [CK_RATIO*ROW_WIDTH-1:0] phy_address;
-wire    [CK_RATIO*BANK_WIDTH-1:0]phy_bank;
-wire    [CS_WIDTH*RANK_RATIO*CK_RATIO-1:0] 
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_27]phy_wrdata;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_28] phy_address;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_29]phy_bank;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_30]
                                 phy_cs_n;
-wire    [CK_RATIO-1:0]          phy_ras_n;
-wire    [CK_RATIO-1:0]          phy_cas_n;
-wire    [CK_RATIO-1:0]          phy_we_n;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_31]          phy_ras_n;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_32]          phy_cas_n;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_33]          phy_we_n;
 wire                            phy_reset_n;
-wire    [3:0]                   calib_aux_out;
-wire    [CK_RATIO-1:0]          calib_cke;
-wire    [1:0]                   calib_odt;
+wire    [`CFG_BITS_4-1:0]                   calib_aux_out;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_34]          calib_cke;
+wire    [`CFG_BITS_2-1:0]                   calib_odt;
 wire                            write_calib;
 wire                            wl_sm_start;
 wire                            wl_sm_start_dly;
 wire                            calib_ctl_wren;
 wire                            calib_cmd_wren;
 wire                            calib_wrdata_en;
-wire    [2:0]                   calib_cmd;
-wire    [1:0]                   calib_seq;
-wire    [5:0]                   calib_data_offset_0;
-wire    [5:0]                   calib_data_offset_1;
-wire    [5:0]                   calib_data_offset_2;
-wire    [1:0]                   calib_rank_cnt;
-wire    [1:0]                   calib_cas_slot;
-wire    [CK_RATIO*ROW_WIDTH-1:0]mux_address;
-wire    [3:0]                   mux_aux_out;
-wire    [3:0]                   aux_out_map;
-wire    [CK_RATIO*BANK_WIDTH-1:0]
+wire    [`CFG_BITS_3-1:0]                   calib_cmd;
+wire    [`CFG_BITS_2-1:0]                   calib_seq;
+wire    [`CFG_BITS_6-1:0]                   calib_data_offset_0;
+wire    [`CFG_BITS_6-1:0]                   calib_data_offset_1;
+wire    [`CFG_BITS_6-1:0]                   calib_data_offset_2;
+wire    [`CFG_BITS_2-1:0]                   calib_rank_cnt;
+wire    [`CFG_BITS_2-1:0]                   calib_cas_slot;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_35]mux_address;
+wire    [`CFG_BITS_4-1:0]                   mux_aux_out;
+wire    [`CFG_BITS_4-1:0]                   aux_out_map;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_36]
                                 mux_bank;
-wire    [2:0]                   mux_cmd;
+wire    [`CFG_BITS_3-1:0]                   mux_cmd;
 wire                            mux_cmd_wren;
-wire    [CS_WIDTH*RANK_RATIO*CK_RATIO-1:0]   
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_37]
                                 mux_cs_n;
 wire                            mux_ctl_wren;
-wire    [1:0]                   mux_cas_slot;
-wire    [5:0]                   mux_data_offset;
-wire    [5:0]                   mux_data_offset_1;
-wire    [5:0]                   mux_data_offset_2;
-wire    [CK_RATIO-1:0]          mux_ras_n;
-wire    [CK_RATIO-1:0]          mux_cas_n;
-wire    [1:0]                   mux_rank_cnt;
+wire    [`CFG_BITS_2-1:0]                   mux_cas_slot;
+wire    [`CFG_BITS_6-1:0]                   mux_data_offset;
+wire    [`CFG_BITS_6-1:0]                   mux_data_offset_1;
+wire    [`CFG_BITS_6-1:0]                   mux_data_offset_2;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_38]          mux_ras_n;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_39]          mux_cas_n;
+wire    [`CFG_BITS_2-1:0]                   mux_rank_cnt;
 wire                            mux_reset_n;
-wire    [CK_RATIO-1:0]          mux_we_n;
-wire    [2*CK_RATIO*DQ_WIDTH-1:0]              
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_40]          mux_we_n;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_41]
                                 mux_wrdata;
-wire    [2*CK_RATIO*(DQ_WIDTH/8)-1:0]          
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_42]
                                 mux_wrdata_mask;
 wire                            mux_wrdata_en;
-wire    [CK_RATIO-1:0]          mux_cke ;
-wire    [1:0]                   mux_odt ;  
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_43]          mux_cke ;
+wire    [`CFG_BITS_2-1:0]                   mux_odt ;
     
 wire                            dqs_locked_start;
 wire                            dqs_locked_done;
 wire                            rdlvl_all_dqs_done;
-wire    [1:0]                   dqs_bit_sample_err;
+wire    [`CFG_BITS_2-1:0]                   dqs_bit_sample_err;
 wire                            rdlvl_dqs_check_ena;
-wire    [DQS_WIDTH-1:0]         wrlvl_dqs_hi;
-wire    [DQS_WIDTH-1:0]         wrlvl_dqs_lo;
-wire    [DQS_WIDTH-1:0]         ddr_dqs_out_hi;
-wire    [DQS_WIDTH-1:0]         ddr_dqs_out_lo;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_44]         wrlvl_dqs_hi;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_45]         wrlvl_dqs_lo;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_46]         ddr_dqs_out_hi;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_47]         ddr_dqs_out_lo;
 wire                            wr_level_start;  
 wire                            wrlvl_dqs_oe;  
 wire                            calib_dq_oe;  
@@ -215,39 +216,39 @@ wire                            dq_check_en;
 wire                            dq_bit_sample_ok; 
 wire                            rdlvl_dqs_shift_ena;
 wire                            wrlvl_shift_ena;
-wire    [2:0]                   rdlvl_dqs_phise_shift;
-wire    [2:0]                   wrlvl_phise_shift;
-wire    [DM_WIDTH-1:0]          ddr_dm_hi;
-wire    [DM_WIDTH-1:0]          ddr_dm_lo;
+wire    [`CFG_BITS_3-1:0]                   rdlvl_dqs_phise_shift;
+wire    [`CFG_BITS_3-1:0]                   wrlvl_phise_shift;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_48]          ddr_dm_hi;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_49]          ddr_dm_lo;
 wire                            phy_rddata_valid_w;
-wire    [2*CK_RATIO*DQ_WIDTH-1:0]              
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_50]
                                 phy_rd_data_w;
 wire                            mpr_rddata_valid;
-wire    [2*CK_RATIO*DQ_WIDTH-1:0]              
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_51]
                                 mpr_rd_data;
 wire                            wrcal_rddata_valid;
-wire    [2*CK_RATIO*DQ_WIDTH-1:0]
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_52]
                                 wrcal_rd_data;
 wire                            mpr_rdlvl_dly;
 wire                            idelay_ld;
 wire                            wrcal_resume;
 wire                            wrcal_pat_resume;
-wire    [31:0]                  phy_ctl_wd;  
+wire    [`CFG_BITS_32-1:0]                  phy_ctl_wd;
 wire                            phy_dqs_oe;
 wire                            phy_dq_oe;
 wire                            phy_ctl_full;
 wire                            phy_cmd_full;
 wire                            phy_data_full;
-wire    [2:0]                   shift;  
-wire    [4:0]                   shift_sel;
+wire    [`CFG_BITS_3-1:0]                   shift;
+wire    [`CFG_BITS_5-1:0]                   shift_sel;
 wire                            shift_ena; 
 wire                            phy_rst; 
-wire    [6:0]                   init_cur_state;
-wire    [7:0]                   rd_level_dqs_check;
-wire    [7:0]                   wrlvl_dq_check;
+wire    [`CFG_BITS_7-1:0]                   init_cur_state;
+wire    [`CFG_BITS_8-1:0]                   rd_level_dqs_check;
+wire    [`CFG_BITS_8-1:0]                   wrlvl_dq_check;
 reg                             pll_shift_wl_sel;
-wire    [16-1:0]                debug_fifo;
-wire    [16-1:0]                overflow_fifo;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_53]                debug_fifo;
+wire    [`CFG_DDR3_CONTROLLER_PHY_CTL_PHY_CTL_V_RANGE_54]                overflow_fifo;
 //Encryption begin
 `pragma protect begin_protected
 `pragma protect version=1

@@ -1,3 +1,4 @@
+`include "../../defines.v"
 // (C) 2001-2016 Intel Corporation. All rights reserved.
 // Your use of Intel Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
@@ -102,15 +103,15 @@ module i2c_master_top(
 	input        wb_clk_i;     // master clock input
 	input        wb_rst_i;     // synchronous active high reset
 	input        arst_i;       // asynchronous reset
-	input  [2:0] wb_adr_i;     // lower address bits
-	input  [7:0] wb_dat_i;     // databus input
-	output [7:0] wb_dat_o;     // databus output
+	input  [`CFG_BITS_3-1:0] wb_adr_i;     // lower address bits
+	input  [`CFG_BITS_8-1:0] wb_dat_i;     // databus input
+	output [`CFG_BITS_8-1:0] wb_dat_o;     // databus output
 	input        wb_we_i;      // write enable input
 	input        wb_stb_i;     // stobe/core select signal
 	output       wb_ack_o;     // bus cycle acknowledge output
 	output       wb_inta_o;    // interrupt request signal output
 
-	reg [7:0] wb_dat_o;
+	reg [`CFG_BITS_8-1:0] wb_dat_o;
 	reg wb_ack_o;
 	reg wb_inta_o;
 
@@ -131,12 +132,12 @@ module i2c_master_top(
 	//
 
 	// registers
-	reg  [15:0] prer; // clock prescale register
-	reg  [ 7:0] ctr;  // control register
-	reg  [ 7:0] txr;  // transmit register
-	wire [ 7:0] rxr;  // receive register
-	reg  [ 7:0] cr;   // command register
-	wire [ 7:0] sr;   // status register
+	reg  [`CFG_BITS_16-1:0] prer; // clock prescale register
+	reg  [ `CFG_BITS_8-1:0] ctr;  // control register
+	reg  [ `CFG_BITS_8-1:0] txr;  // transmit register
+	wire [ `CFG_BITS_8-1:0] rxr;  // receive register
+	reg  [ `CFG_BITS_8-1:0] cr;   // command register
+	wire [ `CFG_BITS_8-1:0] sr;   // status register
 
 	// done signal: command completed, clear command register
 	wire done;

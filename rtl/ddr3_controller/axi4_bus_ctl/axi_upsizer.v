@@ -1,3 +1,4 @@
+`include "../../defines.v"
 //***************************************************************/
 //   ______   _   _   _                  _            _
 //  |  ____| | | (_) | |                | |          | |
@@ -24,67 +25,67 @@
 
 module axi_upsizer #
   (
-   parameter         C_FAMILY                         = "rtl", 
+   parameter         C_FAMILY                         = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_FAMILY,
                        // FPGA Family. Current version: virtex6 or spartan6.
-   parameter integer C_AXI_ID_WIDTH                 = 4, 
+   parameter integer C_AXI_ID_WIDTH                 = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_ID_WIDTH,
                        // Width of all ID signals on SI and MI side of converter.
                        // Range: >= 1.
-   parameter integer C_AXI_ADDR_WIDTH                 = 32, 
+   parameter integer C_AXI_ADDR_WIDTH                 = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_ADDR_WIDTH,
                        // Width of all ADDR signals on SI and MI side of converter.
                        // Range: 32.
-   parameter         C_S_AXI_DATA_WIDTH               = 32'h00000020, 
+   parameter         C_S_AXI_DATA_WIDTH               = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_S_AXI_DATA_WIDTH,
                        // Width of S_AXI_WDATA and S_AXI_RDATA.
                        // Format: Bit32; 
                        // Range: 'h00000020, 'h00000040, 'h00000080, 'h00000100.
-   parameter         C_M_AXI_DATA_WIDTH               = 32'h00000040, 
+   parameter         C_M_AXI_DATA_WIDTH               = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_M_AXI_DATA_WIDTH,
                        // Width of M_AXI_WDATA and M_AXI_RDATA.
                        // Assume greater than or equal to C_S_AXI_DATA_WIDTH.
                        // Format: Bit32;
                        // Range: 'h00000020, 'h00000040, 'h00000080, 'h00000100.
-   parameter integer C_M_AXI_AW_REGISTER              = 0,
+   parameter integer C_M_AXI_AW_REGISTER              = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_M_AXI_AW_REGISTER,
                        // Simple register AW output.
                        // Range: 0, 1
-   parameter integer C_M_AXI_W_REGISTER               = 1,  // Parameter not used; W reg always implemented.
-   parameter integer C_M_AXI_AR_REGISTER              = 0,
+   parameter integer C_M_AXI_W_REGISTER               = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_M_AXI_W_REGISTER,  // Parameter not used; W reg always implemented.
+   parameter integer C_M_AXI_AR_REGISTER              = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_M_AXI_AR_REGISTER,
                        // Simple register AR output.
                        // Range: 0, 1
-   parameter integer C_S_AXI_R_REGISTER               = 0,
+   parameter integer C_S_AXI_R_REGISTER               = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_S_AXI_R_REGISTER,
                        // Simple register R output (SI).
                        // Range: 0, 1
-   parameter integer C_M_AXI_R_REGISTER               = 1,
+   parameter integer C_M_AXI_R_REGISTER               = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_M_AXI_R_REGISTER,
                        // Register slice on R input (MI) side.
                        // 0 = Bypass (not recommended due to combinatorial M_RVALID -> M_RREADY path)
                        // 1 = Fully-registered (needed only when upsizer propagates bursts at 1:1 width ratio)
                        // 7 = Light-weight (safe when upsizer always packs at 1:n width ratio, as in interconnect)
-   parameter integer C_AXI_SUPPORTS_USER_SIGNALS      = 0,
+   parameter integer C_AXI_SUPPORTS_USER_SIGNALS      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_SUPPORTS_USER_SIGNALS,
                        // 1 = Propagate all USER signals, 0 = Don抰 propagate.
-   parameter integer C_AXI_AWUSER_WIDTH               = 1,
+   parameter integer C_AXI_AWUSER_WIDTH               = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_AWUSER_WIDTH,
                        // Width of AWUSER signals. 
                        // Range: >= 1.
-   parameter integer C_AXI_ARUSER_WIDTH               = 1,
+   parameter integer C_AXI_ARUSER_WIDTH               = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_ARUSER_WIDTH,
                        // Width of ARUSER signals. 
                        // Range: >= 1.
-   parameter integer C_AXI_WUSER_WIDTH                = 1,
+   parameter integer C_AXI_WUSER_WIDTH                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_WUSER_WIDTH,
                        // Width of WUSER signals. 
                        // Range: >= 1.
-   parameter integer C_AXI_RUSER_WIDTH                = 1,
+   parameter integer C_AXI_RUSER_WIDTH                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_RUSER_WIDTH,
                        // Width of RUSER signals. 
                        // Range: >= 1.
-   parameter integer C_AXI_BUSER_WIDTH                = 1,
+   parameter integer C_AXI_BUSER_WIDTH                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_BUSER_WIDTH,
                        // Width of BUSER signals. 
                        // Range: >= 1.
-   parameter integer C_AXI_SUPPORTS_WRITE             = 1,
-   parameter integer C_AXI_SUPPORTS_READ              = 1,
-   parameter integer C_PACKING_LEVEL                    = 1,
+   parameter integer C_AXI_SUPPORTS_WRITE             = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_SUPPORTS_WRITE,
+   parameter integer C_AXI_SUPPORTS_READ              = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_SUPPORTS_READ,
+   parameter integer C_PACKING_LEVEL                    = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_PACKING_LEVEL,
                        // 0 = Never pack (expander only); packing logic is omitted.
                        // 1 = Pack only when CACHE[1] (Modifiable) is high.
                        // 2 = Always pack, regardless of sub-size transaction or Modifiable bit.
                        //     (Required when used as helper-core by mem-con. Same size AXI interfaces
                        //      should only be used when always packing)
-   parameter integer C_SUPPORT_BURSTS                 = 1,
+   parameter integer C_SUPPORT_BURSTS                 = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_SUPPORT_BURSTS,
                        // Disabled when all connected masters and slaves are AxiLite,
                        //   allowing logic to be simplified.
-   parameter integer C_SINGLE_THREAD                  = 1
+   parameter integer C_SINGLE_THREAD                  = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_SINGLE_THREAD
                        // 0 = Ignore ID when propagating transactions (assume all responses are in order).
                        // 1 = Allow multiple outstanding transactions only if the IDs are the same
                        //   to prevent response reordering.
@@ -96,111 +97,111 @@ module axi_upsizer #
    input  wire                                                    ACLK,
 
    // Slave Interface Write Address Ports
-   input  wire [C_AXI_ID_WIDTH-1:0]             S_AXI_AWID,
-   input  wire [C_AXI_ADDR_WIDTH-1:0]           S_AXI_AWADDR,
-   input  wire [8-1:0]                          S_AXI_AWLEN,
-   input  wire [3-1:0]                          S_AXI_AWSIZE,
-   input  wire [2-1:0]                          S_AXI_AWBURST,
-   input  wire [2-1:0]                          S_AXI_AWLOCK,
-   input  wire [4-1:0]                          S_AXI_AWCACHE,
-   input  wire [3-1:0]                          S_AXI_AWPROT,
-   input  wire [4-1:0]                          S_AXI_AWREGION,
-   input  wire [4-1:0]                          S_AXI_AWQOS,
-   input  wire [C_AXI_AWUSER_WIDTH-1:0]         S_AXI_AWUSER,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_1]             S_AXI_AWID,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_2]           S_AXI_AWADDR,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_3]                          S_AXI_AWLEN,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_4]                          S_AXI_AWSIZE,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_5]                          S_AXI_AWBURST,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_6]                          S_AXI_AWLOCK,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_7]                          S_AXI_AWCACHE,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_8]                          S_AXI_AWPROT,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_9]                          S_AXI_AWREGION,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_10]                          S_AXI_AWQOS,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_11]         S_AXI_AWUSER,
    input  wire                                  S_AXI_AWVALID,
    output wire                                  S_AXI_AWREADY,
    // Slave Interface Write Data Ports
-   input  wire [C_S_AXI_DATA_WIDTH-1:0]         S_AXI_WDATA,
-   input  wire [C_S_AXI_DATA_WIDTH/8-1:0]       S_AXI_WSTRB,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_12]         S_AXI_WDATA,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_13]       S_AXI_WSTRB,
    input  wire                                  S_AXI_WLAST,
-   input  wire [C_AXI_WUSER_WIDTH-1:0]          S_AXI_WUSER,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_14]          S_AXI_WUSER,
    input  wire                                  S_AXI_WVALID,
    output wire                                  S_AXI_WREADY,
    // Slave Interface Write Response Ports
-   output wire [C_AXI_ID_WIDTH-1:0]             S_AXI_BID,
-   output wire [2-1:0]                          S_AXI_BRESP,
-   output wire [C_AXI_BUSER_WIDTH-1:0]          S_AXI_BUSER,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_15]             S_AXI_BID,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_16]                          S_AXI_BRESP,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_17]          S_AXI_BUSER,
    output wire                                  S_AXI_BVALID,
    input  wire                                  S_AXI_BREADY,
    // Slave Interface Read Address Ports
-   input  wire [C_AXI_ID_WIDTH-1:0]             S_AXI_ARID,
-   input  wire [C_AXI_ADDR_WIDTH-1:0]           S_AXI_ARADDR,
-   input  wire [8-1:0]                          S_AXI_ARLEN,
-   input  wire [3-1:0]                          S_AXI_ARSIZE,
-   input  wire [2-1:0]                          S_AXI_ARBURST,
-   input  wire [2-1:0]                          S_AXI_ARLOCK,
-   input  wire [4-1:0]                          S_AXI_ARCACHE,
-   input  wire [3-1:0]                          S_AXI_ARPROT,
-   input  wire [4-1:0]                          S_AXI_ARREGION,
-   input  wire [4-1:0]                          S_AXI_ARQOS,
-   input  wire [C_AXI_ARUSER_WIDTH-1:0]         S_AXI_ARUSER,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_18]             S_AXI_ARID,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_19]           S_AXI_ARADDR,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_20]                          S_AXI_ARLEN,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_21]                          S_AXI_ARSIZE,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_22]                          S_AXI_ARBURST,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_23]                          S_AXI_ARLOCK,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_24]                          S_AXI_ARCACHE,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_25]                          S_AXI_ARPROT,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_26]                          S_AXI_ARREGION,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_27]                          S_AXI_ARQOS,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_28]         S_AXI_ARUSER,
    input  wire                                  S_AXI_ARVALID,
    output wire                                  S_AXI_ARREADY,
    // Slave Interface Read Data Ports
-   output wire [C_AXI_ID_WIDTH-1:0]             S_AXI_RID,
-   output wire [C_S_AXI_DATA_WIDTH-1:0]         S_AXI_RDATA,
-   output wire [2-1:0]                          S_AXI_RRESP,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_29]             S_AXI_RID,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_30]         S_AXI_RDATA,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_31]                          S_AXI_RRESP,
    output wire                                  S_AXI_RLAST,
-   output wire [C_AXI_RUSER_WIDTH-1:0]          S_AXI_RUSER,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_32]          S_AXI_RUSER,
    output wire                                  S_AXI_RVALID,
    input  wire                                  S_AXI_RREADY,
 
    // Master Interface Write Address Port
-   output wire [C_AXI_ID_WIDTH-1:0]          M_AXI_AWID,
-   output wire [C_AXI_ADDR_WIDTH-1:0]          M_AXI_AWADDR,
-   output wire [8-1:0]                         M_AXI_AWLEN,
-   output wire [3-1:0]                         M_AXI_AWSIZE,
-   output wire [2-1:0]                         M_AXI_AWBURST,
-   output wire [2-1:0]                         M_AXI_AWLOCK,
-   output wire [4-1:0]                         M_AXI_AWCACHE,
-   output wire [3-1:0]                         M_AXI_AWPROT,
-   output wire [4-1:0]                         M_AXI_AWREGION,
-   output wire [4-1:0]                         M_AXI_AWQOS,
-   output wire [C_AXI_AWUSER_WIDTH-1:0]        M_AXI_AWUSER,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_33]          M_AXI_AWID,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_34]          M_AXI_AWADDR,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_35]                         M_AXI_AWLEN,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_36]                         M_AXI_AWSIZE,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_37]                         M_AXI_AWBURST,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_38]                         M_AXI_AWLOCK,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_39]                         M_AXI_AWCACHE,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_40]                         M_AXI_AWPROT,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_41]                         M_AXI_AWREGION,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_42]                         M_AXI_AWQOS,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_43]        M_AXI_AWUSER,
    output wire                                                   M_AXI_AWVALID,
    input  wire                                                   M_AXI_AWREADY,
    // Master Interface Write Data Ports
-   output wire [C_M_AXI_DATA_WIDTH-1:0]    M_AXI_WDATA,
-   output wire [C_M_AXI_DATA_WIDTH/8-1:0]  M_AXI_WSTRB,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_44]    M_AXI_WDATA,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_45]  M_AXI_WSTRB,
    output wire                                                   M_AXI_WLAST,
-   output wire [C_AXI_WUSER_WIDTH-1:0]         M_AXI_WUSER,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_46]         M_AXI_WUSER,
    output wire                                                   M_AXI_WVALID,
    input  wire                                                   M_AXI_WREADY,
    // Master Interface Write Response Ports
-   input  wire [C_AXI_ID_WIDTH-1:0]          M_AXI_BID,
-   input  wire [2-1:0]                         M_AXI_BRESP,
-   input  wire [C_AXI_BUSER_WIDTH-1:0]         M_AXI_BUSER,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_47]          M_AXI_BID,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_48]                         M_AXI_BRESP,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_49]         M_AXI_BUSER,
    input  wire                                                   M_AXI_BVALID,
    output wire                                                   M_AXI_BREADY,
    // Master Interface Read Address Port
-   output wire [C_AXI_ID_WIDTH-1:0]          M_AXI_ARID,
-   output wire [C_AXI_ADDR_WIDTH-1:0]          M_AXI_ARADDR,
-   output wire [8-1:0]                         M_AXI_ARLEN,
-   output wire [3-1:0]                         M_AXI_ARSIZE,
-   output wire [2-1:0]                         M_AXI_ARBURST,
-   output wire [2-1:0]                         M_AXI_ARLOCK,
-   output wire [4-1:0]                         M_AXI_ARCACHE,
-   output wire [3-1:0]                         M_AXI_ARPROT,
-   output wire [4-1:0]                         M_AXI_ARREGION,
-   output wire [4-1:0]                         M_AXI_ARQOS,
-   output wire [C_AXI_ARUSER_WIDTH-1:0]        M_AXI_ARUSER,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_50]          M_AXI_ARID,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_51]          M_AXI_ARADDR,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_52]                         M_AXI_ARLEN,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_53]                         M_AXI_ARSIZE,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_54]                         M_AXI_ARBURST,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_55]                         M_AXI_ARLOCK,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_56]                         M_AXI_ARCACHE,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_57]                         M_AXI_ARPROT,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_58]                         M_AXI_ARREGION,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_59]                         M_AXI_ARQOS,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_60]        M_AXI_ARUSER,
    output wire                                                   M_AXI_ARVALID,
    input  wire                                                   M_AXI_ARREADY,
    // Master Interface Read Data Ports
-   input  wire [C_AXI_ID_WIDTH-1:0]          M_AXI_RID,
-   input  wire [C_M_AXI_DATA_WIDTH-1:0]      M_AXI_RDATA,
-   input  wire [2-1:0]                       M_AXI_RRESP,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_61]          M_AXI_RID,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_62]      M_AXI_RDATA,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_63]                       M_AXI_RRESP,
    input  wire                               M_AXI_RLAST,
-   input  wire [C_AXI_RUSER_WIDTH-1:0]       M_AXI_RUSER,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_64]       M_AXI_RUSER,
    input  wire                               M_AXI_RVALID,
    output wire                               M_AXI_RREADY
    );
 
-   
+
   /////////////////////////////////////////////////////////////////////////////
   // Functions
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Log2.
   function integer log2;
     input integer value;
@@ -210,85 +211,85 @@ module axi_upsizer #
     end
   end
   endfunction
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Local params
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Log2 of number of 32bit word on SI-side.
-  localparam integer C_S_AXI_BYTES_LOG                = log2(C_S_AXI_DATA_WIDTH/8);
-  
+  localparam integer C_S_AXI_BYTES_LOG                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_S_AXI_BYTES_LOG;
+
   // Log2 of number of 32bit word on MI-side.
-  localparam integer C_M_AXI_BYTES_LOG                = log2(C_M_AXI_DATA_WIDTH/8);
-  
+  localparam integer C_M_AXI_BYTES_LOG                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_M_AXI_BYTES_LOG;
+
   // Log2 of Up-Sizing ratio for data.
-  localparam integer C_RATIO                          = C_M_AXI_DATA_WIDTH / C_S_AXI_DATA_WIDTH;
-  localparam integer C_RATIO_LOG                      = log2(C_RATIO);
-  localparam P_BYPASS = 32'h0;
-  localparam P_LIGHTWT = 32'h7;
-  localparam P_FWD_REV = 32'h1;
-  
+  localparam integer C_RATIO                          = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_RATIO;
+  localparam integer C_RATIO_LOG                      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_RATIO_LOG;
+  localparam P_BYPASS = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_P_BYPASS;
+  localparam P_LIGHTWT = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_P_LIGHTWT;
+  localparam P_FWD_REV = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_P_FWD_REV;
+
   /////////////////////////////////////////////////////////////////////////////
   // Internal signals
   /////////////////////////////////////////////////////////////////////////////
-  
-  wire [C_AXI_ID_WIDTH-1:0]          sr_AWID      ;   
-  wire [C_AXI_ADDR_WIDTH-1:0]        sr_AWADDR    ;   
-  wire [8-1:0]                       sr_AWLEN     ;   
-  wire [3-1:0]                       sr_AWSIZE    ;   
-  wire [2-1:0]                       sr_AWBURST   ;   
-  wire [2-1:0]                       sr_AWLOCK    ;   
-  wire [4-1:0]                       sr_AWCACHE   ;   
-  wire [3-1:0]                       sr_AWPROT    ;   
-  wire [4-1:0]                       sr_AWREGION  ;   
-  wire [4-1:0]                       sr_AWQOS     ;   
-  wire [C_AXI_AWUSER_WIDTH-1:0]      sr_AWUSER    ;   
+
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_65]          sr_AWID      ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_66]        sr_AWADDR    ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_67]                       sr_AWLEN     ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_68]                       sr_AWSIZE    ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_69]                       sr_AWBURST   ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_70]                       sr_AWLOCK    ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_71]                       sr_AWCACHE   ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_72]                       sr_AWPROT    ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_73]                       sr_AWREGION  ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_74]                       sr_AWQOS     ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_75]      sr_AWUSER    ;
   wire                               sr_AWVALID   ;   
   wire                               sr_AWREADY   ;   
-  wire [C_AXI_ID_WIDTH-1:0]          sr_ARID      ;    
-  wire [C_AXI_ADDR_WIDTH-1:0]        sr_ARADDR    ;    
-  wire [8-1:0]                       sr_ARLEN     ;    
-  wire [3-1:0]                       sr_ARSIZE    ;    
-  wire [2-1:0]                       sr_ARBURST   ;    
-  wire [2-1:0]                       sr_ARLOCK    ;    
-  wire [4-1:0]                       sr_ARCACHE   ;    
-  wire [3-1:0]                       sr_ARPROT    ;    
-  wire [4-1:0]                       sr_ARREGION  ;    
-  wire [4-1:0]                       sr_ARQOS     ;    
-  wire [C_AXI_ARUSER_WIDTH-1:0]      sr_ARUSER    ;    
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_76]          sr_ARID      ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_77]        sr_ARADDR    ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_78]                       sr_ARLEN     ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_79]                       sr_ARSIZE    ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_80]                       sr_ARBURST   ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_81]                       sr_ARLOCK    ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_82]                       sr_ARCACHE   ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_83]                       sr_ARPROT    ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_84]                       sr_ARREGION  ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_85]                       sr_ARQOS     ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_86]      sr_ARUSER    ;
   wire                               sr_ARVALID   ;    
   wire                               sr_ARREADY   ;    
-  
-  wire [C_S_AXI_DATA_WIDTH-1:0]      sr_WDATA     ;
-  wire [(C_S_AXI_DATA_WIDTH/8)-1:0]  sr_WSTRB     ;
+
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_87]      sr_WDATA     ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_88]  sr_WSTRB     ;
   wire                               sr_WLAST     ;
   wire                               sr_WVALID    ;
   wire                               sr_WREADY    ;
-  
-  wire [C_AXI_ID_WIDTH-1:0]          mr_RID       ;  
-  wire [C_M_AXI_DATA_WIDTH-1:0]      mr_RDATA     ;  
-  wire [2-1:0]                       mr_RRESP     ;  
+
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_89]          mr_RID       ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_90]      mr_RDATA     ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_91]                       mr_RRESP     ;
   wire                               mr_RLAST     ;  
-  wire [C_AXI_RUSER_WIDTH-1:0]       mr_RUSER     ;  
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_92]       mr_RUSER     ;
   wire                               mr_RVALID    ;  
   wire                               mr_RREADY    ;   
   (* max_fanout = 100 *) reg ARESET ;
-  
+
   assign M_AXI_WUSER   = {C_AXI_WUSER_WIDTH{1'b0}};
   assign S_AXI_RUSER   = {C_AXI_RUSER_WIDTH{1'b0}};
 
     axi_register_slice #
       (
-        .C_FAMILY                         (C_FAMILY),
-        .C_AXI_ID_WIDTH                   (C_AXI_ID_WIDTH),
-        .C_AXI_ADDR_WIDTH                 (C_AXI_ADDR_WIDTH),
-        .C_AXI_DATA_WIDTH                 (C_S_AXI_DATA_WIDTH),
-        .C_AXI_SUPPORTS_USER_SIGNALS      (C_AXI_SUPPORTS_USER_SIGNALS),
-        .C_AXI_AWUSER_WIDTH               (C_AXI_AWUSER_WIDTH),
-        .C_AXI_ARUSER_WIDTH               (C_AXI_ARUSER_WIDTH),
-        .C_REG_CONFIG_AW                  (C_AXI_SUPPORTS_WRITE ? P_LIGHTWT : P_BYPASS),
-        .C_REG_CONFIG_AR                  (C_AXI_SUPPORTS_READ ? P_LIGHTWT : P_BYPASS)
+        .C_FAMILY                         (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_SI_REGISTER_SLICE_INST_C_FAMILY),
+        .C_AXI_ID_WIDTH                   (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_SI_REGISTER_SLICE_INST_C_AXI_ID_WIDTH),
+        .C_AXI_ADDR_WIDTH                 (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_SI_REGISTER_SLICE_INST_C_AXI_ADDR_WIDTH),
+        .C_AXI_DATA_WIDTH                 (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_SI_REGISTER_SLICE_INST_C_AXI_DATA_WIDTH),
+        .C_AXI_SUPPORTS_USER_SIGNALS      (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_SI_REGISTER_SLICE_INST_C_AXI_SUPPORTS_USER_SIGNALS),
+        .C_AXI_AWUSER_WIDTH               (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_SI_REGISTER_SLICE_INST_C_AXI_AWUSER_WIDTH),
+        .C_AXI_ARUSER_WIDTH               (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_SI_REGISTER_SLICE_INST_C_AXI_ARUSER_WIDTH),
+        .C_REG_CONFIG_AW                  (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_SI_REGISTER_SLICE_INST_C_REG_CONFIG_AW),
+        .C_REG_CONFIG_AR                  (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_SI_REGISTER_SLICE_INST_C_REG_CONFIG_AR)
       )
       si_register_slice_inst 
       (
@@ -385,16 +386,16 @@ module axi_upsizer #
         .M_AXI_RVALID                     ( 1'b0  ),
         .M_AXI_RREADY                     (  )
       );
-  
+
     axi_register_slice #
       (
-        .C_FAMILY                         (C_FAMILY),
-        .C_AXI_ID_WIDTH                   (C_AXI_ID_WIDTH),
-        .C_AXI_ADDR_WIDTH                 (C_AXI_ADDR_WIDTH),
-        .C_AXI_DATA_WIDTH                 (C_M_AXI_DATA_WIDTH),
-        .C_AXI_SUPPORTS_USER_SIGNALS      (C_AXI_SUPPORTS_USER_SIGNALS),
-        .C_AXI_RUSER_WIDTH                (C_AXI_RUSER_WIDTH),
-        .C_REG_CONFIG_R                   (C_AXI_SUPPORTS_READ ? C_M_AXI_R_REGISTER : P_BYPASS)
+        .C_FAMILY                         (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_MI_REGISTER_SLICE_INST_C_FAMILY),
+        .C_AXI_ID_WIDTH                   (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_MI_REGISTER_SLICE_INST_C_AXI_ID_WIDTH),
+        .C_AXI_ADDR_WIDTH                 (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_MI_REGISTER_SLICE_INST_C_AXI_ADDR_WIDTH),
+        .C_AXI_DATA_WIDTH                 (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_MI_REGISTER_SLICE_INST_C_AXI_DATA_WIDTH),
+        .C_AXI_SUPPORTS_USER_SIGNALS      (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_MI_REGISTER_SLICE_INST_C_AXI_SUPPORTS_USER_SIGNALS),
+        .C_AXI_RUSER_WIDTH                (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_MI_REGISTER_SLICE_INST_C_AXI_RUSER_WIDTH),
+        .C_REG_CONFIG_R                   (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_MI_REGISTER_SLICE_INST_C_REG_CONFIG_R)
       )
       mi_register_slice_inst 
       (
@@ -491,59 +492,59 @@ module axi_upsizer #
         .M_AXI_RVALID                     (M_AXI_RVALID ),
         .M_AXI_RREADY                     (M_AXI_RREADY )
       );
-  
+
   /////////////////////////////////////////////////////////////////////////////
   // Handle Internal Reset
   /////////////////////////////////////////////////////////////////////////////
   always @ (posedge ACLK) begin
     ARESET <= !ARESETN;
   end
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Handle Write Channels (AW/W/B)
   /////////////////////////////////////////////////////////////////////////////
   generate
     if (C_AXI_SUPPORTS_WRITE == 1) begin : USE_WRITE
-    
+
       // Write Channel Signals for Commands Queue Interface.
       wire                              wr_cmd_valid;
       wire                              wr_cmd_fix;
       wire                              wr_cmd_modified;
       wire                              wr_cmd_complete_wrap;
       wire                              wr_cmd_packed_wrap;
-      wire [C_M_AXI_BYTES_LOG-1:0]      wr_cmd_first_word;
-      wire [C_M_AXI_BYTES_LOG-1:0]      wr_cmd_next_word;
-      wire [C_M_AXI_BYTES_LOG-1:0]      wr_cmd_last_word;
-      wire [C_M_AXI_BYTES_LOG-1:0]      wr_cmd_offset;
-      wire [C_M_AXI_BYTES_LOG-1:0]      wr_cmd_mask;
-      wire [C_S_AXI_BYTES_LOG:0]        wr_cmd_step;
-      wire [8-1:0]                      wr_cmd_length;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_93]      wr_cmd_first_word;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_94]      wr_cmd_next_word;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_95]      wr_cmd_last_word;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_96]      wr_cmd_offset;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_97]      wr_cmd_mask;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_98]        wr_cmd_step;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_99]                      wr_cmd_length;
       wire                              wr_cmd_ready;
-      
+
       // Write Address Channel.
       a_upsizer #
       (
-       .C_FAMILY                    (C_FAMILY),
-       .C_AXI_ID_WIDTH              (C_AXI_ID_WIDTH),
-       .C_AXI_ADDR_WIDTH            (C_AXI_ADDR_WIDTH),
-       .C_S_AXI_DATA_WIDTH          (C_S_AXI_DATA_WIDTH),
-       .C_M_AXI_DATA_WIDTH          (C_M_AXI_DATA_WIDTH),
-       .C_M_AXI_REGISTER            (C_M_AXI_AW_REGISTER),
-       .C_AXI_SUPPORTS_USER_SIGNALS (C_AXI_SUPPORTS_USER_SIGNALS),
-       .C_AXI_AUSER_WIDTH           (C_AXI_AWUSER_WIDTH),
-       .C_AXI_CHANNEL               (0),
-       .C_PACKING_LEVEL             (C_PACKING_LEVEL),
-       .C_SUPPORT_BURSTS            (C_SUPPORT_BURSTS),
-       .C_SINGLE_THREAD             (C_SINGLE_THREAD),
-       .C_S_AXI_BYTES_LOG           (C_S_AXI_BYTES_LOG),
-       .C_M_AXI_BYTES_LOG           (C_M_AXI_BYTES_LOG)
+       .C_FAMILY                    (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_ADDR_INST_C_FAMILY),
+       .C_AXI_ID_WIDTH              (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_ADDR_INST_C_AXI_ID_WIDTH),
+       .C_AXI_ADDR_WIDTH            (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_ADDR_INST_C_AXI_ADDR_WIDTH),
+       .C_S_AXI_DATA_WIDTH          (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_ADDR_INST_C_S_AXI_DATA_WIDTH),
+       .C_M_AXI_DATA_WIDTH          (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_ADDR_INST_C_M_AXI_DATA_WIDTH),
+       .C_M_AXI_REGISTER            (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_ADDR_INST_C_M_AXI_REGISTER),
+       .C_AXI_SUPPORTS_USER_SIGNALS (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_ADDR_INST_C_AXI_SUPPORTS_USER_SIGNALS),
+       .C_AXI_AUSER_WIDTH           (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_ADDR_INST_C_AXI_AUSER_WIDTH),
+       .C_AXI_CHANNEL               (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_ADDR_INST_C_AXI_CHANNEL),
+       .C_PACKING_LEVEL             (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_ADDR_INST_C_PACKING_LEVEL),
+       .C_SUPPORT_BURSTS            (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_ADDR_INST_C_SUPPORT_BURSTS),
+       .C_SINGLE_THREAD             (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_ADDR_INST_C_SINGLE_THREAD),
+       .C_S_AXI_BYTES_LOG           (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_ADDR_INST_C_S_AXI_BYTES_LOG),
+       .C_M_AXI_BYTES_LOG           (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_ADDR_INST_C_M_AXI_BYTES_LOG)
         ) write_addr_inst
        (
         // Global Signals
         .ARESET                     (ARESET),
         .ACLK                       (ACLK),
-    
+
         // Command Interface
         .cmd_valid                  (wr_cmd_valid),
         .cmd_fix                    (wr_cmd_fix),
@@ -558,7 +559,7 @@ module axi_upsizer #
         .cmd_step                   (wr_cmd_step),
         .cmd_length                 (wr_cmd_length),
         .cmd_ready                  (wr_cmd_ready),
-       
+
         // Slave Interface Write Address Ports
         .S_AXI_AID                  (sr_AWID),
         .S_AXI_AADDR                (sr_AWADDR),
@@ -573,7 +574,7 @@ module axi_upsizer #
         .S_AXI_AUSER                (sr_AWUSER),
         .S_AXI_AVALID               (sr_AWVALID),
         .S_AXI_AREADY               (sr_AWREADY),
-        
+
         // Master Interface Write Address Port
         .M_AXI_AID                  (M_AXI_AWID),
         .M_AXI_AADDR                (M_AXI_AWADDR),
@@ -589,28 +590,28 @@ module axi_upsizer #
         .M_AXI_AVALID               (M_AXI_AWVALID),
         .M_AXI_AREADY               (M_AXI_AWREADY)
        );
-       
+
       // Write Data channel.
       w_upsizer #
       (
-       .C_FAMILY                    (C_FAMILY),
-       .C_S_AXI_DATA_WIDTH          (C_S_AXI_DATA_WIDTH),
-       .C_M_AXI_DATA_WIDTH          (C_M_AXI_DATA_WIDTH),
-       .C_M_AXI_REGISTER            (1),
-       .C_AXI_SUPPORTS_USER_SIGNALS (C_AXI_SUPPORTS_USER_SIGNALS),
-       .C_AXI_WUSER_WIDTH           (C_AXI_WUSER_WIDTH),
-       .C_PACKING_LEVEL             (C_PACKING_LEVEL),
-       .C_SUPPORT_BURSTS            (C_SUPPORT_BURSTS),
-       .C_S_AXI_BYTES_LOG           (C_S_AXI_BYTES_LOG),
-       .C_M_AXI_BYTES_LOG           (C_M_AXI_BYTES_LOG),
-       .C_RATIO                     (C_RATIO),
-       .C_RATIO_LOG                 (C_RATIO_LOG)
+       .C_FAMILY                    (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_DATA_INST_C_FAMILY),
+       .C_S_AXI_DATA_WIDTH          (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_DATA_INST_C_S_AXI_DATA_WIDTH),
+       .C_M_AXI_DATA_WIDTH          (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_DATA_INST_C_M_AXI_DATA_WIDTH),
+       .C_M_AXI_REGISTER            (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_DATA_INST_C_M_AXI_REGISTER),
+       .C_AXI_SUPPORTS_USER_SIGNALS (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_DATA_INST_C_AXI_SUPPORTS_USER_SIGNALS),
+       .C_AXI_WUSER_WIDTH           (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_DATA_INST_C_AXI_WUSER_WIDTH),
+       .C_PACKING_LEVEL             (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_DATA_INST_C_PACKING_LEVEL),
+       .C_SUPPORT_BURSTS            (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_DATA_INST_C_SUPPORT_BURSTS),
+       .C_S_AXI_BYTES_LOG           (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_DATA_INST_C_S_AXI_BYTES_LOG),
+       .C_M_AXI_BYTES_LOG           (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_DATA_INST_C_M_AXI_BYTES_LOG),
+       .C_RATIO                     (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_DATA_INST_C_RATIO),
+       .C_RATIO_LOG                 (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WRITE_DATA_INST_C_RATIO_LOG)
         ) write_data_inst
        (
         // Global Signals
         .ARESET                     (ARESET),
         .ACLK                       (ACLK),
-    
+
         // Command Interface
         .cmd_valid                  (wr_cmd_valid),
         .cmd_fix                    (wr_cmd_fix),
@@ -625,7 +626,7 @@ module axi_upsizer #
         .cmd_step                   (wr_cmd_step),
         .cmd_length                 (wr_cmd_length),
         .cmd_ready                  (wr_cmd_ready),
-       
+
         // Slave Interface Write Data Ports
         .S_AXI_WDATA                (S_AXI_WDATA),
         .S_AXI_WSTRB                (S_AXI_WSTRB),
@@ -633,7 +634,7 @@ module axi_upsizer #
         .S_AXI_WUSER                (S_AXI_WUSER),
         .S_AXI_WVALID               (S_AXI_WVALID),
         .S_AXI_WREADY               (S_AXI_WREADY),
-        
+
         // Master Interface Write Data Ports
         .M_AXI_WDATA                (M_AXI_WDATA),
         .M_AXI_WSTRB                (M_AXI_WSTRB),
@@ -642,14 +643,14 @@ module axi_upsizer #
         .M_AXI_WVALID               (M_AXI_WVALID),
         .M_AXI_WREADY               (M_AXI_WREADY)
        );
-      
+
       // Write Response channel.
       assign S_AXI_BID     = M_AXI_BID;
       assign S_AXI_BRESP   = M_AXI_BRESP;
       assign S_AXI_BUSER   = M_AXI_BUSER;
       assign S_AXI_BVALID  = M_AXI_BVALID;
       assign M_AXI_BREADY  = S_AXI_BREADY;
-       
+
     end else begin : NO_WRITE
       assign sr_AWREADY = 1'b0;
       assign S_AXI_WREADY  = 1'b0;
@@ -657,7 +658,7 @@ module axi_upsizer #
       assign S_AXI_BRESP   = 2'b0;
       assign S_AXI_BUSER   = {C_AXI_BUSER_WIDTH{1'b0}};
       assign S_AXI_BVALID  = 1'b0;
-      
+
       assign M_AXI_AWID    = {C_AXI_ID_WIDTH{1'b0}};
       assign M_AXI_AWADDR  = {C_AXI_ADDR_WIDTH{1'b0}};
       assign M_AXI_AWLEN   = 8'b0;
@@ -674,55 +675,55 @@ module axi_upsizer #
       assign M_AXI_WLAST   = 1'b0;
       assign M_AXI_WVALID  = 1'b0;
       assign M_AXI_BREADY  = 1'b0;
-      
+
     end
   endgenerate
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Handle Read Channels (AR/R)
   /////////////////////////////////////////////////////////////////////////////
   generate
     if (C_AXI_SUPPORTS_READ == 1) begin : USE_READ
-    
+
       // Read Channel Signals for Commands Queue Interface.
       wire                              rd_cmd_valid;
       wire                              rd_cmd_fix;
       wire                              rd_cmd_modified;
       wire                              rd_cmd_complete_wrap;
       wire                              rd_cmd_packed_wrap;
-      wire [C_M_AXI_BYTES_LOG-1:0]      rd_cmd_first_word;
-      wire [C_M_AXI_BYTES_LOG-1:0]      rd_cmd_next_word;
-      wire [C_M_AXI_BYTES_LOG-1:0]      rd_cmd_last_word;
-      wire [C_M_AXI_BYTES_LOG-1:0]      rd_cmd_offset;
-      wire [C_M_AXI_BYTES_LOG-1:0]      rd_cmd_mask;
-      wire [C_S_AXI_BYTES_LOG:0]        rd_cmd_step;
-      wire [8-1:0]                      rd_cmd_length;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_100]      rd_cmd_first_word;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_101]      rd_cmd_next_word;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_102]      rd_cmd_last_word;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_103]      rd_cmd_offset;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_104]      rd_cmd_mask;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_105]        rd_cmd_step;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_106]                      rd_cmd_length;
       wire                              rd_cmd_ready;
-      
+
       // Write Address Channel.
       a_upsizer #
       (
-       .C_FAMILY                    (C_FAMILY),
-       .C_AXI_ID_WIDTH              (C_AXI_ID_WIDTH),
-       .C_AXI_ADDR_WIDTH            (C_AXI_ADDR_WIDTH),
-       .C_S_AXI_DATA_WIDTH          (C_S_AXI_DATA_WIDTH),
-       .C_M_AXI_DATA_WIDTH          (C_M_AXI_DATA_WIDTH),
-       .C_M_AXI_REGISTER            (C_M_AXI_AR_REGISTER),
-       .C_AXI_SUPPORTS_USER_SIGNALS (C_AXI_SUPPORTS_USER_SIGNALS),
-       .C_AXI_AUSER_WIDTH           (C_AXI_ARUSER_WIDTH),
-       .C_AXI_CHANNEL               (1),
-       .C_PACKING_LEVEL             (C_PACKING_LEVEL),
-       .C_SUPPORT_BURSTS            (C_SUPPORT_BURSTS),
-       .C_SINGLE_THREAD             (C_SINGLE_THREAD),
-       .C_S_AXI_BYTES_LOG           (C_S_AXI_BYTES_LOG),
-       .C_M_AXI_BYTES_LOG           (C_M_AXI_BYTES_LOG)
+       .C_FAMILY                    (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_ADDR_INST_C_FAMILY),
+       .C_AXI_ID_WIDTH              (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_ADDR_INST_C_AXI_ID_WIDTH),
+       .C_AXI_ADDR_WIDTH            (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_ADDR_INST_C_AXI_ADDR_WIDTH),
+       .C_S_AXI_DATA_WIDTH          (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_ADDR_INST_C_S_AXI_DATA_WIDTH),
+       .C_M_AXI_DATA_WIDTH          (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_ADDR_INST_C_M_AXI_DATA_WIDTH),
+       .C_M_AXI_REGISTER            (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_ADDR_INST_C_M_AXI_REGISTER),
+       .C_AXI_SUPPORTS_USER_SIGNALS (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_ADDR_INST_C_AXI_SUPPORTS_USER_SIGNALS),
+       .C_AXI_AUSER_WIDTH           (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_ADDR_INST_C_AXI_AUSER_WIDTH),
+       .C_AXI_CHANNEL               (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_ADDR_INST_C_AXI_CHANNEL),
+       .C_PACKING_LEVEL             (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_ADDR_INST_C_PACKING_LEVEL),
+       .C_SUPPORT_BURSTS            (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_ADDR_INST_C_SUPPORT_BURSTS),
+       .C_SINGLE_THREAD             (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_ADDR_INST_C_SINGLE_THREAD),
+       .C_S_AXI_BYTES_LOG           (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_ADDR_INST_C_S_AXI_BYTES_LOG),
+       .C_M_AXI_BYTES_LOG           (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_ADDR_INST_C_M_AXI_BYTES_LOG)
         ) read_addr_inst
        (
         // Global Signals
         .ARESET                     (ARESET),
         .ACLK                       (ACLK),
-    
+
         // Command Interface
         .cmd_valid                  (rd_cmd_valid),
         .cmd_fix                    (rd_cmd_fix),
@@ -737,7 +738,7 @@ module axi_upsizer #
         .cmd_step                   (rd_cmd_step),
         .cmd_length                 (rd_cmd_length),
         .cmd_ready                  (rd_cmd_ready),
-       
+
         // Slave Interface Write Address Ports
         .S_AXI_AID                  (sr_ARID),
         .S_AXI_AADDR                (sr_ARADDR),
@@ -752,7 +753,7 @@ module axi_upsizer #
         .S_AXI_AUSER                (sr_ARUSER),
         .S_AXI_AVALID               (sr_ARVALID),
         .S_AXI_AREADY               (sr_ARREADY),
-        
+
         // Master Interface Write Address Port
         .M_AXI_AID                  (M_AXI_ARID),
         .M_AXI_AADDR                (M_AXI_ARADDR),
@@ -768,29 +769,29 @@ module axi_upsizer #
         .M_AXI_AVALID               (M_AXI_ARVALID),
         .M_AXI_AREADY               (M_AXI_ARREADY)
        );
-       
+
       // Read Data channel.
       r_upsizer #
       (
-       .C_FAMILY                    (C_FAMILY),
-       .C_AXI_ID_WIDTH              (C_AXI_ID_WIDTH),
-       .C_S_AXI_DATA_WIDTH          (C_S_AXI_DATA_WIDTH),
-       .C_M_AXI_DATA_WIDTH          (C_M_AXI_DATA_WIDTH),
-       .C_S_AXI_REGISTER            (C_S_AXI_R_REGISTER),
-       .C_AXI_SUPPORTS_USER_SIGNALS (C_AXI_SUPPORTS_USER_SIGNALS),
-       .C_AXI_RUSER_WIDTH           (C_AXI_RUSER_WIDTH),
-       .C_PACKING_LEVEL             (C_PACKING_LEVEL),
-       .C_SUPPORT_BURSTS            (C_SUPPORT_BURSTS),
-       .C_S_AXI_BYTES_LOG           (C_S_AXI_BYTES_LOG),
-       .C_M_AXI_BYTES_LOG           (C_M_AXI_BYTES_LOG),
-       .C_RATIO                     (C_RATIO),
-       .C_RATIO_LOG                 (C_RATIO_LOG)
+       .C_FAMILY                    (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_DATA_INST_C_FAMILY),
+       .C_AXI_ID_WIDTH              (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_DATA_INST_C_AXI_ID_WIDTH),
+       .C_S_AXI_DATA_WIDTH          (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_DATA_INST_C_S_AXI_DATA_WIDTH),
+       .C_M_AXI_DATA_WIDTH          (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_DATA_INST_C_M_AXI_DATA_WIDTH),
+       .C_S_AXI_REGISTER            (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_DATA_INST_C_S_AXI_REGISTER),
+       .C_AXI_SUPPORTS_USER_SIGNALS (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_DATA_INST_C_AXI_SUPPORTS_USER_SIGNALS),
+       .C_AXI_RUSER_WIDTH           (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_DATA_INST_C_AXI_RUSER_WIDTH),
+       .C_PACKING_LEVEL             (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_DATA_INST_C_PACKING_LEVEL),
+       .C_SUPPORT_BURSTS            (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_DATA_INST_C_SUPPORT_BURSTS),
+       .C_S_AXI_BYTES_LOG           (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_DATA_INST_C_S_AXI_BYTES_LOG),
+       .C_M_AXI_BYTES_LOG           (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_DATA_INST_C_M_AXI_BYTES_LOG),
+       .C_RATIO                     (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_DATA_INST_C_RATIO),
+       .C_RATIO_LOG                 (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_READ_DATA_INST_C_RATIO_LOG)
         ) read_data_inst
        (
         // Global Signals
         .ARESET                     (ARESET),
         .ACLK                       (ACLK),
-    
+
         // Command Interface
         .cmd_valid                  (rd_cmd_valid),
         .cmd_fix                    (rd_cmd_fix),
@@ -805,7 +806,7 @@ module axi_upsizer #
         .cmd_step                   (rd_cmd_step),
         .cmd_length                 (rd_cmd_length),
         .cmd_ready                  (rd_cmd_ready),
-       
+
         // Slave Interface Read Data Ports
         .S_AXI_RID                  (S_AXI_RID),
         .S_AXI_RDATA                (S_AXI_RDATA),
@@ -814,7 +815,7 @@ module axi_upsizer #
         .S_AXI_RUSER                (),
         .S_AXI_RVALID               (S_AXI_RVALID),
         .S_AXI_RREADY               (S_AXI_RREADY),
-        
+
         // Master Interface Read Data Ports
         .M_AXI_RID                  (mr_RID),
         .M_AXI_RDATA                (mr_RDATA),
@@ -824,7 +825,7 @@ module axi_upsizer #
         .M_AXI_RVALID               (mr_RVALID),
         .M_AXI_RREADY               (mr_RREADY)
        );
-       
+
     end else begin : NO_READ
       assign sr_ARREADY = 1'b0;
       assign S_AXI_RID     = {C_AXI_ID_WIDTH{1'b0}};
@@ -832,7 +833,7 @@ module axi_upsizer #
       assign S_AXI_RRESP   = 2'b0;
       assign S_AXI_RLAST   = 1'b0;
       assign S_AXI_RVALID  = 1'b0;
-      
+
       assign M_AXI_ARID    = {C_AXI_ID_WIDTH{1'b0}};
       assign M_AXI_ARADDR  = {C_AXI_ADDR_WIDTH{1'b0}};
       assign M_AXI_ARLEN   = 8'b0;
@@ -845,11 +846,11 @@ module axi_upsizer #
       assign M_AXI_ARUSER  = {C_AXI_ARUSER_WIDTH{1'b0}};
       assign M_AXI_ARVALID = 1'b0;
       assign mr_RREADY  = 1'b0;
-      
+
     end
   endgenerate
-  
-  
+
+
 endmodule
 `default_nettype wire
 
@@ -864,16 +865,16 @@ endmodule
 
 module axi_register_slice #
   (
-   parameter C_FAMILY                            = "virtex6",
-   parameter integer C_AXI_ID_WIDTH              = 4,
-   parameter integer C_AXI_ADDR_WIDTH            = 32,
-   parameter integer C_AXI_DATA_WIDTH            = 32,
-   parameter integer C_AXI_SUPPORTS_USER_SIGNALS = 0,
-   parameter integer C_AXI_AWUSER_WIDTH          = 1,
-   parameter integer C_AXI_ARUSER_WIDTH          = 1,
-   parameter integer C_AXI_WUSER_WIDTH           = 1,
-   parameter integer C_AXI_RUSER_WIDTH           = 1,
-   parameter integer C_AXI_BUSER_WIDTH           = 1,
+   parameter C_FAMILY                            = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_FAMILY_2,
+   parameter integer C_AXI_ID_WIDTH              = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_ID_WIDTH_2,
+   parameter integer C_AXI_ADDR_WIDTH            = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_ADDR_WIDTH_2,
+   parameter integer C_AXI_DATA_WIDTH            = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_DATA_WIDTH,
+   parameter integer C_AXI_SUPPORTS_USER_SIGNALS = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_SUPPORTS_USER_SIGNALS_2,
+   parameter integer C_AXI_AWUSER_WIDTH          = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_AWUSER_WIDTH_2,
+   parameter integer C_AXI_ARUSER_WIDTH          = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_ARUSER_WIDTH_2,
+   parameter integer C_AXI_WUSER_WIDTH           = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_WUSER_WIDTH_2,
+   parameter integer C_AXI_RUSER_WIDTH           = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_RUSER_WIDTH_2,
+   parameter integer C_AXI_BUSER_WIDTH           = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_BUSER_WIDTH_2,
    // C_REG_CONFIG_*:
    //   0 => BYPASS    = The channel is just wired through the module.
    //   1 => FWD_REV   = Both FWD and REV (fully-registered)
@@ -883,11 +884,11 @@ module axi_register_slice #
    //   5 => SLAVE_RDY = All slave side signals and master READY are registrated.
    //   6 => INPUTS    = Slave and Master side inputs are registrated.
    //   7 => LIGHT_WT  = 1-stage pipeline register with bubble cycle, both FWD and REV pipelining
-   parameter         C_REG_CONFIG_AW = 32'h00000000,
-   parameter         C_REG_CONFIG_W  = 32'h00000000,
-   parameter         C_REG_CONFIG_B  = 32'h00000000,
-   parameter         C_REG_CONFIG_AR = 32'h00000000,
-   parameter         C_REG_CONFIG_R  = 32'h00000000
+   parameter         C_REG_CONFIG_AW = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_REG_CONFIG_AW,
+   parameter         C_REG_CONFIG_W  = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_REG_CONFIG_W,
+   parameter         C_REG_CONFIG_B  = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_REG_CONFIG_B,
+   parameter         C_REG_CONFIG_AR = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_REG_CONFIG_AR,
+   parameter         C_REG_CONFIG_R  = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_REG_CONFIG_R
    )
   (
    // System Signals
@@ -895,112 +896,112 @@ module axi_register_slice #
    input wire ARESETN,
 
    // Slave Interface Write Address Ports
-   input  wire [C_AXI_ID_WIDTH-1:0]     S_AXI_AWID,
-   input  wire [C_AXI_ADDR_WIDTH-1:0]   S_AXI_AWADDR,
-   input  wire [8-1:0]                  S_AXI_AWLEN,
-   input  wire [3-1:0]                  S_AXI_AWSIZE,
-   input  wire [2-1:0]                  S_AXI_AWBURST,
-   input  wire [2-1:0]                  S_AXI_AWLOCK,
-   input  wire [4-1:0]                  S_AXI_AWCACHE,
-   input  wire [3-1:0]                  S_AXI_AWPROT,
-   input  wire [4-1:0]                  S_AXI_AWREGION,
-   input  wire [4-1:0]                  S_AXI_AWQOS,
-   input  wire [C_AXI_AWUSER_WIDTH-1:0] S_AXI_AWUSER,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_107]     S_AXI_AWID,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_108]   S_AXI_AWADDR,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_109]                  S_AXI_AWLEN,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_110]                  S_AXI_AWSIZE,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_111]                  S_AXI_AWBURST,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_112]                  S_AXI_AWLOCK,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_113]                  S_AXI_AWCACHE,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_114]                  S_AXI_AWPROT,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_115]                  S_AXI_AWREGION,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_116]                  S_AXI_AWQOS,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_117] S_AXI_AWUSER,
    input  wire                          S_AXI_AWVALID,
    output wire                          S_AXI_AWREADY,
 
    // Slave Interface Write Data Ports
-   input wire [C_AXI_ID_WIDTH-1:0]      S_AXI_WID,
-   input  wire [C_AXI_DATA_WIDTH-1:0]   S_AXI_WDATA,
-   input  wire [C_AXI_DATA_WIDTH/8-1:0] S_AXI_WSTRB,
+   input wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_118]      S_AXI_WID,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_119]   S_AXI_WDATA,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_120] S_AXI_WSTRB,
    input  wire                          S_AXI_WLAST,
-   input  wire [C_AXI_WUSER_WIDTH-1:0]  S_AXI_WUSER,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_121]  S_AXI_WUSER,
    input  wire                          S_AXI_WVALID,
    output wire                          S_AXI_WREADY,
 
    // Slave Interface Write Response Ports
-   output wire [C_AXI_ID_WIDTH-1:0]    S_AXI_BID,
-   output wire [2-1:0]                 S_AXI_BRESP,
-   output wire [C_AXI_BUSER_WIDTH-1:0] S_AXI_BUSER,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_122]    S_AXI_BID,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_123]                 S_AXI_BRESP,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_124] S_AXI_BUSER,
    output wire                         S_AXI_BVALID,
    input  wire                         S_AXI_BREADY,
 
    // Slave Interface Read Address Ports
-   input  wire [C_AXI_ID_WIDTH-1:0]     S_AXI_ARID,
-   input  wire [C_AXI_ADDR_WIDTH-1:0]   S_AXI_ARADDR,
-   input  wire [8-1:0]                  S_AXI_ARLEN,
-   input  wire [3-1:0]                  S_AXI_ARSIZE,
-   input  wire [2-1:0]                  S_AXI_ARBURST,
-   input  wire [2-1:0]                  S_AXI_ARLOCK,
-   input  wire [4-1:0]                  S_AXI_ARCACHE,
-   input  wire [3-1:0]                  S_AXI_ARPROT,
-   input  wire [4-1:0]                  S_AXI_ARREGION,
-   input  wire [4-1:0]                  S_AXI_ARQOS,
-   input  wire [C_AXI_ARUSER_WIDTH-1:0] S_AXI_ARUSER,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_125]     S_AXI_ARID,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_126]   S_AXI_ARADDR,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_127]                  S_AXI_ARLEN,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_128]                  S_AXI_ARSIZE,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_129]                  S_AXI_ARBURST,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_130]                  S_AXI_ARLOCK,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_131]                  S_AXI_ARCACHE,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_132]                  S_AXI_ARPROT,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_133]                  S_AXI_ARREGION,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_134]                  S_AXI_ARQOS,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_135] S_AXI_ARUSER,
    input  wire                          S_AXI_ARVALID,
    output wire                          S_AXI_ARREADY,
 
    // Slave Interface Read Data Ports
-   output wire [C_AXI_ID_WIDTH-1:0]    S_AXI_RID,
-   output wire [C_AXI_DATA_WIDTH-1:0]  S_AXI_RDATA,
-   output wire [2-1:0]                 S_AXI_RRESP,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_136]    S_AXI_RID,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_137]  S_AXI_RDATA,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_138]                 S_AXI_RRESP,
    output wire                         S_AXI_RLAST,
-   output wire [C_AXI_RUSER_WIDTH-1:0] S_AXI_RUSER,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_139] S_AXI_RUSER,
    output wire                         S_AXI_RVALID,
    input  wire                         S_AXI_RREADY,
-   
+
    // Master Interface Write Address Port
-   output wire [C_AXI_ID_WIDTH-1:0]     M_AXI_AWID,
-   output wire [C_AXI_ADDR_WIDTH-1:0]   M_AXI_AWADDR,
-   output wire [8-1:0]                  M_AXI_AWLEN,
-   output wire [3-1:0]                  M_AXI_AWSIZE,
-   output wire [2-1:0]                  M_AXI_AWBURST,
-   output wire [2-1:0]                  M_AXI_AWLOCK,
-   output wire [4-1:0]                  M_AXI_AWCACHE,
-   output wire [3-1:0]                  M_AXI_AWPROT,
-   output wire [4-1:0]                  M_AXI_AWREGION,
-   output wire [4-1:0]                  M_AXI_AWQOS,
-   output wire [C_AXI_AWUSER_WIDTH-1:0] M_AXI_AWUSER,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_140]     M_AXI_AWID,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_141]   M_AXI_AWADDR,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_142]                  M_AXI_AWLEN,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_143]                  M_AXI_AWSIZE,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_144]                  M_AXI_AWBURST,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_145]                  M_AXI_AWLOCK,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_146]                  M_AXI_AWCACHE,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_147]                  M_AXI_AWPROT,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_148]                  M_AXI_AWREGION,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_149]                  M_AXI_AWQOS,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_150] M_AXI_AWUSER,
    output wire                          M_AXI_AWVALID,
    input  wire                          M_AXI_AWREADY,
-   
+
    // Master Interface Write Data Ports
-   output wire [C_AXI_ID_WIDTH-1:0]     M_AXI_WID,
-   output wire [C_AXI_DATA_WIDTH-1:0]   M_AXI_WDATA,
-   output wire [C_AXI_DATA_WIDTH/8-1:0] M_AXI_WSTRB,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_151]     M_AXI_WID,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_152]   M_AXI_WDATA,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_153] M_AXI_WSTRB,
    output wire                          M_AXI_WLAST,
-   output wire [C_AXI_WUSER_WIDTH-1:0]  M_AXI_WUSER,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_154]  M_AXI_WUSER,
    output wire                          M_AXI_WVALID,
    input  wire                          M_AXI_WREADY,
-   
+
    // Master Interface Write Response Ports
-   input  wire [C_AXI_ID_WIDTH-1:0]    M_AXI_BID,
-   input  wire [2-1:0]                 M_AXI_BRESP,
-   input  wire [C_AXI_BUSER_WIDTH-1:0] M_AXI_BUSER,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_155]    M_AXI_BID,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_156]                 M_AXI_BRESP,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_157] M_AXI_BUSER,
    input  wire                         M_AXI_BVALID,
    output wire                         M_AXI_BREADY,
-   
+
    // Master Interface Read Address Port
-   output wire [C_AXI_ID_WIDTH-1:0]     M_AXI_ARID,
-   output wire [C_AXI_ADDR_WIDTH-1:0]   M_AXI_ARADDR,
-   output wire [8-1:0]                  M_AXI_ARLEN,
-   output wire [3-1:0]                  M_AXI_ARSIZE,
-   output wire [2-1:0]                  M_AXI_ARBURST,
-   output wire [2-1:0]                  M_AXI_ARLOCK,
-   output wire [4-1:0]                  M_AXI_ARCACHE,
-   output wire [3-1:0]                  M_AXI_ARPROT,
-   output wire [4-1:0]                  M_AXI_ARREGION,
-   output wire [4-1:0]                  M_AXI_ARQOS,
-   output wire [C_AXI_ARUSER_WIDTH-1:0] M_AXI_ARUSER,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_158]     M_AXI_ARID,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_159]   M_AXI_ARADDR,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_160]                  M_AXI_ARLEN,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_161]                  M_AXI_ARSIZE,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_162]                  M_AXI_ARBURST,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_163]                  M_AXI_ARLOCK,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_164]                  M_AXI_ARCACHE,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_165]                  M_AXI_ARPROT,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_166]                  M_AXI_ARREGION,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_167]                  M_AXI_ARQOS,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_168] M_AXI_ARUSER,
    output wire                          M_AXI_ARVALID,
    input  wire                          M_AXI_ARREADY,
-   
+
    // Master Interface Read Data Ports
-   input  wire [C_AXI_ID_WIDTH-1:0]    M_AXI_RID,
-   input  wire [C_AXI_DATA_WIDTH-1:0]  M_AXI_RDATA,
-   input  wire [2-1:0]                 M_AXI_RRESP,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_169]    M_AXI_RID,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_170]  M_AXI_RDATA,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_171]                 M_AXI_RRESP,
    input  wire                         M_AXI_RLAST,
-   input  wire [C_AXI_RUSER_WIDTH-1:0] M_AXI_RUSER,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_172] M_AXI_RUSER,
    input  wire                         M_AXI_RVALID,
    output wire                         M_AXI_RREADY
   );
@@ -1011,118 +1012,118 @@ module axi_register_slice #
   end
 
   // Write Address Port bit positions
-  localparam C_AWUSER_RIGHT   = 0;
-  localparam C_AWUSER_LEN     = C_AXI_SUPPORTS_USER_SIGNALS*C_AXI_AWUSER_WIDTH;
-  localparam C_AWQOS_RIGHT    = C_AWUSER_RIGHT + C_AWUSER_LEN;
-  localparam C_AWQOS_LEN      = 4;
-  localparam C_AWREGION_RIGHT = C_AWQOS_RIGHT + C_AWQOS_LEN;
-  localparam C_AWREGION_LEN   = 4;
-  localparam C_AWPROT_RIGHT   = C_AWREGION_RIGHT + C_AWREGION_LEN;
-  localparam C_AWPROT_LEN     = 3;
-  localparam C_AWCACHE_RIGHT  = C_AWPROT_RIGHT + C_AWPROT_LEN;
-  localparam C_AWCACHE_LEN    = 4;
-  localparam C_AWLOCK_RIGHT   = C_AWCACHE_RIGHT + C_AWCACHE_LEN;
-  localparam C_AWLOCK_LEN     = 2;
-  localparam C_AWBURST_RIGHT  = C_AWLOCK_RIGHT + C_AWLOCK_LEN;
-  localparam C_AWBURST_LEN    = 2;
-  localparam C_AWSIZE_RIGHT   = C_AWBURST_RIGHT + C_AWBURST_LEN;
-  localparam C_AWSIZE_LEN     = 3;
-  localparam C_AWLEN_RIGHT    = C_AWSIZE_RIGHT + C_AWSIZE_LEN;
-  localparam C_AWLEN_LEN      = 8;
-  localparam C_AWADDR_RIGHT   = C_AWLEN_RIGHT + C_AWLEN_LEN;
-  localparam C_AWADDR_LEN     = C_AXI_ADDR_WIDTH;
-  localparam C_AWID_RIGHT     = C_AWADDR_RIGHT + C_AWADDR_LEN;
-  localparam C_AWID_LEN       = C_AXI_ID_WIDTH;
-  localparam C_AW_SIZE        = C_AWID_RIGHT+C_AWID_LEN;
+  localparam C_AWUSER_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWUSER_RIGHT;
+  localparam C_AWUSER_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWUSER_LEN;
+  localparam C_AWQOS_RIGHT    = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWQOS_RIGHT;
+  localparam C_AWQOS_LEN      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWQOS_LEN;
+  localparam C_AWREGION_RIGHT = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWREGION_RIGHT;
+  localparam C_AWREGION_LEN   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWREGION_LEN;
+  localparam C_AWPROT_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWPROT_RIGHT;
+  localparam C_AWPROT_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWPROT_LEN;
+  localparam C_AWCACHE_RIGHT  = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWCACHE_RIGHT;
+  localparam C_AWCACHE_LEN    = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWCACHE_LEN;
+  localparam C_AWLOCK_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWLOCK_RIGHT;
+  localparam C_AWLOCK_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWLOCK_LEN;
+  localparam C_AWBURST_RIGHT  = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWBURST_RIGHT;
+  localparam C_AWBURST_LEN    = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWBURST_LEN;
+  localparam C_AWSIZE_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWSIZE_RIGHT;
+  localparam C_AWSIZE_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWSIZE_LEN;
+  localparam C_AWLEN_RIGHT    = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWLEN_RIGHT;
+  localparam C_AWLEN_LEN      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWLEN_LEN;
+  localparam C_AWADDR_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWADDR_RIGHT;
+  localparam C_AWADDR_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWADDR_LEN;
+  localparam C_AWID_RIGHT     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWID_RIGHT;
+  localparam C_AWID_LEN       = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AWID_LEN;
+  localparam C_AW_SIZE        = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AW_SIZE;
 
   // Write Address Port FIFO data read and write
-  wire [C_AW_SIZE-1:0] s_aw_data ;
-  wire [C_AW_SIZE-1:0] m_aw_data ;
-  
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_173] s_aw_data ;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_174] m_aw_data ;
+
   // Write Data Port bit positions
-  localparam C_WUSER_RIGHT   = 0;
-  localparam C_WUSER_LEN     = C_AXI_SUPPORTS_USER_SIGNALS*C_AXI_WUSER_WIDTH;
-  localparam C_WLAST_RIGHT   = C_WUSER_RIGHT + C_WUSER_LEN;
-  localparam C_WLAST_LEN     = 1;
-  localparam C_WSTRB_RIGHT   = C_WLAST_RIGHT + C_WLAST_LEN;
-  localparam C_WSTRB_LEN     = C_AXI_DATA_WIDTH/8;
-  localparam C_WDATA_RIGHT   = C_WSTRB_RIGHT + C_WSTRB_LEN;
-  localparam C_WDATA_LEN     = C_AXI_DATA_WIDTH;
-  localparam C_WID_RIGHT     = C_WDATA_RIGHT + C_WDATA_LEN;
-  localparam C_WID_LEN       = C_AXI_ID_WIDTH;
-  localparam C_W_SIZE        = C_WID_RIGHT+C_WID_LEN;
+  localparam C_WUSER_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_WUSER_RIGHT;
+  localparam C_WUSER_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_WUSER_LEN;
+  localparam C_WLAST_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_WLAST_RIGHT;
+  localparam C_WLAST_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_WLAST_LEN;
+  localparam C_WSTRB_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_WSTRB_RIGHT;
+  localparam C_WSTRB_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_WSTRB_LEN;
+  localparam C_WDATA_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_WDATA_RIGHT;
+  localparam C_WDATA_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_WDATA_LEN;
+  localparam C_WID_RIGHT     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_WID_RIGHT;
+  localparam C_WID_LEN       = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_WID_LEN;
+  localparam C_W_SIZE        = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_W_SIZE;
 
   // Write Data Port FIFO data read and write
-  wire [C_W_SIZE-1:0] s_w_data;
-  wire [C_W_SIZE-1:0] m_w_data;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_175] s_w_data;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_176] m_w_data;
 
   // Write Response Port bit positions
-  localparam C_BUSER_RIGHT   = 0;
-  localparam C_BUSER_LEN     = C_AXI_SUPPORTS_USER_SIGNALS*C_AXI_BUSER_WIDTH;
-  localparam C_BRESP_RIGHT   = C_BUSER_RIGHT + C_BUSER_LEN;
-  localparam C_BRESP_LEN     = 2;
-  localparam C_BID_RIGHT     = C_BRESP_RIGHT + C_BRESP_LEN;
-  localparam C_BID_LEN       = C_AXI_ID_WIDTH;
-  localparam C_B_SIZE        = C_BID_RIGHT+C_BID_LEN;
+  localparam C_BUSER_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_BUSER_RIGHT;
+  localparam C_BUSER_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_BUSER_LEN;
+  localparam C_BRESP_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_BRESP_RIGHT;
+  localparam C_BRESP_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_BRESP_LEN;
+  localparam C_BID_RIGHT     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_BID_RIGHT;
+  localparam C_BID_LEN       = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_BID_LEN;
+  localparam C_B_SIZE        = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_B_SIZE;
 
   // Write Response Port FIFO data read and write
-  wire [C_B_SIZE-1:0] s_b_data;
-  wire [C_B_SIZE-1:0] m_b_data;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_177] s_b_data;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_178] m_b_data;
 
   // Read Address Port bit positions
-  localparam C_ARUSER_RIGHT   = 0;
-  localparam C_ARUSER_LEN     = C_AXI_SUPPORTS_USER_SIGNALS*C_AXI_ARUSER_WIDTH;
-  localparam C_ARQOS_RIGHT    = C_ARUSER_RIGHT + C_ARUSER_LEN;
-  localparam C_ARQOS_LEN      = 4;
-  localparam C_ARREGION_RIGHT = C_ARQOS_RIGHT + C_ARQOS_LEN;
-  localparam C_ARREGION_LEN   = 4;
-  localparam C_ARPROT_RIGHT   = C_ARREGION_RIGHT + C_ARREGION_LEN;
-  localparam C_ARPROT_LEN     = 3;
-  localparam C_ARCACHE_RIGHT  = C_ARPROT_RIGHT + C_ARPROT_LEN;
-  localparam C_ARCACHE_LEN    = 4;
-  localparam C_ARLOCK_RIGHT   = C_ARCACHE_RIGHT + C_ARCACHE_LEN;
-  localparam C_ARLOCK_LEN     = 2;
-  localparam C_ARBURST_RIGHT  = C_ARLOCK_RIGHT + C_ARLOCK_LEN;
-  localparam C_ARBURST_LEN    = 2;
-  localparam C_ARSIZE_RIGHT   = C_ARBURST_RIGHT + C_ARBURST_LEN;
-  localparam C_ARSIZE_LEN     = 3;
-  localparam C_ARLEN_RIGHT    = C_ARSIZE_RIGHT + C_ARSIZE_LEN;
-  localparam C_ARLEN_LEN      = 8;
-  localparam C_ARADDR_RIGHT   = C_ARLEN_RIGHT + C_ARLEN_LEN;
-  localparam C_ARADDR_LEN     = C_AXI_ADDR_WIDTH;
-  localparam C_ARID_RIGHT     = C_ARADDR_RIGHT + C_ARADDR_LEN;
-  localparam C_ARID_LEN       = C_AXI_ID_WIDTH;
-  localparam C_AR_SIZE        = C_ARID_RIGHT+C_ARID_LEN;
+  localparam C_ARUSER_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARUSER_RIGHT;
+  localparam C_ARUSER_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARUSER_LEN;
+  localparam C_ARQOS_RIGHT    = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARQOS_RIGHT;
+  localparam C_ARQOS_LEN      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARQOS_LEN;
+  localparam C_ARREGION_RIGHT = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARREGION_RIGHT;
+  localparam C_ARREGION_LEN   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARREGION_LEN;
+  localparam C_ARPROT_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARPROT_RIGHT;
+  localparam C_ARPROT_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARPROT_LEN;
+  localparam C_ARCACHE_RIGHT  = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARCACHE_RIGHT;
+  localparam C_ARCACHE_LEN    = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARCACHE_LEN;
+  localparam C_ARLOCK_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARLOCK_RIGHT;
+  localparam C_ARLOCK_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARLOCK_LEN;
+  localparam C_ARBURST_RIGHT  = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARBURST_RIGHT;
+  localparam C_ARBURST_LEN    = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARBURST_LEN;
+  localparam C_ARSIZE_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARSIZE_RIGHT;
+  localparam C_ARSIZE_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARSIZE_LEN;
+  localparam C_ARLEN_RIGHT    = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARLEN_RIGHT;
+  localparam C_ARLEN_LEN      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARLEN_LEN;
+  localparam C_ARADDR_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARADDR_RIGHT;
+  localparam C_ARADDR_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARADDR_LEN;
+  localparam C_ARID_RIGHT     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARID_RIGHT;
+  localparam C_ARID_LEN       = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ARID_LEN;
+  localparam C_AR_SIZE        = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_AR_SIZE;
 
   // Read Address Port FIFO data read and write
-  wire [C_AR_SIZE-1:0] s_ar_data;
-  wire [C_AR_SIZE-1:0] m_ar_data;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_179] s_ar_data;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_180] m_ar_data;
 
   // Read Data Ports bit positions
-  localparam C_RUSER_RIGHT   = 0;
-  localparam C_RUSER_LEN     = C_AXI_SUPPORTS_USER_SIGNALS*C_AXI_RUSER_WIDTH;
-  localparam C_RLAST_RIGHT   = C_RUSER_RIGHT + C_RUSER_LEN;
-  localparam C_RLAST_LEN     = 1;
-  localparam C_RRESP_RIGHT   = C_RLAST_RIGHT + C_RLAST_LEN;
-  localparam C_RRESP_LEN     = 2;
-  localparam C_RDATA_RIGHT   = C_RRESP_RIGHT + C_RRESP_LEN;
-  localparam C_RDATA_LEN     = C_AXI_DATA_WIDTH;
-  localparam C_RID_RIGHT     = C_RDATA_RIGHT + C_RDATA_LEN;
-  localparam C_RID_LEN       = C_AXI_ID_WIDTH;
-  localparam C_R_SIZE        = C_RID_RIGHT+C_RID_LEN;
+  localparam C_RUSER_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_RUSER_RIGHT;
+  localparam C_RUSER_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_RUSER_LEN;
+  localparam C_RLAST_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_RLAST_RIGHT;
+  localparam C_RLAST_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_RLAST_LEN;
+  localparam C_RRESP_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_RRESP_RIGHT;
+  localparam C_RRESP_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_RRESP_LEN;
+  localparam C_RDATA_RIGHT   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_RDATA_RIGHT;
+  localparam C_RDATA_LEN     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_RDATA_LEN;
+  localparam C_RID_RIGHT     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_RID_RIGHT;
+  localparam C_RID_LEN       = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_RID_LEN;
+  localparam C_R_SIZE        = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_R_SIZE;
 
   // Read Data Ports FIFO data read and write
-  wire [C_R_SIZE-1:0] s_r_data;
-  wire [C_R_SIZE-1:0] m_r_data;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_181] s_r_data;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_182] m_r_data;
 
   generate
-    
+
     ///////////////////////////////////////////////////////
     //
     // AW PIPE
     //
     ///////////////////////////////////////////////////////
-    
+
     if (C_AXI_SUPPORTS_USER_SIGNALS == 1) begin : gen_async_aw_user
       assign s_aw_data    = {S_AXI_AWID, S_AXI_AWADDR, S_AXI_AWLEN, S_AXI_AWSIZE, 
                              S_AXI_AWBURST, S_AXI_AWLOCK, S_AXI_AWCACHE, S_AXI_AWPROT, 
@@ -1146,12 +1147,12 @@ module axi_register_slice #
     assign M_AXI_AWPROT   = m_aw_data[C_AWPROT_RIGHT+:C_AWPROT_LEN];
     assign M_AXI_AWREGION = m_aw_data[C_AWREGION_RIGHT+:C_AWREGION_LEN];
     assign M_AXI_AWQOS    = m_aw_data[C_AWQOS_RIGHT+:C_AWQOS_LEN];
-    
+
     axic_register_slice #
       (
-       .C_FAMILY(C_FAMILY),
-       .C_DATA_WIDTH(C_AW_SIZE),
-       .C_REG_CONFIG(C_REG_CONFIG_AW)
+       .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_AW_PIPE_C_FAMILY),
+       .C_DATA_WIDTH(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_AW_PIPE_C_DATA_WIDTH),
+       .C_REG_CONFIG(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_AW_PIPE_C_REG_CONFIG)
        )
     aw_pipe
       (
@@ -1169,7 +1170,7 @@ module axi_register_slice #
        .M_VALID(M_AXI_AWVALID),
        .M_READY(M_AXI_AWREADY)
        );
-    
+
 
     ///////////////////////////////////////////////////////
     //
@@ -1192,9 +1193,9 @@ module axi_register_slice #
 
     axic_register_slice #
       (
-       .C_FAMILY(C_FAMILY),
-       .C_DATA_WIDTH(C_W_SIZE),
-       .C_REG_CONFIG(C_REG_CONFIG_W)
+       .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_W_PIPE_C_FAMILY),
+       .C_DATA_WIDTH(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_W_PIPE_C_DATA_WIDTH),
+       .C_REG_CONFIG(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_W_PIPE_C_REG_CONFIG)
        )
       w_pipe
       (
@@ -1213,7 +1214,7 @@ module axi_register_slice #
        .M_READY(M_AXI_WREADY)
        );
 
-    
+
     ///////////////////////////////////////////////////////
     //
     // Write Response PIPE
@@ -1233,9 +1234,9 @@ module axi_register_slice #
 
     axic_register_slice #
       (
-       .C_FAMILY(C_FAMILY),
-       .C_DATA_WIDTH(C_B_SIZE),
-       .C_REG_CONFIG(C_REG_CONFIG_B)
+       .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_B_PIPE_C_FAMILY),
+       .C_DATA_WIDTH(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_B_PIPE_C_DATA_WIDTH),
+       .C_REG_CONFIG(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_B_PIPE_C_REG_CONFIG)
        )
       b_pipe
       (
@@ -1253,7 +1254,7 @@ module axi_register_slice #
        .M_VALID(S_AXI_BVALID),
        .M_READY(S_AXI_BREADY)
        );
- 
+
     ///////////////////////////////////////////////////////
     //
     // Address Read PIPE
@@ -1270,7 +1271,7 @@ module axi_register_slice #
       assign s_ar_data    = {S_AXI_ARID, S_AXI_ARADDR, S_AXI_ARLEN, S_AXI_ARSIZE, 
                              S_AXI_ARBURST, S_AXI_ARLOCK, S_AXI_ARCACHE, S_AXI_ARPROT, 
                              S_AXI_ARREGION, S_AXI_ARQOS};
-      
+
       assign M_AXI_ARUSER = {C_AXI_ARUSER_WIDTH{1'b0}};
     end
 
@@ -1287,9 +1288,9 @@ module axi_register_slice #
 
     axic_register_slice #
       (
-       .C_FAMILY(C_FAMILY),
-       .C_DATA_WIDTH(C_AR_SIZE),
-       .C_REG_CONFIG(C_REG_CONFIG_AR)
+       .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_AR_PIPE_C_FAMILY),
+       .C_DATA_WIDTH(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_AR_PIPE_C_DATA_WIDTH),
+       .C_REG_CONFIG(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_AR_PIPE_C_REG_CONFIG)
        )
       ar_pipe
       (
@@ -1307,13 +1308,13 @@ module axi_register_slice #
        .M_VALID(M_AXI_ARVALID),
        .M_READY(M_AXI_ARREADY)
        );
-        
+
     ///////////////////////////////////////////////////////
     //
     //  Data Read PIPE
     //
     ///////////////////////////////////////////////////////
-    
+
     if (C_AXI_SUPPORTS_USER_SIGNALS == 1) begin : gen_async_r_user
       assign m_r_data     = {M_AXI_RID, M_AXI_RDATA, M_AXI_RRESP, M_AXI_RLAST, M_AXI_RUSER};
       assign S_AXI_RUSER  = s_r_data[C_RUSER_RIGHT+:C_RUSER_LEN];
@@ -1322,7 +1323,7 @@ module axi_register_slice #
       assign m_r_data     = {M_AXI_RID, M_AXI_RDATA, M_AXI_RRESP, M_AXI_RLAST};
       assign S_AXI_RUSER  = {C_AXI_RUSER_WIDTH{1'b0}};
     end
-    
+
     assign S_AXI_RID      = s_r_data[C_RID_RIGHT+:C_RID_LEN];
     assign S_AXI_RDATA    = s_r_data[C_RDATA_RIGHT+:C_RDATA_LEN];
     assign S_AXI_RRESP    = s_r_data[C_RRESP_RIGHT+:C_RRESP_LEN];
@@ -1330,9 +1331,9 @@ module axi_register_slice #
 
     axic_register_slice #
       (
-       .C_FAMILY(C_FAMILY),
-       .C_DATA_WIDTH(C_R_SIZE),
-       .C_REG_CONFIG(C_REG_CONFIG_R)
+       .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_R_PIPE_C_FAMILY),
+       .C_DATA_WIDTH(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_R_PIPE_C_DATA_WIDTH),
+       .C_REG_CONFIG(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_R_PIPE_C_REG_CONFIG)
        )
       r_pipe
       (
@@ -1368,9 +1369,9 @@ endmodule // ddr_axi_register_slice
 
 module axic_register_slice #
   (
-   parameter C_FAMILY     = "virtex6",
-   parameter C_DATA_WIDTH = 32,
-   parameter C_REG_CONFIG = 32'h00000000
+   parameter C_FAMILY     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_FAMILY_3,
+   parameter C_DATA_WIDTH = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_DATA_WIDTH,
+   parameter C_REG_CONFIG = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_REG_CONFIG
    // C_REG_CONFIG:
    //   0 => BYPASS    = The channel is just wired through the module.
    //   1 => FWD_REV   = Both FWD and REV (fully-registered)
@@ -1387,12 +1388,12 @@ module axic_register_slice #
    input wire ARESET,
 
    // Slave side
-   input  wire [C_DATA_WIDTH-1:0] S_PAYLOAD_DATA,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_183] S_PAYLOAD_DATA,
    input  wire S_VALID,
    output wire S_READY,
 
    // Master side
-   output  wire [C_DATA_WIDTH-1:0] M_PAYLOAD_DATA,
+   output  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_184] M_PAYLOAD_DATA,
    output wire M_VALID,
    input  wire M_READY
    );
@@ -1420,14 +1421,14 @@ module axic_register_slice #
   ////////////////////////////////////////////////////////////////////
     else if ((C_REG_CONFIG == 32'h00000001) || (C_REG_CONFIG == 32'h00000008))
     begin
-      (* max_fanout = 50 *) reg [1:0] state /* synthesis syn_maxfan = 30 */;
-      localparam [1:0] 
-        ZERO = 2'b10,
-        ONE  = 2'b11,
-        TWO  = 2'b01;
-      
-      reg [C_DATA_WIDTH-1:0] storage_data1;
-      reg [C_DATA_WIDTH-1:0] storage_data2;
+      (* max_fanout = 50 *) reg [`CFG_BITS_2-1:0] state /* synthesis syn_maxfan = 30 */;
+      localparam [`CFG_BITS_2-1:0]
+        ZERO = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_ZERO,
+        ONE  = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_ONE,
+        TWO  = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_TWO;
+
+      reg [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_185] storage_data1;
+      reg [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_186] storage_data2;
       reg                    load_s1;
       wire                   load_s2;
       wire                   load_s1_from_s2;
@@ -1438,11 +1439,11 @@ module axic_register_slice #
       assign S_READY = s_ready_i;
       assign M_VALID = m_valid_i;
 
-      reg [1:0] areset_d; // Reset delay register
+      reg [`CFG_BITS_2-1:0] areset_d; // Reset delay register
       always @(posedge ACLK) begin
         areset_d <= {areset_d[0], ARESET};
       end
-      
+
       // Load storage1 with either slave side data or from storage2
       always @(posedge ACLK) 
       begin
@@ -1479,7 +1480,7 @@ module axic_register_slice #
       end // always @ *
 
       assign load_s1_from_s2 = (state == TWO);
-                       
+
       // State Machine for handling output signals
       always @(posedge ACLK) begin
         if (ARESET) begin
@@ -1510,11 +1511,11 @@ module axic_register_slice #
           endcase // case (state)
         end
       end // always @ (posedge ACLK)
-      
+
       assign m_valid_i = state[0];
 
     end // if (C_REG_CONFIG == 1)
-    
+
   ////////////////////////////////////////////////////////////////////
   //
   // C_REG_CONFIG = 2
@@ -1523,7 +1524,7 @@ module axic_register_slice #
   ////////////////////////////////////////////////////////////////////
     else if (C_REG_CONFIG == 32'h00000002)
     begin
-      reg [C_DATA_WIDTH-1:0] storage_data;
+      reg [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_187] storage_data;
       wire                   s_ready_i; //local signal of output
       reg                    m_valid_i; //local signal of output
 
@@ -1531,11 +1532,11 @@ module axic_register_slice #
       assign S_READY = s_ready_i;
       assign M_VALID = m_valid_i;
 
-      (* equivalent_register_removal = "no" *) reg [1:0] areset_d; // Reset delay register
+      (* equivalent_register_removal = "no" *) reg [`CFG_BITS_2-1:0] areset_d; // Reset delay register
       always @(posedge ACLK) begin
         areset_d <= {areset_d[0], ARESET};
       end
-      
+
       // Save payload data whenever we have a transaction on the slave side
       always @(posedge ACLK) 
       begin
@@ -1544,7 +1545,7 @@ module axic_register_slice #
       end
 
       assign M_PAYLOAD_DATA = storage_data;
-      
+
       // M_Valid set to high when we have a completed transfer on slave side
       // Is removed on a M_READY except if we have a new transfer on the slave side
       always @(posedge ACLK) 
@@ -1558,7 +1559,7 @@ module axic_register_slice #
             if (M_READY) // Clear (or keep) when no slave side is valid but master side is ready
               m_valid_i <= 1'b0;
       end // always @ (posedge ACLK)
-      
+
       // Slave Ready is either when Master side drives M_Ready or we have space in our storage data
       assign s_ready_i = (M_READY | ~m_valid_i) & ~|areset_d;
 
@@ -1571,7 +1572,7 @@ module axic_register_slice #
   ////////////////////////////////////////////////////////////////////
     else if (C_REG_CONFIG == 32'h00000003)
     begin
-      reg [C_DATA_WIDTH-1:0] storage_data;
+      reg [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_188] storage_data;
       reg                    s_ready_i; //local signal of output
       reg                    has_valid_storage_i;
       reg                    has_valid_storage;
@@ -1580,7 +1581,7 @@ module axic_register_slice #
       always @(posedge ACLK) begin
         areset_d <= ARESET;
       end
-      
+
       // Save payload data whenever we have a transaction on the slave side
       always @(posedge ACLK) 
       begin
@@ -1597,7 +1598,7 @@ module axic_register_slice #
         // Set the value if we have a slave transaction but master side is not ready
         if (S_VALID & s_ready_i & ~M_READY)
           has_valid_storage_i = 1'b1;
-        
+
         // Clear the value if it's set and Master side completes the transaction but we don't have a new slave side 
         // transaction 
         else if ( (has_valid_storage == 1) && (M_READY == 1) && ( (S_VALID == 0) || (s_ready_i == 0)))
@@ -1628,9 +1629,9 @@ module axic_register_slice #
 
       // M_READY is either combinatorial S_READY or that we have valid data in local storage
       assign M_VALID = (S_VALID | has_valid_storage) & ~areset_d;
-      
+
     end // if (C_REG_CONFIG == 3)
-    
+
   ////////////////////////////////////////////////////////////////////
   //
   // C_REG_CONFIG = 4 or 5 is NO LONGER SUPPORTED
@@ -1656,15 +1657,15 @@ module axic_register_slice #
   ////////////////////////////////////////////////////////////////////
     else if (C_REG_CONFIG == 32'h00000006)
     begin
-      reg [1:0] state;
-      reg [1:0] next_state;
-      localparam [1:0] 
-        ZERO = 2'b00,
-        ONE  = 2'b01,
-        TWO  = 2'b11;
+      reg [`CFG_BITS_2-1:0] state;
+      reg [`CFG_BITS_2-1:0] next_state;
+      localparam [`CFG_BITS_2-1:0]
+        ZERO = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_ZERO_2,
+        ONE  = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_ONE_2,
+        TWO  = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_TWO_2;
 
-      reg [C_DATA_WIDTH-1:0] storage_data1;
-      reg [C_DATA_WIDTH-1:0] storage_data2;
+      reg [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_189] storage_data1;
+      reg [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_190] storage_data2;
       reg                    s_valid_d;
       reg                    s_ready_d;
       reg                    m_ready_d;
@@ -1676,12 +1677,12 @@ module axic_register_slice #
       wire                   s_ready_i; //local signal of output
       reg                    s_ready_ii;
       reg                    m_valid_i; //local signal of output
-      
+
       (* equivalent_register_removal = "no" *) reg areset_d; // Reset delay register
       always @(posedge ACLK) begin
         areset_d <= ARESET;
       end
-      
+
       // assign local signal to its output signal
       assign S_READY = s_ready_i;
       assign M_VALID = m_valid_i;
@@ -1813,7 +1814,7 @@ module axic_register_slice #
         else
           state <= next_state; // Stay in the same state unless we need to move to another state
       end
-      
+
       // Master Payload mux
       assign M_PAYLOAD_DATA = sel_s2?storage_data2:storage_data1;
 
@@ -1828,7 +1829,7 @@ module axic_register_slice #
   ////////////////////////////////////////////////////////////////////
     else if (C_REG_CONFIG == 32'h00000007)
     begin
-      reg [C_DATA_WIDTH-1:0] storage_data1;
+      reg [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_191] storage_data1;
       reg                    s_ready_i; //local signal of output
       reg                    m_valid_i; //local signal of output
 
@@ -1836,11 +1837,11 @@ module axic_register_slice #
       assign S_READY = s_ready_i;
       assign M_VALID = m_valid_i;
 
-      reg [1:0] areset_d; // Reset delay register
+      reg [`CFG_BITS_2-1:0] areset_d; // Reset delay register
       always @(posedge ACLK) begin
         areset_d <= {areset_d[0], ARESET};
       end
-      
+
       // Load storage1 with slave side data
       always @(posedge ACLK) 
       begin
@@ -1864,7 +1865,7 @@ module axic_register_slice #
       end
       assign M_PAYLOAD_DATA = storage_data1;
     end // if (C_REG_CONFIG == 7)
-    
+
     else begin : default_case
       // Passthrough
       assign M_PAYLOAD_DATA = S_PAYLOAD_DATA;
@@ -1885,50 +1886,50 @@ endmodule // reg_slice
 
 module a_upsizer #
   (
-   parameter         C_FAMILY                         = "rtl", 
+   parameter         C_FAMILY                         = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_FAMILY_4,
                        // FPGA Family. Current version: virtex6 or spartan6.
-   parameter integer C_AXI_ID_WIDTH                 = 4, 
+   parameter integer C_AXI_ID_WIDTH                 = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_ID_WIDTH_3,
                        // Width of all ID signals on SI and MI side of converter.
                        // Range: >= 1.
-   parameter integer C_AXI_ADDR_WIDTH                 = 32, 
+   parameter integer C_AXI_ADDR_WIDTH                 = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_ADDR_WIDTH_3,
                        // Width of all ADDR signals on SI and MI side of converter.
                        // Range: 32.
-   parameter         C_S_AXI_DATA_WIDTH               = 32'h00000020, 
+   parameter         C_S_AXI_DATA_WIDTH               = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_S_AXI_DATA_WIDTH_2,
                        // Width of S_AXI_WDATA and S_AXI_RDATA.
                        // Format: Bit32; 
                        // Range: 'h00000020, 'h00000040, 'h00000080, 'h00000100.
-   parameter         C_M_AXI_DATA_WIDTH               = 32'h00000040, 
+   parameter         C_M_AXI_DATA_WIDTH               = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_M_AXI_DATA_WIDTH_2,
                        // Width of M_AXI_WDATA and M_AXI_RDATA.
                        // Assume greater than or equal to C_S_AXI_DATA_WIDTH.
                        // Format: Bit32;
                        // Range: 'h00000020, 'h00000040, 'h00000080, 'h00000100.
-   parameter integer C_M_AXI_REGISTER                 = 0,
+   parameter integer C_M_AXI_REGISTER                 = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_M_AXI_REGISTER,
                        // Clock output data.
                        // Range: 0, 1
-   parameter integer C_AXI_SUPPORTS_USER_SIGNALS      = 0,
+   parameter integer C_AXI_SUPPORTS_USER_SIGNALS      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_SUPPORTS_USER_SIGNALS_3,
                        // 1 = Propagate all USER signals, 0 = Don抰 propagate.
-   parameter integer C_AXI_AUSER_WIDTH                = 1,
+   parameter integer C_AXI_AUSER_WIDTH                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_AUSER_WIDTH,
                        // Width of AWUSER/ARUSER signals. 
                        // Range: >= 1.
-   parameter integer C_AXI_CHANNEL                      = 0,
+   parameter integer C_AXI_CHANNEL                      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_CHANNEL,
                        // 0 = AXI AW Channel.
                        // 1 = AXI AR Channel.
-   parameter integer C_PACKING_LEVEL                    = 1,
+   parameter integer C_PACKING_LEVEL                    = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_PACKING_LEVEL_2,
                        // 0 = Never pack (expander only); packing logic is omitted.
                        // 1 = Pack only when CACHE[1] (Modifiable) is high.
                        // 2 = Always pack, regardless of sub-size transaction or Modifiable bit.
                        //     (Required when used as helper-core by mem-con.)
-   parameter integer C_SUPPORT_BURSTS                 = 1,
+   parameter integer C_SUPPORT_BURSTS                 = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_SUPPORT_BURSTS_2,
                        // Disabled when all connected masters and slaves are AxiLite,
                        //   allowing logic to be simplified.
-   parameter integer C_SINGLE_THREAD                  = 1,
+   parameter integer C_SINGLE_THREAD                  = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_SINGLE_THREAD_2,
                        // 0 = Ignore ID when propagating transactions (assume all responses are in order).
                        // 1 = Allow multiple outstanding transactions only if the IDs are the same
                        //   to prevent response reordering.
                        //   (If ID mismatches, stall until outstanding transaction counter = 0.)
-   parameter integer C_S_AXI_BYTES_LOG                = 3,
+   parameter integer C_S_AXI_BYTES_LOG                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_S_AXI_BYTES_LOG,
                        // Log2 of number of 32bit word on SI-side.
-   parameter integer C_M_AXI_BYTES_LOG                = 3
+   parameter integer C_M_AXI_BYTES_LOG                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_M_AXI_BYTES_LOG
                        // Log2 of number of 32bit word on MI-side.
    )
   (
@@ -1942,134 +1943,120 @@ module a_upsizer #
    output wire                              cmd_modified,
    output wire                              cmd_complete_wrap,
    output wire                              cmd_packed_wrap,
-   output wire [C_M_AXI_BYTES_LOG-1:0]      cmd_first_word, 
-   output wire [C_M_AXI_BYTES_LOG-1:0]      cmd_next_word, 
-   output wire [C_M_AXI_BYTES_LOG-1:0]      cmd_last_word,
-   output wire [C_M_AXI_BYTES_LOG-1:0]      cmd_offset,
-   output wire [C_M_AXI_BYTES_LOG-1:0]      cmd_mask,
-   output wire [C_S_AXI_BYTES_LOG:0]        cmd_step,
-   output wire [8-1:0]                      cmd_length,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_192]      cmd_first_word,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_193]      cmd_next_word,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_194]      cmd_last_word,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_195]      cmd_offset,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_196]      cmd_mask,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_197]        cmd_step,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_198]                      cmd_length,
    input  wire                              cmd_ready,
-   
+
    // Slave Interface Write Address Ports
-   input  wire [C_AXI_ID_WIDTH-1:0]          S_AXI_AID,
-   input  wire [C_AXI_ADDR_WIDTH-1:0]          S_AXI_AADDR,
-   input  wire [8-1:0]                         S_AXI_ALEN,
-   input  wire [3-1:0]                         S_AXI_ASIZE,
-   input  wire [2-1:0]                         S_AXI_ABURST,
-   input  wire [2-1:0]                         S_AXI_ALOCK,
-   input  wire [4-1:0]                         S_AXI_ACACHE,
-   input  wire [3-1:0]                         S_AXI_APROT,
-   input  wire [4-1:0]                         S_AXI_AREGION,
-   input  wire [4-1:0]                         S_AXI_AQOS,
-   input  wire [C_AXI_AUSER_WIDTH-1:0]         S_AXI_AUSER,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_199]          S_AXI_AID,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_200]          S_AXI_AADDR,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_201]                         S_AXI_ALEN,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_202]                         S_AXI_ASIZE,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_203]                         S_AXI_ABURST,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_204]                         S_AXI_ALOCK,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_205]                         S_AXI_ACACHE,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_206]                         S_AXI_APROT,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_207]                         S_AXI_AREGION,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_208]                         S_AXI_AQOS,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_209]         S_AXI_AUSER,
    input  wire                                                   S_AXI_AVALID,
    output wire                                                   S_AXI_AREADY,
 
    // Master Interface Write Address Port
-   output wire [C_AXI_ID_WIDTH-1:0]          M_AXI_AID,
-   output wire [C_AXI_ADDR_WIDTH-1:0]          M_AXI_AADDR,
-   output wire [8-1:0]                         M_AXI_ALEN,
-   output wire [3-1:0]                         M_AXI_ASIZE,
-   output wire [2-1:0]                         M_AXI_ABURST,
-   output wire [2-1:0]                         M_AXI_ALOCK,
-   output wire [4-1:0]                         M_AXI_ACACHE,
-   output wire [3-1:0]                         M_AXI_APROT,
-   output wire [4-1:0]                         M_AXI_AREGION,
-   output wire [4-1:0]                         M_AXI_AQOS,
-   output wire [C_AXI_AUSER_WIDTH-1:0]         M_AXI_AUSER,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_210]          M_AXI_AID,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_211]          M_AXI_AADDR,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_212]                         M_AXI_ALEN,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_213]                         M_AXI_ASIZE,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_214]                         M_AXI_ABURST,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_215]                         M_AXI_ALOCK,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_216]                         M_AXI_ACACHE,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_217]                         M_AXI_APROT,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_218]                         M_AXI_AREGION,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_219]                         M_AXI_AQOS,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_220]         M_AXI_AUSER,
    output wire                                                   M_AXI_AVALID,
    input  wire                                                   M_AXI_AREADY
    );
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Local params
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Decode the native transaction size on the SI-side interface.
-  localparam [3-1:0] C_S_AXI_NATIVE_SIZE = (C_S_AXI_DATA_WIDTH == 1024) ? 3'b111 :
-                                           (C_S_AXI_DATA_WIDTH ==  512) ? 3'b110 :
-                                           (C_S_AXI_DATA_WIDTH ==  256) ? 3'b101 :
-                                           (C_S_AXI_DATA_WIDTH ==  128) ? 3'b100 :
-                                           (C_S_AXI_DATA_WIDTH ==   64) ? 3'b011 :
-                                           (C_S_AXI_DATA_WIDTH ==   32) ? 3'b010 :
-                                           (C_S_AXI_DATA_WIDTH ==   16) ? 3'b001 :
-                                           3'b000;
-  
+  localparam [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_221] C_S_AXI_NATIVE_SIZE = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_S_AXI_NATIVE_SIZE;
+
   // Decode the native transaction size on the MI-side interface.
-  localparam [3-1:0] C_M_AXI_NATIVE_SIZE = (C_M_AXI_DATA_WIDTH == 1024) ? 3'b111 :
-                                           (C_M_AXI_DATA_WIDTH ==  512) ? 3'b110 :
-                                           (C_M_AXI_DATA_WIDTH ==  256) ? 3'b101 :
-                                           (C_M_AXI_DATA_WIDTH ==  128) ? 3'b100 :
-                                           (C_M_AXI_DATA_WIDTH ==   64) ? 3'b011 :
-                                           (C_M_AXI_DATA_WIDTH ==   32) ? 3'b010 :
-                                           (C_M_AXI_DATA_WIDTH ==   16) ? 3'b001 :
-                                           3'b000;
-  
+  localparam [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_222] C_M_AXI_NATIVE_SIZE = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_M_AXI_NATIVE_SIZE;
+
   // Constants used to generate maximum length on SI-side for complete wrap.
-  localparam [24-1:0] C_DOUBLE_LEN       = 24'b0000_0000_0000_0000_1111_1111;
-  
+  localparam [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_223] C_DOUBLE_LEN       = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_DOUBLE_LEN;
+
   // Constants for burst types.
-  localparam [2-1:0] C_FIX_BURST         = 2'b00;
-  localparam [2-1:0] C_INCR_BURST        = 2'b01;
-  localparam [2-1:0] C_WRAP_BURST        = 2'b10;
-  
+  localparam [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_224] C_FIX_BURST         = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_FIX_BURST;
+  localparam [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_225] C_INCR_BURST        = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_INCR_BURST;
+  localparam [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_226] C_WRAP_BURST        = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_WRAP_BURST;
+
   // Constants for packing levels.
-  localparam integer C_NEVER_PACK        = 0;
-  localparam integer C_DEFAULT_PACK      = 1;
-  localparam integer C_ALWAYS_PACK       = 2;
-  
+  localparam integer C_NEVER_PACK        = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_NEVER_PACK;
+  localparam integer C_DEFAULT_PACK      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_DEFAULT_PACK;
+  localparam integer C_ALWAYS_PACK       = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ALWAYS_PACK;
+
   // Depth for command FIFO.
-  localparam integer C_FIFO_DEPTH_LOG    = 5;
-  
+  localparam integer C_FIFO_DEPTH_LOG    = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_FIFO_DEPTH_LOG;
+
   // Maximum address bit coverage by WRAP.
-  localparam integer C_BURST_BYTES_LOG   = 4 + C_S_AXI_BYTES_LOG;
-  
+  localparam integer C_BURST_BYTES_LOG   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_BURST_BYTES_LOG;
+
   // Calculate unused address bits.
-  localparam integer C_SI_UNUSED_LOG     = C_AXI_ADDR_WIDTH-C_S_AXI_BYTES_LOG;
-  localparam integer C_MI_UNUSED_LOG     = C_AXI_ADDR_WIDTH-C_M_AXI_BYTES_LOG;
-  
-  
+  localparam integer C_SI_UNUSED_LOG     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_SI_UNUSED_LOG;
+  localparam integer C_MI_UNUSED_LOG     = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_MI_UNUSED_LOG;
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Variables for generating parameter controlled instances.
   /////////////////////////////////////////////////////////////////////////////
-  
+
   genvar bit_cnt;
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Functions
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Internal signals
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Access decoding related signals.
   wire                                access_is_fix;
   wire                                access_is_incr;
   wire                                access_is_wrap;
   wire                                access_is_modifiable;
   wire                                access_is_unaligned;
-  reg  [8-1:0]                        si_maximum_length;
-  wire [16-1:0]                       mi_word_intra_len_complete;
-  wire [20-1:0]                       mask_help_vector;
-  reg  [C_M_AXI_BYTES_LOG-1:0]        mi_word_intra_len;
-  reg  [8-1:0]                        upsized_length;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_227]                        si_maximum_length;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_228]                       mi_word_intra_len_complete;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_229]                       mask_help_vector;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_230]        mi_word_intra_len;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_231]                        upsized_length;
   wire                                sub_sized_wrap;
-  reg  [C_M_AXI_BYTES_LOG-1:0]        size_mask;
-  reg  [C_BURST_BYTES_LOG-1:0]        burst_mask;
-  
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_232]        size_mask;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_233]        burst_mask;
+
   // Translation related signals.
   wire                                access_need_extra_word;
-  wire [8-1:0]                        adjusted_length;
-  wire [C_BURST_BYTES_LOG-1:0]        wrap_addr_aligned;
-  
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_234]                        adjusted_length;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_235]        wrap_addr_aligned;
+
   // Command buffer help signals.
   wire                                cmd_empty;
-  reg  [C_AXI_ID_WIDTH-1:0]           queue_id;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_236]           queue_id;
   wire                                id_match;
   wire                                cmd_id_check;
   wire                                s_ready;
@@ -2077,46 +2064,46 @@ module a_upsizer #
   wire                                allow_new_cmd;
   wire                                cmd_push;
   reg                                 cmd_push_block;
-  
+
   // Internal Command Interface signals.
   wire                                cmd_valid_i;
   wire                                cmd_fix_i;
   wire                                cmd_modified_i;
   wire                                cmd_complete_wrap_i;
   wire                                cmd_packed_wrap_i;
-  wire [C_M_AXI_BYTES_LOG-1:0]        cmd_first_word_ii;
-  wire [C_M_AXI_BYTES_LOG-1:0]        cmd_first_word_i;
-  wire [C_M_AXI_BYTES_LOG-1:0]        cmd_next_word_ii;
-  wire [C_M_AXI_BYTES_LOG-1:0]        cmd_next_word_i;
-  wire [C_M_AXI_BYTES_LOG:0]          cmd_last_word_ii;
-  wire [C_M_AXI_BYTES_LOG-1:0]        cmd_last_word_i;
-  wire [C_M_AXI_BYTES_LOG-1:0]        cmd_offset_i;
-  reg  [C_M_AXI_BYTES_LOG-1:0]        cmd_mask_i;
-  wire [3-1:0]                        cmd_size_i;
-  wire [3-1:0]                        cmd_size;
-  reg  [8-1:0]                        cmd_step_ii;
-  wire [C_S_AXI_BYTES_LOG:0]          cmd_step_i;
-  reg  [8-1:0]                        cmd_length_i;
-  
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_237]        cmd_first_word_ii;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_238]        cmd_first_word_i;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_239]        cmd_next_word_ii;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_240]        cmd_next_word_i;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_241]          cmd_last_word_ii;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_242]        cmd_last_word_i;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_243]        cmd_offset_i;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_244]        cmd_mask_i;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_245]                        cmd_size_i;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_246]                        cmd_size;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_247]                        cmd_step_ii;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_248]          cmd_step_i;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_249]                        cmd_length_i;
+
   // Internal SI-side signals.
   wire                                S_AXI_AREADY_I;
-   
+
   // Internal MI-side signals.
-  wire [C_AXI_ID_WIDTH-1:0]           M_AXI_AID_I;
-  reg  [C_AXI_ADDR_WIDTH-1:0]         M_AXI_AADDR_I;
-  reg  [8-1:0]                        M_AXI_ALEN_I;
-  reg  [3-1:0]                        M_AXI_ASIZE_I;
-  reg  [2-1:0]                        M_AXI_ABURST_I;
-  wire [2-1:0]                        M_AXI_ALOCK_I;
-  wire [4-1:0]                        M_AXI_ACACHE_I;
-  wire [3-1:0]                        M_AXI_APROT_I;
-  wire [4-1:0]                        M_AXI_AREGION_I;
-  wire [4-1:0]                        M_AXI_AQOS_I;
-  wire [C_AXI_AUSER_WIDTH-1:0]        M_AXI_AUSER_I;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_250]           M_AXI_AID_I;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_251]         M_AXI_AADDR_I;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_252]                        M_AXI_ALEN_I;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_253]                        M_AXI_ASIZE_I;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_254]                        M_AXI_ABURST_I;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_255]                        M_AXI_ALOCK_I;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_256]                        M_AXI_ACACHE_I;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_257]                        M_AXI_APROT_I;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_258]                        M_AXI_AREGION_I;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_259]                        M_AXI_AQOS_I;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_260]        M_AXI_AUSER_I;
   wire                                M_AXI_AVALID_I;
   wire                                M_AXI_AREADY_I;
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Decode the incoming transaction:
   //
@@ -2155,16 +2142,16 @@ module a_upsizer #
   // Detect any SI-side address unalignment when used on the MI-side.
   // 
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Transaction burst type.
   assign access_is_fix          = ( S_AXI_ABURST == C_FIX_BURST );
   assign access_is_incr         = ( S_AXI_ABURST == C_INCR_BURST );
   assign access_is_wrap         = ( S_AXI_ABURST == C_WRAP_BURST );
   assign cmd_fix_i              = access_is_fix;
-  
+
   // Get if it is allowed to modify transaction.
   assign access_is_modifiable   = S_AXI_ACACHE[1];
-  
+
   // Get SI-side maximum length to fit MI-side.
   always @ *
   begin
@@ -2179,10 +2166,10 @@ module a_upsizer #
       3'b111: si_maximum_length = C_S_AXI_NATIVE_SIZE >= 3'b111 ? C_DOUBLE_LEN[15-C_M_AXI_BYTES_LOG +: 8] : 8'b0;
     endcase
   end
-  
+
   // Help vector to determine the length of thransaction in the MI-side domain.
   assign mi_word_intra_len_complete = {S_AXI_ALEN, 8'b0};
-  
+
   // Get intra MI-side word length bits (in bytes).
   always @ *
   begin
@@ -2213,7 +2200,7 @@ module a_upsizer #
       mi_word_intra_len = {C_M_AXI_BYTES_LOG{1'b0}};
     end
   end
-  
+
   // Get MI-side length after upsizing.
   always @ *
   begin
@@ -2245,7 +2232,7 @@ module a_upsizer #
       upsized_length = 8'b0;
     end
   end
-  
+
   // Generate address bits used for SI-side transaction size.
   always @ *
   begin
@@ -2260,10 +2247,10 @@ module a_upsizer #
       3'b111: size_mask = ~C_DOUBLE_LEN[1 +: C_S_AXI_BYTES_LOG];  // Illegal setting.
     endcase
   end
-  
+
   // Help vector to determine the length of thransaction in the MI-side domain.
   assign mask_help_vector = {4'b0, S_AXI_ALEN, 8'b1};
-  
+
   // Calculate the address bits that are affected when a complete wrap is detected.
   always @ *
   begin
@@ -2316,11 +2303,11 @@ module a_upsizer #
 
   // Propagate the SI-side size of the transaction.
   assign cmd_size_i = S_AXI_ASIZE;
-  
+
   // Detect if there is any unalignment in regards to the MI-side.
   assign access_is_unaligned = ( S_AXI_AADDR[0 +: C_M_AXI_BYTES_LOG] != {C_M_AXI_BYTES_LOG{1'b0}} );
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Evaluate if transaction is to be translated:
   // * Forcefully translate when C_PACKING_LEVEL is set to C_ALWAYS_PACK. 
@@ -2328,13 +2315,13 @@ module a_upsizer #
   //   packing is set. (Expander mode never packs).
   //
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Modify transaction forcefully or when transaction allows it
   assign cmd_modified_i = ~access_is_fix &
                           ( ( C_PACKING_LEVEL == C_ALWAYS_PACK  ) | 
                             ( access_is_modifiable & ( S_AXI_ALEN != 8'b0 ) & ( C_PACKING_LEVEL == C_DEFAULT_PACK ) ) );
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Translate SI-side access to MI-side:
   //
@@ -2372,67 +2359,67 @@ module a_upsizer #
   //   and size is set to native MI-side transaction size.
   //
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Detemine if this is a sub-sized transaction.
   assign sub_sized_wrap         = access_is_wrap & ( S_AXI_ALEN <= si_maximum_length ) & 
                                   ( C_SUPPORT_BURSTS == 1);
-  
+
   // See if entite burst can fit inside one MI-side word.
   assign cmd_complete_wrap_i    = cmd_modified_i & sub_sized_wrap;
-  
+
   // Detect if this is a packed WRAP (multiple MI-side words).
   assign cmd_packed_wrap_i      = cmd_modified_i & access_is_wrap & ( S_AXI_ALEN > si_maximum_length ) & 
                                   access_is_unaligned & ( C_SUPPORT_BURSTS == 1);
-  
+
   // Get unalignment address bits (including aligning it inside covered area).
   assign cmd_first_word_ii      = S_AXI_AADDR[C_M_AXI_BYTES_LOG-1:0];
   assign cmd_first_word_i       = cmd_first_word_ii & cmd_mask_i & size_mask;
-  
+
   // Generate next word address.
   assign cmd_next_word_ii       = cmd_first_word_ii + cmd_step_ii[C_M_AXI_BYTES_LOG-1:0];
   assign cmd_next_word_i        = cmd_next_word_ii & cmd_mask_i & size_mask;
-  
+
   // Offset is the bits that is outside of the Mask.
   assign cmd_offset_i           = cmd_first_word_ii & ~cmd_mask_i;
-  
+
   // Select RTL or Optimized implementation.
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL_ADJUSTED_LEN
       // Calculate Last word on MI-side.
       assign cmd_last_word_ii       = cmd_first_word_i + mi_word_intra_len;
       assign cmd_last_word_i        = cmd_last_word_ii[C_M_AXI_BYTES_LOG-1:0] & cmd_mask_i & size_mask;
-      
+
       // Detect if extra word on MI-side is needed.
       assign access_need_extra_word = cmd_last_word_ii[C_M_AXI_BYTES_LOG] & 
                                       access_is_incr & cmd_modified_i;
-      
+
       // Calculate true length of modified transaction.
       assign adjusted_length        = upsized_length + access_need_extra_word;
-          
+
     end else begin : USE_FPGA_ADJUSTED_LEN
-      
-      wire [C_M_AXI_BYTES_LOG:0]          last_word_local_carry;
-      wire [C_M_AXI_BYTES_LOG-1:0]        last_word_sel;
-      wire [C_M_AXI_BYTES_LOG:0]          last_word_for_mask_local_carry;
-      wire [C_M_AXI_BYTES_LOG-1:0]        last_word_for_mask_dummy_carry1;
-      wire [C_M_AXI_BYTES_LOG-1:0]        last_word_for_mask_dummy_carry2;
-      wire [C_M_AXI_BYTES_LOG-1:0]        last_word_for_mask_dummy_carry3;
-      wire [C_M_AXI_BYTES_LOG-1:0]        last_word_for_mask_sel;
-      wire [C_M_AXI_BYTES_LOG-1:0]        last_word_for_mask;
-      wire [C_M_AXI_BYTES_LOG-1:0]        last_word_mask;
+
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_261]          last_word_local_carry;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_262]        last_word_sel;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_263]          last_word_for_mask_local_carry;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_264]        last_word_for_mask_dummy_carry1;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_265]        last_word_for_mask_dummy_carry2;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_266]        last_word_for_mask_dummy_carry3;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_267]        last_word_for_mask_sel;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_268]        last_word_for_mask;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_269]        last_word_mask;
       wire                                sel_access_need_extra_word;
-      wire [8:0]                          adjusted_length_local_carry;
-      wire [8-1:0]                        adjusted_length_sel;
-    
-      
+      wire [`CFG_BITS_9-1:0]                          adjusted_length_local_carry;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_270]                        adjusted_length_sel;
+
+
       assign last_word_local_carry[0] = 1'b0;
       assign last_word_for_mask_local_carry[0] = 1'b0;
-      
+
       for (bit_cnt = 0; bit_cnt < C_M_AXI_BYTES_LOG ; bit_cnt = bit_cnt + 1) begin : LUT_LAST_MASK
-        
+
         assign last_word_for_mask_sel[bit_cnt]  = cmd_first_word_ii[bit_cnt] ^ mi_word_intra_len[bit_cnt];
         assign last_word_mask[bit_cnt]          = cmd_mask_i[bit_cnt] & size_mask[bit_cnt];
-        
+
         MUXCY and_inst1 
         (
          .O (last_word_for_mask_dummy_carry1[bit_cnt]), 
@@ -2440,7 +2427,7 @@ module a_upsizer #
          .DI (mi_word_intra_len[bit_cnt]), 
          .S (last_word_for_mask_sel[bit_cnt])
         ); 
-        
+
         MUXCY and_inst2 
         (
          .O (last_word_for_mask_dummy_carry2[bit_cnt]), 
@@ -2448,7 +2435,7 @@ module a_upsizer #
          .DI (1'b0), 
          .S (1'b1)
         ); 
-        
+
         MUXCY and_inst3 
         (
          .O (last_word_for_mask_dummy_carry3[bit_cnt]), 
@@ -2456,7 +2443,7 @@ module a_upsizer #
          .DI (1'b0), 
          .S (1'b1)
         ); 
-        
+
         MUXCY and_inst4 
         (
          .O (last_word_for_mask_local_carry[bit_cnt+1]), 
@@ -2464,30 +2451,30 @@ module a_upsizer #
          .DI (1'b0), 
          .S (1'b1)
         ); 
-        
+
         XORCY xorcy_inst 
         (
          .O(last_word_for_mask[bit_cnt]),
          .CI(last_word_for_mask_local_carry[bit_cnt]),
          .LI(last_word_for_mask_sel[bit_cnt])
         );
-        
+
         carry_latch_and #
           (
-           .C_FAMILY(C_FAMILY)
+           .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_MASK_INST_C_FAMILY)
            ) last_mask_inst
           (
            .CIN(last_word_for_mask[bit_cnt]),
            .I(last_word_mask[bit_cnt]),
            .O(cmd_last_word_i[bit_cnt])
            );
-           
+
       end // end for bit_cnt
-      
+
       for (bit_cnt = 0; bit_cnt < C_M_AXI_BYTES_LOG ; bit_cnt = bit_cnt + 1) begin : LUT_LAST
-        
+
         assign last_word_sel[bit_cnt] = cmd_first_word_ii[bit_cnt] ^ mi_word_intra_len[bit_cnt];
-        
+
         MUXCY and_inst 
         (
          .O (last_word_local_carry[bit_cnt+1]), 
@@ -2495,33 +2482,33 @@ module a_upsizer #
          .DI (mi_word_intra_len[bit_cnt]), 
          .S (last_word_sel[bit_cnt])
         ); 
-        
+
         XORCY xorcy_inst 
         (
          .O(cmd_last_word_ii[bit_cnt]),
          .CI(last_word_local_carry[bit_cnt]),
          .LI(last_word_sel[bit_cnt])
         );
-        
+
       end // end for bit_cnt
-      
+
       assign sel_access_need_extra_word = access_is_incr & cmd_modified_i;
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_ACCESS_NEED_EXTRA_WORD_INST_C_FAMILY)
          ) access_need_extra_word_inst
         (
          .CIN(last_word_local_carry[C_M_AXI_BYTES_LOG]),
          .S(sel_access_need_extra_word),
          .COUT(adjusted_length_local_carry[0])
          );
-         
+
       for (bit_cnt = 0; bit_cnt < 8 ; bit_cnt = bit_cnt + 1) begin : LUT_ADJUST
-        
+
         assign adjusted_length_sel[bit_cnt] = ( upsized_length[bit_cnt] &  cmd_modified_i) |
                                               ( S_AXI_ALEN[bit_cnt]     & ~cmd_modified_i);
-        
+
         MUXCY and_inst 
         (
          .O (adjusted_length_local_carry[bit_cnt+1]), 
@@ -2529,24 +2516,24 @@ module a_upsizer #
          .DI (1'b0), 
          .S (adjusted_length_sel[bit_cnt])
         ); 
-        
+
         XORCY xorcy_inst 
         (
          .O(adjusted_length[bit_cnt]),
          .CI(adjusted_length_local_carry[bit_cnt]),
          .LI(adjusted_length_sel[bit_cnt])
         );
-        
+
       end // end for bit_cnt
-      
+
     end
   endgenerate
-  
+
   // Generate adjusted wrap address.
   assign wrap_addr_aligned      = ( C_AXI_CHANNEL != 0 ) ? 
                                   ( S_AXI_AADDR[0 +: C_BURST_BYTES_LOG] ) :
                                   ( S_AXI_AADDR[0 +: C_BURST_BYTES_LOG] + ( 2 ** C_M_AXI_BYTES_LOG ) );
-  
+
   // Select directly forwarded or modified transaction.
   always @ *
   begin
@@ -2556,7 +2543,7 @@ module a_upsizer #
         // Complete wrap is turned into incr
         M_AXI_AADDR_I  = S_AXI_AADDR & {{C_MI_UNUSED_LOG{1'b1}}, ~cmd_mask_i};
         M_AXI_ABURST_I = C_INCR_BURST;
-        
+
       end else begin
         // Retain the currenent 
         if ( cmd_packed_wrap_i ) begin
@@ -2567,9 +2554,9 @@ module a_upsizer #
           M_AXI_AADDR_I  = S_AXI_AADDR;
         end
         M_AXI_ABURST_I = S_AXI_ABURST;
-        
+
       end
-      
+
       M_AXI_ASIZE_I  = C_M_AXI_NATIVE_SIZE;
     end else begin
       // SI to MI-side transaction forwarding.
@@ -2577,12 +2564,12 @@ module a_upsizer #
       M_AXI_ASIZE_I  = S_AXI_ASIZE;
       M_AXI_ABURST_I = S_AXI_ABURST;
     end
-    
+
     M_AXI_ALEN_I   = adjusted_length;
     cmd_length_i   = adjusted_length;
   end
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Forward the command to the MI-side interface.
   //
@@ -2590,33 +2577,33 @@ module a_upsizer #
   // room in the command queue (and it passes any ID checks as required).
   //
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Select RTL or Optimized implementation.
   generate
     if ( C_FAMILY == "rtl" || ( C_SINGLE_THREAD == 0 ) ) begin : USE_RTL_AVALID
       // Only allowed to forward translated command when command queue is ok with it.
       assign M_AXI_AVALID_I = allow_new_cmd & S_AXI_AVALID;
-      
+
     end else begin : USE_FPGA_AVALID
-      
+
       wire sel_s_axi_avalid;
-      
+
       assign sel_s_axi_avalid = S_AXI_AVALID & ~ARESET;
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_AVALID_INST_C_FAMILY)
          ) avalid_inst
         (
          .CIN(allow_new_cmd),
          .S(sel_s_axi_avalid),
          .COUT(M_AXI_AVALID_I)
          );
-      
+
     end
   endgenerate
-                          
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Simple transfer of paramters that doesn't need to be adjusted.
   //
@@ -2631,7 +2618,7 @@ module a_upsizer #
   // USER   - User bits remains the same.
   // 
   /////////////////////////////////////////////////////////////////////////////
-  
+
   assign M_AXI_AID_I      = S_AXI_AID;
   assign M_AXI_ALOCK_I    = S_AXI_ALOCK;
   assign M_AXI_ACACHE_I   = S_AXI_ACACHE;
@@ -2639,8 +2626,8 @@ module a_upsizer #
   assign M_AXI_AREGION_I  = S_AXI_AREGION;
   assign M_AXI_AQOS_I     = S_AXI_AQOS;
   assign M_AXI_AUSER_I    = ( C_AXI_SUPPORTS_USER_SIGNALS ) ? S_AXI_AUSER : {C_AXI_AUSER_WIDTH{1'b0}};
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Command queue to W/R channel.
   // 
@@ -2657,7 +2644,7 @@ module a_upsizer #
   //   for the same ID it is ok to let them proceed.
   //
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Keep track of current ID in queue.
   always @ (posedge ACLK) begin
     if (ARESET) begin
@@ -2669,31 +2656,31 @@ module a_upsizer #
       end
     end
   end
-  
+
   // Select RTL or Optimized implementation.
   generate
     if ( C_FAMILY == "rtl" || ( C_SINGLE_THREAD == 0 ) ) begin : USE_RTL_ID_MATCH
       // Check ID to make sure this command is allowed.
       assign id_match       = ( C_SINGLE_THREAD == 0 ) | ( queue_id == S_AXI_AID);
       assign cmd_id_check   = cmd_empty | ( id_match & ~cmd_empty );
-      
+
       // Check if it is allowed to push more commands (ID is allowed and there is room in the queue).
       assign allow_new_cmd  = (~cmd_full & cmd_id_check) | cmd_push_block;
-      
+
       // Push new command when allowed and MI-side is able to receive the command.
       assign cmd_push       = M_AXI_AVALID_I & ~cmd_push_block;
-      
+
     end else begin : USE_FPGA_ID_MATCH
-      
+
       wire cmd_id_check_i;
       wire allow_new_cmd_i;
       wire sel_cmd_id_check;
       wire sel_cmd_push;
-      
+
       comparator #
         (
-         .C_FAMILY(C_FAMILY),
-         .C_DATA_WIDTH(C_AXI_ID_WIDTH)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_ID_MATCH_INST_C_FAMILY),
+         .C_DATA_WIDTH(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_ID_MATCH_INST_C_DATA_WIDTH)
          ) id_match_inst
         (
          .CIN(1'b1),
@@ -2701,12 +2688,12 @@ module a_upsizer #
          .B(S_AXI_AID),
          .COUT(id_match)
          );
-         
+
       assign sel_cmd_id_check = ~cmd_empty;
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_CMD_ID_CHECK_INST_1_C_FAMILY)
          ) cmd_id_check_inst_1
         (
          .CIN(id_match),
@@ -2716,17 +2703,17 @@ module a_upsizer #
 
       carry_or #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_CMD_ID_CHECK_INST_2_C_FAMILY)
          ) cmd_id_check_inst_2
         (
          .CIN(cmd_id_check_i),
          .S(cmd_empty),
          .COUT(cmd_id_check)
          );
-         
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_ALLOW_NEW_CMD_INST_1_C_FAMILY)
          ) allow_new_cmd_inst_1
         (
          .CIN(cmd_id_check),
@@ -2736,19 +2723,19 @@ module a_upsizer #
 
       carry_or #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_ALLOW_NEW_CMD_INST_2_C_FAMILY)
          ) allow_new_cmd_inst_2
         (
          .CIN(allow_new_cmd_i),
          .S(cmd_push_block),
          .COUT(allow_new_cmd)
          );
-         
+
       assign sel_cmd_push = ~cmd_push_block;
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_CMD_PUSH_INST_C_FAMILY)
          ) cmd_push_inst
         (
          .CIN(M_AXI_AVALID_I),
@@ -2758,7 +2745,7 @@ module a_upsizer #
 
     end
   endgenerate
-  
+
   // Block furter push until command has been forwarded to MI-side.
   always @ (posedge ACLK) begin
     if (ARESET) begin
@@ -2767,12 +2754,12 @@ module a_upsizer #
       cmd_push_block <= M_AXI_AVALID_I & ~M_AXI_AREADY_I;
     end
   end
-  
+
   // Acknowledge command when we can push it into queue (and forward it).
   assign S_AXI_AREADY_I = M_AXI_AREADY_I & allow_new_cmd & ~ARESET;
   assign S_AXI_AREADY   = S_AXI_AREADY_I;
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Command Queue:
   // 
@@ -2788,7 +2775,7 @@ module a_upsizer #
   //   * never any sub-size wraping => static offset (0) and mask (1)
   // 
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Translate SI-side size to step for upsizer function.
   always @ *
   begin
@@ -2803,21 +2790,20 @@ module a_upsizer #
       3'b111: cmd_step_ii = 8'b10000000; // Illegal setting.
     endcase
   end
-  
+
   // Get only the applicable bits in step.
   assign cmd_step_i = cmd_step_ii[C_S_AXI_BYTES_LOG:0];
-  
+
   // Instantiated queue.
   generate
     if (C_SUPPORT_BURSTS == 1) begin : USE_BURSTS
       command_fifo #
       (
-       .C_FAMILY                    (C_FAMILY),
-       .C_ENABLE_S_VALID_CARRY      (1),
-       .C_ENABLE_REGISTERED_OUTPUT  (1),
-       .C_FIFO_DEPTH_LOG            (C_FIFO_DEPTH_LOG),
-       .C_FIFO_WIDTH                (1+1+1+1+C_M_AXI_BYTES_LOG+C_M_AXI_BYTES_LOG+
-                                     C_M_AXI_BYTES_LOG+C_M_AXI_BYTES_LOG+C_M_AXI_BYTES_LOG+C_S_AXI_BYTES_LOG+1+8)
+       .C_FAMILY                    (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_CMD_QUEUE_C_FAMILY),
+       .C_ENABLE_S_VALID_CARRY      (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_CMD_QUEUE_C_ENABLE_S_VALID_CARRY),
+       .C_ENABLE_REGISTERED_OUTPUT  (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_CMD_QUEUE_C_ENABLE_REGISTERED_OUTPUT),
+       .C_FIFO_DEPTH_LOG            (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_CMD_QUEUE_C_FIFO_DEPTH_LOG),
+       .C_FIFO_WIDTH                (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_CMD_QUEUE_C_FIFO_WIDTH)
        ) 
        cmd_queue
       (
@@ -2834,16 +2820,16 @@ module a_upsizer #
        .M_READY (cmd_ready)
        );
     end else begin : NO_BURSTS
-    
-      wire [C_M_AXI_BYTES_LOG-1:0]        cmd_first_word_out;
-  
+
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_271]        cmd_first_word_out;
+
       command_fifo #
       (
-       .C_FAMILY                    (C_FAMILY),
-       .C_ENABLE_S_VALID_CARRY      (1),
-       .C_ENABLE_REGISTERED_OUTPUT  (1),
-       .C_FIFO_DEPTH_LOG            (C_FIFO_DEPTH_LOG),
-       .C_FIFO_WIDTH                (1+C_M_AXI_BYTES_LOG+C_S_AXI_BYTES_LOG+1)
+       .C_FAMILY                    (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_CMD_QUEUE_C_FAMILY_2),
+       .C_ENABLE_S_VALID_CARRY      (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_CMD_QUEUE_C_ENABLE_S_VALID_CARRY_2),
+       .C_ENABLE_REGISTERED_OUTPUT  (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_CMD_QUEUE_C_ENABLE_REGISTERED_OUTPUT_2),
+       .C_FIFO_DEPTH_LOG            (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_CMD_QUEUE_C_FIFO_DEPTH_LOG_2),
+       .C_FIFO_WIDTH                (`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_CMD_QUEUE_C_FIFO_WIDTH_2)
        ) 
        cmd_queue
       (
@@ -2857,7 +2843,7 @@ module a_upsizer #
        .M_VALID (cmd_valid_i),
        .M_READY (cmd_ready)
        );
-       
+
        assign cmd_modified      = ( C_PACKING_LEVEL == C_ALWAYS_PACK ) ? 1'b1 : 1'b0;
        assign cmd_complete_wrap = 1'b0;
        assign cmd_packed_wrap   = 1'b0;
@@ -2872,31 +2858,31 @@ module a_upsizer #
 
   // Queue is concidered full when not ready.
   assign cmd_full = ~s_ready;
-  
+
   // Assign external signal.
   assign cmd_valid = cmd_valid_i;
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // MI-side output handling
   /////////////////////////////////////////////////////////////////////////////
-  
+
   generate
     if ( C_M_AXI_REGISTER ) begin : USE_REGISTER
-    
-      reg  [C_AXI_ID_WIDTH-1:0]           M_AXI_AID_q;
-      reg  [C_AXI_ADDR_WIDTH-1:0]         M_AXI_AADDR_q;
-      reg  [8-1:0]                        M_AXI_ALEN_q;
-      reg  [3-1:0]                        M_AXI_ASIZE_q;
-      reg  [2-1:0]                        M_AXI_ABURST_q;
-      reg  [2-1:0]                        M_AXI_ALOCK_q;
-      reg  [4-1:0]                        M_AXI_ACACHE_q;
-      reg  [3-1:0]                        M_AXI_APROT_q;
-      reg  [4-1:0]                        M_AXI_AREGION_q;
-      reg  [4-1:0]                        M_AXI_AQOS_q;
-      reg  [C_AXI_AUSER_WIDTH-1:0]        M_AXI_AUSER_q;
+
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_272]           M_AXI_AID_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_273]         M_AXI_AADDR_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_274]                        M_AXI_ALEN_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_275]                        M_AXI_ASIZE_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_276]                        M_AXI_ABURST_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_277]                        M_AXI_ALOCK_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_278]                        M_AXI_ACACHE_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_279]                        M_AXI_APROT_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_280]                        M_AXI_AREGION_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_281]                        M_AXI_AQOS_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_282]        M_AXI_AUSER_q;
       reg                                 M_AXI_AVALID_q;
-    
+
       // Register MI-side Data.
       always @ (posedge ACLK) begin
         if (ARESET) begin
@@ -2919,7 +2905,7 @@ module a_upsizer #
           M_AXI_AUSER_q     <= M_AXI_AUSER_I;
         end
       end
-      
+
       assign M_AXI_AID        = M_AXI_AID_q;
       assign M_AXI_AADDR      = M_AXI_AADDR_q;
       assign M_AXI_ALEN       = M_AXI_ALEN_q;
@@ -2933,9 +2919,9 @@ module a_upsizer #
       assign M_AXI_AUSER      = M_AXI_AUSER_q;
       assign M_AXI_AVALID     = M_AXI_AVALID_q;
       assign M_AXI_AREADY_I = ( M_AXI_AVALID_q & M_AXI_AREADY) | ~M_AXI_AVALID_q;
-      
+
     end else begin : NO_REGISTER
-    
+
       // Combinatorial MI-side Data.
       assign M_AXI_AID      = M_AXI_AID_I;
       assign M_AXI_AADDR    = M_AXI_AADDR_I;
@@ -2950,11 +2936,11 @@ module a_upsizer #
       assign M_AXI_AUSER    = M_AXI_AUSER_I;
       assign M_AXI_AVALID   = M_AXI_AVALID_I;
       assign M_AXI_AREADY_I = M_AXI_AREADY;
-                          
+
     end
   endgenerate
-  
-  
+
+
 endmodule
 
 
@@ -2968,12 +2954,12 @@ endmodule
 
 module command_fifo #
   (
-   parameter         C_FAMILY                        = "virtex6",
-   parameter integer C_ENABLE_S_VALID_CARRY          = 0,
-   parameter integer C_ENABLE_REGISTERED_OUTPUT      = 0,
-   parameter integer C_FIFO_DEPTH_LOG                = 5,      // FIFO depth = 2**C_FIFO_DEPTH_LOG
+   parameter         C_FAMILY                        = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_FAMILY_5,
+   parameter integer C_ENABLE_S_VALID_CARRY          = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_ENABLE_S_VALID_CARRY,
+   parameter integer C_ENABLE_REGISTERED_OUTPUT      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_ENABLE_REGISTERED_OUTPUT,
+   parameter integer C_FIFO_DEPTH_LOG                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_FIFO_DEPTH_LOG,      // FIFO depth = 2**C_FIFO_DEPTH_LOG
                                                                // Range = [4:5].
-   parameter integer C_FIFO_WIDTH                    = 64      // Width of payload [1:512]
+   parameter integer C_FIFO_WIDTH                    = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_FIFO_WIDTH      // Width of payload [1:512]
    )
   (
    // Global inputs
@@ -2982,11 +2968,11 @@ module command_fifo #
    // Information
    output wire                        EMPTY,   // FIFO empty (all stages)
    // Slave  Port
-   input  wire [C_FIFO_WIDTH-1:0]     S_MESG,  // Payload (may be any set of channel signals)
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_283]     S_MESG,  // Payload (may be any set of channel signals)
    input  wire                        S_VALID, // FIFO push
    output wire                        S_READY, // FIFO not full
    // Master  Port
-   output wire [C_FIFO_WIDTH-1:0]     M_MESG,  // Payload
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_284]     M_MESG,  // Payload
    output wire                        M_VALID, // FIFO not empty
    input  wire                        M_READY  // FIFO pop
    );
@@ -2994,41 +2980,41 @@ module command_fifo #
   /////////////////////////////////////////////////////////////////////////////
   // Variables for generating parameter controlled instances.
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Generate variable for data vector.
   genvar addr_cnt;
   genvar bit_cnt;
   integer index;
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Internal signals
   /////////////////////////////////////////////////////////////////////////////
-  
-  wire [C_FIFO_DEPTH_LOG-1:0] addr;
+
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_285] addr;
   wire                        buffer_Full;
   wire                        buffer_Empty;
-  
+
   wire                        next_Data_Exists;
   reg                         data_Exists_I;
-  
+
   wire                        valid_Write;
   wire                        new_write;
-  
-  wire [C_FIFO_DEPTH_LOG-1:0] hsum_A;
-  wire [C_FIFO_DEPTH_LOG-1:0] sum_A;
-  wire [C_FIFO_DEPTH_LOG-1:0] addr_cy;
+
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_286] hsum_A;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_287] sum_A;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_288] addr_cy;
 
   wire                        buffer_full_early;
-  
-  wire [C_FIFO_WIDTH-1:0]     M_MESG_I;   // Payload
+
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_289]     M_MESG_I;   // Payload
   wire                        M_VALID_I;  // FIFO not empty
   wire                        M_READY_I;  // FIFO pop
-  
+
   /////////////////////////////////////////////////////////////////////////////
   // Create Flags 
   /////////////////////////////////////////////////////////////////////////////
-  
+
   assign buffer_full_early  = ( (addr == {{C_FIFO_DEPTH_LOG-1{1'b1}}, 1'b0}) & valid_Write & ~M_READY_I ) |
                               ( buffer_Full & ~M_READY_I );
 
@@ -3049,18 +3035,18 @@ module command_fifo #
   end
 
   assign M_VALID_I = data_Exists_I;
-  
+
   // Select RTL or FPGA optimized instatiations for critical parts.
   generate
     if ( C_FAMILY == "rtl" || C_ENABLE_S_VALID_CARRY == 0 ) begin : USE_RTL_VALID_WRITE
       reg                         buffer_Full_q;
-      
+
       assign valid_Write = S_VALID & ~buffer_Full;
-      
+
       assign new_write = (S_VALID | ~buffer_Empty);
-     
+
       assign addr_cy[0] = valid_Write;
-      
+
       always @ (posedge ACLK) begin
         if (ARESET) begin
           buffer_Full_q <= 1'b0;
@@ -3069,7 +3055,7 @@ module command_fifo #
         end
       end
       assign buffer_Full = buffer_Full_q;
-      
+
     end else begin : USE_FPGA_VALID_WRITE
       wire s_valid_dummy1;
       wire s_valid_dummy2;
@@ -3077,83 +3063,83 @@ module command_fifo #
       wire sel_new_write;
       wire valid_Write_dummy1;
       wire valid_Write_dummy2;
-      
+
       assign sel_s_valid = ~buffer_Full;
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_S_VALID_DUMMY_INST1_C_FAMILY)
          ) s_valid_dummy_inst1
         (
          .CIN(S_VALID),
          .S(1'b1),
          .COUT(s_valid_dummy1)
          );
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_S_VALID_DUMMY_INST2_C_FAMILY)
          ) s_valid_dummy_inst2
         (
          .CIN(s_valid_dummy1),
          .S(1'b1),
          .COUT(s_valid_dummy2)
          );
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_VALID_WRITE_INST_C_FAMILY)
          ) valid_write_inst
         (
          .CIN(s_valid_dummy2),
          .S(sel_s_valid),
          .COUT(valid_Write)
          );
-      
+
       assign sel_new_write = ~buffer_Empty;
-       
+
       carry_latch_or #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_NEW_WRITE_INST_C_FAMILY)
          ) new_write_inst
         (
          .CIN(valid_Write),
          .I(sel_new_write),
          .O(new_write)
          );
-         
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_VALID_WRITE_DUMMY_INST1_C_FAMILY)
          ) valid_write_dummy_inst1
         (
          .CIN(valid_Write),
          .S(1'b1),
          .COUT(valid_Write_dummy1)
          );
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_VALID_WRITE_DUMMY_INST2_C_FAMILY)
          ) valid_write_dummy_inst2
         (
          .CIN(valid_Write_dummy1),
          .S(1'b1),
          .COUT(valid_Write_dummy2)
          );
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_VALID_WRITE_DUMMY_INST3_C_FAMILY)
          ) valid_write_dummy_inst3
         (
          .CIN(valid_Write_dummy2),
          .S(1'b1),
          .COUT(addr_cy[0])
          );
-      
+
       FDRE #(
-       .INIT(1'b0)              // Initial value of register (1'b0 or 1'b1)
+       .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_I1_INIT)              // Initial value of register (1'b0 or 1'b1)
        ) FDRE_I1 (
        .Q(buffer_Full),         // Data output
        .C(ACLK),                // Clock input
@@ -3161,20 +3147,20 @@ module command_fifo #
        .R(ARESET),              // Synchronous reset input
        .D(buffer_full_early)    // Data input
        );
-       
+
     end
   endgenerate
-      
-    
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Create address pointer
   /////////////////////////////////////////////////////////////////////////////
 
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL_ADDR
-    
-      reg  [C_FIFO_DEPTH_LOG-1:0] addr_q;
-      
+
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_290] addr_q;
+
       always @ (posedge ACLK) begin
         if (ARESET) begin
           addr_q <= {C_FIFO_DEPTH_LOG{1'b0}};
@@ -3192,13 +3178,13 @@ module command_fifo #
           addr_q <= addr_q;
         end
       end
-      
+
       assign addr = addr_q;
-      
+
     end else begin : USE_FPGA_ADDR
       for (addr_cnt = 0; addr_cnt < C_FIFO_DEPTH_LOG ; addr_cnt = addr_cnt + 1) begin : ADDR_GEN
         assign hsum_A[addr_cnt] = ((M_READY_I & data_Exists_I) ^ addr[addr_cnt]) & new_write;
-        
+
         // Don't need the last muxcy, addr_cy(last) is not used anywhere
         if ( addr_cnt < C_FIFO_DEPTH_LOG - 1 ) begin : USE_MUXCY
           MUXCY MUXCY_inst (
@@ -3207,19 +3193,19 @@ module command_fifo #
            .S(hsum_A[addr_cnt]),
            .O(addr_cy[addr_cnt+1])
            );
-           
+
         end
         else begin : NO_MUXCY
         end
-        
+
         XORCY XORCY_inst (
          .LI(hsum_A[addr_cnt]),
          .CI(addr_cy[addr_cnt]),
          .O(sum_A[addr_cnt])
          );
-        
+
         FDRE #(
-         .INIT(1'b0)             // Initial value of register (1'b0 or 1'b1)
+         .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_INST_INIT)             // Initial value of register (1'b0 or 1'b1)
          ) FDRE_inst (
          .Q(addr[addr_cnt]),     // Data output
          .C(ACLK),               // Clock input
@@ -3227,20 +3213,20 @@ module command_fifo #
          .R(ARESET),             // Synchronous reset input
          .D(sum_A[addr_cnt])     // Data input
          );
-        
+
       end // end for bit_cnt
     end // C_FAMILY
   endgenerate
-      
-      
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Data storage
   /////////////////////////////////////////////////////////////////////////////
-  
+
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL_FIFO
-      reg  [C_FIFO_WIDTH-1:0] data_srl[2 ** C_FIFO_DEPTH_LOG-1:0];
-      
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_291] data_srl[`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_292];
+
       always @ (posedge ACLK) begin
         if ( valid_Write ) begin
           for (index = 0; index < 2 ** C_FIFO_DEPTH_LOG-1 ; index = index + 1) begin
@@ -3249,15 +3235,15 @@ module command_fifo #
           data_srl[0]   <= S_MESG;
         end
       end
-      
+
       assign M_MESG_I = data_srl[addr];
-      
+
     end else begin : USE_FPGA_FIFO
       for (bit_cnt = 0; bit_cnt < C_FIFO_WIDTH ; bit_cnt = bit_cnt + 1) begin : DATA_GEN
-        
+
         if ( C_FIFO_DEPTH_LOG == 5 ) begin : USE_32
             SRLC32E # (
-             .INIT(32'h00000000)    // Initial Value of Shift Register
+             .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_SRLC32E_INST_INIT)    // Initial Value of Shift Register
             ) SRLC32E_inst (
              .Q(M_MESG_I[bit_cnt]), // SRL data output
              .Q31(),                // SRL cascade output pin
@@ -3268,7 +3254,7 @@ module command_fifo #
             );
         end else begin : USE_16
             SRLC16E # (
-             .INIT(32'h00000000)    // Initial Value of Shift Register
+             .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_SRLC16E_INST_INIT)    // Initial Value of Shift Register
             ) SRLC16E_inst (
              .Q(M_MESG_I[bit_cnt]), // SRL data output
              .Q15(),                // SRL cascade output pin
@@ -3281,28 +3267,28 @@ module command_fifo #
              .D(S_MESG[bit_cnt])    // SRL data input
             );
         end // C_FIFO_DEPTH_LOG
-      
+
       end // end for bit_cnt
     end // C_FAMILY
   endgenerate
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Pipeline stage
   /////////////////////////////////////////////////////////////////////////////
-  
+
   generate
     if ( C_ENABLE_REGISTERED_OUTPUT != 0 ) begin : USE_FF_OUT
-      
-      wire [C_FIFO_WIDTH-1:0]     M_MESG_FF;    // Payload
+
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_293]     M_MESG_FF;    // Payload
       wire                        M_VALID_FF;   // FIFO not empty
-      
+
       // Select RTL or FPGA optimized instatiations for critical parts.
       if ( C_FAMILY == "rtl" ) begin : USE_RTL_OUTPUT_PIPELINE
-      
-        reg  [C_FIFO_WIDTH-1:0]     M_MESG_Q;   // Payload
+
+        reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_294]     M_MESG_Q;   // Payload
         reg                         M_VALID_Q;  // FIFO not empty
-        
+
         always @ (posedge ACLK) begin
           if (ARESET) begin
             M_MESG_Q    <= {C_FIFO_WIDTH{1'b0}};
@@ -3314,15 +3300,15 @@ module command_fifo #
             end
           end
         end
-      
+
         assign M_MESG_FF     = M_MESG_Q;
         assign M_VALID_FF    = M_VALID_Q;
-        
+
       end else begin : USE_FPGA_OUTPUT_PIPELINE
-      
-        reg  [C_FIFO_WIDTH-1:0]     M_MESG_CMB;   // Payload
+
+        reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_295]     M_MESG_CMB;   // Payload
         reg                         M_VALID_CMB;  // FIFO not empty
-        
+
         always @ *
         begin
           if ( M_READY_I ) begin
@@ -3333,11 +3319,11 @@ module command_fifo #
             M_VALID_CMB <= M_VALID_FF;
           end
         end
-        
+
         for (bit_cnt = 0; bit_cnt < C_FIFO_WIDTH ; bit_cnt = bit_cnt + 1) begin : DATA_GEN
-              
+
           FDRE #(
-           .INIT(1'b0)                    // Initial value of register (1'b0 or 1'b1)
+           .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_INST_INIT_2)                    // Initial value of register (1'b0 or 1'b1)
            ) FDRE_inst (
            .Q(M_MESG_FF[bit_cnt]),        // Data output
            .C(ACLK),                      // Clock input
@@ -3346,9 +3332,9 @@ module command_fifo #
            .D(M_MESG_CMB[bit_cnt])        // Data input
            );
         end // end for bit_cnt
-            
+
         FDRE #(
-         .INIT(1'b0)                    // Initial value of register (1'b0 or 1'b1)
+         .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_INST_INIT_3)                    // Initial value of register (1'b0 or 1'b1)
          ) FDRE_inst (
          .Q(M_VALID_FF),                // Data output
          .C(ACLK),                      // Clock input
@@ -3356,21 +3342,21 @@ module command_fifo #
          .R(ARESET),                    // Synchronous reset input
          .D(M_VALID_CMB)                // Data input
          );
-      
+
       end
-      
+
       assign EMPTY      = ~M_VALID_I & ~M_VALID_FF;
       assign M_MESG     = M_MESG_FF;
       assign M_VALID    = M_VALID_FF;
       assign M_READY_I  = ( M_READY & M_VALID_FF ) | ~M_VALID_FF;
-      
+
     end else begin : NO_FF_OUT
-      
+
       assign EMPTY      = ~M_VALID_I;
       assign M_MESG     = M_MESG_I;
       assign M_VALID    = M_VALID_I;
       assign M_READY_I  = M_READY;
-      
+
     end
   endgenerate
 
@@ -3386,40 +3372,40 @@ endmodule
 
 module w_upsizer #
   (
-   parameter         C_FAMILY                         = "rtl", 
+   parameter         C_FAMILY                         = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_FAMILY_6,
                        // FPGA Family. Current version: virtex6 or spartan6.
-   parameter         C_S_AXI_DATA_WIDTH               = 32'h00000020, 
+   parameter         C_S_AXI_DATA_WIDTH               = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_S_AXI_DATA_WIDTH_3,
                        // Width of S_AXI_WDATA and S_AXI_RDATA.
                        // Format: Bit32; 
                        // Range: 'h00000020, 'h00000040, 'h00000080, 'h00000100.
-   parameter         C_M_AXI_DATA_WIDTH               = 32'h00000040, 
+   parameter         C_M_AXI_DATA_WIDTH               = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_M_AXI_DATA_WIDTH_3,
                        // Width of M_AXI_WDATA and M_AXI_RDATA.
                        // Assume greater than or equal to C_S_AXI_DATA_WIDTH.
                        // Format: Bit32;
                        // Range: 'h00000020, 'h00000040, 'h00000080, 'h00000100.
-   parameter integer C_M_AXI_REGISTER                 = 0,
+   parameter integer C_M_AXI_REGISTER                 = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_M_AXI_REGISTER_2,
                        // Clock output data.
                        // Range: 0, 1
-   parameter integer C_AXI_SUPPORTS_USER_SIGNALS      = 0,
+   parameter integer C_AXI_SUPPORTS_USER_SIGNALS      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_SUPPORTS_USER_SIGNALS_4,
                        // 1 = Propagate all USER signals, 0 = Dont propagate.
-   parameter integer C_AXI_WUSER_WIDTH                = 1,
+   parameter integer C_AXI_WUSER_WIDTH                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_WUSER_WIDTH_3,
                        // Width of WUSER signals. 
                        // Range: >= 1.
-   parameter integer C_PACKING_LEVEL                    = 1,
+   parameter integer C_PACKING_LEVEL                    = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_PACKING_LEVEL_3,
                        // 0 = Never pack (expander only); packing logic is omitted.
                        // 1 = Pack only when CACHE[1] (Modifiable) is high.
                        // 2 = Always pack, regardless of sub-size transaction or Modifiable bit.
                        //     (Required when used as helper-core by mem-con.)
-   parameter integer C_SUPPORT_BURSTS                 = 1,
+   parameter integer C_SUPPORT_BURSTS                 = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_SUPPORT_BURSTS_3,
                        // Disabled when all connected masters and slaves are AxiLite,
                        //   allowing logic to be simplified.
-   parameter integer C_S_AXI_BYTES_LOG                = 3,
+   parameter integer C_S_AXI_BYTES_LOG                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_S_AXI_BYTES_LOG_2,
                        // Log2 of number of 32bit word on SI-side.
-   parameter integer C_M_AXI_BYTES_LOG                = 3,
+   parameter integer C_M_AXI_BYTES_LOG                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_M_AXI_BYTES_LOG_2,
                        // Log2 of number of 32bit word on MI-side.
-   parameter integer C_RATIO                          = 2,
+   parameter integer C_RATIO                          = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_RATIO,
                        // Up-Sizing ratio for data.
-   parameter integer C_RATIO_LOG                      = 1
+   parameter integer C_RATIO_LOG                      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_RATIO_LOG
                        // Log2 of Up-Sizing ratio for data.
    )
   (
@@ -3433,60 +3419,60 @@ module w_upsizer #
    input  wire                              cmd_modified,
    input  wire                              cmd_complete_wrap,
    input  wire                              cmd_packed_wrap,
-   input  wire [C_M_AXI_BYTES_LOG-1:0]      cmd_first_word, 
-   input  wire [C_M_AXI_BYTES_LOG-1:0]      cmd_next_word,
-   input  wire [C_M_AXI_BYTES_LOG-1:0]      cmd_last_word,
-   input  wire [C_M_AXI_BYTES_LOG-1:0]      cmd_offset,
-   input  wire [C_M_AXI_BYTES_LOG-1:0]      cmd_mask,
-   input  wire [C_S_AXI_BYTES_LOG:0]        cmd_step,
-   input  wire [8-1:0]                      cmd_length,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_296]      cmd_first_word,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_297]      cmd_next_word,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_298]      cmd_last_word,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_299]      cmd_offset,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_300]      cmd_mask,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_301]        cmd_step,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_302]                      cmd_length,
    output wire                              cmd_ready,
-   
+
    // Slave Interface Write Data Ports
-   input  wire [C_S_AXI_DATA_WIDTH-1:0]     S_AXI_WDATA,
-   input  wire [C_S_AXI_DATA_WIDTH/8-1:0]   S_AXI_WSTRB,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_303]     S_AXI_WDATA,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_304]   S_AXI_WSTRB,
    input  wire                                                    S_AXI_WLAST,
-   input  wire [C_AXI_WUSER_WIDTH-1:0]          S_AXI_WUSER,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_305]          S_AXI_WUSER,
    input  wire                                                    S_AXI_WVALID,
    output wire                                                    S_AXI_WREADY,
 
    // Master Interface Write Data Ports
-   output wire [C_M_AXI_DATA_WIDTH-1:0]    M_AXI_WDATA,
-   output wire [C_M_AXI_DATA_WIDTH/8-1:0]  M_AXI_WSTRB,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_306]    M_AXI_WDATA,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_307]  M_AXI_WSTRB,
    output wire                                                   M_AXI_WLAST,
-   output wire [C_AXI_WUSER_WIDTH-1:0]         M_AXI_WUSER,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_308]         M_AXI_WUSER,
    output wire                                                   M_AXI_WVALID,
    input  wire                                                   M_AXI_WREADY
    );
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Variables for generating parameter controlled instances.
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Generate variable for SI-side word lanes on MI-side.
   genvar word_cnt;
-  
+
   // Generate variable for intra SI-word byte control (on MI-side) for always pack.
   genvar byte_cnt;
   genvar bit_cnt;
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Local params
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Constants for packing levels.
-  localparam integer C_NEVER_PACK        = 0;
-  localparam integer C_DEFAULT_PACK      = 1;
-  localparam integer C_ALWAYS_PACK       = 2;
-  
-  
+  localparam integer C_NEVER_PACK        = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_NEVER_PACK_2;
+  localparam integer C_DEFAULT_PACK      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_DEFAULT_PACK_2;
+  localparam integer C_ALWAYS_PACK       = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ALWAYS_PACK_2;
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Functions
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Internal signals
   /////////////////////////////////////////////////////////////////////////////
@@ -3494,38 +3480,38 @@ module w_upsizer #
   // Sub-word handling.
   wire                            sel_first_word;
   wire                            first_word;
-  wire [C_M_AXI_BYTES_LOG-1:0]    current_word_1;
-  wire [C_M_AXI_BYTES_LOG-1:0]    current_word;
-  wire [C_M_AXI_BYTES_LOG-1:0]    current_word_adjusted;
-  wire [C_RATIO-1:0]              current_word_idx;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_309]    current_word_1;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_310]    current_word;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_311]    current_word_adjusted;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_312]              current_word_idx;
   wire                            last_beat;
   wire                            last_word;
   wire                            last_word_extra_carry;
-  wire [C_M_AXI_BYTES_LOG-1:0]    cmd_step_i;
-  
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_313]    cmd_step_i;
+
   // Sub-word handling for the next cycle.
-  wire [C_M_AXI_BYTES_LOG-1:0]    pre_next_word_i;
-  wire [C_M_AXI_BYTES_LOG-1:0]    pre_next_word;
-  wire [C_M_AXI_BYTES_LOG-1:0]    pre_next_word_1;
-  wire [C_M_AXI_BYTES_LOG-1:0]    next_word_i;
-  wire [C_M_AXI_BYTES_LOG-1:0]    next_word;
-  
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_314]    pre_next_word_i;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_315]    pre_next_word;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_316]    pre_next_word_1;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_317]    next_word_i;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_318]    next_word;
+
   // Burst length handling.
   wire                            first_mi_word;
-  wire [8-1:0]                    length_counter_1;
-  reg  [8-1:0]                    length_counter;
-  wire [8-1:0]                    next_length_counter;
-  
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_319]                    length_counter_1;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_320]                    length_counter;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_321]                    next_length_counter;
+
   // Handle wrap buffering.
   wire                            store_in_wrap_buffer_enabled;
   wire                            store_in_wrap_buffer;
   wire                            ARESET_or_store_in_wrap_buffer;
   wire                            use_wrap_buffer;
   reg                             wrap_buffer_available;
-  
+
   // Detect start of MI word.
   wire                            first_si_in_mi;
-  
+
   // Throttling help signals.
   wire                            word_complete_next_wrap;
   wire                            word_complete_next_wrap_qual;
@@ -3547,44 +3533,44 @@ module w_upsizer #
   wire                            pop_mi_data_i;
   wire                            pop_mi_data;
   wire                            mi_stalling;
-  
+
   // Internal SI side control signals.
   wire                            S_AXI_WREADY_I;
-   
+
   // Internal packed write data.
   wire                            use_expander_data;
-  wire [C_M_AXI_DATA_WIDTH/8-1:0] wdata_qualifier;          // For FPGA only
-  wire [C_M_AXI_DATA_WIDTH/8-1:0] wstrb_qualifier;          // For FPGA only
-  wire [C_M_AXI_DATA_WIDTH/8-1:0] wrap_qualifier;           // For FPGA only
-  wire [C_M_AXI_DATA_WIDTH-1:0]   wdata_buffer_i;           // For FPGA only
-  wire [C_M_AXI_DATA_WIDTH/8-1:0] wstrb_buffer_i;           // For FPGA only
-  reg  [C_M_AXI_DATA_WIDTH-1:0]   wdata_buffer_q;           // For RTL only
-  reg  [C_M_AXI_DATA_WIDTH/8-1:0] wstrb_buffer_q;           // For RTL only
-  wire [C_M_AXI_DATA_WIDTH-1:0]   wdata_buffer;
-  wire [C_M_AXI_DATA_WIDTH/8-1:0] wstrb_buffer;
-  reg  [C_AXI_WUSER_WIDTH-1:0]    M_AXI_WUSER_II;
-  reg  [C_M_AXI_DATA_WIDTH-1:0]   wdata_last_word_mux;
-  reg  [C_M_AXI_DATA_WIDTH/8-1:0] wstrb_last_word_mux;
-  reg  [C_M_AXI_DATA_WIDTH-1:0]   wdata_wrap_buffer_cmb;    // For FPGA only
-  reg  [C_M_AXI_DATA_WIDTH/8-1:0] wstrb_wrap_buffer_cmb;    // For FPGA only
-  reg  [C_M_AXI_DATA_WIDTH-1:0]   wdata_wrap_buffer_q;      // For RTL only
-  reg  [C_M_AXI_DATA_WIDTH/8-1:0] wstrb_wrap_buffer_q;      // For RTL only
-  wire [C_M_AXI_DATA_WIDTH-1:0]   wdata_wrap_buffer;
-  wire [C_M_AXI_DATA_WIDTH/8-1:0] wstrb_wrap_buffer;
-  
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_322] wdata_qualifier;          // For FPGA only
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_323] wstrb_qualifier;          // For FPGA only
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_324] wrap_qualifier;           // For FPGA only
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_325]   wdata_buffer_i;           // For FPGA only
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_326] wstrb_buffer_i;           // For FPGA only
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_327]   wdata_buffer_q;           // For RTL only
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_328] wstrb_buffer_q;           // For RTL only
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_329]   wdata_buffer;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_330] wstrb_buffer;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_331]    M_AXI_WUSER_II;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_332]   wdata_last_word_mux;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_333] wstrb_last_word_mux;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_334]   wdata_wrap_buffer_cmb;    // For FPGA only
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_335] wstrb_wrap_buffer_cmb;    // For FPGA only
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_336]   wdata_wrap_buffer_q;      // For RTL only
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_337] wstrb_wrap_buffer_q;      // For RTL only
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_338]   wdata_wrap_buffer;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_339] wstrb_wrap_buffer;
+
   // Internal signals for MI-side.
-  wire [C_M_AXI_DATA_WIDTH-1:0]   M_AXI_WDATA_cmb;          // For FPGA only
-  wire [C_M_AXI_DATA_WIDTH-1:0]   M_AXI_WDATA_q;            // For FPGA only
-  reg  [C_M_AXI_DATA_WIDTH-1:0]   M_AXI_WDATA_I;
-  wire [C_M_AXI_DATA_WIDTH/8-1:0] M_AXI_WSTRB_cmb;          // For FPGA only
-  wire [C_M_AXI_DATA_WIDTH/8-1:0] M_AXI_WSTRB_q;            // For FPGA only
-  reg  [C_M_AXI_DATA_WIDTH/8-1:0] M_AXI_WSTRB_I;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_340]   M_AXI_WDATA_cmb;          // For FPGA only
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_341]   M_AXI_WDATA_q;            // For FPGA only
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_342]   M_AXI_WDATA_I;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_343] M_AXI_WSTRB_cmb;          // For FPGA only
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_344] M_AXI_WSTRB_q;            // For FPGA only
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_345] M_AXI_WSTRB_I;
   wire                            M_AXI_WLAST_I;
-  reg  [C_AXI_WUSER_WIDTH-1:0]    M_AXI_WUSER_I;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_346]    M_AXI_WUSER_I;
   wire                            M_AXI_WVALID_I;
   wire                            M_AXI_WREADY_I;
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Handle interface handshaking:
   //
@@ -3602,7 +3588,7 @@ module w_upsizer #
   // yet acknowledged (by ready).
   //
   /////////////////////////////////////////////////////////////////////////////
-  
+
   generate
     if ( C_RATIO_LOG > 1 ) begin : USE_LARGE_UPSIZING
       assign cmd_step_i = {{C_RATIO_LOG-1{1'b0}}, cmd_step};
@@ -3610,11 +3596,11 @@ module w_upsizer #
       assign cmd_step_i = cmd_step;
     end
   endgenerate
-  
+
   generate
     if ( C_FAMILY == "rtl" || ( C_SUPPORT_BURSTS == 0 ) || 
        ( C_PACKING_LEVEL == C_NEVER_PACK ) ) begin : USE_RTL_WORD_COMPLETED
-      
+
       // Detect when MI-side word is completely assembled.
       assign word_completed = ( cmd_fix ) |
                               ( ~cmd_fix & ~cmd_complete_wrap & next_word == {C_M_AXI_BYTES_LOG{1'b0}} ) | 
@@ -3622,9 +3608,9 @@ module w_upsizer #
                               ( ~cmd_modified ) |
                               ( C_PACKING_LEVEL == C_NEVER_PACK ) | 
                               ( C_SUPPORT_BURSTS == 0 );
-      
+
       assign word_completed_qualified   = word_completed & cmd_valid & ~store_in_wrap_buffer_enabled;
-      
+
       // RTL equivalent of optimized partial extressions (address wrap for next word).
       assign word_complete_next_wrap        = ( ~cmd_fix & ~cmd_complete_wrap & 
                                                 next_word == {C_M_AXI_BYTES_LOG{1'b0}} ) | 
@@ -3635,7 +3621,7 @@ module w_upsizer #
       assign word_complete_next_wrap_pop    = word_complete_next_wrap_valid & M_AXI_WREADY_I;
       assign word_complete_next_wrap_last   = word_complete_next_wrap_pop & M_AXI_WLAST_I;
       assign word_complete_next_wrap_stall  = word_complete_next_wrap_valid & ~M_AXI_WREADY_I;
-      
+
       // RTL equivalent of optimized partial extressions (last word and the remaining).
       assign word_complete_last_word   = last_word & ~cmd_fix;
       assign word_complete_rest        = word_complete_last_word | cmd_fix | ~cmd_modified;
@@ -3644,27 +3630,27 @@ module w_upsizer #
       assign word_complete_rest_pop    = word_complete_rest_valid & M_AXI_WREADY_I;
       assign word_complete_rest_last   = word_complete_rest_pop & M_AXI_WLAST_I;
       assign word_complete_rest_stall  = word_complete_rest_valid & ~M_AXI_WREADY_I;
-      
+
     end else begin : USE_FPGA_WORD_COMPLETED
-    
+
       wire next_word_wrap;
       wire sel_word_complete_next_wrap;
       wire sel_word_complete_next_wrap_qual;
       wire sel_word_complete_next_wrap_stall;
-      
+
       wire sel_last_word;
       wire sel_word_complete_rest;
       wire sel_word_complete_rest_qual;
       wire sel_word_complete_rest_stall;
-      
-      
+
+
       // Optimize next word address wrap branch of expression.
       //
       comparator_sel_static #
         (
-         .C_FAMILY(C_FAMILY),
-         .C_VALUE({C_M_AXI_BYTES_LOG{1'b0}}),
-         .C_DATA_WIDTH(C_M_AXI_BYTES_LOG)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_NEXT_WORD_WRAP_INST_C_FAMILY),
+         .C_VALUE(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_NEXT_WORD_WRAP_INST_C_VALUE),
+         .C_DATA_WIDTH(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_NEXT_WORD_WRAP_INST_C_DATA_WIDTH)
          ) next_word_wrap_inst
         (
          .CIN(1'b1),
@@ -3673,177 +3659,177 @@ module w_upsizer #
          .B(cmd_next_word),
          .COUT(next_word_wrap)
          );
-         
+
       assign sel_word_complete_next_wrap = ~cmd_fix & ~cmd_complete_wrap;
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_NEXT_WRAP_INST_C_FAMILY)
          ) word_complete_next_wrap_inst
         (
          .CIN(next_word_wrap),
          .S(sel_word_complete_next_wrap),
          .COUT(word_complete_next_wrap)
          );
-         
+
       assign sel_word_complete_next_wrap_qual = cmd_valid & ~store_in_wrap_buffer_enabled;
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_NEXT_WRAP_VALID_INST_C_FAMILY)
          ) word_complete_next_wrap_valid_inst
         (
          .CIN(word_complete_next_wrap),
          .S(sel_word_complete_next_wrap_qual),
          .COUT(word_complete_next_wrap_qual)
          );
-         
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_NEXT_WRAP_QUAL_INST_C_FAMILY)
          ) word_complete_next_wrap_qual_inst
         (
          .CIN(word_complete_next_wrap_qual),
          .S(S_AXI_WVALID),
          .COUT(word_complete_next_wrap_valid)
          );
-         
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_NEXT_WRAP_POP_INST_C_FAMILY)
          ) word_complete_next_wrap_pop_inst
         (
          .CIN(word_complete_next_wrap_valid),
          .S(M_AXI_WREADY_I),
          .COUT(word_complete_next_wrap_pop)
          );
-         
+
       assign sel_word_complete_next_wrap_stall = ~M_AXI_WREADY_I;
-      
+
       carry_latch_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_NEXT_WRAP_STALL_INST_C_FAMILY)
          ) word_complete_next_wrap_stall_inst
         (
          .CIN(word_complete_next_wrap_valid),
          .I(sel_word_complete_next_wrap_stall),
          .O(word_complete_next_wrap_stall)
          );
-         
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_NEXT_WRAP_LAST_INST_C_FAMILY)
          ) word_complete_next_wrap_last_inst
         (
          .CIN(word_complete_next_wrap_pop),
          .S(M_AXI_WLAST_I),
          .COUT(word_complete_next_wrap_last)
          );
-         
+
       // Optimize last word and "rest" branch of expression.
       //
       assign sel_last_word = ~cmd_fix;
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_WORD_INST_2_C_FAMILY)
          ) last_word_inst_2
         (
          .CIN(last_word_extra_carry),
          .S(sel_last_word),
          .COUT(word_complete_last_word)
          );
-      
+
       assign sel_word_complete_rest = cmd_fix | ~cmd_modified;
-      
+
       carry_or #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_POP_SI_DATA_INST_C_FAMILY)
          ) pop_si_data_inst
         (
          .CIN(word_complete_last_word),
          .S(sel_word_complete_rest),
          .COUT(word_complete_rest)
          );
-      
+
       assign sel_word_complete_rest_qual = cmd_valid & ~store_in_wrap_buffer_enabled;
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_REST_VALID_INST_C_FAMILY)
          ) word_complete_rest_valid_inst
         (
          .CIN(word_complete_rest),
          .S(sel_word_complete_rest_qual),
          .COUT(word_complete_rest_qual)
          );
-         
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_REST_QUAL_INST_C_FAMILY)
          ) word_complete_rest_qual_inst
         (
          .CIN(word_complete_rest_qual),
          .S(S_AXI_WVALID),
          .COUT(word_complete_rest_valid)
          );
-         
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_REST_POP_INST_C_FAMILY)
          ) word_complete_rest_pop_inst
         (
          .CIN(word_complete_rest_valid),
          .S(M_AXI_WREADY_I),
          .COUT(word_complete_rest_pop)
          );
-         
+
       assign sel_word_complete_rest_stall = ~M_AXI_WREADY_I;
-      
+
       carry_latch_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_REST_STALL_INST_C_FAMILY)
          ) word_complete_rest_stall_inst
         (
          .CIN(word_complete_rest_valid),
          .I(sel_word_complete_rest_stall),
          .O(word_complete_rest_stall)
          );
-         
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_REST_LAST_INST_C_FAMILY)
          ) word_complete_rest_last_inst
         (
          .CIN(word_complete_rest_pop),
          .S(M_AXI_WLAST_I),
          .COUT(word_complete_rest_last)
          );
-      
+
       // Combine the two branches to generate the full signal.
       assign word_completed = word_complete_next_wrap | word_complete_rest;
-      
+
       assign word_completed_qualified   = word_complete_next_wrap_qual | word_complete_rest_qual;
-      
+
     end
   endgenerate
-      
+
   // Pop word from SI-side.
   assign S_AXI_WREADY_I = ~mi_stalling & cmd_valid;
   assign S_AXI_WREADY   = S_AXI_WREADY_I;
-  
+
   // Indicate when there is data available @ MI-side.
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL_M_WVALID
       assign M_AXI_WVALID_I = S_AXI_WVALID & word_completed_qualified;
-      
+
     end else begin : USE_FPGA_M_WVALID
-      
+
       assign M_AXI_WVALID_I = ( word_complete_next_wrap_valid | word_complete_rest_valid);
-      
+
     end
   endgenerate
-  
+
   // Get SI-side data.
   generate
     if ( C_M_AXI_REGISTER ) begin : USE_REGISTER_SI_POP
@@ -3857,23 +3843,23 @@ module w_upsizer #
       end
     end
   endgenerate
-      
+
   // Signal that the command is done (so that it can be poped from command queue).
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL_CMD_READY
       assign cmd_ready_i    = cmd_valid & M_AXI_WLAST_I & pop_mi_data_i;
-      
+
     end else begin : USE_FPGA_CMD_READY
       assign cmd_ready_i = ( word_complete_next_wrap_last | word_complete_rest_last);
-      
+
     end
   endgenerate
   assign cmd_ready      = cmd_ready_i;
-  
+
   // Set last upsized word.
   assign M_AXI_WLAST_I  = S_AXI_WLAST;
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Keep track of data extraction:
   // 
@@ -3901,35 +3887,35 @@ module w_upsizer #
   // until Last beat is reached.
   // 
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Select if the offset comes from command queue directly or 
   // from a counter while when extracting multiple SI words per MI word
   assign sel_first_word = first_word | cmd_fix;
   assign current_word   = sel_first_word ? cmd_first_word : 
                                            current_word_1;
-  
+
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL_NEXT_WORD
-      
+
       // Calculate next word.
       assign pre_next_word_i  = ( next_word_i + cmd_step_i );
-      
+
       // Calculate next word.
       assign next_word_i      = sel_first_word ? cmd_next_word : 
                                                  pre_next_word_1;
-      
+
     end else begin : USE_FPGA_NEXT_WORD
-      wire [C_M_AXI_BYTES_LOG-1:0]  next_sel;
-      wire [C_M_AXI_BYTES_LOG:0]    next_carry_local;
-      
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_347]  next_sel;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_348]    next_carry_local;
+
       // Assign input to local vectors.
       assign next_carry_local[0]      = 1'b0;
-    
+
       // Instantiate one carry and per level.
       for (bit_cnt = 0; bit_cnt < C_M_AXI_BYTES_LOG ; bit_cnt = bit_cnt + 1) begin : LUT_LEVEL
-        
+
         LUT6_2 # (
-         .INIT(64'h5A5A_5A66_F0F0_F0CC) 
+         .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LUT6_2_INST_INIT)
         ) LUT6_2_inst (
         .O6(next_sel[bit_cnt]),         // 6/5-LUT output (1-bit)
         .O5(next_word_i[bit_cnt]),      // 5-LUT output (1-bit)
@@ -3940,7 +3926,7 @@ module w_upsizer #
         .I4(cmd_fix),                   // LUT input (1-bit)
         .I5(1'b1)                       // LUT input (1-bit)
         );
-        
+
         MUXCY next_carry_inst 
         (
          .O (next_carry_local[bit_cnt+1]), 
@@ -3948,23 +3934,23 @@ module w_upsizer #
          .DI (cmd_step_i[bit_cnt]), 
          .S (next_sel[bit_cnt])
         ); 
-        
+
         XORCY next_xorcy_inst 
         (
          .O(pre_next_word_i[bit_cnt]),
          .CI(next_carry_local[bit_cnt]),
          .LI(next_sel[bit_cnt])
         );
-        
+
       end // end for bit_cnt
-      
+
     end
   endgenerate
-  
+
   // Calculate next word.
   assign next_word              = next_word_i & cmd_mask;
   assign pre_next_word          = pre_next_word_i & cmd_mask;
-      
+
   // Calculate the word address with offset.
   assign current_word_adjusted  = sel_first_word ? ( cmd_first_word | cmd_offset ) : 
                                                    ( current_word_1 | cmd_offset );
@@ -3972,10 +3958,10 @@ module w_upsizer #
   // Prepare next word address.
   generate
     if ( C_FAMILY == "rtl" || C_M_AXI_REGISTER ) begin : USE_RTL_CURR_WORD
-      reg  [C_M_AXI_BYTES_LOG-1:0]    current_word_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_349]    current_word_q;
       reg                             first_word_q;
-      reg  [C_M_AXI_BYTES_LOG-1:0]    pre_next_word_q;
-    
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_350]    pre_next_word_q;
+
       always @ (posedge ACLK) begin
         if (ARESET) begin
           first_word_q    <= 1'b1;
@@ -3989,24 +3975,24 @@ module w_upsizer #
             end else begin
               first_word_q    <= 1'b0;
             end
-            
+
             current_word_q  <= next_word;
             pre_next_word_q <= pre_next_word;
           end
         end
       end
-      
+
       assign first_word       = first_word_q;
       assign current_word_1   = current_word_q;
       assign pre_next_word_1  = pre_next_word_q;
-      
+
     end else begin : USE_FPGA_CURR_WORD
       reg                             first_word_cmb;
       wire                            first_word_i;
-      wire [C_M_AXI_BYTES_LOG-1:0]    current_word_i;
-      wire [C_M_AXI_BYTES_LOG-1:0]    local_pre_next_word_i;
-      
-      
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_351]    current_word_i;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_352]    local_pre_next_word_i;
+
+
       always @ *
       begin
           if ( S_AXI_WLAST ) begin
@@ -4016,10 +4002,10 @@ module w_upsizer #
             first_word_cmb    = 1'b0;
           end
       end
-      
+
       for (bit_cnt = 0; bit_cnt < C_M_AXI_BYTES_LOG ; bit_cnt = bit_cnt + 1) begin : BIT_LANE
         LUT6 # (
-         .INIT(64'hCCCA_CCCC_CCCC_CCCC) 
+         .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LUT6_CURRENT_INST_INIT)
         ) LUT6_current_inst (
         .O(current_word_i[bit_cnt]),          // 6-LUT output (1-bit)
         .I0(next_word[bit_cnt]),              // LUT input (1-bit)
@@ -4029,9 +4015,9 @@ module w_upsizer #
         .I4(cmd_valid),                       // LUT input (1-bit)
         .I5(S_AXI_WVALID)                     // LUT input (1-bit)
         );
-            
+
         FDRE #(
-         .INIT(1'b0)                          // Initial value of register (1'b0 or 1'b1)
+         .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_CURRENT_INST_INIT)                          // Initial value of register (1'b0 or 1'b1)
          ) FDRE_current_inst (
          .Q(current_word_1[bit_cnt]),         // Data output
          .C(ACLK),                            // Clock input
@@ -4039,9 +4025,9 @@ module w_upsizer #
          .R(ARESET),                          // Synchronous reset input
          .D(current_word_i[bit_cnt])          // Data input
          );
-         
+
         LUT6 # (
-         .INIT(64'hCCCA_CCCC_CCCC_CCCC) 
+         .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LUT6_NEXT_INST_INIT)
         ) LUT6_next_inst (
         .O(local_pre_next_word_i[bit_cnt]),   // 6-LUT output (1-bit)
         .I0(pre_next_word[bit_cnt]),          // LUT input (1-bit)
@@ -4051,9 +4037,9 @@ module w_upsizer #
         .I4(cmd_valid),                       // LUT input (1-bit)
         .I5(S_AXI_WVALID)                     // LUT input (1-bit)
         );
-            
+
         FDRE #(
-         .INIT(1'b0)                          // Initial value of register (1'b0 or 1'b1)
+         .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_NEXT_INST_INIT)                          // Initial value of register (1'b0 or 1'b1)
          ) FDRE_next_inst (
          .Q(pre_next_word_1[bit_cnt]),        // Data output
          .C(ACLK),                            // Clock input
@@ -4062,9 +4048,9 @@ module w_upsizer #
          .D(local_pre_next_word_i[bit_cnt])   // Data input
          );
       end // end for bit_cnt
-      
+
       LUT6 # (
-       .INIT(64'hCCCA_CCCC_CCCC_CCCC) 
+       .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LUT6_FIRST_INST_INIT)
       ) LUT6_first_inst (
       .O(first_word_i),                     // 6-LUT output (1-bit)
       .I0(first_word_cmb),                  // LUT input (1-bit)
@@ -4074,9 +4060,9 @@ module w_upsizer #
       .I4(cmd_valid),                       // LUT input (1-bit)
       .I5(S_AXI_WVALID)                     // LUT input (1-bit)
       );
-          
+
       FDSE #(
-       .INIT(1'b1)                    // Initial value of register (1'b0 or 1'b1)
+       .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDSE_FIRST_INST_INIT)                    // Initial value of register (1'b0 or 1'b1)
        ) FDSE_first_inst (
        .Q(first_word),                // Data output
        .C(ACLK),                      // Clock input
@@ -4086,7 +4072,7 @@ module w_upsizer #
        );
     end
   endgenerate
-  
+
   // Select command length or counted length.
   always @ *
   begin
@@ -4095,15 +4081,15 @@ module w_upsizer #
     else
       length_counter = length_counter_1;
   end
-  
+
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL_LENGTH
-      reg  [8-1:0]                    length_counter_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_353]                    length_counter_q;
       reg                             first_mi_word_q;
-    
+
       // Calculate next length counter value.
       assign next_length_counter = length_counter - 1'b1;
-      
+
       // Keep track of burst length.
       always @ (posedge ACLK) begin
         if (ARESET) begin
@@ -4116,29 +4102,29 @@ module w_upsizer #
             end else begin
               first_mi_word_q  <= 1'b0;
             end
-          
+
             length_counter_q <= next_length_counter;
           end
         end
       end
-      
+
       assign first_mi_word    = first_mi_word_q;
       assign length_counter_1 = length_counter_q;
-      
+
     end else begin : USE_FPGA_LENGTH
-      wire [8-1:0]  length_counter_i;
-      wire [8-1:0]  length_counter_ii;
-      wire [8-1:0]  length_sel;
-      wire [8-1:0]  length_di;
-      wire [8:0]    length_local_carry;
-      
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_354]  length_counter_i;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_355]  length_counter_ii;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_356]  length_sel;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_357]  length_di;
+      wire [`CFG_BITS_9-1:0]    length_local_carry;
+
       // Assign input to local vectors.
       assign length_local_carry[0] = 1'b0;
-    
+
       for (bit_cnt = 0; bit_cnt < 8 ; bit_cnt = bit_cnt + 1) begin : BIT_LANE
 
         LUT6_2 # (
-         .INIT(64'h333C_555A_FFF0_FFF0) 
+         .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LUT6_LENGTH_INST_INIT)
         ) LUT6_length_inst (
         .O6(length_sel[bit_cnt]),           // 6/5-LUT output (1-bit)
         .O5(length_di[bit_cnt]),            // 5-LUT output (1-bit)
@@ -4149,7 +4135,7 @@ module w_upsizer #
         .I4(first_mi_word),                 // LUT input (1-bit)
         .I5(1'b1)                           // LUT input (1-bit)
         );
-        
+
         MUXCY carry_inst 
         (
          .O (length_local_carry[bit_cnt+1]), 
@@ -4157,16 +4143,16 @@ module w_upsizer #
          .DI (length_di[bit_cnt]), 
          .S (length_sel[bit_cnt])
         ); 
-        
+
         XORCY xorcy_inst 
         (
          .O(length_counter_ii[bit_cnt]),
          .CI(length_local_carry[bit_cnt]),
          .LI(length_sel[bit_cnt])
         );
-        
+
         LUT4 # (
-         .INIT(16'hCCCA) 
+         .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LUT4_INST_INIT)
         ) LUT4_inst (
         .O(length_counter_i[bit_cnt]),    // 5-LUT output (1-bit)
         .I0(length_counter_1[bit_cnt]),     // LUT input (1-bit)
@@ -4174,9 +4160,9 @@ module w_upsizer #
         .I2(word_complete_rest_pop),      // LUT input (1-bit)
         .I3(word_complete_next_wrap_pop)  // LUT input (1-bit)
         );
-        
+
         FDRE #(
-         .INIT(1'b0)                    // Initial value of register (1'b0 or 1'b1)
+         .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_LENGTH_INST_INIT)                    // Initial value of register (1'b0 or 1'b1)
          ) FDRE_length_inst (
          .Q(length_counter_1[bit_cnt]), // Data output
          .C(ACLK),                      // Clock input
@@ -4184,13 +4170,13 @@ module w_upsizer #
          .R(ARESET),                    // Synchronous reset input
          .D(length_counter_i[bit_cnt])  // Data input
          );
-         
+
       end // end for bit_cnt
-      
+
       wire first_mi_word_i;
-      
+
       LUT6 # (
-       .INIT(64'hAAAC_AAAC_AAAC_AAAC) 
+       .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LUT6_FIRST_MI_INST_INIT)
       ) LUT6_first_mi_inst (
       .O(first_mi_word_i),                // 6-LUT output (1-bit)
       .I0(M_AXI_WLAST_I),                 // LUT input (1-bit)
@@ -4200,9 +4186,9 @@ module w_upsizer #
       .I4(1'b1),                          // LUT input (1-bit)
       .I5(1'b1)                           // LUT input (1-bit)
       );
-          
+
       FDSE #(
-       .INIT(1'b1)                    // Initial value of register (1'b0 or 1'b1)
+       .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDSE_INST_INIT)                    // Initial value of register (1'b0 or 1'b1)
        ) FDSE_inst (
        .Q(first_mi_word),             // Data output
        .C(ACLK),                      // Clock input
@@ -4210,27 +4196,27 @@ module w_upsizer #
        .S(ARESET),                    // Synchronous reset input
        .D(first_mi_word_i)            // Data input
        );
-      
+
     end
   endgenerate
-  
+
   generate
     if ( C_FAMILY == "rtl" || C_SUPPORT_BURSTS == 0 ) begin : USE_RTL_LAST_WORD
       // Detect last beat in a burst.
       assign last_beat = ( length_counter == 8'b0 );
-      
+
       // Determine if this last word that shall be assembled into this MI-side word.
       assign last_word = ( cmd_modified & last_beat & ( current_word == cmd_last_word ) ) |
                          ( C_SUPPORT_BURSTS == 0 );
-      
+
     end else begin : USE_FPGA_LAST_WORD
       wire last_beat_curr_word;
-      
+
       comparator_sel_static #
         (
-         .C_FAMILY(C_FAMILY),
-         .C_VALUE(8'b0),
-         .C_DATA_WIDTH(8)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_BEAT_INST_C_FAMILY),
+         .C_VALUE(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_BEAT_INST_C_VALUE),
+         .C_DATA_WIDTH(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_BEAT_INST_C_DATA_WIDTH)
          ) last_beat_inst
         (
          .CIN(1'b1),
@@ -4239,11 +4225,11 @@ module w_upsizer #
          .B(cmd_length),
          .COUT(last_beat)
          );
-      
+
       comparator_sel #
         (
-         .C_FAMILY(C_FAMILY),
-         .C_DATA_WIDTH(C_M_AXI_BYTES_LOG)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_BEAT_CURR_WORD_INST_C_FAMILY),
+         .C_DATA_WIDTH(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_BEAT_CURR_WORD_INST_C_DATA_WIDTH)
          ) last_beat_curr_word_inst
         (
          .CIN(last_beat),
@@ -4253,10 +4239,10 @@ module w_upsizer #
          .V(cmd_last_word),
          .COUT(last_beat_curr_word)
          );
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_WORD_INST_C_FAMILY)
          ) last_word_inst
         (
          .CIN(last_beat_curr_word),
@@ -4266,8 +4252,8 @@ module w_upsizer #
 
     end
   endgenerate
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Handle wrap buffer:
   //
@@ -4281,7 +4267,7 @@ module w_upsizer #
   // (was WRAP @ 0x4 on SI-side).
   // 
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // The unaligned SI-side words are pushed into the wrap buffer.
   assign store_in_wrap_buffer_enabled   = cmd_packed_wrap & ~wrap_buffer_available & cmd_valid;
   assign store_in_wrap_buffer           = store_in_wrap_buffer_enabled & S_AXI_WVALID;
@@ -4290,13 +4276,13 @@ module w_upsizer #
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL_USE_WRAP
       assign use_wrap_buffer      = wrap_buffer_available & last_word;
-      
+
     end else begin : USE_FPGA_USE_WRAP
       wire last_word_carry;  
-    
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_WORD_INST2_C_FAMILY)
          ) last_word_inst2
         (
          .CIN(last_word),
@@ -4306,7 +4292,7 @@ module w_upsizer #
 
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_WORD_INST3_C_FAMILY)
          ) last_word_inst3
         (
          .CIN(last_word_carry),
@@ -4316,7 +4302,7 @@ module w_upsizer #
 
       carry_latch_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_NEXT_WRAP_STALL_INST_C_FAMILY_2)
          ) word_complete_next_wrap_stall_inst
         (
          .CIN(last_word_carry),
@@ -4325,7 +4311,7 @@ module w_upsizer #
          );
     end
   endgenerate
-  
+
   // Wrap buffer becomes available when the unaligned wrap words has been taken care of.
   always @ (posedge ACLK) begin
     if (ARESET) begin
@@ -4338,8 +4324,8 @@ module w_upsizer #
       end
     end
   end
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Handle USER bits:
   // 
@@ -4352,14 +4338,14 @@ module w_upsizer #
   //   data word, regardless if the data is packed or not. For unpacked data 
   //   this would be a 1:1 ratio.
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Detect first SI-side word per MI-side word.
   assign first_si_in_mi = cmd_fix | 
                           first_word |
                           ~cmd_modified |
                           (cmd_modified & current_word == {C_M_AXI_BYTES_LOG{1'b0}}) |
                           ( C_SUPPORT_BURSTS == 0 );
-  
+
   // Select USER bits combinatorially when expanding or fix.
   always @ *
   begin
@@ -4373,7 +4359,7 @@ module w_upsizer #
       M_AXI_WUSER_I = {C_AXI_WUSER_WIDTH{1'b0}};
     end
   end
-  
+
   // Capture user bits.
   always @ (posedge ACLK) begin
     if (ARESET) begin
@@ -4384,8 +4370,8 @@ module w_upsizer #
       end
     end
   end
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Pack multiple data SI-side words into fewer MI-side data word.
   // Data is only packed when modify is set. Granularity is SI-side word for 
@@ -4410,26 +4396,26 @@ module w_upsizer #
   // information packed with "or" instead of multiplexing.
   //
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Determine if expander data should be used.
   assign use_expander_data = ~cmd_modified & cmd_valid;
-  
+
   // Registers and combinatorial data word mux.
   generate
     for (word_cnt = 0; word_cnt < C_RATIO ; word_cnt = word_cnt + 1) begin : WORD_LANE
-      
+
       // Generate select signal per SI-side word.
       if ( C_RATIO == 1 ) begin : SINGLE_WORD
         assign current_word_idx[word_cnt] = 1'b1;
       end else begin : MULTIPLE_WORD
         assign current_word_idx[word_cnt] = current_word_adjusted[C_M_AXI_BYTES_LOG-C_RATIO_LOG +: C_RATIO_LOG] == word_cnt;
       end
-      
+
       if ( ( C_PACKING_LEVEL == C_NEVER_PACK ) | ( C_SUPPORT_BURSTS == 0 ) ) begin : USE_EXPANDER
         // Expander only functionality.
-      
+
         if ( C_M_AXI_REGISTER ) begin : USE_REGISTER
-            
+
           always @ (posedge ACLK) begin
             if (ARESET) begin
               M_AXI_WDATA_I[word_cnt*C_S_AXI_DATA_WIDTH   +: C_S_AXI_DATA_WIDTH]    = {C_S_AXI_DATA_WIDTH{1'b0}};
@@ -4437,7 +4423,7 @@ module w_upsizer #
             end else begin
               if ( pop_si_data ) begin
                 M_AXI_WDATA_I[word_cnt*C_S_AXI_DATA_WIDTH   +: C_S_AXI_DATA_WIDTH] = S_AXI_WDATA;
-            
+
                 // Multiplex write strobe.
                 if ( current_word_idx[word_cnt] ) begin
                   // Combinatorial for last word to MI-side (only word for single).
@@ -4450,12 +4436,12 @@ module w_upsizer #
               end
             end
           end
-          
+
         end else begin : NO_REGISTER
           always @ *
           begin
             M_AXI_WDATA_I[word_cnt*C_S_AXI_DATA_WIDTH   +: C_S_AXI_DATA_WIDTH] = S_AXI_WDATA;
-          
+
             // Multiplex write strobe.
             if ( current_word_idx[word_cnt] ) begin
               // Combinatorial for last word to MI-side (only word for single).
@@ -4466,14 +4452,14 @@ module w_upsizer #
               M_AXI_WSTRB_I[word_cnt*C_S_AXI_DATA_WIDTH/8 +: C_S_AXI_DATA_WIDTH/8] = {C_S_AXI_DATA_WIDTH/8{1'b0}};
             end
           end
-          
+
         end // end if C_M_AXI_REGISTER
-        
+
       end else begin : USE_ALWAYS_PACKER
         // Packer functionality
-      
+
         for (byte_cnt = 0; byte_cnt < C_S_AXI_DATA_WIDTH / 8 ; byte_cnt = byte_cnt + 1) begin : BYTE_LANE
-        
+
           if ( C_FAMILY == "rtl" ) begin : USE_RTL_DATA
             // Generate extended write data and strobe in wrap buffer.
             always @ (posedge ACLK) begin
@@ -4490,14 +4476,14 @@ module w_upsizer #
                 end
               end
             end
-            
+
             assign wdata_wrap_buffer[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8] = 
                                     wdata_wrap_buffer_q[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8];
             assign wstrb_wrap_buffer[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1] = 
                                     wstrb_wrap_buffer_q[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1];
-            
+
             if ( C_M_AXI_REGISTER ) begin : USE_REGISTER
-              
+
               always @ (posedge ACLK) begin
                 if (ARESET) begin
                   M_AXI_WDATA_I[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8] <= 8'b0;
@@ -4511,7 +4497,7 @@ module w_upsizer #
                   end else if ( pop_mi_data ) begin
                     M_AXI_WDATA_I[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8] <= 8'b0;
                   end
-                  
+
                   if ( current_word_idx[word_cnt] & S_AXI_WSTRB[byte_cnt] & pop_si_data & ~store_in_wrap_buffer ) begin
                     M_AXI_WSTRB_I[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1] <= S_AXI_WSTRB[byte_cnt];
                   end else if ( use_wrap_buffer & pop_si_data &
@@ -4522,9 +4508,9 @@ module w_upsizer #
                   end
                 end
               end
-              
+
             end else begin : NO_REGISTER
-              
+
               // Generate extended write data and strobe.
               always @ (posedge ACLK) begin
                 if (ARESET) begin
@@ -4540,12 +4526,12 @@ module w_upsizer #
                   end
                 end
               end
-              
+
               assign wdata_buffer[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8] = 
                                  wdata_buffer_q[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8];
               assign wstrb_buffer[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1] = 
                                  wstrb_buffer_q[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1];
-              
+
               // Select packed or extended data.
               always @ *
               begin
@@ -4555,7 +4541,7 @@ module w_upsizer #
                 end else begin
                   wdata_last_word_mux[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8] = 8'b0;
                 end
-              
+
                 // Multiplex write strobe.
                 if ( current_word_idx[word_cnt] ) begin
                   // Combinatorial for last word to MI-side (only word for single).
@@ -4566,7 +4552,7 @@ module w_upsizer #
                   wstrb_last_word_mux[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1] = 1'b0;
                 end
               end
-              
+
               // Merge previous with current data.
               always @ *
               begin
@@ -4574,16 +4560,16 @@ module w_upsizer #
                                 (        wstrb_buffer[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1] ) | 
                                 ( wstrb_last_word_mux[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1] ) | 
                                 (   wstrb_wrap_buffer[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1] & use_wrap_buffer );
-                                
+
                 M_AXI_WDATA_I[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8] = 
                                 (        wdata_buffer[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8] ) | 
                                 ( wdata_last_word_mux[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8] ) |
                                 (   wdata_wrap_buffer[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8] & {8{use_wrap_buffer}} );
               end
-              
+
             end // end if C_M_AXI_REGISTER
           end else begin : USE_FPGA_DATA
-          
+
             always @ *
             begin
               if ( cmd_ready_i ) begin
@@ -4599,10 +4585,10 @@ module w_upsizer #
                                       wstrb_wrap_buffer[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1];
               end
             end
-            
+
             for (bit_cnt = 0; bit_cnt < 8 ; bit_cnt = bit_cnt + 1) begin : BIT_LANE
               FDRE #(
-               .INIT(1'b0)             // Initial value of register (1'b0 or 1'b1)
+               .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_WDATA_INST_INIT)             // Initial value of register (1'b0 or 1'b1)
                ) FDRE_wdata_inst (
                .Q(wdata_wrap_buffer[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8+bit_cnt]),    // Data output
                .C(ACLK),                                                                 // Clock input
@@ -4610,11 +4596,11 @@ module w_upsizer #
                .R(ARESET),                                                               // Synchronous reset input
                .D(wdata_wrap_buffer_cmb[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8+bit_cnt]) // Data input
                );
-              
+
             end // end for bit_cnt
-            
+
             FDRE #(
-             .INIT(1'b0)             // Initial value of register (1'b0 or 1'b1)
+             .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_WSTRB_INST_INIT)             // Initial value of register (1'b0 or 1'b1)
              ) FDRE_wstrb_inst (
              .Q(wstrb_wrap_buffer[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt]),      // Data output
              .C(ACLK),                                                           // Clock input
@@ -4622,19 +4608,19 @@ module w_upsizer #
              .R(ARESET),                                                         // Synchronous reset input
              .D(wstrb_wrap_buffer_cmb[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt])   // Data input
              );
-             
+
             if ( C_M_AXI_REGISTER ) begin : USE_REGISTER
-            
+
               assign wdata_qualifier[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt] = ( current_word_idx[word_cnt] & S_AXI_WSTRB[byte_cnt] | use_expander_data ) & pop_si_data & ~store_in_wrap_buffer_enabled;
               assign wstrb_qualifier[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt] = current_word_idx[word_cnt] & S_AXI_WSTRB[byte_cnt] & pop_si_data & ~store_in_wrap_buffer_enabled;
-            
+
               assign wrap_qualifier[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt]  = use_wrap_buffer & pop_si_data &
                                                                                wstrb_wrap_buffer[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1];
-            
+
               for (bit_cnt = 0; bit_cnt < 8 ; bit_cnt = bit_cnt + 1) begin : BIT_LANE
-                    
+
                 LUT6 # (
-                 .INIT(64'hF0F0_F0F0_CCCC_00AA) 
+                 .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LUT6_DATA_INST_INIT)
                 ) LUT6_data_inst (
                 .O(M_AXI_WDATA_cmb[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8+bit_cnt]),    // 6-LUT output (1-bit)
                 .I0(M_AXI_WDATA_q[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8+bit_cnt]),     // LUT input (1-bit)
@@ -4644,9 +4630,9 @@ module w_upsizer #
                 .I4(wrap_qualifier[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt]),            // LUT input (1-bit)
                 .I5(wdata_qualifier[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt])            // LUT input (1-bit)
                 );
-                    
+
                 FDRE #(
-                 .INIT(1'b0)             // Initial value of register (1'b0 or 1'b1)
+                 .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_WDATA_INST_INIT_2)             // Initial value of register (1'b0 or 1'b1)
                  ) FDRE_wdata_inst (
                  .Q(M_AXI_WDATA_q[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8+bit_cnt]),     // Data output
                  .C(ACLK),                                                              // Clock input
@@ -4654,11 +4640,11 @@ module w_upsizer #
                  .R(ARESET),                                                            // Synchronous reset input
                  .D(M_AXI_WDATA_cmb[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8+bit_cnt])    // Data input
                  );
-                
+
               end // end for bit_cnt
-              
+
               LUT6 # (
-               .INIT(64'hF0F0_F0F0_CCCC_00AA) 
+               .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LUT6_STRB_INST_INIT)
               ) LUT6_strb_inst (
               .O(M_AXI_WSTRB_cmb[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt]),            // 6-LUT output (1-bit)
               .I0(M_AXI_WSTRB_q[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt]),             // LUT input (1-bit)
@@ -4668,9 +4654,9 @@ module w_upsizer #
               .I4(wrap_qualifier[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt]),            // LUT input (1-bit)
               .I5(wstrb_qualifier[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt])            // LUT input (1-bit)
               );
-            
+
               FDRE #(
-               .INIT(1'b0)             // Initial value of register (1'b0 or 1'b1)
+               .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_WSTRB_INST_INIT_2)             // Initial value of register (1'b0 or 1'b1)
                ) FDRE_wstrb_inst (
                .Q(M_AXI_WSTRB_q[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt]),     // Data output
                .C(ACLK),                                                      // Clock input
@@ -4678,24 +4664,24 @@ module w_upsizer #
                .R(ARESET),                                                    // Synchronous reset input
                .D(M_AXI_WSTRB_cmb[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt])    // Data input
                );
-               
+
               always @ * 
               begin
                 M_AXI_WDATA_I[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8] = M_AXI_WDATA_q[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8];
                 M_AXI_WSTRB_I[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1] = M_AXI_WSTRB_q[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1];
               end
-              
+
             end else begin : NO_REGISTER
-            
+
               assign wdata_qualifier[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt]  = current_word_idx[word_cnt] & cmd_valid & S_AXI_WSTRB[byte_cnt];
-            
+
               assign wstrb_qualifier[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt]  = current_word_idx[word_cnt] & 
                                                                                 S_AXI_WSTRB[byte_cnt] & 
                                                                                 cmd_valid & S_AXI_WVALID;
-              
+
               for (bit_cnt = 0; bit_cnt < 8 ; bit_cnt = bit_cnt + 1) begin : BIT_LANE
                 LUT6 # (
-                 .INIT(64'hCCCA_CCCC_CCCC_CCCC) 
+                 .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LUT6_DATA_INST_INIT_2)
                 ) LUT6_data_inst (
                 .O(wdata_buffer_i[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8+bit_cnt]),   // 6-LUT output (1-bit)
                 .I0(S_AXI_WDATA[byte_cnt*8+bit_cnt]),                                 // LUT input (1-bit)
@@ -4705,9 +4691,9 @@ module w_upsizer #
                 .I4(wdata_qualifier[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt]),         // LUT input (1-bit)
                 .I5(S_AXI_WVALID)                                                     // LUT input (1-bit)
                 );
-                    
+
                 FDRE #(
-                 .INIT(1'b0)             // Initial value of register (1'b0 or 1'b1)
+                 .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_WDATA_INST_INIT_3)             // Initial value of register (1'b0 or 1'b1)
                  ) FDRE_wdata_inst (
                  .Q(wdata_buffer[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8+bit_cnt]),    // Data output
                  .C(ACLK),                                                            // Clock input
@@ -4715,11 +4701,11 @@ module w_upsizer #
                  .R(ARESET),                                                          // Synchronous reset input
                  .D(wdata_buffer_i[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8+bit_cnt])   // Data input
                  );
-                
+
               end // end for bit_cnt
-              
+
               LUT6 # (
-               .INIT(64'h0000_0000_0000_AAAE) 
+               .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LUT6_STRB_INST_INIT_2)
               ) LUT6_strb_inst (
               .O(wstrb_buffer_i[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt]),     // 6-LUT output (1-bit)
               .I0(wstrb_buffer[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt]),      // LUT input (1-bit)
@@ -4729,9 +4715,9 @@ module w_upsizer #
               .I4(word_complete_rest_pop),                                    // LUT input (1-bit)
               .I5(word_complete_next_wrap_pop)                                // LUT input (1-bit)
               );
-              
+
               FDRE #(
-               .INIT(1'b0)             // Initial value of register (1'b0 or 1'b1)
+               .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_WSTRB_INST_INIT_3)             // Initial value of register (1'b0 or 1'b1)
                ) FDRE_wstrb_inst (
                .Q(wstrb_buffer[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt]),      // Data output
                .C(ACLK),                                                      // Clock input
@@ -4739,7 +4725,7 @@ module w_upsizer #
                .R(ARESET_or_store_in_wrap_buffer),                            // Synchronous reset input
                .D(wstrb_buffer_i[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt])     // Data input
                );
-              
+
               // Select packed or extended data.
               always @ *
               begin
@@ -4751,7 +4737,7 @@ module w_upsizer #
                                 (        wdata_buffer[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8] & {8{wstrb_buffer[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt]}} ) | 
                                 (   wdata_wrap_buffer[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8] & {8{use_wrap_buffer}} );
                 end
-              
+
                 // Multiplex write strobe.
                 if ( current_word_idx[word_cnt] ) begin
                   // Combinatorial for last word to MI-side (only word for single).
@@ -4766,68 +4752,68 @@ module w_upsizer #
                                 (   wstrb_wrap_buffer[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1] & use_wrap_buffer );
                 end
               end
-              
+
               // Merge previous with current data.
               always @ *
               begin
                 M_AXI_WSTRB_I[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1] = 
                                 ( wstrb_last_word_mux[word_cnt*C_S_AXI_DATA_WIDTH/8+byte_cnt +: 1] );
-                                
+
                 M_AXI_WDATA_I[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8] = 
                                 ( wdata_last_word_mux[word_cnt*C_S_AXI_DATA_WIDTH+byte_cnt*8 +: 8] );
               end
-              
+
             end // end if C_M_AXI_REGISTER
           end // end if C_FAMILY
         end // end for byte_cnt
       end // end if USE_ALWAYS_PACKER
     end // end for word_cnt
   endgenerate
-      
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // MI-side output handling
   /////////////////////////////////////////////////////////////////////////////
-  
+
   generate
     if ( C_M_AXI_REGISTER ) begin : USE_REGISTER
       reg                             M_AXI_WLAST_q;
-      reg  [C_AXI_WUSER_WIDTH-1:0]    M_AXI_WUSER_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_358]    M_AXI_WUSER_q;
       reg                             M_AXI_WVALID_q;
-    
+
       // Register MI-side Data.
       always @ (posedge ACLK) begin
         if (ARESET) begin
           M_AXI_WLAST_q     <= 1'b0;
           M_AXI_WUSER_q     <= {C_AXI_WUSER_WIDTH{1'b0}};
           M_AXI_WVALID_q    <= 1'b0;
-          
+
         end else begin
           if ( M_AXI_WREADY_I ) begin
             M_AXI_WLAST_q     <= M_AXI_WLAST_I;
             M_AXI_WUSER_q     <= M_AXI_WUSER_I;
             M_AXI_WVALID_q    <= M_AXI_WVALID_I;
           end
-          
+
         end
       end
-      
+
       assign M_AXI_WDATA    = M_AXI_WDATA_I;
       assign M_AXI_WSTRB    = M_AXI_WSTRB_I;
       assign M_AXI_WLAST    = M_AXI_WLAST_q;
       assign M_AXI_WUSER    = M_AXI_WUSER_q;
       assign M_AXI_WVALID   = M_AXI_WVALID_q;
       assign M_AXI_WREADY_I = ( M_AXI_WVALID_q & M_AXI_WREADY) | ~M_AXI_WVALID_q;
-      
+
       // Get MI-side data.
       assign pop_mi_data_i  = M_AXI_WVALID_I & M_AXI_WREADY_I;
       assign pop_mi_data    = M_AXI_WVALID_q & M_AXI_WREADY_I;
-      
+
       // Detect when MI-side is stalling.
       assign mi_stalling    = ( M_AXI_WVALID_q & ~M_AXI_WREADY_I ) & ~store_in_wrap_buffer_enabled;
-                          
+
     end else begin : NO_REGISTER
-    
+
       // Combinatorial MI-side Data.
       assign M_AXI_WDATA    = M_AXI_WDATA_I;
       assign M_AXI_WSTRB    = M_AXI_WSTRB_I;
@@ -4835,25 +4821,25 @@ module w_upsizer #
       assign M_AXI_WUSER    = M_AXI_WUSER_I;
       assign M_AXI_WVALID   = M_AXI_WVALID_I;
       assign M_AXI_WREADY_I = M_AXI_WREADY;
-      
+
       // Get MI-side data.
       if ( C_FAMILY == "rtl" ) begin : USE_RTL_POP_MI
         assign pop_mi_data_i  = M_AXI_WVALID_I & M_AXI_WREADY_I;
-        
+
       end else begin : USE_FPGA_POP_MI
-        
+
         assign pop_mi_data_i  = ( word_complete_next_wrap_pop | word_complete_rest_pop);
-                             
+
       end
       assign pop_mi_data    = pop_mi_data_i;
-      
+
       // Detect when MI-side is stalling.
       assign mi_stalling    = word_completed_qualified & ~M_AXI_WREADY_I;
-                          
+
     end
   endgenerate
-  
-  
+
+
 endmodule
 
 
@@ -4867,43 +4853,43 @@ endmodule
 
 module r_upsizer #
   (
-   parameter         C_FAMILY                         = "rtl", 
+   parameter         C_FAMILY                         = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_FAMILY_7,
                        // FPGA Family. Current version: virtex6 or spartan6.
-   parameter integer C_AXI_ID_WIDTH                   = 4, 
+   parameter integer C_AXI_ID_WIDTH                   = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_ID_WIDTH_4,
                        // Width of all ID signals on SI and MI side of converter.
                        // Range: >= 1.
-   parameter         C_S_AXI_DATA_WIDTH               = 32'h00000020, 
+   parameter         C_S_AXI_DATA_WIDTH               = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_S_AXI_DATA_WIDTH_4,
                        // Width of S_AXI_WDATA and S_AXI_RDATA.
                        // Format: Bit32; 
                        // Range: 'h00000020, 'h00000040, 'h00000080, 'h00000100.
-   parameter         C_M_AXI_DATA_WIDTH               = 32'h00000040, 
+   parameter         C_M_AXI_DATA_WIDTH               = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_M_AXI_DATA_WIDTH_4,
                        // Width of M_AXI_WDATA and M_AXI_RDATA.
                        // Assume greater than or equal to C_S_AXI_DATA_WIDTH.
                        // Format: Bit32;
                        // Range: 'h00000020, 'h00000040, 'h00000080, 'h00000100.
-   parameter integer C_S_AXI_REGISTER                 = 0,
+   parameter integer C_S_AXI_REGISTER                 = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_S_AXI_REGISTER,
                        // Clock output data.
                        // Range: 0, 1
-   parameter integer C_AXI_SUPPORTS_USER_SIGNALS      = 0,
+   parameter integer C_AXI_SUPPORTS_USER_SIGNALS      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_SUPPORTS_USER_SIGNALS_5,
                        // 1 = Propagate all USER signals, 0 = Dont propagate.
-   parameter integer C_AXI_RUSER_WIDTH                = 1,
+   parameter integer C_AXI_RUSER_WIDTH                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_AXI_RUSER_WIDTH_3,
                        // Width of RUSER signals. 
                        // Range: >= 1.
-   parameter integer C_PACKING_LEVEL                    = 1,
+   parameter integer C_PACKING_LEVEL                    = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_PACKING_LEVEL_4,
                        // 0 = Never pack (expander only); packing logic is omitted.
                        // 1 = Pack only when CACHE[1] (Modifiable) is high.
                        // 2 = Always pack, regardless of sub-size transaction or Modifiable bit.
                        //     (Required when used as helper-core by mem-con.)
-   parameter integer C_SUPPORT_BURSTS                 = 1,
+   parameter integer C_SUPPORT_BURSTS                 = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_SUPPORT_BURSTS_4,
                        // Disabled when all connected masters and slaves are AxiLite,
                        //   allowing logic to be simplified.
-   parameter integer C_S_AXI_BYTES_LOG                = 3,
+   parameter integer C_S_AXI_BYTES_LOG                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_S_AXI_BYTES_LOG_3,
                        // Log2 of number of 32bit word on SI-side.
-   parameter integer C_M_AXI_BYTES_LOG                = 3,
+   parameter integer C_M_AXI_BYTES_LOG                = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_M_AXI_BYTES_LOG_3,
                        // Log2 of number of 32bit word on MI-side.
-   parameter integer C_RATIO                          = 2,
+   parameter integer C_RATIO                          = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_RATIO_2,
                        // Up-Sizing ratio for data.
-   parameter integer C_RATIO_LOG                      = 1
+   parameter integer C_RATIO_LOG                      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_RATIO_LOG_2
                        // Log2 of Up-Sizing ratio for data.
    )
   (
@@ -4917,93 +4903,93 @@ module r_upsizer #
    input  wire                              cmd_modified,
    input  wire                              cmd_complete_wrap,
    input  wire                              cmd_packed_wrap,
-   input  wire [C_M_AXI_BYTES_LOG-1:0]      cmd_first_word, 
-   input  wire [C_M_AXI_BYTES_LOG-1:0]      cmd_next_word,
-   input  wire [C_M_AXI_BYTES_LOG-1:0]      cmd_last_word,
-   input  wire [C_M_AXI_BYTES_LOG-1:0]      cmd_offset,
-   input  wire [C_M_AXI_BYTES_LOG-1:0]      cmd_mask,
-   input  wire [C_S_AXI_BYTES_LOG:0]        cmd_step,
-   input  wire [8-1:0]                      cmd_length,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_359]      cmd_first_word,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_360]      cmd_next_word,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_361]      cmd_last_word,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_362]      cmd_offset,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_363]      cmd_mask,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_364]        cmd_step,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_365]                      cmd_length,
    output wire                              cmd_ready,
-   
+
    // Slave Interface Read Data Ports
-   output wire [C_AXI_ID_WIDTH-1:0]           S_AXI_RID,
-   output wire [C_S_AXI_DATA_WIDTH-1:0]    S_AXI_RDATA,
-   output wire [2-1:0]                          S_AXI_RRESP,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_366]           S_AXI_RID,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_367]    S_AXI_RDATA,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_368]                          S_AXI_RRESP,
    output wire                                                    S_AXI_RLAST,
-   output wire [C_AXI_RUSER_WIDTH-1:0]          S_AXI_RUSER,
+   output wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_369]          S_AXI_RUSER,
    output wire                                                    S_AXI_RVALID,
    input  wire                                                    S_AXI_RREADY,
 
    // Master Interface Read Data Ports
-   input  wire [C_AXI_ID_WIDTH-1:0]          M_AXI_RID,
-   input  wire [C_M_AXI_DATA_WIDTH-1:0]    M_AXI_RDATA,
-   input  wire [2-1:0]                         M_AXI_RRESP,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_370]          M_AXI_RID,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_371]    M_AXI_RDATA,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_372]                         M_AXI_RRESP,
    input  wire                                                   M_AXI_RLAST,
-   input  wire [C_AXI_RUSER_WIDTH-1:0]         M_AXI_RUSER,
+   input  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_373]         M_AXI_RUSER,
    input  wire                                                   M_AXI_RVALID,
    output wire                                                   M_AXI_RREADY
    );
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Variables for generating parameter controlled instances.
   /////////////////////////////////////////////////////////////////////////////
-  
+
   genvar bit_cnt;
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Local params
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Constants for packing levels.
-  localparam integer C_NEVER_PACK        = 0;
-  localparam integer C_DEFAULT_PACK      = 1;
-  localparam integer C_ALWAYS_PACK       = 2;
-  
-  
+  localparam integer C_NEVER_PACK        = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_NEVER_PACK_3;
+  localparam integer C_DEFAULT_PACK      = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_DEFAULT_PACK_3;
+  localparam integer C_ALWAYS_PACK       = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_LOCALPARAM_C_ALWAYS_PACK_3;
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Functions
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Internal signals
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Sub-word handling.
   wire                            sel_first_word;
   reg                             first_word;
-  reg  [C_M_AXI_BYTES_LOG-1:0]    current_word_1;
-  reg  [C_M_AXI_BYTES_LOG-1:0]    current_word_cmb;
-  wire [C_M_AXI_BYTES_LOG-1:0]    current_word;
-  wire [C_M_AXI_BYTES_LOG-1:0]    current_word_adjusted;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_374]    current_word_1;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_375]    current_word_cmb;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_376]    current_word;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_377]    current_word_adjusted;
   wire                            last_beat;
   wire                            last_word;
-  wire [C_M_AXI_BYTES_LOG-1:0]    cmd_step_i;
-  
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_378]    cmd_step_i;
+
   // Sub-word handling for the next cycle.
-  wire [C_M_AXI_BYTES_LOG-1:0]    pre_next_word_i;
-  wire [C_M_AXI_BYTES_LOG-1:0]    pre_next_word;
-  reg  [C_M_AXI_BYTES_LOG-1:0]    pre_next_word_1;
-  wire [C_M_AXI_BYTES_LOG-1:0]    next_word_i;
-  wire [C_M_AXI_BYTES_LOG-1:0]    next_word;
-  
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_379]    pre_next_word_i;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_380]    pre_next_word;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_381]    pre_next_word_1;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_382]    next_word_i;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_383]    next_word;
+
   // Burst length handling.
   wire                            first_mi_word;
-  wire [8-1:0]                    length_counter_1;
-  reg  [8-1:0]                    length_counter;
-  wire [8-1:0]                    next_length_counter;
-  
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_384]                    length_counter_1;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_385]                    length_counter;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_386]                    next_length_counter;
+
   // Handle wrap buffering.
   wire                            store_in_wrap_buffer;
   reg                             use_wrap_buffer;
   reg                             wrap_buffer_available;
-  reg [C_AXI_ID_WIDTH-1:0]        rid_wrap_buffer;
-  reg [2-1:0]                     rresp_wrap_buffer;
-  reg [C_AXI_RUSER_WIDTH-1:0]     ruser_wrap_buffer;
-  
+  reg [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_387]        rid_wrap_buffer;
+  reg [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_388]                     rresp_wrap_buffer;
+  reg [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_389]     ruser_wrap_buffer;
+
   // Throttling help signals.
   wire                            next_word_wrap;
   wire                            word_complete_next_wrap;
@@ -5018,23 +5004,23 @@ module r_upsizer #
   wire                            pop_si_data;
   wire                            pop_mi_data;
   wire                            si_stalling;
-  
+
   // Internal signals for MI-side.
-  reg  [C_M_AXI_DATA_WIDTH-1:0]   M_AXI_RDATA_I;
+  reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_390]   M_AXI_RDATA_I;
   wire                            M_AXI_RLAST_I;
   wire                            M_AXI_RVALID_I;
   wire                            M_AXI_RREADY_I;
-  
+
   // Internal signals for SI-side.
-  wire [C_AXI_ID_WIDTH-1:0]       S_AXI_RID_I;
-  wire [C_S_AXI_DATA_WIDTH-1:0]   S_AXI_RDATA_I;
-  wire [2-1:0]                    S_AXI_RRESP_I;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_391]       S_AXI_RID_I;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_392]   S_AXI_RDATA_I;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_393]                    S_AXI_RRESP_I;
   wire                            S_AXI_RLAST_I;
-  wire [C_AXI_RUSER_WIDTH-1:0]    S_AXI_RUSER_I;
+  wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_394]    S_AXI_RUSER_I;
   wire                            S_AXI_RVALID_I;
   wire                            S_AXI_RREADY_I;
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Handle interface handshaking:
   //
@@ -5054,7 +5040,7 @@ module r_upsizer #
   // SI-side has been ackowledged.
   //
   /////////////////////////////////////////////////////////////////////////////
-  
+
   generate
     if ( C_RATIO_LOG > 1 ) begin : USE_LARGE_UPSIZING
       assign cmd_step_i = {{C_RATIO_LOG-1{1'b0}}, cmd_step};
@@ -5062,7 +5048,7 @@ module r_upsizer #
       assign cmd_step_i = cmd_step;
     end
   endgenerate
-  
+
   generate
     if ( C_FAMILY == "rtl" || ( C_SUPPORT_BURSTS == 0 ) || 
        ( C_PACKING_LEVEL == C_NEVER_PACK ) ) begin : USE_RTL_WORD_COMPLETED
@@ -5074,36 +5060,36 @@ module r_upsizer #
                                 ( ~cmd_modified & ( C_PACKING_LEVEL == C_DEFAULT_PACK ) ) |
                                 ( C_PACKING_LEVEL == C_NEVER_PACK ) |
                                 ( C_SUPPORT_BURSTS == 0 ) );
-      
+
       // RTL equivalent of optimized partial extressions (address wrap for next word).
       assign word_complete_next_wrap       = ( ~cmd_fix & ~cmd_complete_wrap & next_word == {C_M_AXI_BYTES_LOG{1'b0}} ) | 
                                             ( C_PACKING_LEVEL == C_NEVER_PACK ) |
                                             ( C_SUPPORT_BURSTS == 0 );
       assign word_complete_next_wrap_ready = word_complete_next_wrap & M_AXI_RVALID_I & ~si_stalling;
       assign word_complete_next_wrap_pop   = word_complete_next_wrap_ready & M_AXI_RVALID_I;
-      
+
       // RTL equivalent of optimized partial extressions (last word and the remaining).
       assign word_complete_last_word  = last_word & (~cmd_fix & ~use_wrap_buffer);
       assign word_complete_rest       = word_complete_last_word | cmd_fix | 
                                         ( ~cmd_modified & ( C_PACKING_LEVEL == C_DEFAULT_PACK ) );
       assign word_complete_rest_ready = word_complete_rest & M_AXI_RVALID_I & ~si_stalling;
       assign word_complete_rest_pop   = word_complete_rest_ready & M_AXI_RVALID_I;
-      
+
     end else begin : USE_FPGA_WORD_COMPLETED
-    
+
       wire sel_word_complete_next_wrap;
       wire sel_word_completed;
       wire sel_m_axi_rready;
       wire sel_word_complete_last_word;
       wire sel_word_complete_rest;
-      
+
       // Optimize next word address wrap branch of expression.
       //
       comparator_sel_static #
         (
-         .C_FAMILY(C_FAMILY),
-         .C_VALUE({C_M_AXI_BYTES_LOG{1'b0}}),
-         .C_DATA_WIDTH(C_M_AXI_BYTES_LOG)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_NEXT_WORD_WRAP_INST_C_FAMILY_2),
+         .C_VALUE(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_NEXT_WORD_WRAP_INST_C_VALUE_2),
+         .C_DATA_WIDTH(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_NEXT_WORD_WRAP_INST_C_DATA_WIDTH_2)
          ) next_word_wrap_inst
         (
          .CIN(1'b1),
@@ -5112,143 +5098,143 @@ module r_upsizer #
          .B(cmd_next_word),
          .COUT(next_word_wrap)
          );
-         
+
       assign sel_word_complete_next_wrap = ~cmd_fix & ~cmd_complete_wrap;
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_NEXT_WRAP_INST_C_FAMILY_2)
          ) word_complete_next_wrap_inst
         (
          .CIN(next_word_wrap),
          .S(sel_word_complete_next_wrap),
          .COUT(word_complete_next_wrap)
          );
-         
+
       assign sel_m_axi_rready = cmd_valid & S_AXI_RREADY_I;
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_NEXT_WRAP_READY_INST_C_FAMILY)
          ) word_complete_next_wrap_ready_inst
         (
          .CIN(word_complete_next_wrap),
          .S(sel_m_axi_rready),
          .COUT(word_complete_next_wrap_ready)
          );
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_NEXT_WRAP_POP_INST_C_FAMILY_2)
          ) word_complete_next_wrap_pop_inst
         (
          .CIN(word_complete_next_wrap_ready),
          .S(M_AXI_RVALID_I),
          .COUT(word_complete_next_wrap_pop)
          );
-      
+
       // Optimize last word and "rest" branch of expression.
       //
       assign sel_word_complete_last_word = ~cmd_fix & ~use_wrap_buffer;
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_LAST_WORD_INST_C_FAMILY)
          ) word_complete_last_word_inst
         (
          .CIN(last_word),
          .S(sel_word_complete_last_word),
          .COUT(word_complete_last_word)
          );
-      
+
       assign sel_word_complete_rest = cmd_fix | ( ~cmd_modified & ( C_PACKING_LEVEL == C_DEFAULT_PACK ) );
-      
+
       carry_or #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_REST_INST_C_FAMILY)
          ) word_complete_rest_inst
         (
          .CIN(word_complete_last_word),
          .S(sel_word_complete_rest),
          .COUT(word_complete_rest)
          );
-         
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_REST_READY_INST_C_FAMILY)
          ) word_complete_rest_ready_inst
         (
          .CIN(word_complete_rest),
          .S(sel_m_axi_rready),
          .COUT(word_complete_rest_ready)
          );
-      
+
       carry_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_WORD_COMPLETE_REST_POP_INST_C_FAMILY_2)
          ) word_complete_rest_pop_inst
         (
          .CIN(word_complete_rest_ready),
          .S(M_AXI_RVALID_I),
          .COUT(word_complete_rest_pop)
          );
-      
+
       // Combine the two branches to generate the full signal.
       assign word_completed = word_complete_next_wrap | word_complete_rest;
-      
+
     end
   endgenerate
-  
+
   // Only propagate Valid when there is command information available.
   assign M_AXI_RVALID_I = M_AXI_RVALID & cmd_valid;
-  
+
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL_CTRL
       // Pop word from MI-side.
       assign M_AXI_RREADY_I = word_completed & S_AXI_RREADY_I;
-      
+
       // Get MI-side data.
       assign pop_mi_data    = M_AXI_RVALID_I & M_AXI_RREADY_I;
-      
+
       // Signal that the command is done (so that it can be poped from command queue).
       assign cmd_ready_i    = cmd_valid & S_AXI_RLAST_I & pop_si_data;
-      
+
     end else begin : USE_FPGA_CTRL
       wire sel_cmd_ready;
-      
+
       assign M_AXI_RREADY_I = word_complete_next_wrap_ready | word_complete_rest_ready;
-      
+
       assign pop_mi_data    = word_complete_next_wrap_pop | word_complete_rest_pop;
-      
+
       assign sel_cmd_ready  = cmd_valid & pop_si_data;
-    
+
       carry_latch_and #
         (
-         .C_FAMILY(C_FAMILY)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_CMD_READY_INST_C_FAMILY)
          ) cmd_ready_inst
         (
          .CIN(S_AXI_RLAST_I),
          .I(sel_cmd_ready),
          .O(cmd_ready_i)
          );
-      
+
     end
   endgenerate
-  
+
   // Indicate when there is data available @ SI-side.
   assign S_AXI_RVALID_I = ( M_AXI_RVALID_I | use_wrap_buffer );
-  
+
   // Get SI-side data.
   assign pop_si_data    = S_AXI_RVALID_I & S_AXI_RREADY_I;
-  
+
   // Assign external signals.
   assign M_AXI_RREADY   = M_AXI_RREADY_I;
   assign cmd_ready      = cmd_ready_i;
-  
+
   // Detect when SI-side is stalling.
   assign si_stalling    = S_AXI_RVALID_I & ~S_AXI_RREADY_I;
-                          
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Keep track of data extraction:
   // 
@@ -5283,35 +5269,35 @@ module r_upsizer #
   // Last word is scaled for all other transactions.
   //
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Select if the offset comes from command queue directly or 
   // from a counter while when extracting multiple SI words per MI word
   assign sel_first_word = first_word | cmd_fix;
   assign current_word   = sel_first_word ? cmd_first_word : 
                                            current_word_1;
-  
+
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL_NEXT_WORD
-      
+
       // Calculate next word.
       assign pre_next_word_i  = ( next_word_i + cmd_step_i );
-      
+
       // Calculate next word.
       assign next_word_i      = sel_first_word ? cmd_next_word : 
                                                  pre_next_word_1;
-      
+
     end else begin : USE_FPGA_NEXT_WORD
-      wire [C_M_AXI_BYTES_LOG-1:0]  next_sel;
-      wire [C_M_AXI_BYTES_LOG:0]    next_carry_local;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_395]  next_sel;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_396]    next_carry_local;
 
       // Assign input to local vectors.
       assign next_carry_local[0]      = 1'b0;
-    
+
       // Instantiate one carry and per level.
       for (bit_cnt = 0; bit_cnt < C_M_AXI_BYTES_LOG ; bit_cnt = bit_cnt + 1) begin : LUT_LEVEL
-        
+
         LUT6_2 # (
-         .INIT(64'h5A5A_5A66_F0F0_F0CC) 
+         .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LUT6_2_INST_INIT_2)
         ) LUT6_2_inst (
         .O6(next_sel[bit_cnt]),         // 6/5-LUT output (1-bit)
         .O5(next_word_i[bit_cnt]),      // 5-LUT output (1-bit)
@@ -5322,7 +5308,7 @@ module r_upsizer #
         .I4(cmd_fix),                   // LUT input (1-bit)
         .I5(1'b1)                       // LUT input (1-bit)
         );
-        
+
         MUXCY next_carry_inst 
         (
          .O (next_carry_local[bit_cnt+1]), 
@@ -5330,26 +5316,26 @@ module r_upsizer #
          .DI (cmd_step_i[bit_cnt]), 
          .S (next_sel[bit_cnt])
         ); 
-        
+
         XORCY next_xorcy_inst 
         (
          .O(pre_next_word_i[bit_cnt]),
          .CI(next_carry_local[bit_cnt]),
          .LI(next_sel[bit_cnt])
         );
-        
+
       end // end for bit_cnt
-      
+
     end
   endgenerate
-  
+
   // Calculate next word.
   assign next_word              = next_word_i     & cmd_mask;
   assign pre_next_word          = pre_next_word_i & cmd_mask;
-  
+
   // Calculate the word address with offset.
   assign current_word_adjusted  = current_word | cmd_offset;
-  
+
   // Prepare next word address.
   always @ (posedge ACLK) begin
     if (ARESET) begin
@@ -5364,13 +5350,13 @@ module r_upsizer #
         end else begin
           first_word      <=  1'b0;
         end
-      
+
         current_word_1  <= next_word;
         pre_next_word_1 <= pre_next_word;
       end
     end
   end
-  
+
   // Select command length or counted length.
   always @ *
   begin
@@ -5379,15 +5365,15 @@ module r_upsizer #
     else
       length_counter = length_counter_1;
   end
-  
+
   // Calculate next length counter value.
   assign next_length_counter = length_counter - 1'b1;
-  
+
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL_LENGTH
-      reg  [8-1:0]                    length_counter_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_397]                    length_counter_q;
       reg                             first_mi_word_q;
-    
+
       always @ (posedge ACLK) begin
         if (ARESET) begin
           first_mi_word_q  <= 1'b1;
@@ -5399,28 +5385,28 @@ module r_upsizer #
             end else begin
               first_mi_word_q  <= 1'b0;
             end
-          
+
             length_counter_q <= next_length_counter;
           end
         end
       end
-      
+
       assign first_mi_word    = first_mi_word_q;
       assign length_counter_1 = length_counter_q;
-      
+
     end else begin : USE_FPGA_LENGTH
-      wire [8-1:0]  length_counter_i;
-      wire [8-1:0]  length_sel;
-      wire [8-1:0]  length_di;
-      wire [8:0]    length_local_carry;
-      
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_398]  length_counter_i;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_399]  length_sel;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_400]  length_di;
+      wire [`CFG_BITS_9-1:0]    length_local_carry;
+
       // Assign input to local vectors.
       assign length_local_carry[0] = 1'b0;
-    
+
       for (bit_cnt = 0; bit_cnt < 8 ; bit_cnt = bit_cnt + 1) begin : BIT_LANE
 
         LUT6_2 # (
-         .INIT(64'h333C_555A_FFF0_FFF0) 
+         .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LUT6_2_INST_INIT_3)
         ) LUT6_2_inst (
         .O6(length_sel[bit_cnt]),           // 6/5-LUT output (1-bit)
         .O5(length_di[bit_cnt]),            // 5-LUT output (1-bit)
@@ -5431,7 +5417,7 @@ module r_upsizer #
         .I4(first_mi_word),                 // LUT input (1-bit)
         .I5(1'b1)                           // LUT input (1-bit)
         );
-        
+
         MUXCY and_inst 
         (
          .O (length_local_carry[bit_cnt+1]), 
@@ -5439,16 +5425,16 @@ module r_upsizer #
          .DI (length_di[bit_cnt]), 
          .S (length_sel[bit_cnt])
         ); 
-        
+
         XORCY xorcy_inst 
         (
          .O(length_counter_i[bit_cnt]),
          .CI(length_local_carry[bit_cnt]),
          .LI(length_sel[bit_cnt])
         );
-        
+
         FDRE #(
-         .INIT(1'b0)                    // Initial value of register (1'b0 or 1'b1)
+         .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_INST_INIT_4)                    // Initial value of register (1'b0 or 1'b1)
          ) FDRE_inst (
          .Q(length_counter_1[bit_cnt]), // Data output
          .C(ACLK),                      // Clock input
@@ -5457,11 +5443,11 @@ module r_upsizer #
          .D(length_counter_i[bit_cnt])  // Data input
          );
       end // end for bit_cnt
-      
+
       wire first_mi_word_i;
-      
+
       LUT6 # (
-       .INIT(64'hAAAC_AAAC_AAAC_AAAC) 
+       .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LUT6_CNT_INST_INIT)
       ) LUT6_cnt_inst (
       .O(first_mi_word_i),                // 6-LUT output (1-bit)
       .I0(M_AXI_RLAST),                   // LUT input (1-bit)
@@ -5471,9 +5457,9 @@ module r_upsizer #
       .I4(1'b1),                          // LUT input (1-bit)
       .I5(1'b1)                           // LUT input (1-bit)
       );
-          
+
       FDSE #(
-       .INIT(1'b1)                    // Initial value of register (1'b0 or 1'b1)
+       .INIT(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_FDRE_INST_INIT_5)                    // Initial value of register (1'b0 or 1'b1)
        ) FDRE_inst (
        .Q(first_mi_word),             // Data output
        .C(ACLK),                      // Clock input
@@ -5481,32 +5467,32 @@ module r_upsizer #
        .S(ARESET),                    // Synchronous reset input
        .D(first_mi_word_i)            // Data input
        );
-      
+
     end
   endgenerate
-  
+
   generate
     if ( C_FAMILY == "rtl" || C_SUPPORT_BURSTS == 0 ) begin : USE_RTL_LAST_WORD
       // Detect last beat in a burst.
       assign last_beat = ( length_counter == 8'b0 );
-      
+
       // Determine if this last word that shall be extracted from this MI-side word.
       assign last_word = ( last_beat & ( current_word == cmd_last_word ) & ~wrap_buffer_available & ( current_word == cmd_last_word ) ) |
                          ( use_wrap_buffer & ( current_word == cmd_last_word ) ) |
                          ( last_beat & ( current_word == cmd_last_word ) & ( C_PACKING_LEVEL == C_NEVER_PACK ) ) |
                          ( C_SUPPORT_BURSTS == 0 );
-  
+
     end else begin : USE_FPGA_LAST_WORD
-    
+
       wire sel_last_word;
       wire last_beat_ii;
-      
-      
+
+
       comparator_sel_static #
         (
-         .C_FAMILY(C_FAMILY),
-         .C_VALUE(8'b0),
-         .C_DATA_WIDTH(8)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_BEAT_INST_C_FAMILY_2),
+         .C_VALUE(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_BEAT_INST_C_VALUE_2),
+         .C_DATA_WIDTH(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_BEAT_INST_C_DATA_WIDTH_2)
          ) last_beat_inst
         (
          .CIN(1'b1),
@@ -5515,44 +5501,44 @@ module r_upsizer #
          .B(cmd_length),
          .COUT(last_beat)
          );
-      
+
       if ( C_PACKING_LEVEL != C_NEVER_PACK  ) begin : USE_FPGA_PACK
         // 
         //
         wire sel_last_beat;
         wire last_beat_i;
-        
+
         assign sel_last_beat = ~wrap_buffer_available;
-        
+
         carry_and #
           (
-           .C_FAMILY(C_FAMILY)
+           .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_BEAT_INST_1_C_FAMILY)
            ) last_beat_inst_1
           (
            .CIN(last_beat),
            .S(sel_last_beat),
            .COUT(last_beat_i)
            );
-  
+
         carry_or #
           (
-           .C_FAMILY(C_FAMILY)
+           .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_BEAT_WRAP_INST_C_FAMILY)
            ) last_beat_wrap_inst
           (
            .CIN(last_beat_i),
            .S(use_wrap_buffer),
            .COUT(last_beat_ii)
            );
-  
+
       end else begin : NO_PACK
         assign last_beat_ii = last_beat;
-           
+
       end
-        
+
       comparator_sel #
         (
-         .C_FAMILY(C_FAMILY),
-         .C_DATA_WIDTH(C_M_AXI_BYTES_LOG)
+         .C_FAMILY(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_BEAT_CURR_WORD_INST_C_FAMILY_2),
+         .C_DATA_WIDTH(`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_INST_LAST_BEAT_CURR_WORD_INST_C_DATA_WIDTH_2)
          ) last_beat_curr_word_inst
         (
          .CIN(last_beat_ii),
@@ -5562,11 +5548,11 @@ module r_upsizer #
          .V(cmd_last_word),
          .COUT(last_word)
          );
-      
+
     end
   endgenerate
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Handle wrap buffer:
   // 
@@ -5582,10 +5568,10 @@ module r_upsizer #
   // arrived.
   // 
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // Save data to be able to perform buffer wraping.
   assign store_in_wrap_buffer = M_AXI_RVALID_I & cmd_packed_wrap & first_mi_word & ~use_wrap_buffer;
-  
+
   // Mark that there are data available for wrap buffering.
   always @ (posedge ACLK) begin
     if (ARESET) begin
@@ -5598,7 +5584,7 @@ module r_upsizer #
       end
     end
   end
-  
+
   // Start using the wrap buffer.
   always @ (posedge ACLK) begin
     if (ARESET) begin
@@ -5611,7 +5597,7 @@ module r_upsizer #
       end
     end
   end
-  
+
   // Store data in wrap buffer.
   always @ (posedge ACLK) begin
     if (ARESET) begin
@@ -5628,8 +5614,8 @@ module r_upsizer #
       end
     end
   end
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Select the SI-side word to read.
   //
@@ -5646,7 +5632,7 @@ module r_upsizer #
   // from the MI-side word.
   //
   /////////////////////////////////////////////////////////////////////////////
-  
+
   // ID, RESP and USER has to be multiplexed.
   assign S_AXI_RID_I    = ( use_wrap_buffer & ( C_SUPPORT_BURSTS == 1 ) ) ? 
                           rid_wrap_buffer :
@@ -5659,7 +5645,7 @@ module r_upsizer #
                             ruser_wrap_buffer :
                             M_AXI_RUSER :
                           {C_AXI_RUSER_WIDTH{1'b0}};
-                          
+
   // Data has to be multiplexed.
   generate
     if ( C_RATIO == 1 ) begin : SINGLE_WORD
@@ -5668,36 +5654,36 @@ module r_upsizer #
                               M_AXI_RDATA;
     end else begin : MULTIPLE_WORD
       // Get the ratio bits (MI-side words vs SI-side words).
-      wire [C_RATIO_LOG-1:0]          current_index;
+      wire [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_401]          current_index;
       assign current_index  = current_word_adjusted[C_M_AXI_BYTES_LOG-C_RATIO_LOG +: C_RATIO_LOG];
-      
+
       assign S_AXI_RDATA_I  = ( use_wrap_buffer & ( C_SUPPORT_BURSTS == 1 ) ) ? 
                               M_AXI_RDATA_I[current_index * C_S_AXI_DATA_WIDTH +: C_S_AXI_DATA_WIDTH] :
                               M_AXI_RDATA[current_index * C_S_AXI_DATA_WIDTH +: C_S_AXI_DATA_WIDTH];
     end
   endgenerate
-  
+
   // Generate the true last flag including "keep" while using wrap buffer.
   assign M_AXI_RLAST_I  = ( M_AXI_RLAST | use_wrap_buffer );
-  
+
   // Handle last flag, i.e. set for SI-side last word.
   assign S_AXI_RLAST_I  = last_word;
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // SI-side output handling
   /////////////////////////////////////////////////////////////////////////////
-  
+
   generate
     if ( C_S_AXI_REGISTER ) begin : USE_REGISTER
-      reg  [C_AXI_ID_WIDTH-1:0]       S_AXI_RID_q;
-      reg  [C_S_AXI_DATA_WIDTH-1:0]   S_AXI_RDATA_q;
-      reg  [2-1:0]                    S_AXI_RRESP_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_402]       S_AXI_RID_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_403]   S_AXI_RDATA_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_404]                    S_AXI_RRESP_q;
       reg                             S_AXI_RLAST_q;
-      reg  [C_AXI_RUSER_WIDTH-1:0]    S_AXI_RUSER_q;
+      reg  [`CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_RANGE_405]    S_AXI_RUSER_q;
       reg                             S_AXI_RVALID_q;
       reg                             S_AXI_RREADY_q;
-    
+
       // Register SI-side Data.
       always @ (posedge ACLK) begin
         if (ARESET) begin
@@ -5716,10 +5702,10 @@ module r_upsizer #
             S_AXI_RUSER_q     <= S_AXI_RUSER_I;
             S_AXI_RVALID_q    <= S_AXI_RVALID_I;
           end
-          
+
         end
       end
-      
+
       assign S_AXI_RID      = S_AXI_RID_q;
       assign S_AXI_RDATA    = S_AXI_RDATA_q;
       assign S_AXI_RRESP    = S_AXI_RRESP_q;
@@ -5727,9 +5713,9 @@ module r_upsizer #
       assign S_AXI_RUSER    = S_AXI_RUSER_q;
       assign S_AXI_RVALID   = S_AXI_RVALID_q;
       assign S_AXI_RREADY_I = ( S_AXI_RVALID_q & S_AXI_RREADY) | ~S_AXI_RVALID_q;
-      
+
     end else begin : NO_REGISTER
-    
+
       // Combinatorial SI-side Data.
       assign S_AXI_RREADY_I = S_AXI_RREADY;
       assign S_AXI_RVALID   = S_AXI_RVALID_I;
@@ -5738,11 +5724,11 @@ module r_upsizer #
       assign S_AXI_RRESP    = S_AXI_RRESP_I;
       assign S_AXI_RLAST    = S_AXI_RLAST_I;
       assign S_AXI_RUSER    = S_AXI_RUSER_I;
-  
+
     end
   endgenerate
-  
-  
+
+
 endmodule
 
 
@@ -5757,7 +5743,7 @@ endmodule
 
 module carry_latch_or #
   (
-   parameter          C_FAMILY                         = "virtex6"
+   parameter          C_FAMILY                         = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_FAMILY_8
                        // FPGA Family. Current version: virtex6 or spartan6.
    )
   (
@@ -5765,36 +5751,36 @@ module carry_latch_or #
    input  wire        I,
    output wire        O
    );
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Variables for generating parameter controlled instances.
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Local params
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Functions
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Internal signals
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Instantiate or use RTL code
   /////////////////////////////////////////////////////////////////////////////
-  
+
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL
       assign O = CIN | I;
-      
+
     end else begin : USE_FPGA
       OR2L or2l_inst1
         (
@@ -5802,11 +5788,11 @@ module carry_latch_or #
          .DI(CIN),
          .SRI(I)
         );
-      
+
     end
   endgenerate
-  
-  
+
+
 endmodule
 
 
@@ -5820,7 +5806,7 @@ endmodule
 
 module carry_latch_and #
   (
-   parameter          C_FAMILY                         = "virtex6"
+   parameter          C_FAMILY                         = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_FAMILY_9
                        // FPGA Family. Current version: virtex6 or spartan6.
    )
   (
@@ -5828,52 +5814,52 @@ module carry_latch_and #
    input  wire        I,
    output wire        O
    );
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Variables for generating parameter controlled instances.
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Local params
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Functions
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Internal signals
   /////////////////////////////////////////////////////////////////////////////
 
-  
+
   /////////////////////////////////////////////////////////////////////////////
   // Instantiate or use RTL code
   /////////////////////////////////////////////////////////////////////////////
-  
+
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL
       assign O = CIN & ~I;
-      
+
     end else begin : USE_FPGA
       wire I_n;
-      
+
       assign I_n = ~I;
-    
+
       AND2B1L and2b1l_inst 
         (
          .O(O),
          .DI(CIN),
          .SRI(I_n)
         );
-      
+
     end
   endgenerate
-  
-  
+
+
 endmodule
 
 
@@ -5884,7 +5870,7 @@ endmodule
 
 module carry_and #
   (
-   parameter         C_FAMILY                         = "virtex6"
+   parameter         C_FAMILY                         = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_FAMILY_10
                        // FPGA Family. Current version: virtex6 or spartan6.
    )
   (
@@ -5892,36 +5878,36 @@ module carry_and #
    input  wire        S,
    output wire        COUT
    );
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Variables for generating parameter controlled instances.
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Local params
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Functions
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Internal signals
   /////////////////////////////////////////////////////////////////////////////
 
-  
+
   /////////////////////////////////////////////////////////////////////////////
   // Instantiate or use RTL code
   /////////////////////////////////////////////////////////////////////////////
-  
+
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL
       assign COUT = CIN & S;
-      
+
     end else begin : USE_FPGA
       MUXCY and_inst 
       (
@@ -5930,11 +5916,11 @@ module carry_and #
        .DI (1'b0), 
        .S (S)
       ); 
-      
+
     end
   endgenerate
-  
-  
+
+
 endmodule
 
 
@@ -5945,7 +5931,7 @@ endmodule
 
 module carry_or #
   (
-   parameter         C_FAMILY                         = "virtex6"
+   parameter         C_FAMILY                         = `CFG_DDR3_CONTROLLER_AXI4_BUS_CTL_AXI_UPSIZER_V_PARAMETER_C_FAMILY_11
                        // FPGA Family. Current version: virtex6 or spartan6.
    )
   (
@@ -5953,41 +5939,41 @@ module carry_or #
    input  wire        S,
    output wire        COUT
    );
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Variables for generating parameter controlled instances.
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Local params
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Functions
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Internal signals
   /////////////////////////////////////////////////////////////////////////////
-  
-  
+
+
   /////////////////////////////////////////////////////////////////////////////
   // Instantiate or use RTL code
   /////////////////////////////////////////////////////////////////////////////
-  
+
   generate
     if ( C_FAMILY == "rtl" ) begin : USE_RTL
       assign COUT = CIN | S;
-      
+
     end else begin : USE_FPGA
       wire S_n;
-      
+
       assign S_n = ~S;
-    
+
       MUXCY and_inst 
       (
        .O (COUT), 
@@ -5995,10 +5981,10 @@ module carry_or #
        .DI (1'b1), 
        .S (S_n)
       ); 
-      
+
     end
   endgenerate
-  
-  
+
+
 endmodule
 

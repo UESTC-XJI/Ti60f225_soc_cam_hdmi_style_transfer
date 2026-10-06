@@ -1,6 +1,7 @@
+`include "../../defines.v"
 module axi_streamout
 #(
-    parameter VIDEOOUT_WIDTH = 32
+    parameter VIDEOOUT_WIDTH = `CFG_SOC_OOB_AXISTREAM_AXI_STREAMOUT_V_PARAMETER_VIDEOOUT_WIDTH
 )
 (
 input 			axi_clk,
@@ -8,14 +9,14 @@ input 			out_clk,
 input 			rstn,
 
 //Frame Size
-input 		[10:0]	x_size,	//h
-input 		[10:0]	y_size,	//v
+input 		[`CFG_BITS_11-1:0]	x_size,	//h
+input 		[`CFG_BITS_11-1:0]	y_size,	//v
 
 input              in_tvalid,
 output             out_tready,
-input     [VIDEOOUT_WIDTH-1:0]   in_tdata,
-input     [3:0]    in_tkeep,
-input     [3:0]    in_tdest,
+input     [`CFG_SOC_OOB_AXISTREAM_AXI_STREAMOUT_V_RANGE_1]   in_tdata,
+input     [`CFG_BITS_4-1:0]    in_tkeep,
+input     [`CFG_BITS_4-1:0]    in_tdest,
 input              in_tlast,
                 
 //input			in_0_ar_ready,
@@ -36,48 +37,48 @@ output  wire    out_de,
 output	wire    out_valid,
 output  wire    out_hsync,
 output  wire    out_vsync,
-output	[7:0]	out_rd_00,
-output	[7:0]   out_rd_01,
-output	[7:0]   out_rd_10,
-output	[7:0]   out_rd_11,
+output	[`CFG_BITS_8-1:0]	out_rd_00,
+output	[`CFG_BITS_8-1:0]   out_rd_01,
+output	[`CFG_BITS_8-1:0]   out_rd_10,
+output	[`CFG_BITS_8-1:0]   out_rd_11,
 
 
-output  [5:0]   in_tlast_count,
-output  [5:0]   in_tvalid_count
+output  [`CFG_BITS_6-1:0]   in_tlast_count,
+output  [`CFG_BITS_6-1:0]   in_tvalid_count
 
 );
 
    
 
 //Main states
-localparam  IDLE 		 = 3'b000;
-localparam  WAIT_STREAM  = 3'b001;
-localparam  START_STREAM = 3'b010;
-localparam  START_FRAME  = 3'b011;
-localparam  START_LINE   = 3'b100;
-localparam  START_READ	 = 3'b101;
+localparam  IDLE 		 = `CFG_SOC_OOB_AXISTREAM_AXI_STREAMOUT_V_LOCALPARAM_IDLE;
+localparam  WAIT_STREAM  = `CFG_SOC_OOB_AXISTREAM_AXI_STREAMOUT_V_LOCALPARAM_WAIT_STREAM;
+localparam  START_STREAM = `CFG_SOC_OOB_AXISTREAM_AXI_STREAMOUT_V_LOCALPARAM_START_STREAM;
+localparam  START_FRAME  = `CFG_SOC_OOB_AXISTREAM_AXI_STREAMOUT_V_LOCALPARAM_START_FRAME;
+localparam  START_LINE   = `CFG_SOC_OOB_AXISTREAM_AXI_STREAMOUT_V_LOCALPARAM_START_LINE;
+localparam  START_READ	 = `CFG_SOC_OOB_AXISTREAM_AXI_STREAMOUT_V_LOCALPARAM_START_READ;
 	
 
-reg 	[10:0]	r_x_count;
-reg 	[10:0]	r_y_count;
-reg 	[20:0]	r_d_count;
-reg 	[2:0] 	r_axi_state;
+reg 	[`CFG_BITS_11-1:0]	r_x_count;
+reg 	[`CFG_BITS_11-1:0]	r_y_count;
+reg 	[`CFG_BITS_21-1:0]	r_d_count;
+reg 	[`CFG_BITS_3-1:0] 	r_axi_state;
 
 reg		r_tready;
 reg 	r_de;
 reg     r_tlast;
-reg		[31:0] r_vdata;
+reg		[`CFG_BITS_32-1:0] r_vdata;
 
 reg r_rd_load;
 
 
 reg r_in_tvalid;
-reg [4:0] r_in_tvalid_count;
+reg [`CFG_BITS_5-1:0] r_in_tvalid_count;
 
 reg r_in_tlast;
-reg [4:0] r_in_tlast_count;
+reg [`CFG_BITS_5-1:0] r_in_tlast_count;
 
-reg [7:0] r_ready_count;
+reg [`CFG_BITS_8-1:0] r_ready_count;
 wire		w_de_2L;
 wire		w_valid_2L;
 wire		w_hsync_2L;
@@ -261,16 +262,16 @@ reg         r_in_de_1P;
 reg         r_frame_Start;
 reg         r_line_Start;
 
-reg	[1:0]	r_line_cnt;
+reg	[`CFG_BITS_2-1:0]	r_line_cnt;
 reg			r_line_in_1L;
 reg			r_line_in_2L;
 
-reg [31:0]  r_de_in_count;
-reg [31:0]  r_de_out_count;
-reg [31:0]  r_de_buffer_count;
+reg [`CFG_BITS_32-1:0]  r_de_in_count;
+reg [`CFG_BITS_32-1:0]  r_de_out_count;
+reg [`CFG_BITS_32-1:0]  r_de_buffer_count;
 
 
-reg [31:0]  r_de_data;
+reg [`CFG_BITS_32-1:0]  r_de_data;
 reg         r_de_buffer;
 reg         r_reset_buffer;
 
@@ -535,10 +536,10 @@ begin
 
 end*/
 
-reg [10:0]  r_hsync_count;
-reg [10:0]  r_vsync_count;
-reg [10:0]  r_vsync_in_count;
-reg [10:0]  r_de_count;
+reg [`CFG_BITS_11-1:0]  r_hsync_count;
+reg [`CFG_BITS_11-1:0]  r_vsync_count;
+reg [`CFG_BITS_11-1:0]  r_vsync_in_count;
+reg [`CFG_BITS_11-1:0]  r_de_count;
 
 reg         r_out_hs_1P;
 reg         r_out_Vs_1P;
@@ -546,7 +547,7 @@ reg         r_out_de_1P;
 reg         r_in_de_ck_1P;
 
 reg			r_dummy_flag;
-reg [31:0]	r_data_dummy;
+reg [`CFG_BITS_32-1:0]	r_data_dummy;
 always @(posedge out_clk or negedge rstn )
 begin
     if (~rstn) 
@@ -612,13 +613,13 @@ begin
     end
 end
 
-wire [VIDEOOUT_WIDTH-1:0] w_out_tdata;
+wire [`CFG_SOC_OOB_AXISTREAM_AXI_STREAMOUT_V_RANGE_2] w_out_tdata;
 
 // 1 line buffer
 fifo 
 #(
-	.DATA_WIDTH(VIDEOOUT_WIDTH),
-    .ADDR_WIDTH(12)
+	.DATA_WIDTH(`CFG_SOC_OOB_AXISTREAM_AXI_STREAMOUT_V_INST_INST_FIFO_DATA_DATA_WIDTH),
+    .ADDR_WIDTH(`CFG_SOC_OOB_AXISTREAM_AXI_STREAMOUT_V_INST_INST_FIFO_DATA_ADDR_WIDTH)
 )	   
 inst_fifo_data 
 (
@@ -642,8 +643,8 @@ inst_fifo_data
 // 1 line delay for RGB sync signals
 fifo 
 #(
-	.DATA_WIDTH(4),
-    .ADDR_WIDTH(13)
+	.DATA_WIDTH(`CFG_SOC_OOB_AXISTREAM_AXI_STREAMOUT_V_INST_INST_FIFO_SYNC_DATA_WIDTH),
+    .ADDR_WIDTH(`CFG_SOC_OOB_AXISTREAM_AXI_STREAMOUT_V_INST_INST_FIFO_SYNC_ADDR_WIDTH)
 )	   
 inst_fifo_sync 
 (
@@ -704,8 +705,8 @@ assign out_valid = r_valid_2L;
 assign out_hsync = r_hsync_2L;
 assign out_vsync = r_vsync_2L;
  
-wire [31:0] w_debug_in_tdata;
-wire [31:0] w_debug_out_tdata;
+wire [`CFG_BITS_32-1:0] w_debug_in_tdata;
+wire [`CFG_BITS_32-1:0] w_debug_out_tdata;
 
 assign w_debug_in_tdata = in_tdata[31:0];
 assign w_debug_out_tdata = w_out_tdata[31:0]; 

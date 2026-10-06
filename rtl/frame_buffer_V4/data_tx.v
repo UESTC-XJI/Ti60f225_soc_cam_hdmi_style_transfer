@@ -1,31 +1,32 @@
+`include "../defines.v"
 
 	module data_tx #(
-			parameter VID_WIDTH 	= 16,
-			parameter FIFO_DIPTH 	= 512,
-			parameter FIFO_ALMOST_FULL = 240//fifo_almost_full
+			parameter VID_WIDTH 	= `CFG_FRAME_BUFFER_V4_DATA_TX_V_PARAMETER_VID_WIDTH,
+			parameter FIFO_DIPTH 	= `CFG_FRAME_BUFFER_V4_DATA_TX_V_PARAMETER_FIFO_DIPTH,
+			parameter FIFO_ALMOST_FULL = `CFG_FRAME_BUFFER_V4_DATA_TX_V_PARAMETER_FIFO_ALMOST_FULL//fifo_almost_full
 			
 			
 	)(
 	input		wire									clk,
 	input		wire									rst_n,
 	input		wire									frame_en,
-	input		wire	[VID_WIDTH-1:0] 				fifo_wr_data,
+	input		wire	[`CFG_FRAME_BUFFER_V4_DATA_TX_V_RANGE_1] 				fifo_wr_data,
 	input		wire									fifo_wr_en,
 	output		reg										fifo_wr_almost_full, 
 	output		reg										fifo_rd_period,     
 	output		reg										fifo_rd_underflow,
 	
-	input		wire 	[12:0]							H_FRONT_PORCH 	,
-	input		wire 	[12:0]							H_SYNC 				,
-	input		wire 	[12:0]							H_VALID 			,
-	input		wire 	[12:0]							H_BACK_PORCH 	,
-	input		wire 	[12:0]							V_FRONT_PORCH 	,
-	input		wire 	[12:0]							V_SYNC 				,
-	input		wire 	[12:0]							V_VALID 			,
-	input		wire 	[12:0]							V_BACK_PORCH 	,
+	input		wire 	[`CFG_BITS_13-1:0]							H_FRONT_PORCH 	,
+	input		wire 	[`CFG_BITS_13-1:0]							H_SYNC 				,
+	input		wire 	[`CFG_BITS_13-1:0]							H_VALID 			,
+	input		wire 	[`CFG_BITS_13-1:0]							H_BACK_PORCH 	,
+	input		wire 	[`CFG_BITS_13-1:0]							V_FRONT_PORCH 	,
+	input		wire 	[`CFG_BITS_13-1:0]							V_SYNC 				,
+	input		wire 	[`CFG_BITS_13-1:0]							V_VALID 			,
+	input		wire 	[`CFG_BITS_13-1:0]							V_BACK_PORCH 	,
 	
 	
-	output		reg 	[VID_WIDTH-1:0] 				vout,
+	output		reg 	[`CFG_FRAME_BUFFER_V4_DATA_TX_V_RANGE_2] 				vout,
 	output		reg										o_hs,
 	output		reg										o_vs,
 	output		reg										o_de
@@ -35,26 +36,26 @@
 //
 //==========================================================
 	
-	localparam S_H_SYNC 		= 2'd0;
-	localparam S_H_BACK_PORCH 	= 2'd1;
-	localparam S_H_VALID 		= 2'd2;
-	localparam S_H_FRONT_PORCH 	= 2'd3;
-	localparam S_V_SYNC 		= 2'd0;
-	localparam S_V_BACK_PORCH 	= 2'd1;
-	localparam S_V_VALID 		= 2'd2;
-	localparam S_V_FRONT_PORCH 	= 2'd3;
-	localparam FIFO_ADDR_WIDTH   = $clog2(FIFO_DIPTH) ;
+	localparam S_H_SYNC 		= `CFG_FRAME_BUFFER_V4_DATA_TX_V_LOCALPARAM_S_H_SYNC;
+	localparam S_H_BACK_PORCH 	= `CFG_FRAME_BUFFER_V4_DATA_TX_V_LOCALPARAM_S_H_BACK_PORCH;
+	localparam S_H_VALID 		= `CFG_FRAME_BUFFER_V4_DATA_TX_V_LOCALPARAM_S_H_VALID;
+	localparam S_H_FRONT_PORCH 	= `CFG_FRAME_BUFFER_V4_DATA_TX_V_LOCALPARAM_S_H_FRONT_PORCH;
+	localparam S_V_SYNC 		= `CFG_FRAME_BUFFER_V4_DATA_TX_V_LOCALPARAM_S_V_SYNC;
+	localparam S_V_BACK_PORCH 	= `CFG_FRAME_BUFFER_V4_DATA_TX_V_LOCALPARAM_S_V_BACK_PORCH;
+	localparam S_V_VALID 		= `CFG_FRAME_BUFFER_V4_DATA_TX_V_LOCALPARAM_S_V_VALID;
+	localparam S_V_FRONT_PORCH 	= `CFG_FRAME_BUFFER_V4_DATA_TX_V_LOCALPARAM_S_V_FRONT_PORCH;
+	localparam FIFO_ADDR_WIDTH   = `CFG_FRAME_BUFFER_V4_DATA_TX_V_LOCALPARAM_FIFO_ADDR_WIDTH ;
 	
 	wire									fifo_wr_rst ;
-	wire	[FIFO_ADDR_WIDTH-1:0] 					wrusedw;
+	wire	[`CFG_FRAME_BUFFER_V4_DATA_TX_V_RANGE_3] 					wrusedw;
 	//wire 
-	wire	[VID_WIDTH-1:0] fifo_rd_data;
+	wire	[`CFG_FRAME_BUFFER_V4_DATA_TX_V_RANGE_4] fifo_rd_data;
 	reg										fifo_rd_en = 1'b0;
 	wire									fifo_rd_empty;
-	reg	[1:0] 						h_state = S_H_FRONT_PORCH;
-	reg	[1:0] 						v_state = S_V_FRONT_PORCH;
-	reg	[12:0] 						h_cnt = 0;
-	reg	[12:0] 						v_cnt = 0;
+	reg	[`CFG_BITS_2-1:0] 						h_state = S_H_FRONT_PORCH;
+	reg	[`CFG_BITS_2-1:0] 						v_state = S_V_FRONT_PORCH;
+	reg	[`CFG_BITS_13-1:0] 						h_cnt = 0;
+	reg	[`CFG_BITS_13-1:0] 						v_cnt = 0;
 	reg										hs_r1 = 1'b0;
 	reg										hs_r2 = 1'b0;
 	reg 									vs_r1 = 1'b0;
@@ -114,9 +115,9 @@
 	
 DC_FIFO
 # (
-  	.FIFO_MODE  ( "Normal"        	), //"Normal"; //"ShowAhead"
-    .DATA_WIDTH ( VID_WIDTH        ),
-    .FIFO_DEPTH ( FIFO_DIPTH        )//,
+    .FIFO_MODE  ( `CFG_FRAME_BUFFER_V4_DATA_TX_V_INST_U_RD_FIFO_FIFO_MODE        	), //"Normal"; //"ShowAhead"
+    .DATA_WIDTH ( `CFG_FRAME_BUFFER_V4_DATA_TX_V_INST_U_RD_FIFO_DATA_WIDTH        ),
+    .FIFO_DEPTH ( `CFG_FRAME_BUFFER_V4_DATA_TX_V_INST_U_RD_FIFO_FIFO_DEPTH        )//,
 
   ) u_rd_fifo(   
   //System Signal

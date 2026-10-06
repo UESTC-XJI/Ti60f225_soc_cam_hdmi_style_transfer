@@ -1,10 +1,11 @@
+`include "../defines.v"
 
 `timescale 1ps/1ps
 module ddr_rd_buffer #(
-parameter AXI_DATA_WIDTH = 512, //!AXI接口位宽
-parameter AXI_ADDR_WIDTH = 33,  //!AXI地址位宽
-parameter RD_FIFO_DEPTH = 1024, //!read fifo depth
-parameter BURST_LEN       = 15
+parameter AXI_DATA_WIDTH = `CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_PARAMETER_AXI_DATA_WIDTH, //!AXI接口位宽
+parameter AXI_ADDR_WIDTH = `CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_PARAMETER_AXI_ADDR_WIDTH,  //!AXI地址位宽
+parameter RD_FIFO_DEPTH = `CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_PARAMETER_RD_FIFO_DEPTH, //!read fifo depth
+parameter BURST_LEN       = `CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_PARAMETER_BURST_LEN
 
 ) (
 
@@ -12,65 +13,65 @@ input 								            axi_clk,
 input 								            axi_clk_rst_n,
 input 								            start,//!电平有效。
 
-input		[AXI_ADDR_WIDTH-1:0]	            start_addr,
-input		[24:0]								burst_len,
+input		[`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_1]	            start_addr,
+input		[`CFG_BITS_25-1:0]								burst_len,
 input wire                                     bank_sw_ack	,
 output  wire                                     bank_sw 		  ,
 
 input											rd_fifo_rdclk,
 input                                           rd_fifo_rst_p,
 output	reg										rd_fifo_rdvalid ='d0,
-output	 [AXI_DATA_WIDTH-1:0] 				    rd_fifo_rddata,
+output	 [`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_2] 				    rd_fifo_rddata,
 output wire										rd_fifo_rdempty,
 input	 wire									rd_fifo_rden,
 
-output [5:0] 									    arid,
-output  [AXI_ADDR_WIDTH-1:0] 	                    araddr,
-output  [8-1:0] 						            arlen,
-output  [2:0] 										arsize,
-output  [1:0] 										arburst,
+output [`CFG_BITS_6-1:0] 									    arid,
+output  [`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_3] 	                    araddr,
+output  [`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_4] 						            arlen,
+output  [`CFG_BITS_3-1:0] 										arsize,
+output  [`CFG_BITS_2-1:0] 										arburst,
 output  											arlock,
 output reg 											arvalid,
 output  											arapcmd,
 output 												arqos,
 input 												arready,
-output  [3:0] 								        arcache,
-output [2:0]                                        arprot,
+output  [`CFG_BITS_4-1:0] 								        arcache,
+output [`CFG_BITS_3-1:0]                                        arprot,
 
-input [5:0] 									rid,
-input [AXI_DATA_WIDTH-1:0] 						rdata,
+input [`CFG_BITS_6-1:0] 									rid,
+input [`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_5] 						rdata,
 input 											rlast,
 input 											rvalid,
 output  reg										rready,
-input [1:0] 									rresp,
-output[31:0]									wr_fifo_rd_data_test,
+input [`CFG_BITS_2-1:0] 									rresp,
+output[`CFG_BITS_32-1:0]									wr_fifo_rd_data_test,
 
-output [7:0] test_BURST_LEN
+output [`CFG_BITS_8-1:0] test_BURST_LEN
 );
 assign test_BURST_LEN = BURST_LEN;
-localparam AXSIZE_WTH = $clog2(AXI_DATA_WIDTH/8);//!内部数据
-localparam RD_USEDW_WITH = $clog2(RD_FIFO_DEPTH) ;
-localparam ADDR_SHIFT_BITS = $clog2(AXI_DATA_WIDTH/8);
+localparam AXSIZE_WTH = `CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_LOCALPARAM_AXSIZE_WTH;//!内部数据
+localparam RD_USEDW_WITH = `CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_LOCALPARAM_RD_USEDW_WITH ;
+localparam ADDR_SHIFT_BITS = `CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_LOCALPARAM_ADDR_SHIFT_BITS;
 reg 										ddr_rd_valid;                      
-reg [AXI_DATA_WIDTH-1:0] 					ddr_rd_data;     
-wire [RD_USEDW_WITH   :0]					rd_fifo_wrusedw;   
+reg [`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_6] 					ddr_rd_data;
+wire [`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_7]					rd_fifo_wrusedw;
  
-reg	 [AXI_ADDR_WIDTH-1:0] 					ddr_addr	= 'd0;  
-reg	[8-1:0]					                ddr_arlen = 'd0; 
-reg			[2:0]							start_sync = 'd0;
-wire [AXI_ADDR_WIDTH-1:0] 					nx_ddr_addr;
+reg	 [`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_8] 					ddr_addr	= 'd0;
+reg	[`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_9]					                ddr_arlen = 'd0;
+reg			[`CFG_BITS_3-1:0]							start_sync = 'd0;
+wire [`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_10] 					nx_ddr_addr;
 wire										rd_addr_en	;
-reg	[24:0]									burst_len_r = 'd0;
+reg	[`CFG_BITS_25-1:0]									burst_len_r = 'd0;
 reg											burst_last ='d0;
-reg [AXI_ADDR_WIDTH-1:0] 					start_addr_r = 'd0;
+reg [`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_11] 					start_addr_r = 'd0;
 reg                                         sync_r0 = 'd0;
 reg                                         sync_r1 = 'd0;
 reg                                         sync_r2 = 'd0;
-reg [8-1:0]                                 first_burst_cnt = 'd0;
-reg	[8-1:0] 			                    last_burst_cnt = 'd0;
-reg [24:0]                                  align_burst_num = 'd0;
-reg [24:0]                                  burst_num = 'd0;
-reg [24:0]                                  total_burst_num = 'd0;
+reg [`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_12]                                 first_burst_cnt = 'd0;
+reg	[`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_13] 			                    last_burst_cnt = 'd0;
+reg [`CFG_BITS_25-1:0]                                  align_burst_num = 'd0;
+reg [`CFG_BITS_25-1:0]                                  burst_num = 'd0;
+reg [`CFG_BITS_25-1:0]                                  total_burst_num = 'd0;
 
 //wire pos_start;
 always @( posedge axi_clk or negedge axi_clk_rst_n )
@@ -106,8 +107,8 @@ begin
 	end
 end
 
-wire [12-ADDR_SHIFT_BITS:0]     first_4k_burst_len = {1'b0,~start_addr_r[11:ADDR_SHIFT_BITS]} + 1'b1;
-wire [31:0]                     last_4k_burst_len  = burst_len_r - first_4k_burst_len;
+wire [`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_14]     first_4k_burst_len = {1'b0,~start_addr_r[11:ADDR_SHIFT_BITS]} + 1'b1;
+wire [`CFG_BITS_32-1:0]                     last_4k_burst_len  = burst_len_r - first_4k_burst_len;
 
 
 generate
@@ -244,7 +245,7 @@ begin
 end
 
 //==========================================================================================
-reg [1:0] state = 2'd0;
+reg [`CFG_BITS_2-1:0] state = 2'd0;
 reg rd_req = 0;
 reg ddr_read_stop = 'd0;
 always @( posedge axi_clk or negedge axi_clk_rst_n )
@@ -314,12 +315,12 @@ end
 
 
 wire										rd_fifo_wr_full;
-wire [RD_USEDW_WITH   :0] 					rd_fifo_rdusedw;
+wire [`CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_RANGE_15] 					rd_fifo_rdusedw;
 	DC_FIFO
 # (
-  	.FIFO_MODE  ( "Normal"    	 ), //"Normal"; //"ShowAhead"
-    .DATA_WIDTH ( AXI_DATA_WIDTH ),
-    .FIFO_DEPTH ( RD_FIFO_DEPTH  )
+    .FIFO_MODE  ( `CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_INST_U_RD_FIFO_FIFO_MODE    	 ), //"Normal"; //"ShowAhead"
+    .DATA_WIDTH ( `CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_INST_U_RD_FIFO_DATA_WIDTH ),
+    .FIFO_DEPTH ( `CFG_FRAME_BUFFER_V4_DDR_RD_BUFFER_V_INST_U_RD_FIFO_FIFO_DEPTH  )
   ) u_rd_fifo(   
   //System Signal
   /*i*/.Reset   (	(~axi_clk_rst_n)	|| rd_fifo_rst_p		), 

@@ -1,3 +1,4 @@
+`include "../../defines.v"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -27,26 +28,26 @@ mem_rd_en,
 mem_rdata 	 
      );
 
-parameter DATA_WIDTH = 8;
-parameter ADDR_WIDTH = 2;
-parameter RAM_DEPTH = 4;
+parameter DATA_WIDTH = `CFG_SOC_OOB_AXISTREAM_VGA_BUFFER_V_PARAMETER_DATA_WIDTH;
+parameter ADDR_WIDTH = `CFG_SOC_OOB_AXISTREAM_VGA_BUFFER_V_PARAMETER_ADDR_WIDTH;
+parameter RAM_DEPTH = `CFG_SOC_OOB_AXISTREAM_VGA_BUFFER_V_PARAMETER_RAM_DEPTH;
 
 input mem_wr_rst_n; 
 input mem_wr_clk; 
 input mem_rd_rst_n; 
 input mem_rd_clk; 
 
-input [DATA_WIDTH-1:0] mem_wdata; 
-input [ADDR_WIDTH-1:0] mem_waddr; 
-input [ADDR_WIDTH-1:0] mem_raddr; 
+input [`CFG_SOC_OOB_AXISTREAM_VGA_BUFFER_V_RANGE_1] mem_wdata;
+input [`CFG_SOC_OOB_AXISTREAM_VGA_BUFFER_V_RANGE_2] mem_waddr;
+input [`CFG_SOC_OOB_AXISTREAM_VGA_BUFFER_V_RANGE_3] mem_raddr;
 input mem_wr_en;
 input mem_rd_en;
 
-output [DATA_WIDTH-1:0] mem_rdata; 
-reg [DATA_WIDTH-1:0] mem [RAM_DEPTH-1:0];
+output [`CFG_SOC_OOB_AXISTREAM_VGA_BUFFER_V_RANGE_4] mem_rdata;
+reg [`CFG_SOC_OOB_AXISTREAM_VGA_BUFFER_V_RANGE_5] mem [`CFG_SOC_OOB_AXISTREAM_VGA_BUFFER_V_RANGE_6];
 //integer i;
 
-reg [DATA_WIDTH-1:0] mem_rdata; 
+reg [`CFG_SOC_OOB_AXISTREAM_VGA_BUFFER_V_RANGE_7] mem_rdata;
 
 
 always @(posedge mem_rd_clk)

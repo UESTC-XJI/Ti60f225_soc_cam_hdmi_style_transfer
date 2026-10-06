@@ -1,17 +1,18 @@
+`include "../../defines.v"
 module i2c_master_reg_rom #(
 
-    parameter ROM_SIZE                     = 25,   
-    parameter TOTAL_ROM_DEPTH              = 256, // 6*7
-    parameter ADDR_WIDTH                   = 8   // alt_clogb2(42) 
+    parameter ROM_SIZE                     = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_ROM_V_PARAMETER_ROM_SIZE,
+    parameter TOTAL_ROM_DEPTH              = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_ROM_V_PARAMETER_TOTAL_ROM_DEPTH, // 6*7
+    parameter ADDR_WIDTH                   = `CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_ROM_V_PARAMETER_ADDR_WIDTH   // alt_clogb2(42)
 ) (
     input  wire                  clock,
-    input  wire [ADDR_WIDTH-1:0] addr_ptr,
-    output wire [ROM_SIZE-1:0]   rdata_out
+    input  wire [`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_ROM_V_RANGE_1] addr_ptr,
+    output wire [`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_ROM_V_RANGE_2]   rdata_out
 );
 
-reg  [ROM_SIZE-1:0]   ROM [0:TOTAL_ROM_DEPTH-1];
-wire [ROM_SIZE-1:0]   DATAA = {ROM_SIZE{1'b0}};
-wire [ADDR_WIDTH-1:0] RADDR;
+reg  [`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_ROM_V_RANGE_3]   ROM [`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_ROM_V_RANGE_4];
+wire [`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_ROM_V_RANGE_5]   DATAA = {ROM_SIZE{1'b0}};
+wire [`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_ROM_V_RANGE_6] RADDR;
    
 // initial begin
 // 		//9134				//addr /data/read_en[1]
@@ -247,7 +248,7 @@ ROM[8'ha3] = {16'h3221,8'h00,1'b0};
 ROM[8'ha4] = {16'h4501,8'ha4,1'b0}; // Normal image; bit 3=0 (0xac enables grayscale ramp).
 end 
 // write is unused
-wire [ADDR_WIDTH-1:0] ADDRA = {ADDR_WIDTH{1'b0}}; 
+wire [`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_ROM_V_RANGE_7] ADDRA = {ADDR_WIDTH{1'b0}};
 wire                  WEA   = 1'b0; 
 always @ (posedge clock)
 begin
@@ -258,7 +259,7 @@ end
    
 assign RADDR = addr_ptr;
    
-reg [ROM_SIZE-1:0] RDATA;
+reg [`CFG_CAM_I2C_CTRL_I2C_I2C_MASTER_REG_ROM_V_RANGE_8] RDATA;
 always @ (posedge clock)
 begin
      RDATA <= ROM[RADDR];

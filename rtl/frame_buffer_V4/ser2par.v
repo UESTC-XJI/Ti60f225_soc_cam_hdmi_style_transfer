@@ -1,30 +1,31 @@
+`include "../defines.v"
 
 
 module ser2par #(
-	parameter I_VID_WIDTH = 64,
-    parameter I_MUX  = 8,
-	parameter O_VID_WIDTH = I_VID_WIDTH*I_MUX
+	parameter I_VID_WIDTH = `CFG_FRAME_BUFFER_V4_SER2PAR_V_PARAMETER_I_VID_WIDTH,
+    parameter I_MUX  = `CFG_FRAME_BUFFER_V4_SER2PAR_V_PARAMETER_I_MUX,
+	parameter O_VID_WIDTH = `CFG_FRAME_BUFFER_V4_SER2PAR_V_PARAMETER_O_VID_WIDTH
 	 
 )(
 input		wire										clk		,    
 input		wire										rst_n	,
 input       wire                                        i_valid,
-input		wire	[I_VID_WIDTH-1:0] 					i_data,
+input		wire	[`CFG_FRAME_BUFFER_V4_SER2PAR_V_RANGE_1] 					i_data,
 input		wire										i_start	, //active hgih
 input		wire										i_end	, //active high
 
 
 output		wire										    o_valid,
-output		wire	[O_VID_WIDTH-1:0]					o_data 
+output		wire	[`CFG_FRAME_BUFFER_V4_SER2PAR_V_RANGE_2]					o_data
 
 
 );
-localparam IN_CNT_WIDTH = $clog2(I_MUX);
+localparam IN_CNT_WIDTH = `CFG_FRAME_BUFFER_V4_SER2PAR_V_LOCALPARAM_IN_CNT_WIDTH;
 //==================================================================================
 
-reg [O_VID_WIDTH-1:0] par_pix_data = 'd0;
-reg [IN_CNT_WIDTH-1:0] r_in_cnt = 'd0;
-reg [IN_CNT_WIDTH-1:0] w_in_cnt;
+reg [`CFG_FRAME_BUFFER_V4_SER2PAR_V_RANGE_3] par_pix_data = 'd0;
+reg [`CFG_FRAME_BUFFER_V4_SER2PAR_V_RANGE_4] r_in_cnt = 'd0;
+reg [`CFG_FRAME_BUFFER_V4_SER2PAR_V_RANGE_5] w_in_cnt;
 reg last_shift = 'd0;
 // reg last_shift_r = 'd0;
 reg start_cycle = 'd0;
