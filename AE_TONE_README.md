@@ -6,6 +6,8 @@
 
 ## 下载与调试
 
+本工程现已加入HDMI信息叠加，当前bitstream及Debugger控制说明见`HDMI_OVERLAY_README.md`。下面的AE验证资源/编译时间记录对应加入叠加之前的版本。
+
 1. 打开本目录 `ti60f225_oob.xml`，使用本目录编译结果下载并复位。
 2. Debugger 加载本目录 **`debug.json`**，选择 **USER1 / vio0**；所有数值使用 **Dec**。`debug_profile.wizard.json` 是原有USER2 MIPI分析仪，不含这些VIO参数。
 3. 沿用已经调好的RGB增益，先设置 `gamma_sel=0`、`tone_enable=0`、`lift_enable=0`。

@@ -22,6 +22,8 @@
 `include "isp/luma_color_suppress.v"
 `include "isp/luma_tone_map.v"
 `include "isp/auto_tone_lift.v"
+`include "isp/hdmi_frame_histogram.v"
+`include "isp/hdmi_info_overlay.v"
 // `include "define.v"
 
 module ti60f225_oob_top #(
@@ -1158,16 +1160,46 @@ inst_gamma_correction
   .o_vs     (gamma_vs       )
 );
 
+// Replace these Debugger sources with APB register outputs in the CPU revision.
+// Bits: [3] text enable, [2:1] histogram mode Y/R/G/B, [0] histogram enable.
+wire osd_hist_enable,osd_text_enable;
+wire [1:0] osd_hist_mode;
+wire [3:0] osd_controls;
+isp_cdc_mailbox #(.WIDTH(4)) osd_control_mailbox(
+  .s_clk(vid_clk_dvi2),.s_rst_n(w_arstn),.s_valid(1'b1),
+  .s_data({osd_text_enable,osd_hist_mode,osd_hist_enable}),.s_ready(),
+  .d_clk(hdmi_tx_slow_clk),.d_rst_n(w_arstn),.d_valid(),.d_data(osd_controls)
+);
+wire osd_vs,osd_hs,osd_de,osd_hist_valid_hdmi,osd_hist_valid;
+wire [7:0] osd_r,osd_g,osd_b;
+wire [15:0] osd_hist_samples_hdmi,osd_hist_samples;
+hdmi_info_overlay #(.FRAME_WIDTH(HACT),.FRAME_HEIGHT(VACT)) information_overlay(
+  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),
+  .i_vs(gamma_sel ? gamma_vs : lift_vs),.i_hs(gamma_sel ? gamma_hs : lift_hs),
+  .i_de(gamma_sel ? gamma_valid : lift_de),
+  .i_r(gamma_sel ? gamma_rdata : lift_rdata),.i_g(gamma_sel ? gamma_gdata : lift_gdata),
+  .i_b(gamma_sel ? gamma_bdata : lift_bdata),
+  .i_hist_enable(osd_controls[0]),.i_hist_mode(osd_controls[2:1]),.i_text_enable(osd_controls[3]),
+  .i_text_valid(1'b0),.i_text_rgb(24'd0),.o_x(),.o_y(),
+  .o_hist_valid(osd_hist_valid_hdmi),.o_hist_samples(osd_hist_samples_hdmi),
+  .o_vs(osd_vs),.o_hs(osd_hs),.o_de(osd_de),.o_r(osd_r),.o_g(osd_g),.o_b(osd_b)
+);
+isp_cdc_mailbox #(.WIDTH(17)) osd_status_mailbox(
+  .s_clk(hdmi_tx_slow_clk),.s_rst_n(w_arstn),.s_valid(1'b1),
+  .s_data({osd_hist_valid_hdmi,osd_hist_samples_hdmi}),.s_ready(),
+  .d_clk(vid_clk_dvi2),.d_rst_n(w_arstn),.d_valid(),.d_data({osd_hist_valid,osd_hist_samples})
+);
+
 dvi_encoder dvi_encoder_m0
 (
 	.pixelclk      		(hdmi_tx_slow_clk          ),// system clock
 	.rst_p         		(~vid_rst_n      ),// reset
-	.i_bdata      		(gamma_sel ? gamma_bdata : lift_bdata),
-	.i_gdata     		(gamma_sel ? gamma_gdata : lift_gdata),
-	.i_rdata       		(gamma_sel ? gamma_rdata : lift_rdata),
-  .i_de            	(gamma_sel ? gamma_valid : lift_de),
-	.i_hs         		(gamma_sel ? gamma_hs : lift_hs),
-	.i_vs         		(gamma_sel ? gamma_vs : lift_vs),
+	.i_bdata      		(osd_b),
+	.i_gdata     		(osd_g),
+	.i_rdata       		(osd_r),
+  .i_de            	(osd_de),
+	.i_hs         		(osd_hs),
+	.i_vs         		(osd_vs),
 	
   .video_format     (video_format), //// 00 = RGB, 01 = YCbCr 4:2:2, 10 = YCbCr 4:4:4
   .video_VIC        (0),
@@ -1207,6 +1239,11 @@ debug_edb_top debug_edb_top_inst (
     .vio0_b_gain        ( b_gain              ),
 
     .vio0_gamma_sel     (gamma_sel),
+    .vio0_osd_hist_enable (osd_hist_enable),
+    .vio0_osd_hist_mode (osd_hist_mode),
+    .vio0_osd_text_enable (osd_text_enable),
+    .vio0_osd_hist_valid (osd_hist_valid),
+    .vio0_osd_hist_samples (osd_hist_samples),
     .vio0_ae_enable     (ae_enable),
     .vio0_ae_target     (ae_target),
     .vio0_ae_high_protect (ae_high_protect),

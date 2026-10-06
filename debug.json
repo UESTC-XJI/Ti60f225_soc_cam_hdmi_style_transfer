@@ -3,7 +3,7 @@
         {
             "name": "vio0",
             "type": "vio",
-            "uuid": "c58e994d267f4913a2e1a2e66316d46c",
+            "uuid": "23fa743774854663a3b313ef066115c4",
             "probes": [
                 {
                     "name": "r_gain",
@@ -158,6 +158,31 @@
                 {
                     "name": "ae_exposure_constrained",
                     "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "osd_hist_enable",
+                    "width": 1,
+                    "init": "0x1"
+                },
+                {
+                    "name": "osd_hist_mode",
+                    "width": 2,
+                    "init": "0x0"
+                },
+                {
+                    "name": "osd_text_enable",
+                    "width": 1,
+                    "init": "0x0"
+                },
+                {
+                    "name": "osd_hist_valid",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "osd_hist_samples",
+                    "width": 16,
                     "init": null
                 }
             ]

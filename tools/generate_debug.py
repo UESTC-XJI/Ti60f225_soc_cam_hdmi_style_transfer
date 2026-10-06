@@ -12,6 +12,8 @@ vio = next(core for core in config['debug_cores'] if core['name'] == 'vio0')
 existing = {probe['name'] for probe in vio['probes']}
 added = False
 for name, width, initial in [
+    ('osd_hist_enable', 1, '0x1'), ('osd_hist_mode', 2, '0x0'), ('osd_text_enable', 1, '0x0'),
+    ('osd_hist_valid', 1, None), ('osd_hist_samples', 16, None),
     ('ae_exposure_constrained', 1, None),
     ('lift_auto_enable', 1, '0x1'), ('lift_auto_max', 8, '0x80'),
     ('ae_display_mean', 8, None), ('lift_actual_strength', 8, None), ('lift_at_max', 1, None),
