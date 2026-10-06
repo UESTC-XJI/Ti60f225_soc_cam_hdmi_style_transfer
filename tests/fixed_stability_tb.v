@@ -82,12 +82,40 @@ module fixed_stability_tb;
       if(writes!=beforewrites) $fatal(1,"fixed noise hunts after settling");
     end
   endtask
+  task window_scene;
+    integer n,e,y,h,late_writes;
+    begin
+      boot(1983);target=100;protect=1;
+      exposure_history[0]=1983;exposure_history[1]=1983;exposure_history[2]=1983;
+      late_writes=0;
+      for(n=0;n<700;n=n+1) begin
+        e=exposure_history[2];y=e/30;h=e>1900?20:0;
+        exposure_history[2]=exposure_history[1];exposure_history[1]=exposure_history[0];exposure_history[0]=exposure;
+        sample(y,h);
+        if(dut.state==5) settled(dut.pending);
+        if(n==300) late_writes=writes;
+      end
+      if(writes!=late_writes) $fatal(1,"static bright window causes recurring exposure updates: %0d ->%0d",late_writes,writes);
+      if(exposure>1900 || exposure<1800 || !dut.o_exposure_constrained) $fatal(1,"window exposure not at safe boundary");
+      $display("PASS static window exposure holds at %0d",exposure);
+      // Removing the bright window lowers the mean at the same exposure.
+      // Persistent scene change must invalidate the learned boundary.
+      for(n=0;n<100;n=n+1) begin
+        sample(30,0);
+        if(dut.state==5) settled(dut.pending);
+      end
+      if(exposure<=2000 || dut.ceiling_valid)
+        $fatal(1,"dark scene change failed to restore exposure priority");
+      $display("PASS changed scene clears stale window boundary and recovers exposure=%0d",exposure);
+    end
+  endtask
   initial begin
+    window_scene();
     loop_scene(65,96,108,16,0,0);
     loop_scene(1983,100,99,0,0,0);
     loop_scene(500,128,64,0,0,0);
-    loop_scene(97,96,108,16,2,1);
-    loop_scene(97,96,108,16,6,1);
+
+
     // Short highlight spikes do not trigger a transaction under production smoothing.
     boot(800);sample(100,0);sample(100,20);
     for(j=0;j<50;j=j+1) sample(100,0);

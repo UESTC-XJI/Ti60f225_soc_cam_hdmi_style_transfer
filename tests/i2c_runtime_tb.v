@@ -18,7 +18,7 @@ module i2c_runtime_tb;
     .runtime_addr(ae_mode?aa:ma),.runtime_data(ae_mode?ad:md),
     .config_done(cfg),.runtime_wr_done(wd),.runtime_rd_done(rd),
     .runtime_wr_error(we),.runtime_rd_error(re),.runtime_read_data(result));
-  sc431hai_auto_exposure #(.FIXED_STEP_ENABLE(1),.PREDICTIVE_ENABLE(0),.WAIT_FRAMES(1),.TIMEOUT_CYCLES(20000),
+  sc431hai_auto_exposure #(.EXPOSURE_PRIORITY_ENABLE(0),.FIXED_STEP_ENABLE(1),.PREDICTIVE_ENABLE(0),.WAIT_FRAMES(1),.TIMEOUT_CYCLES(20000),
     .FILTER_SHIFT(0),.CONFIRM_FRAMES(1),.DEADBAND(8),.SETTLE_BAND(8),
     .SMALL_STEP_SHIFT(3),.LARGE_STEP_SHIFT(3),.RELEASE_FRAMES(1)) ae(
     .clk(clk),.rst_n(rst),.i_config_done(cfg && ae_mode),.i_enable(en),.i_sensor_frame_start(fs),

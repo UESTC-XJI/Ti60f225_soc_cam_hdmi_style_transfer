@@ -3,7 +3,7 @@
         {
             "name": "vio0",
             "type": "vio",
-            "uuid": "6aae4e1f9bf74de7b0f7602f6051a529",
+            "uuid": "c58e994d267f4913a2e1a2e66316d46c",
             "probes": [
                 {
                     "name": "r_gain",
@@ -152,6 +152,11 @@
                 },
                 {
                     "name": "lift_at_max",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "ae_exposure_constrained",
                     "width": 1,
                     "init": null
                 }

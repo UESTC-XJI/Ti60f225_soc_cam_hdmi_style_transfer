@@ -1,8 +1,8 @@
 `timescale 1ns/1ps
 module auto_lift_tb;
-  reg clk=0,rst=0,en=1,vs=0,de=0;reg [7:0] pixel=68,target=100,maximum=128;
+  reg clk=0,rst=0,en=1,vs=0,de=0,can_lift=0;reg [7:0] pixel=68,target=100,maximum=128;
   wire lv,lh,ld,valid,atmax;wire [7:0] r,g,b,mean,strength;
-  auto_tone_lift control(.clk(clk),.rst_n(rst),.i_enable(en),.i_valid(valid),.i_mean(mean),
+  auto_tone_lift control(.clk(clk),.rst_n(rst),.i_enable(en),.i_can_lift(can_lift),.i_valid(valid),.i_mean(mean),
     .i_target(target),.i_max_strength(maximum),.i_manual_strength(8'd32),.o_strength(strength),.o_at_max(atmax));
   luma_tone_map #(.HIGHLIGHT_SAFE(1)) lift(.clk(clk),.rst_n(rst),.i_enable(1'b1),.i_strength(strength),
     .i_vs(vs),.i_hs(1'b0),.i_de(de),.i_r(pixel),.i_g(pixel),.i_b(pixel),
@@ -51,6 +51,9 @@ module auto_lift_tb;
   endtask
   initial begin
     repeat(3) @(negedge clk);rst=1;
+    for(j=0;j<20;j=j+1) frame(68,0);
+    if(strength!=0) $fatal(1,"lift started before exposure became constrained");
+    can_lift=1;
     for(j=0;j<120;j=j+1) frame(68,0);
     if(mean<97 || mean>103 || strength==0 || atmax) $fatal(1,"automatic midtone convergence mean=%0d strength=%0d",mean,strength);
     stable_strength=strength;
@@ -59,6 +62,10 @@ module auto_lift_tb;
     // Exposure reductions make RAW mean lower; display loop must compensate.
     for(j=0;j<120;j=j+1) frame(56,0);
     if(mean<97 || mean>103 || strength<=stable_strength) $fatal(1,"lower-exposure compensation failed");
+    can_lift=0;
+    for(j=0;j<80;j=j+1) frame(56,0);
+    if(strength!=0) $fatal(1,"lift did not withdraw for exposure priority");
+    can_lift=1;
     // Impossible target: clamp at the configured strength, with explicit status.
     maximum=32;
     for(j=0;j<80;j=j+1) frame(56,0);

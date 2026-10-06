@@ -533,7 +533,7 @@ wire ae_ready_i2c,ae_fault_i2c,ae_limit_i2c;
 wire stats_valid,stats_hot;
 wire [7:0] stats_mean;
 wire [9:0] stats_high_permille;
-wire ae_highlight_limited_i2c;
+wire ae_highlight_limited_i2c,ae_exposure_constrained_i2c;
 wire ae_stats_valid;
 wire [35:0] ae_stats_message;
 (* ASYNC_REG="TRUE" *) reg ae_enable_meta,ae_enable_i2c;
@@ -568,6 +568,7 @@ sc431hai_auto_exposure ae_controller(
   .i_mean(ae_stats_message[7:0]),.i_target(ae_stats_message[26:19]),
   .i_high_protect(ae_stats_message[35]),.i_high_limit(ae_stats_message[34:27]),
   .i_high_permille(ae_stats_message[17:8]),.o_highlight_limited(ae_highlight_limited_i2c),
+  .o_exposure_constrained(ae_exposure_constrained_i2c),
   .o_wr_en(ae_wr_en),.o_rd_en(ae_rd_en),.o_addr(ae_addr),.o_data(ae_write_data),
   .i_wr_done(ae_wr_done),.i_rd_done(ae_rd_done),.i_wr_error(ae_wr_error),.i_rd_error(ae_rd_error),
   .i_read_data(ae_read_data),.o_exposure(ae_exposure_i2c),.o_vts(ae_vts_i2c),
@@ -577,7 +578,7 @@ wire ae_ready,ae_fault,ae_at_limit,ae_highlights;
 wire [15:0] ae_exposure,ae_vts;
 wire [7:0] ae_mean;
 wire [9:0] ae_high_permille;
-wire ae_highlight_limited;
+wire ae_highlight_limited,ae_exposure_constrained;
 wire ae_at_min=ae_ready && ae_exposure<=16'd4;
 wire [16:0] ae_maximum={ae_vts,1'b0}-17'd11;
 wire ae_at_max=ae_ready && {1'b0,ae_exposure}>=ae_maximum;
@@ -589,19 +590,19 @@ always @(posedge CLK_5M or negedge i2c_rst_n) begin
     ae_hot_i2c<=ae_stats_message[18];ae_high_permille_i2c<=ae_stats_message[17:8];
   end
 end
-wire [54:0] ae_status={ae_highlight_limited_i2c,ae_high_permille_i2c,ae_ready_i2c,ae_fault_i2c,ae_limit_i2c,ae_hot_i2c,ae_vts_i2c,ae_exposure_i2c,ae_mean_i2c};
-reg [54:0] ae_status_sent;
+wire [55:0] ae_status={ae_exposure_constrained_i2c,ae_highlight_limited_i2c,ae_high_permille_i2c,ae_ready_i2c,ae_fault_i2c,ae_limit_i2c,ae_hot_i2c,ae_vts_i2c,ae_exposure_i2c,ae_mean_i2c};
+reg [55:0] ae_status_sent;
 wire status_ready;
-wire [54:0] ae_status_video;
+wire [55:0] ae_status_video;
 always @(posedge CLK_5M or negedge i2c_rst_n) begin
   if(!i2c_rst_n) ae_status_sent<=0;
   else if(status_ready && ae_status!=ae_status_sent) ae_status_sent<=ae_status;
 end
-isp_cdc_mailbox #(.WIDTH(55)) ae_status_mailbox(
+isp_cdc_mailbox #(.WIDTH(56)) ae_status_mailbox(
   .s_clk(CLK_5M),.s_rst_n(w_arstn),.s_valid(ae_status!=ae_status_sent),.s_data(ae_status),.s_ready(status_ready),
   .d_clk(vid_clk_dvi2),.d_rst_n(w_arstn),.d_valid(),.d_data(ae_status_video)
 );
-assign {ae_highlight_limited,ae_high_permille,ae_ready,ae_fault,ae_at_limit,ae_highlights,ae_vts,ae_exposure,ae_mean}=ae_status_video;
+assign {ae_exposure_constrained,ae_highlight_limited,ae_high_permille,ae_ready,ae_fault,ae_at_limit,ae_highlights,ae_vts,ae_exposure,ae_mean}=ae_status_video;
 
 i2c_master_ctrl_top #(.RUNTIME_ENABLE(1'b1)) u2_i2c_master_ctrl_top(
   /*i*/.clk			(CLK_5M		),
@@ -1087,10 +1088,10 @@ wire CONTRAST_B    ;
 
 wire [7:0] tone_rdata,tone_gdata,tone_bdata;
 wire tone_vs,tone_hs,tone_de;
-wire [44:0] tone_controls;
-isp_cdc_mailbox #(.WIDTH(45)) tone_control_mailbox(
+wire [45:0] tone_controls;
+isp_cdc_mailbox #(.WIDTH(46)) tone_control_mailbox(
   .s_clk(vid_clk_dvi2),.s_rst_n(w_arstn),.s_valid(1'b1),
-  .s_data({ae_enable,ae_high_protect,lift_auto_enable,lift_auto_max,ae_target,lift_enable,lift_strength,tone_enable,high_green_strength,dark_red_strength}),.s_ready(),
+  .s_data({ae_exposure_constrained,ae_enable,ae_high_protect,lift_auto_enable,lift_auto_max,ae_target,lift_enable,lift_strength,tone_enable,high_green_strength,dark_red_strength}),.s_ready(),
   .d_clk(hdmi_tx_slow_clk),.d_rst_n(w_arstn),.d_valid(),.d_data(tone_controls)
 );
 luma_color_suppress tone_adjustment(
@@ -1109,7 +1110,7 @@ wire [7:0] display_stats_mean,effective_lift_strength;
 wire automatic_lift_at_max;
 wire automatic_lift_enabled=tone_controls[44] && tone_controls[43] && tone_controls[42] && tone_controls[25];
 auto_tone_lift automatic_lift(
-  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),.i_enable(automatic_lift_enabled),
+  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),.i_enable(automatic_lift_enabled),.i_can_lift(tone_controls[45]),
   .i_valid(display_stats_valid),.i_mean(display_stats_mean),.i_target(tone_controls[33:26]),
   .i_max_strength(tone_controls[41:34]),.i_manual_strength(tone_controls[24:17]),
   .o_strength(effective_lift_strength),.o_at_max(automatic_lift_at_max)
@@ -1214,6 +1215,7 @@ debug_edb_top debug_edb_top_inst (
     .vio0_lift_auto_enable (lift_auto_enable),
     .vio0_lift_auto_max (lift_auto_max),
     .vio0_ae_display_mean (ae_display_mean),
+    .vio0_ae_exposure_constrained (ae_exposure_constrained),
     .vio0_lift_actual_strength (lift_actual_strength),
     .vio0_lift_at_max (lift_at_max),
     .vio0_lift_enable   (lift_enable),

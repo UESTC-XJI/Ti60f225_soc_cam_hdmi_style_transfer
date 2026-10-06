@@ -4,7 +4,7 @@ module predictive_ae_tb;
   reg clk=0,rst=0,en=0,sv=0,fs=0,wd=0,rd=0,protect=0;
   reg[7:0] mean=100,target=100,read_data=0;reg[9:0] ratio=0;
   wire wr,read,ready,fault;wire[15:0] addr,exposure,vts;wire[7:0] data;
-  sc431hai_auto_exposure #(.FIXED_STEP_ENABLE(0),.PREDICTIVE_ENABLE(1),.WAIT_FRAMES(0),.FILTER_SHIFT(0),.CONFIRM_FRAMES(1),.TIMEOUT_CYCLES(1000)) dut(
+  sc431hai_auto_exposure #(.EXPOSURE_PRIORITY_ENABLE(0),.FIXED_STEP_ENABLE(0),.PREDICTIVE_ENABLE(1),.WAIT_FRAMES(0),.FILTER_SHIFT(0),.CONFIRM_FRAMES(1),.TIMEOUT_CYCLES(1000)) dut(
     .clk(clk),.rst_n(rst),.i_config_done(1'b1),.i_enable(en),.i_sensor_frame_start(fs),
     .i_stats_valid(sv),.i_highlights(1'b0),.i_mean(mean),.i_target(target),
     .o_wr_en(wr),.o_rd_en(read),.o_addr(addr),.o_data(data),.i_wr_done(wd),.i_rd_done(rd),

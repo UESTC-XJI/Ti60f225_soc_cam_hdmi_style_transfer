@@ -5,7 +5,7 @@ module highlight_ae_tb;
   wire wr,read,ready,atlimit,fault,blocked;wire[15:0] addr,exposure,vts;wire[7:0] data,om;
   // Fast settings isolate the original I2C/state-machine behavior. Default
   // smoothing, small steps and persistence are exercised by ae_stability_tb.
-  sc431hai_auto_exposure #(.FIXED_STEP_ENABLE(0),.WAIT_FRAMES(2),.TIMEOUT_CYCLES(80),
+  sc431hai_auto_exposure #(.EXPOSURE_PRIORITY_ENABLE(0),.FIXED_STEP_ENABLE(0),.WAIT_FRAMES(2),.TIMEOUT_CYCLES(80),
     .FILTER_SHIFT(0),.CONFIRM_FRAMES(1),.DEADBAND(8),.SETTLE_BAND(8),
     .SMALL_STEP_SHIFT(3),.LARGE_STEP_SHIFT(3),.RELEASE_FRAMES(1),.PREDICTIVE_ENABLE(0)) dut(
     .clk(clk),.rst_n(rst),.i_config_done(1'b1),.i_enable(en),.i_sensor_frame_start(fs),

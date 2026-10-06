@@ -5,7 +5,7 @@ module sc431hai_auto_exposure #(
   parameter WAIT_FRAMES=2, TIMEOUT_CYCLES=250000,
   parameter FILTER_SHIFT=2, CONFIRM_FRAMES=2, DEADBAND=12, SETTLE_BAND=6,
   parameter SMALL_STEP_SHIFT=6, LARGE_STEP_SHIFT=5, LARGE_ERROR=32,
-  parameter RELEASE_FRAMES=8, PREDICTIVE_ENABLE=0, FIXED_STEP_ENABLE=1, RECOVERY_FRAMES=32, FAST_RECOVERY_FRAMES=4
+  parameter RELEASE_FRAMES=8, PREDICTIVE_ENABLE=0, FIXED_STEP_ENABLE=1, RECOVERY_FRAMES=32, FAST_RECOVERY_FRAMES=4, EXPOSURE_PRIORITY_ENABLE=1
 )(
   input clk,rst_n,i_config_done,i_enable,i_sensor_frame_start,
   input i_stats_valid,i_highlights,
@@ -22,6 +22,7 @@ module sc431hai_auto_exposure #(
   input i_high_protect,
   input [9:0] i_high_permille,
   input [7:0] i_high_limit,
+  output o_exposure_constrained,
   output reg o_highlight_limited
 );
   localparam BOOT=0,READ_SEND=1,READ_WAIT=2,LIMITS=3,READY=4,
@@ -35,7 +36,10 @@ module sc431hai_auto_exposure #(
   // Learn a safe ceiling after a highlight-driven reduction. Releasing the
   // latch must not immediately restore the large mean-driven exposure jump.
   reg ceiling_valid,pending_high;
-  reg [15:0] highlight_ceiling;
+  reg [15:0] highlight_ceiling,unsafe_exposure;
+  reg [7:0] safe_scene_mean;
+  reg safe_scene_valid;
+  reg [7:0] scene_change_count;
   reg [7:0] recovery_count,ceiling_limit;
   reg recovery_was_fast,release_was_low;
   wire ceiling_active=(PREDICTIVE_ENABLE || FIXED_STEP_ENABLE) && i_high_protect && ceiling_valid &&
@@ -95,7 +99,16 @@ module sc431hai_auto_exposure #(
     (brightness_step>32 ? 16'd32 : brightness_step);
   wire [15:0] recovery_step=FIXED_STEP_ENABLE ? recovery_fixed :
     (recovery_raw<4 ? 16'd4 : recovery_raw);
-  wire [16:0] recovery_candidate={1'b0,o_exposure}+{1'b0,recovery_step};
+  wire priority_active=EXPOSURE_PRIORITY_ENABLE && FIXED_STEP_ENABLE;
+  wire [16:0] safe_gap=unsafe_exposure>o_exposure ? {1'b0,unsafe_exposure}-{1'b0,o_exposure} : 17'd0;
+  wire [15:0] boundary_step=safe_gap<=4 ? 16'd0 :
+    (safe_gap<=6 ? 16'd1 : ((safe_gap-17'd4)>>1));
+  wire [15:0] guarded_recovery_step=priority_active && boundary_step<recovery_step ? boundary_step : recovery_step;
+  wire [7:0] scene_high_limit=high_limit<4 ? 8'd0 : high_limit>>2;
+  wire scene_became_dark=safe_scene_valid &&
+    ({1'b0,mean_control}+9'd8)<{1'b0,safe_scene_mean} &&
+    high_control<={2'b0,scene_high_limit} && i_high_permille<={2'b0,scene_high_limit};
+  wire [16:0] recovery_candidate={1'b0,o_exposure}+{1'b0,guarded_recovery_step};
   wire high_over=i_high_protect && high_control>{2'b0,high_limit};
   wire high_hold=i_high_protect && o_highlight_limited &&
     (RELEASE_FRAMES!=1 || high_control>{2'b0,high_release});
@@ -143,6 +156,9 @@ module sc431hai_auto_exposure #(
   wire predict_correction=PREDICTIVE_ENABLE && !FIXED_STEP_ENABLE &&
     ((direction==1 && !high_over && !high_hold) ||
      (direction==2 && {1'b0,mean_control}>({1'b0,target}+settle_band)));
+  assign o_exposure_constrained=i_enable && i_high_protect && o_ready &&
+    (o_exposure>=maximum || (ceiling_active &&
+      (!priority_active || safe_gap<=4 || o_highlight_limited)));
   assign o_ready=(state>=READY && state<=WRITE_WAIT) ||
     state==PREDICT_DIVIDE || state==PREDICT_APPLY;
   assign o_at_limit=o_ready && (o_exposure<=4 || o_exposure>=maximum);
@@ -174,6 +190,7 @@ module sc431hai_auto_exposure #(
       o_exposure<=0;o_vts<=0;o_mean<=0;o_error<=0;
       o_highlight_limited<=0;ceiling_valid<=0;highlight_ceiling<=0;
       recovery_count<=0;ceiling_limit<=0;pending_high<=0;recovery_was_fast<=0;release_was_low<=0;
+      unsafe_exposure<=0;safe_scene_mean<=0;safe_scene_valid<=0;scene_change_count<=0;
       filter_valid<=0;mean_filter<=0;high_filter<=0;previous_mean<=0;
       last_direction<=0;brightness_direction<=0;confirm_count<=0;release_count<=0;
       pred_dividend<=0;pred_quotient<=0;pred_estimate<=0;pred_divisor<=1;
@@ -186,7 +203,7 @@ module sc431hai_auto_exposure #(
         last_direction<=0;brightness_direction<=0;confirm_count<=0;release_count<=0;
       end
       if(!i_enable || !i_high_protect || ceiling_limit!=high_limit) begin
-        ceiling_valid<=0;recovery_count<=0;
+        ceiling_valid<=0;recovery_count<=0;safe_scene_valid<=0;scene_change_count<=0;
       end
       if(state==READ_WAIT || state==WRITE_WAIT || state==WAIT_FRAME) timer<=timer+1'b1;
       else timer<=0;
@@ -233,6 +250,19 @@ module sc431hai_auto_exposure #(
             else begin
               filter_valid<=1;mean_filter<=mean_next;high_filter<=high_next;
               previous_mean<=i_mean;
+              // Remember settled safe-scene brightness, then invalidate a stale
+              // highlight boundary only after a persistent dark-scene change.
+              if(priority_active && ceiling_active) begin
+                if(!safe_scene_valid && !high_hold && !high_over && !mean_jump) begin
+                  safe_scene_mean<=mean_control;safe_scene_valid<=1;
+                end
+                if(scene_became_dark) begin
+                  if(scene_change_count>=RELEASE_FRAMES-1) begin
+                    ceiling_valid<=0;o_highlight_limited<=0;safe_scene_valid<=0;
+                    scene_change_count<=0;
+                  end else scene_change_count<=scene_change_count+1'b1;
+                end else scene_change_count<=0;
+              end else begin safe_scene_valid<=0;scene_change_count<=0;end
               // Learned limits are temporary: use 1/16 probes after eight
               // stable low-highlight samples, or 1/32 near the boundary; minimum 4.
               if(ceiling_active && !high_hold && direction==1 &&
@@ -263,7 +293,11 @@ module sc431hai_auto_exposure #(
               if(o_exposure<4 || o_exposure>maximum ||
                  (direction!=0 && (CONFIRM_FRAMES==1 ||
                   (!mean_jump && direction==last_direction && confirm_count>=CONFIRM_FRAMES-1)))) begin
-                if(high_over) o_highlight_limited<=1;
+                if(high_over) begin
+                  o_highlight_limited<=1;
+                  if(priority_active && (!ceiling_active || o_exposure<unsafe_exposure))
+                    unsafe_exposure<=o_exposure;
+                end
                 if(next_exposure!=o_exposure) begin
                   pending_high<=high_over;
                   if(!high_over) brightness_direction<=direction;
@@ -318,6 +352,7 @@ module sc431hai_auto_exposure #(
               o_exposure<=pending;cooldown<=WAIT_FRAMES;state<=READY;
               if((PREDICTIVE_ENABLE || FIXED_STEP_ENABLE) && pending_high && i_high_protect && i_enable) begin
                 ceiling_valid<=1;highlight_ceiling<=pending;ceiling_limit<=high_limit;
+                safe_scene_valid<=0;scene_change_count<=0;
               end
               recovery_count<=0;
               // Discard pre-change statistics; re-seed after DDR/sensor settling.

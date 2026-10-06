@@ -4,7 +4,7 @@ module ae_controller_tb;
   reg[7:0] mean=96,target=96,rddata=0;
   reg wd=0,rd=0,we=0,re=0;
   wire wr,read,ready,limit,fault;wire[15:0] addr,exp,vts;wire[7:0] data,om;
-  sc431hai_auto_exposure #(.FIXED_STEP_ENABLE(0),.WAIT_FRAMES(2),.TIMEOUT_CYCLES(80),
+  sc431hai_auto_exposure #(.EXPOSURE_PRIORITY_ENABLE(0),.FIXED_STEP_ENABLE(0),.WAIT_FRAMES(2),.TIMEOUT_CYCLES(80),
     .FILTER_SHIFT(0),.CONFIRM_FRAMES(1),.DEADBAND(8),.SETTLE_BAND(8),
     .SMALL_STEP_SHIFT(3),.LARGE_STEP_SHIFT(3),.RELEASE_FRAMES(1),.PREDICTIVE_ENABLE(0)) dut(
     .clk(clk),.rst_n(rst),.i_config_done(cfg),.i_enable(en),.i_sensor_frame_start(fs),

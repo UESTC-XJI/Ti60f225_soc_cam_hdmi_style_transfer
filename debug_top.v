@@ -3,7 +3,7 @@
 // Auto-generated Efinix JTAG debugger top module. Do not modify. 
 //
 
-`define DBG_MODULE_UUID _d9468e89732645639d1c78e65f7b25ad
+`define DBG_MODULE_UUID _917497d4096a4f8f9b8be6a3a85b5d08
 `define CONCAT(a,b) a``b
 `define DBG_MODULE_NAME(name) `CONCAT(name,`DBG_MODULE_UUID)
 
@@ -39,6 +39,7 @@ module debug_edb_top (
     input  [7:0] vio0_ae_display_mean,
     input  [7:0] vio0_lift_actual_strength,
     input  vio0_lift_at_max,
+    input  vio0_ae_exposure_constrained,
     output [15:0] vio0_r_gain,
     output [15:0] vio0_g_gain,
     output [15:0] vio0_b_gain,
@@ -120,9 +121,9 @@ module debug_edb_top (
 
     // debug core instances
     `DBG_MODULE_NAME(edb_vio_top) #(
-        .NUM_PROBE_IN           ( 14 ),
+        .NUM_PROBE_IN           ( 15 ),
         .NUM_PROBE_OUT          ( 16 ),
-        .UUID           ( 128'h6aae4e1f9bf74de7b0f7602f6051a529 ),
+        .UUID           ( 128'hc58e994d267f4913a2e1a2e66316d46c ),
         .PROBE_IN0_WIDTH        ( 1 ),
         .PROBE_IN1_WIDTH        ( 1 ),
         .PROBE_IN2_WIDTH        ( 1 ),
@@ -137,6 +138,7 @@ module debug_edb_top (
         .PROBE_IN11_WIDTH       ( 8 ),
         .PROBE_IN12_WIDTH       ( 8 ),
         .PROBE_IN13_WIDTH       ( 1 ),
+        .PROBE_IN14_WIDTH       ( 1 ),
         .PROBE_OUT0_WIDTH       ( 16 ),
         .PROBE_OUT1_WIDTH       ( 16 ),
         .PROBE_OUT2_WIDTH       ( 16 ),
@@ -159,7 +161,7 @@ module debug_edb_top (
         .PROBE_OUT3_INIT_VAL    ( 'h0 ),
         .PROBE_OUT4_INIT_VAL    ( 'h1 ),
         .PROBE_OUT5_INIT_VAL    ( 'h60 ),
-        .PROBE_OUT6_INIT_VAL    ( 'h0 ),
+        .PROBE_OUT6_INIT_VAL    ( 'h1 ),
         .PROBE_OUT7_INIT_VAL    ( 'h20 ),
         .PROBE_OUT8_INIT_VAL    ( 'h20 ),
         .PROBE_OUT9_INIT_VAL    ( 'h1 ),
@@ -200,7 +202,7 @@ module debug_edb_top (
         .probe_in11         ( vio0_ae_display_mean ),
         .probe_in12         ( vio0_lift_actual_strength ),
         .probe_in13         ( vio0_lift_at_max ),
-        .probe_in14         ( 1'b0 ),
+        .probe_in14         ( vio0_ae_exposure_constrained ),
         .probe_in15         ( 1'b0 ),
         .probe_in16         ( 1'b0 ),
         .probe_in17         ( 1'b0 ),
