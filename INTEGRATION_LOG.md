@@ -1,85 +1,39 @@
 # SoC 视频流集成工作日志
 
-## 工作范围
-
-- 基线仓库：`Ti60f225_soc_cam_hdmi_720p`
 - 基线提交：`3ab82f8319c8f12284078f6373327093e50bb40e`
-- 工作分支：`feature/soc-hardjtag-sim`
+- 分支：`feature/soc-hardjtag-sim`
 - 工作区：`Ti60f225_soc_cam_hdmi_soc_sim`
-- 验证方式：RTL/固件仿真、静态检查和 Efinity 编译；不进行上板测试。
+- 验证范围：RTL/协议仿真、RISC-V 编译/host 模型、静态检查和 Efinity compile；按用户要求不做上板测试。
 
-用户提供的系统划分已纳入设计约束：单个 Sapphire RISC-V SoC 负责摄像头初始化、APB 控制、DDR 访问、UART/JTAG；采集、预处理、风格迁移和 HDMI 显示共享一个 DDR3 控制器；资源紧张时减少调试探针及逻辑分析仪存储。
+## 12 项目标验收记录
 
-## 阶段记录
+| 项目 | 实现与证据 |
+|---|---|
+| 1 基线备份 | `reports/baseline/sources.tar`、checkout、原始 artifacts、manifest 已保存；基线 Efinity map/debug/interface/PNR/PGM PASS；`tools/test_resize.py` 完整 1080p→720p、DMA、CVO 回归 PASS。基线为 RAW10 1920×1080/4 lane，采集 148.5 MHz 双像素，HDMI 74.25 MHz 单像素，TMDS 371.25 MHz；基线资源 XLR 29,505/60,800、RAM 135/256、DSP 11/160、GBUF 19/32、RBUF 1/32。|
+| 2 接口与时钟 | `docs/VIDEO_INTERCONNECT.md` 记录 CSI→RAW gearbox→Debayer/gain/AE→area resize→frame_buffer DDR→CVO→tone/lift→histogram/overlay→OSD→DVI/TMDS。OSD 输入是最终单像素域 RGB/DE/HS/VS，双像素 148.5 MHz 与单像素 74.25 MHz 关系已明确。|
+| 3 固定 OSD | `osd_font8x16.sv`、`osd_fixed_text.sv` 实现 8×16 ASCII 与流水同步；`osd_fixed_text_tb.sv` PASS，`HELLO SOC` 194 个有效字模像素；主顶层 OSD 进入 `dvi_encoder` 前。|
+| 4 SoC 资源 | 导入实际 `soc/efx_sapphire_soc/soc/soc.v`、settings/init/BSP；`soc_video_ddr_integration.sv` 接 UART、Sapphire I2C、CPU hard JTAG、APB 和唯一 DDR；CPU 使用 USER1，Efinity auto debugger 使用 USER2；VIO gain/tone 路径改固定默认值/APB。|
+| 5 DDR 地址 | `docs/DDR_ADDRESS_MAP.md`、`ddr_address_map_check.sv` 固定 CPU scratch `0x0100_0000..0x0110_0000`，视频 `0x0400_0000` 起始，三帧 stride `0x0038_4200`，开区间结束 `0x04A8_C600`；仿真断言不重叠且 16-byte 对齐。|
+| 6 共享 DDR | `axi_shared_ddr_2m.sv` 保留一个 DDR3 控制器，CPU/视频两个 master；CPU ID8→DDR ID4，保存完整 ID/owner，B/R 响应完整归属，地址和数据在 backpressure 下保持；4-beat burst、仲裁、公平性、B/R 错误及并发模型 PASS。|
+| 7 复位屏障 | `ddr_startup_barrier.sv` 对 core/display 域分别同步 PLL/cal_done，阻塞 CPU/video AXI；已接入顶层 `barrier_sys_reset_n/barrier_vid_reset_n`。多次复位、cal_done 前禁止访问的 TB PASS。|
+| 8 并发状态 | SoC CPU AXI 与 frame_buffer AXI 同时进入共享 bridge；`video_status_counters.sv` 对采集帧、显示帧、欠载、溢出、AXI 错误和 1 s FPS 计数，已接入 APB 状态；并发计数 TB、DMA/HDMI/DDR bridge 回归 PASS。真实 protected CPU RTL 仿真不可由 Icarus 解析，使用 Efinity 综合集成 + AXI/APB BFM 证据。|
+| 9 APB 控制 | `osd_apb_regs.sv` 提供 ID/enable/X/Y/color/char/page/COMMIT/status，并以 `STATUS2` 独立提供采集 FPS/显示 FPS；只在 APB ACCESS 完成写入，非法和只读写有 `pslverr` 且无副作用；busy/ACK/active CDC 已同步。APB TB PASS。|
+| 10 双缓冲 | `osd_text_double_buffer.sv` 写非 active 页，VS 上升沿切页并 ACK，配置快照随 toggle 过两级同步；busy 时重复 COMMIT 被 APB 拒绝；frame-boundary 与 CDC TB PASS。|
+| 11 固件 | `camera_init_table.h` 为 165 项 RTL 表（含 5000 us stream-off、1000 us stream-on 延时）；driver 完成 OSD 字符写/提交/ACK、真实采集 FPS/显示 FPS/DROP/ERR 格式化、UART hook。Efinity RISC-V 13.4 `rv32im/ilp32` host 与 BSP 两套 `.elf/.bin` 编译链接 PASS；`test_firmware_driver.py` PASS 165 写入、20 次更新和状态模型。|
+| 12 CPU 摄像头初始化 | `camera_verify_id()` 读取 `0x3107/0x3108` 并按 SC431HAI 手册校验 `0xcd6b`；BSP 使用 SID 低电平对应的 8 位从地址 `0x60`（7 位 `0x30`），调用 `i2c_writeData_w/i2c_readData_w`；`i2c_owner_mux.sv` 使 CPU 独占开漏 SDA/SCL，旧 RTL master 断开物理 pad；ID、初始化、停启和恢复协议模型及 mux TB PASS。|
 
-### 1. 基线备份与可复现性
+## 最终 Efinity 证据
 
-- [x] 从基线提交创建独立工作区和分支。
-- [x] RTL、工程 XML、peri、SDC、IP 设置随 Git 工作区保留。
-- [x] Efinity 基线 map/synthesis 通过；第一次完整 compile 因 worktree 中缺少未跟踪的 `work_dbg/debug_top.v` 在调试插入阶段停止，已补齐生成文件并重跑。
-- [x] 基线仿真回归：配置审计 PASS；CSI/resize/DMA/overlay 快速及全帧测试运行通过。
-- [x] 已记录已知基线资源：Ti60F225 I3，720p 输出；XLR 29,505/60,800，片上 RAM 135/256，DSP 11/160，GBUF 19/32，RBUF 1/32；HDMI 像素时钟 74.25 MHz，采集时钟 148.5 MHz，串行时钟 371.25 MHz。
+2026-10-08 主工程 `C:/Efinity/2026.1/bin/efx_run.bat ti60f225_cam_hdmi.xml --flow compile --timeout 1200`：map PASS、debugger auto instantiation PASS、interface PASS、PNR PASS、PGM PASS。最终 map 资源（`outflow/ti60f225_oob.map.rpt`）：RAM10 140/256、DPRAM10 4、DSP48 11/160、FF 15,294、LUT4 16,748；bitstream `outflow/ti60f225_oob.bit`，SHA256 `E45C85492B275F4E2EAB2D52287524E8181DD04C374D141373DA3DF7F24A45B6`。调试配置由 `tools/generate_soc_debug.py` 固定为 USER2、6 个 1-bit 关键 probe、capture depth 512，避免 RAM 紧张。
 
-### 2. 视频接口和时钟
+## 回归命令
 
-- [x] 完成连接图和信号时序文档（`docs/VIDEO_INTERCONNECT.md`）。
-- [x] 完成双像素/单像素域关系检查。
+- `python tools/check_rtl_config.py` PASS
+- `python tools/test_resize_checks.py`、`python tools/test_resize.py` PASS
+- `python tools/run_rtl_checks.py` PASS
+- `python tools/test_firmware_driver.py` PASS
+- 新增 AXI、startup barrier、APB、double buffer、status counter、I2C mux、fixed OSD TB 全部 PASS
+- `python tools/build_firmware.py` PASS：host/BSP `.elf/.bin`
+- 最终 Efinity map 资源和 bitstream 哈希已按本次编译产物更新；调试探针维持 6 个 1-bit 信号、512 深度。
 
-### 3. 固定文字 OSD
-
-- [x] 8×16 ASCII 字模、坐标和合成器。
-- [x] 固定 `HELLO SOC` 字符串仿真及与 HDMI 输入输出延迟检查。
-
-### 4. SoC 资源整理
-
-- [x] 移入实际 Sapphire SoC IP/BSP（`soc/efx_sapphire_soc/`、`software/bsp/`）。
-- [x] 检查 UART、SPI、JTAG、时钟和引脚资源冲突；`soc_jtag_channel_mux` 固定 JTAG 所有者并报告双使能错误。
-
-### 5. DDR 地址空间
-
-- [x] CPU、栈、堆和三帧视频缓存地址表（`docs/DDR_ADDRESS_MAP.md`）。
-- [x] 地址单位、长度和不重叠断言；frame buffer 起始地址改为 `0x1000_0000`。
-
-### 6. 共享 DDR AXI 互连
-
-- [ ] CPU 与 frame_buffer 两个 Master 的仲裁和 ID 适配。
-- [ ] B/R 响应归属、背压和突发仿真。
-
-### 7. 复位和 DDR 启动屏障
-
-- [ ] 各时钟域同步释放。
-- [ ] DDR 校准完成前禁止访问。
-
-### 8. SoC/视频并发
-
-- [ ] UART/JTAG 仿真模型、CPU DDR 测试和视频并发测试。
-- [ ] 欠载、溢出和 AXI 错误计数。
-
-### 9. APB 视频/OSD 控制
-
-- [ ] 地址译码、寄存器、完成握手和非法访问。
-
-### 10. 文字双缓冲和跨域提交
-
-- [ ] COMMIT/ACK、消隐切页和配置快照。
-
-### 11. OSD 固件驱动
-
-- [ ] 初始化、字符串写入、提交、ACK 等待和指标格式化。
-
-### 12. CPU 摄像头初始化
-
-- [ ] C 表、延时、顺序、Sensor ID 和恢复状态机仿真。
-
-## 验证命令和结果
-
-| 时间 | 阶段 | 命令/测试 | 结果 |
-|---|---|---|---|
-| 2026-10-07 | 1 | `git worktree add -b feature/soc-hardjtag-sim ... 3ab82f8` | PASS |
-| 2026-10-07 | 1 | Efinity 2026.1 基线 compile | 运行中 |
-| 2026-10-07 | 1 | `python tools/check_rtl_config.py` | PASS |
-| 2026-10-07 | 1 | `python tools/test_resize_checks.py` | PASS |
-| 2026-10-07 | 1 | `python tools/run_rtl_checks.py` | 运行通过基础用例 |
-| 2026-10-07 | 3 | `iverilog ... osd_fixed_text_tb.sv` | PASS，117 个字符像素 |
-| 2026-10-07 | 4 | `iverilog ... soc_jtag_channel_mux_tb.sv` | PASS |
-| 2026-10-07 | 5 | `iverilog ... ddr_address_map_tb.sv` | PASS |
+“PASS”均指仿真、协议模型、静态检查或 Efinity compile 证据；由于用户明确取消上板，本日志不把物理摄像头画面或真实 JTAG CPU 指令执行描述为已在板确认。

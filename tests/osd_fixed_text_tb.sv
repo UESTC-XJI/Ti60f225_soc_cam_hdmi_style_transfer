@@ -13,14 +13,14 @@ module osd_fixed_text_tb;
   always #5 clk=~clk;
 
   task tick; begin @(negedge clk); end endtask
-  task line(input integer yy); integer xx; begin
+  task line(input integer yy); integer xx; integer px; begin
     y=yy; vs=0; hs=0; de=0; tick;
     for(xx=0;xx<W;xx=xx+1) begin
-      x=xx; de=1; r=8'h11;g=8'h22;b=8'h33; tick;
+      x=xx; de=1; r=8'h11;g=8'h22;b=8'h33; tick; px=xx-1;
       if(cp) begin
         lit=lit+1;
-        if(x < 4 || x >= 4+9*8 || y < 2 || y >= 18) bad=bad+1;
-        if({or_,og,ob} !== 24'h20ff40) bad=bad+1;
+        if(px < 4 || px >= 4+9*8 || y < 2 || y >= 18) begin bad=bad+1; $display("bad pos x=%0d y=%0d px=%0d",x,y,px); end
+        if({or_,og,ob} !== 24'h20ff40) begin bad=bad+1; $display("bad color x=%0d y=%0d rgb=%h",x,y,{or_,og,ob}); end
       end
     end
     de=0; tick;
@@ -41,4 +41,3 @@ module osd_fixed_text_tb;
     $finish;
   end
 endmodule
-

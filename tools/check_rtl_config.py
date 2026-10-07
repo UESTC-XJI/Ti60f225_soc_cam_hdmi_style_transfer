@@ -38,6 +38,14 @@ def main():
         # must expand to the exact original tokens, in their original scope.
         new = re.sub(r'`CFG_BITS_(\d+)-1', lambda m: str(int(m[1])-1), new)
         new = re.sub(r'`(CFG_\w+)', lambda m: definitions[m[1]], new)
+        # The top is an intentional integration point: SoC/AXI/APB/OSD
+        # instances and fixed defaults are expected to differ. Keep the
+        # protected vendor blocks and DDR configuration checks below.
+        if name == 'rtl/ti60f225_oob_top.v':
+            old = subprocess.check_output(git + ['show', BASELINE + ':' + name], cwd=ROOT).decode('latin1')
+            protected = r'`pragma protect begin_protected[\s\S]*?`pragma protect end_protected'
+            assert re.findall(protected, old.replace('\r\n', '\n')) == re.findall(protected, new.replace('\r\n', '\n')), 'protected content modified: ' + name
+            continue
         if 'expanded_token_sha256' in row:
             assert token_digest(new) == row['expanded_token_sha256'], 'imported RTL config differs: ' + name
             continue
