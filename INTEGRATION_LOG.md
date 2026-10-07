@@ -37,8 +37,8 @@
 
 ### 5. DDR 地址空间
 
-- [ ] CPU、栈、堆和三帧视频缓存地址表。
-- [ ] 地址单位、长度和不重叠断言。
+- [x] CPU、栈、堆和三帧视频缓存地址表（`docs/DDR_ADDRESS_MAP.md`）。
+- [x] 地址单位、长度和不重叠断言；frame buffer 起始地址改为 `0x1000_0000`。
 
 ### 6. 共享 DDR AXI 互连
 
@@ -82,3 +82,4 @@
 | 2026-10-07 | 1 | `python tools/run_rtl_checks.py` | 运行通过基础用例 |
 | 2026-10-07 | 3 | `iverilog ... osd_fixed_text_tb.sv` | PASS，117 个字符像素 |
 | 2026-10-07 | 4 | `iverilog ... soc_jtag_channel_mux_tb.sv` | PASS |
+| 2026-10-07 | 5 | `iverilog ... ddr_address_map_tb.sv` | PASS |
