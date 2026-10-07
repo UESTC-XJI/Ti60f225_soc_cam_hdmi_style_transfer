@@ -25,6 +25,8 @@
 `include "isp/auto_tone_lift.v"
 `include "isp/hdmi_frame_histogram.v"
 `include "isp/hdmi_info_overlay.v"
+`include "soc_integration/osd_font8x16.sv"
+`include "soc_integration/osd_fixed_text.sv"
 // `include "define.v"
 
 module ti60f225_oob_top #(
@@ -1172,16 +1174,33 @@ isp_cdc_mailbox #(.WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_OSD_STATUS_MAILBOX_WIDTH))
   .d_clk(vid_clk_dvi2),.d_rst_n(w_arstn),.d_valid(),.d_data({osd_hist_valid,osd_hist_samples})
 );
 
+// Fixed text is rendered in the final single-pixel HDMI domain.  The enable
+// comes from the coherent OSD control mailbox; the APB revision can replace
+// that source without changing the dvi_encoder interface.
+wire fixed_osd_vs,fixed_osd_hs,fixed_osd_de,fixed_osd_char_pixel;
+wire [`CFG_BITS_8-1:0] fixed_osd_r,fixed_osd_g,fixed_osd_b;
+osd_fixed_text #(
+  .FRAME_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_INFORMATION_OVERLAY_FRAME_WIDTH),
+  .FRAME_HEIGHT(`CFG_TI60F225_OOB_TOP_V_INST_INFORMATION_OVERLAY_FRAME_HEIGHT),
+  .BASE_X(16),.BASE_Y(16),.TEXT_LEN(9),.FG_RGB(24'h20ff40)
+) fixed_text_osd(
+  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),
+  .i_vs(osd_vs),.i_hs(osd_hs),.i_de(osd_de),
+  .i_r(osd_r),.i_g(osd_g),.i_b(osd_b),.i_enable(osd_controls[3]),
+  .o_vs(fixed_osd_vs),.o_hs(fixed_osd_hs),.o_de(fixed_osd_de),
+  .o_r(fixed_osd_r),.o_g(fixed_osd_g),.o_b(fixed_osd_b),.o_char_pixel(fixed_osd_char_pixel)
+);
+
 dvi_encoder dvi_encoder_m0
 (
 	.pixelclk      		(hdmi_tx_slow_clk          ),// system clock
 	.rst_p         		(~display_reset_n),// reset
-	.i_bdata      		(osd_b),
-	.i_gdata     		(osd_g),
-	.i_rdata       		(osd_r),
-  .i_de            	(osd_de),
-	.i_hs         		(osd_hs),
-	.i_vs         		(osd_vs),
+	.i_bdata      		(fixed_osd_b),
+	.i_gdata     		(fixed_osd_g),
+	.i_rdata       		(fixed_osd_r),
+  .i_de            	(fixed_osd_de),
+	.i_hs         		(fixed_osd_hs),
+	.i_vs         		(fixed_osd_vs),
 	
   .video_format     (2'b00), //// 00 = RGB, 01 = YCbCr 4:2:2, 10 = YCbCr 4:4:4
   .video_VIC        (7'd4),

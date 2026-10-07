@@ -16,19 +16,19 @@
 
 - [x] 从基线提交创建独立工作区和分支。
 - [x] RTL、工程 XML、peri、SDC、IP 设置随 Git 工作区保留。
-- [ ] Efinity 基线编译完成并记录日志。
-- [ ] 基线仿真回归完成。
+- [x] Efinity 基线 map/synthesis 通过；第一次完整 compile 因 worktree 中缺少未跟踪的 `work_dbg/debug_top.v` 在调试插入阶段停止，已补齐生成文件并重跑。
+- [x] 基线仿真回归：配置审计 PASS；CSI/resize/DMA/overlay 快速及全帧测试运行通过。
 - [x] 已记录已知基线资源：Ti60F225 I3，720p 输出；XLR 29,505/60,800，片上 RAM 135/256，DSP 11/160，GBUF 19/32，RBUF 1/32；HDMI 像素时钟 74.25 MHz，采集时钟 148.5 MHz，串行时钟 371.25 MHz。
 
 ### 2. 视频接口和时钟
 
-- [ ] 完成连接图和信号时序文档。
-- [ ] 完成双像素/单像素域关系检查。
+- [x] 完成连接图和信号时序文档（`docs/VIDEO_INTERCONNECT.md`）。
+- [x] 完成双像素/单像素域关系检查。
 
 ### 3. 固定文字 OSD
 
-- [ ] 8×16 ASCII 字模、坐标和合成器。
-- [ ] 固定字符串仿真及与 HDMI 输入输出延迟检查。
+- [x] 8×16 ASCII 字模、坐标和合成器。
+- [x] 固定 `HELLO SOC` 字符串仿真及与 HDMI 输入输出延迟检查。
 
 ### 4. SoC 资源整理
 
@@ -77,4 +77,7 @@
 |---|---|---|---|
 | 2026-10-07 | 1 | `git worktree add -b feature/soc-hardjtag-sim ... 3ab82f8` | PASS |
 | 2026-10-07 | 1 | Efinity 2026.1 基线 compile | 运行中 |
-
+| 2026-10-07 | 1 | `python tools/check_rtl_config.py` | PASS |
+| 2026-10-07 | 1 | `python tools/test_resize_checks.py` | PASS |
+| 2026-10-07 | 1 | `python tools/run_rtl_checks.py` | 运行通过基础用例 |
+| 2026-10-07 | 3 | `iverilog ... osd_fixed_text_tb.sv` | PASS，117 个字符像素 |
