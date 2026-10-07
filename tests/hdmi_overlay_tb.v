@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 module hdmi_overlay_tb #(parameter FULL=0);
-  localparam W=FULL?1920:320,H=FULL?1080:192,M=16,PH=128,TOP=H-M-PH-2;
+  localparam W=FULL==2?1280:(FULL?1920:320),H=FULL==2?720:(FULL?1080:192),M=16,PH=128,TOP=H-M-PH-2;
   localparam SAMPLES=((W+15)/16)*((H+7)/8);
   reg clk=0,rst=0,vs=0,hs=0,de=0,enable=0,text_enable=0,text_valid=0;
   reg [1:0] mode=0;

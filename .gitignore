@@ -4,6 +4,7 @@
 /work_pnr/
 /work_dbg/
 /outflow/
+/reports/simulation/
 /netlist/
 
 # Local project lock held by the FPGA tool while the project is open.

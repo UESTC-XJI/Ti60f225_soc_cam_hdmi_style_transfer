@@ -3,7 +3,7 @@
 // Auto-generated Efinix JTAG debugger top module. Do not modify. 
 //
 
-`define DBG_MODULE_UUID _cb56058806e448448b6fe940163906f6
+`define DBG_MODULE_UUID _8911201714d3448392dfccdaf12cbaee
 `define CONCAT(a,b) a``b
 `define DBG_MODULE_NAME(name) `CONCAT(name,`DBG_MODULE_UUID)
 

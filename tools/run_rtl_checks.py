@@ -21,6 +21,7 @@ if __name__ == '__main__':
     isp = ROOT / 'rtl/isp'
     run('hdmi_overlay_tb', [TESTS / 'hdmi_overlay_tb.v', isp / 'hdmi_info_overlay.v', isp / 'hdmi_frame_histogram.v'])
     run('hdmi_overlay_tb', [TESTS / 'hdmi_overlay_tb.v', isp / 'hdmi_info_overlay.v', isp / 'hdmi_frame_histogram.v'], ['-Phdmi_overlay_tb.FULL=1'])
+    run('hdmi_overlay_tb', [TESTS / 'hdmi_overlay_tb.v', isp / 'hdmi_info_overlay.v', isp / 'hdmi_frame_histogram.v'], ['-Phdmi_overlay_tb.FULL=2'])
     run('hdmi_overlay_apb_tb', [TESTS / 'hdmi_overlay_apb_tb.v', isp / 'hdmi_info_overlay_apb.v'])
     run('highlight_stats_tb', [TESTS / 'highlight_stats_tb.v', isp / 'ae_frame_stats.v'])
     run('highlight_stats_tb', [TESTS / 'highlight_stats_tb.v', isp / 'ae_frame_stats.v'], ['-Phighlight_stats_tb.FULL=1'])

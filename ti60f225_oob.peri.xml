@@ -352,10 +352,10 @@
                 <efxpt:pin name="" type_name="SHIFT_ENA" is_bus="false"/>
                 <efxpt:pin name="" type_name="DESKEWED" is_bus="false"/>
             </efxpt:gen_pin>
-            <efxpt:comp_output_clock name="vid_clk_dvi2" number="0" out_divider="40" is_dyn_phase="false" phase_setting="0" is_inverted="false" conn_type="gclk"/>
-            <efxpt:comp_output_clock name="hdmi_tx_slow_clk" number="1" out_divider="20" is_dyn_phase="false" phase_setting="0" is_inverted="false" conn_type="gclk"/>
+            <efxpt:comp_output_clock name="vid_clk_dvi2" number="0" out_divider="20" is_dyn_phase="false" phase_setting="0" is_inverted="false" conn_type="gclk"/>
+            <efxpt:comp_output_clock name="hdmi_tx_slow_clk" number="1" out_divider="40" is_dyn_phase="false" phase_setting="0" is_inverted="false" conn_type="gclk"/>
             <efxpt:comp_output_clock name="fb" number="2" out_divider="55" is_dyn_phase="false" phase_setting="0" is_inverted="false" conn_type="gclk"/>
-            <efxpt:comp_output_clock name="hdmi_tx_fast_clk" number="3" out_divider="4" is_dyn_phase="false" phase_setting="2" is_inverted="false" conn_type="gclk"/>
+            <efxpt:comp_output_clock name="hdmi_tx_fast_clk" number="3" out_divider="8" is_dyn_phase="false" phase_setting="2" is_inverted="false" conn_type="gclk"/>
             <efxpt:comp_prop/>
         </efxpt:pll>
         <efxpt:pll name="MIPI_TX_PLL" pll_def="PLL_TL0" ref_clock_name="CLK_25M" ref_clock_freq="25.0000" multiplier="4" pre_divider="1" post_divider="2" reset_name="pll_inst1_RSTN" locked_name="i_pll_locked" is_ipfrz="false" is_bypass_lock="true">

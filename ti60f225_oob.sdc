@@ -8,10 +8,10 @@ create_clock -period 2.500 -name sdram_clk [get_ports {sdram_clk}]
 create_clock -period 2.500 -name rx_cal_clk [get_ports {rx_cal_clk}]
 create_clock -period 2.500 -name tx_cal_clk [get_ports {tx_cal_clk}]
 create_clock -period 10.000 -name clk_100m [get_ports {clk_100m}]
-create_clock -period 13.468 -name vid_clk_dvi2 [get_ports {vid_clk_dvi2}]
-create_clock -period 6.734 -name hdmi_tx_slow_clk [get_ports {hdmi_tx_slow_clk}]
+create_clock -period 6.734 -name vid_clk_dvi2 [get_ports {vid_clk_dvi2}]
+create_clock -period 13.468 -name hdmi_tx_slow_clk [get_ports {hdmi_tx_slow_clk}]
 create_clock -period 18.519 -name fb [get_ports {fb}]
-create_clock -waveform {0.337 1.010} -period 1.347 -name hdmi_tx_fast_clk [get_ports {hdmi_tx_fast_clk}]
+create_clock -waveform {0.337 1.684} -period 2.694 -name hdmi_tx_fast_clk [get_ports {hdmi_tx_fast_clk}]
 create_clock -period 10.000 -name core_clk [get_ports {core_clk}]
 create_clock -waveform {1.000 2.000} -period 2.000 -name i_mipi_txc_sclk [get_ports {i_mipi_txc_sclk}]
 create_clock -waveform {0.500 1.500} -period 2.000 -name i_mipi_txd_sclk [get_ports {i_mipi_txd_sclk}]
@@ -23,7 +23,7 @@ create_clock -period 200.000 -name CLK_5M [get_ports {CLK_5M}]
 create_clock -period 10.000 -name i_cam_ck_CLKOUT [get_ports {i_cam_ck_CLKOUT}]
 
 set_clock_groups -exclusive  -group {i_mipi_rx_pclk} -group {jtag_inst1_TCK}
-set_clock_groups -exclusive -group {core_clk} -group {tx_cal_clk} -group {i_mipi_tx_pclk} -group {vid_clk_dvi2} -group {CLK_5M} -group {i_mipi_rx_pclk} -group {sdram_clk} -group {rx_cal_clk}
+set_clock_groups -exclusive -group {core_clk} -group {tx_cal_clk} -group {i_mipi_tx_pclk} -group {vid_clk_dvi2 hdmi_tx_slow_clk hdmi_tx_fast_clk fb} -group {CLK_5M} -group {i_mipi_rx_pclk} -group {sdram_clk} -group {rx_cal_clk}
 set_clock_groups -exclusive -group {i_mipi_tx_pclk}    -group {i_mipi_rx_pclk}
 
 #set_clock_groups -exclusive -group {i_sysclk} -group {jtag_inst1_TCK}                       2.500           -0.197           (R-R)

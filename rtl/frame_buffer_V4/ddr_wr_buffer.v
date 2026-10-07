@@ -148,8 +148,8 @@ end
 always @( posedge axi_clk or negedge rst_n )
 begin
 	if( !rst_n ) begin
-		burst_len_r   <= total_burst_len;//end_address - start_address
-        start_addr_r <= start_addr;
+		burst_len_r <= 25'd0;
+        start_addr_r <= 'd0;
 	end else begin
 		burst_len_r   <= pos_sync ? total_burst_len : burst_len_r ;
         start_addr_r <= pos_sync ? start_addr:start_addr_r;
@@ -246,11 +246,11 @@ reg addr_add_last = 'd0;
 reg [`CFG_BITS_32-1:0] addr_cnt_num = 'd0;
 always @(posedge axi_clk or negedge rst_n) 
 begin
-	if (!rst_n) 						                        ddr_wr_addr <= start_addr_r;//start_addr;
+	if (!rst_n) ddr_wr_addr <= 'd0;
 	else if(sync_r2)				                            ddr_wr_addr <= start_addr_r;//start_addr;//( pos_sync )
 	else if( addr_add_en ) 				                        ddr_wr_addr <= nx_ddr_wr_addr;
 end      
-assign nx_ddr_wr_addr =  ddr_wr_addr + {(ddr_awlen+1) ,{WR_ADDR_SHIFT_BITS{1'b0}}};  
+assign nx_ddr_wr_addr = ddr_wr_addr + {({1'b0,ddr_awlen}+9'd1),{WR_ADDR_SHIFT_BITS{1'b0}}};
 always @( posedge axi_clk or negedge rst_n )
 begin
  	if( !rst_n )  							                    addr_cnt_num <= 'd0;
@@ -286,7 +286,7 @@ begin
 end 
 always @( posedge axi_clk or negedge rst_n  )
 begin
-    if( !rst_n ) 								                ddr_awlen 	<= first_burst_cnt;//cfg_alen;
+    if( !rst_n ) ddr_awlen <= 8'd0;
     else if( sync_r2 )						                    ddr_awlen 	<= first_burst_cnt;	 
     else if(burst_add_en && burst_num == total_burst_num+2)		ddr_awlen	<= last_burst_cnt;
     else if( burst_add_en )						                ddr_awlen 	<= BURST_LEN;//cfg_alen_r;	

@@ -69,6 +69,8 @@
         <efx:design_file name="rtl/frame_buffer_V4/vid_rx_align_v1.v" version="default" library="default"/>
         <efx:design_file name="rtl/frame_buffer_V4/ddr_wr_buffer_v1.v" version="default" library="default"/>
         <efx:design_file name="rtl/user_cvo_axi_v2/cvo_axi_v2.v" version="default" library="default"/>
+        <efx:design_file name="rtl/resize/camera_raw_gearbox.v" version="default" library="default"/>
+        <efx:design_file name="rtl/resize/rgb_area_resize_3to2.v" version="default" library="default"/>
         <efx:top_vhdl_arch name=""/>
         <efx:msg_config name=""/>
         <efx:partition_definitions name=""/>

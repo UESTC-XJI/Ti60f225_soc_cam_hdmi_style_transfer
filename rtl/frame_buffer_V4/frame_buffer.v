@@ -113,7 +113,7 @@ wire wr_clk_rst_n;
 wire axi_clk_rst_n;
 wire rd_clk_rst_n;
 rst_n_piple #(                       
-	.DLY ( `CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_I_CLK_RST_PIP_DLY )
+    .DLY ( `CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_I_CLK_RST_PIP_DLY )
 )	u_i_clk_rst_pip(                                          
 /*i*/.clk			(i_clk),                        
 /*i*/.rst_n_i	(rst_n),                    
@@ -121,7 +121,7 @@ rst_n_piple #(
 );
 
   rst_n_piple #(                       
-	.DLY ( `CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_AXI_RST_PIP_DLY )
+    .DLY ( `CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_AXI_RST_PIP_DLY )
 )	u_axi_rst_pip(                                          
 /*i*/.clk			(axi_clk),                        
 /*i*/.rst_n_i	(rst_n),                    
@@ -129,7 +129,7 @@ rst_n_piple #(
 );
 
   rst_n_piple #(                       
-	.DLY ( `CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_O_CLK_RST_PIP_DLY )
+    .DLY ( `CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_O_CLK_RST_PIP_DLY )
 )	u_o_clk_rst_pip(                                          
 /*i*/.clk			(o_clk),                        
 /*i*/.rst_n_i	(rst_n),                    
@@ -140,6 +140,18 @@ rst_n_piple #(
 wire                      wr_fifo_wren;
 wire                      frame_start;
 wire                      frame_stable;
+// Capture can run faster than AXI; a one-cycle frame pulse may be missed.
+reg write_frame_toggle;
+(* async_reg = "true" *) reg write_frame_meta,write_frame_sync;
+reg write_frame_seen;
+always @(posedge i_clk or negedge wr_clk_rst_n)
+  if(!wr_clk_rst_n) write_frame_toggle<=0;
+  else if(frame_start) write_frame_toggle<=!write_frame_toggle;
+always @(posedge axi_clk or negedge axi_clk_rst_n) begin
+  if(!axi_clk_rst_n) begin write_frame_meta<=0;write_frame_sync<=0;write_frame_seen<=0;end
+  else begin write_frame_meta<=write_frame_toggle;write_frame_sync<=write_frame_meta;write_frame_seen<=write_frame_sync;end
+end
+wire axi_write_frame_start=write_frame_sync ^ write_frame_seen;
 
 vid_rx_align_v1 #(
 	.I_VID_WIDTH   (`CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_VID_RX_ALIGN_I_VID_WIDTH		),
@@ -174,6 +186,9 @@ ddr_buffer #(
 .WR_FIFO_DEPTH	( `CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_DDR_BUFFER_WR_FIFO_DEPTH		),
 .RD_FIFO_DEPTH 	( `CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_DDR_BUFFER_RD_FIFO_DEPTH 	),
 .START_ADDR		( `CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_DDR_BUFFER_START_ADDR        ),
+.FB_NUM         ( `CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_DDR_BUFFER_FB_NUM            ),
+.MAX_VID_WIDTH  ( `CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_DDR_BUFFER_MAX_VID_WIDTH     ),
+.MAX_VID_HIGHT  ( `CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_DDR_BUFFER_MAX_VID_HIGHT     ),
 .I_VID_WIDTH    ( `CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_DDR_BUFFER_I_VID_WIDTH       ),
 .BURST_LEN      (`CFG_FRAME_BUFFER_V4_FRAME_BUFFER_V_INST_U_DDR_BUFFER_BURST_LEN          )
 )u_ddr_buffer(
@@ -183,7 +198,7 @@ ddr_buffer #(
     .rd_clk_rst_n (rd_clk_rst_n),
     
 
-/*i*/.wr_start	      (frame_start),// && frame_stable
+/*i*/.wr_start	      (axi_write_frame_start),
 /*i*/.rd_start	      (fifo_rd_period),// && frame_stable
     .wr_busrt_len     (ddr_frame_len ),//ddr address scope for one frame
     .rd_burst_len     (ddr_frame_len ),//ddr address scope for one frame

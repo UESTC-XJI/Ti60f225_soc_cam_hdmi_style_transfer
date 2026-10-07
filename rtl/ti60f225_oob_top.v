@@ -263,6 +263,8 @@ localparam RD_FIFO_DEPTH  = `CFG_TI60F225_OOB_TOP_V_LOCALPARAM_RD_FIFO_DEPTH;
 // localparam	VBP			= 8'd20;
 // localparam	VFP			= 8'd20;
 
+localparam SOURCE_WIDTH = `CFG_TI60F225_OOB_TOP_V_LOCALPARAM_SOURCE_WIDTH;
+localparam SOURCE_HEIGHT = `CFG_TI60F225_OOB_TOP_V_LOCALPARAM_SOURCE_HEIGHT;
 localparam HACT     = `CFG_TI60F225_OOB_TOP_V_LOCALPARAM_HACT;
 localparam HFP      = `CFG_TI60F225_OOB_TOP_V_LOCALPARAM_HFP;
 localparam HSP      = `CFG_TI60F225_OOB_TOP_V_LOCALPARAM_HSP;
@@ -628,20 +630,41 @@ assign io_cam_sda_OE = ~sda_padoen_o;
 //=====================================================================================
 //frame buffer
 //=====================================================================================
-wire [`CFG_BITS_8-1:0] 	ch0_r;
-wire [`CFG_BITS_8-1:0]    ch0_g;
-wire [`CFG_BITS_8-1:0]    ch0_b;
-wire ch0_vs;
-wire ch0_hs;
-wire ch0_de;
-
-wire  [`CFG_TI60F225_OOB_TOP_V_RANGE_28] m_axis_tdata;
+// Capture processing uses vid_clk_dvi2 at 148.5 MHz; HDMI uses 74.25 MHz.
+wire capture_vs,capture_de,capture_fault;
+wire [`CFG_BITS_16-1:0] capture_raw;
+wire resize_vs,resize_valid,resize_fault;
+wire [`CFG_BITS_64-1:0] resize_data;
+wire [`CFG_BITS_32-1:0] resize_completed_frames;
+wire [`CFG_BITS_32-1:0] display_pixel;
+wire ch0_vs,ch0_hs,ch0_de;
+wire display_underflow;
+wire capture_reset_n,display_reset_n;
+// Wait for DDR calibration, then release resets synchronously in each domain.
+wire video_reset_n = vid_rst_n && cal_done && user_pll_locked;
+rst_n_piple #(.DLY(`CFG_TI60F225_OOB_TOP_V_INST_CAPTURE_RESET_DLY)) capture_reset(.clk(vid_clk_dvi2),.rst_n_i(video_reset_n),.rst_n_o(capture_reset_n));
+rst_n_piple #(.DLY(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_RESET_DLY)) display_reset(.clk(hdmi_tx_slow_clk),.rst_n_i(video_reset_n),.rst_n_o(display_reset_n));
+wire csi_reset_n;
+rst_n_piple #(.DLY(`CFG_TI60F225_OOB_TOP_V_INST_CSI_RESET_DLY)) csi_reset(.clk(i_mipi_rx_pclk),.rst_n_i(video_reset_n),.rst_n_o(csi_reset_n));
+camera_raw_gearbox #(.SOURCE_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_CAMERA_REPLAY_SOURCE_WIDTH),.SOURCE_HEIGHT(`CFG_TI60F225_OOB_TOP_V_INST_CAMERA_REPLAY_SOURCE_HEIGHT)) camera_replay(
+  .s_clk(i_mipi_rx_pclk),.s_rst_n(csi_reset_n),.s_vs(w_mipi_rx_vs),
+  .s_valid(w_mipi_rx_de & w_mipi_rx_hs),
+  .s_data({w_mipi_rx_data[39:32],w_mipi_rx_data[29:22],w_mipi_rx_data[19:12],w_mipi_rx_data[9:2]}),
+  .d_clk(vid_clk_dvi2),.d_rst_n(capture_reset_n),
+  .d_vs(capture_vs),.d_de(capture_de),.d_data(capture_raw),.fault(capture_fault)
+);
+rgb_area_resize_3to2 #(.SOURCE_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_AREA_RESIZE_SOURCE_WIDTH),.SOURCE_HEIGHT(`CFG_TI60F225_OOB_TOP_V_INST_AREA_RESIZE_SOURCE_HEIGHT)) area_resize(
+  .clk(vid_clk_dvi2),.rst_n(capture_reset_n),.i_vs(rgb_vs),.i_de(rgb_de),.i_rgb(rgb_datax2),
+  .o_vs(resize_vs),.o_valid(resize_valid),.o_data(resize_data),
+  .fault(resize_fault),.completed_frames(resize_completed_frames)
+);
+wire [`CFG_BITS_32-1:0] m_axis_tdata;
 wire           m_axis_tvalid;
 wire           m_axis_tready;
 wire           m_axis_tlast;
 wire           m_axis_tuser;
 wire  fifo_rd_period;
-// IMX219
+// SC431HAI resized XBGR8888 frame buffer.
   frame_buffer #(
 .I_VID_WIDTH         (`CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_I_VID_WIDTH),
 .O_VID_WIDTH         (`CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_O_VID_WIDTH),
@@ -659,14 +682,14 @@ wire  fifo_rd_period;
 
 )checker0(
        .axi_clk		(core_clk 	        ),
-       .rst_n			(vid_rst_n   ),
+       .rst_n			(video_reset_n),
 
-/*i*/.i_clk			(i_mipi_rx_pclk      ),
-/*i*/.i_vs			(w_mipi_rx_vs	),
-/*i*/.i_de			(w_mipi_rx_de & w_mipi_rx_hs	),
-/*i*/.vin 			({w_mipi_rx_data[39:32],w_mipi_rx_data[29:22],w_mipi_rx_data[19:12],w_mipi_rx_data[9:2]}	),
+/*i*/.i_clk			(vid_clk_dvi2),
+/*i*/.i_vs			(resize_vs),
+/*i*/.i_de			(resize_valid && !capture_fault && !resize_fault),
+/*i*/.vin 			(resize_data),
                      
-/*i*/.o_clk			(vid_clk_dvi2),//(i_mipi_rx_pclk	),                  
+/*i*/.o_clk			(hdmi_tx_slow_clk),//(i_mipi_rx_pclk	),
 /*i*/.fifo_rd_period(fifo_rd_period),//(fifo_rd_period  ),
 
     .m_axis_tdata  (m_axis_tdata),
@@ -732,10 +755,11 @@ cvo_axi # (
     .MAX_V_VALID(`CFG_TI60F225_OOB_TOP_V_INST_CVO_AXI_INST_MAX_V_VALID)
   )
   cvo_axi_inst (
-    .o_clk          (vid_clk_dvi2   ),
-    .rst_n          (vid_rst_n      ),
+    .o_clk          (hdmi_tx_slow_clk),
+    .rst_n          (display_reset_n),
     .fifo_rd_period (fifo_rd_period ),
-    .s_axi_clk      (vid_clk_dvi2   ),
+    .fifo_rd_underflow(display_underflow),
+    .s_axi_clk      (hdmi_tx_slow_clk),
     .s_axis_tdata   (m_axis_tdata   ),
     .s_axis_tvalid  (m_axis_tvalid  ),
     .s_axis_tready  (m_axis_tready  ),
@@ -749,7 +773,7 @@ cvo_axi # (
     .V_SYNC         (VSP            ),
     .V_VALID        (VACT           ),
     .V_BACK_PORCH   (VBP            ),
-     .vout          ({ch0_b,ch0_g}  ),
+     .vout          (display_pixel),
     .o_hs           (ch0_hs         ),
     .o_vs           (ch0_vs         ),
     .o_de           (ch0_de         )
@@ -870,7 +894,7 @@ wire [`CFG_BITS_48-1:0] rgb_datax2;
 wire [`CFG_BITS_16-1:0] r_gain;
 wire [`CFG_BITS_16-1:0] g_gain;
 wire [`CFG_BITS_16-1:0] b_gain;
-// RAW input row phase from the gain selector; sampled with ch0_*.
+// RAW input row phase from the gain selector; sampled with capture RAW.
 wire raw_row_odd;
 // Measured white RAW: the matched green samples are even/high and odd/low.
 // Preserve pixel order and use BGGR processing for this camera configuration.
@@ -881,13 +905,13 @@ debayer_top_2to1 #(
 ) debayer_top
 (
 	.in_pclk		  (vid_clk_dvi2),//(i_mipi_rx_pclk ),
-	.in_rstn		  (vid_rst_n	),
+	.in_rstn		  (capture_reset_n),
 	
-	.raw_vs_i		  (ch0_vs		      ),
-	.raw_hs_i		  (ch0_hs		      ),
-	.raw_de_i		  (ch0_de		      ),
-	.raw_valid_i	(ch0_de	        ),
-	.raw_datax4_i	({ch0_b,ch0_g}	),
+	.raw_vs_i		  (capture_vs),
+	.raw_hs_i		  (capture_de),
+	.raw_de_i		  (capture_de),
+	.raw_valid_i	(capture_de),
+	.raw_datax4_i	(capture_raw),
 	.r_gain       (|r_gain? r_gain:255 ),
   .g_gain       (|g_gain? g_gain:255 ),
   .b_gain       (|b_gain? b_gain:255 ),
@@ -899,39 +923,25 @@ debayer_top_2to1 #(
 	.raw_row_odd_o (raw_row_odd   )
 );
 ae_frame_stats #(.FRAME_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_AE_METER_FRAME_WIDTH),.FRAME_HEIGHT(`CFG_TI60F225_OOB_TOP_V_INST_AE_METER_FRAME_HEIGHT),.FULL_FRAME_MEAN(`CFG_TI60F225_OOB_TOP_V_INST_AE_METER_FULL_FRAME_MEAN)) ae_meter(
-  .clk(vid_clk_dvi2),.rst_n(vid_rst_n),.i_vs(rgb_vs),.i_de(rgb_de),.i_rgb(rgb_datax2),
+  .clk(vid_clk_dvi2),.rst_n(capture_reset_n),.i_vs(rgb_vs),.i_de(rgb_de),.i_rgb(rgb_datax2),
   .i_high_threshold(ae_high_threshold),.o_high_permille(stats_high_permille),
   .o_valid(stats_valid),.o_mean(stats_mean),.o_highlights(stats_hot)
 );
-reg rgb_vs_r = 'd0;
-always @( posedge hdmi_tx_slow_clk )
-begin
-  rgb_vs_r <= rgb_vs;
-end
-assign pos_vs = {rgb_vs_r,rgb_vs} == 2'b01;
-reg vid_cnt = 'd0;
-reg [`CFG_BITS_8-1:0] hdmi_tx_rdata ;
-reg [`CFG_BITS_8-1:0] hdmi_tx_gdata ;
-reg [`CFG_BITS_8-1:0] hdmi_tx_bdata ;
-reg hdmi_tx_vs;
-reg hdmi_tx_hs;
-reg hdmi_tx_de;
-always @( posedge hdmi_tx_slow_clk )
-begin
-    if( pos_vs )
-      vid_cnt <= 1'b1;
-    else if( rgb_de )
-      vid_cnt <= ~vid_cnt ;
-
-    if( vid_cnt )
-      {hdmi_tx_bdata,hdmi_tx_gdata,hdmi_tx_rdata} <= rgb_datax2[23:0];
-    else 
-      {hdmi_tx_bdata,hdmi_tx_gdata,hdmi_tx_rdata} <= rgb_datax2[47:24];
-
-  hdmi_tx_vs <= rgb_vs;
-  hdmi_tx_hs <= rgb_hs;
-  hdmi_tx_de <= rgb_de;
-end
+wire [`CFG_BITS_8-1:0] hdmi_tx_rdata = display_pixel[7:0];
+wire [`CFG_BITS_8-1:0] hdmi_tx_gdata = display_pixel[15:8];
+wire [`CFG_BITS_8-1:0] hdmi_tx_bdata = display_pixel[23:16];
+wire hdmi_tx_vs = ch0_vs;
+wire hdmi_tx_hs = ch0_hs;
+wire hdmi_tx_de = ch0_de;
+// Sticky diagnostics: press reset after overflow or malformed capture.
+reg underflow_seen;
+always @(posedge hdmi_tx_slow_clk or negedge display_reset_n)
+  if(!display_reset_n) underflow_seen<=0;
+  else if(display_underflow) underflow_seen<=1;
+assign led[1] = capture_fault;
+assign led[2] = resize_fault;
+assign led[3] = underflow_seen;
+assign led[7:4] = resize_completed_frames[3:0];
 //==============================================================================
 // MIPI DSI
 //==============================================================================
@@ -1091,7 +1101,7 @@ isp_cdc_mailbox #(.WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_TONE_CONTROL_MAILBOX_WIDTH
   .d_clk(hdmi_tx_slow_clk),.d_rst_n(w_arstn),.d_valid(),.d_data(tone_controls)
 );
 luma_color_suppress tone_adjustment(
-  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),.i_enable(tone_controls[16]),
+  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.i_enable(tone_controls[16]),
   .i_high_green(tone_controls[15:8]),.i_dark_red(tone_controls[7:0]),
   .i_vs(hdmi_tx_vs),.i_hs(hdmi_tx_hs),.i_de(hdmi_tx_de),
   .i_r(CAM_RAW_GREEN_FIRST ? hdmi_tx_bdata : hdmi_tx_rdata),.i_g(hdmi_tx_gdata),
@@ -1106,20 +1116,20 @@ wire [`CFG_BITS_8-1:0] display_stats_mean,effective_lift_strength;
 wire automatic_lift_at_max;
 wire automatic_lift_enabled=tone_controls[44] && tone_controls[43] && tone_controls[42] && tone_controls[25];
 auto_tone_lift automatic_lift(
-  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),.i_enable(automatic_lift_enabled),.i_can_lift(tone_controls[45]),
+  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.i_enable(automatic_lift_enabled),.i_can_lift(tone_controls[45]),
   .i_valid(display_stats_valid),.i_mean(display_stats_mean),.i_target(tone_controls[33:26]),
   .i_max_strength(tone_controls[41:34]),.i_manual_strength(tone_controls[24:17]),
   .o_strength(effective_lift_strength),.o_at_max(automatic_lift_at_max)
 );
 luma_tone_map #(.HIGHLIGHT_SAFE(`CFG_TI60F225_OOB_TOP_V_INST_LIFT_ADJUSTMENT_HIGHLIGHT_SAFE)) lift_adjustment(
-  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),.i_enable(tone_controls[25]),.i_strength(effective_lift_strength),
+  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.i_enable(tone_controls[25]),.i_strength(effective_lift_strength),
   .i_vs(tone_vs),.i_hs(tone_hs),.i_de(tone_de),.i_r(tone_rdata),.i_g(tone_gdata),.i_b(tone_bdata),
   .o_vs(lift_vs),.o_hs(lift_hs),.o_de(lift_de),.o_r(lift_rdata),.o_g(lift_gdata),.o_b(lift_bdata)
 );
 
-// Separate feedback after lift, before Gamma. Single-pixel HDMI clock domain.
+// Separate feedback after lift, before overlay. Single-pixel HDMI clock domain.
 ae_frame_stats #(.FRAME_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_METER_FRAME_WIDTH),.FRAME_HEIGHT(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_METER_FRAME_HEIGHT),.PIXELS_PER_CLOCK(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_METER_PIXELS_PER_CLOCK),.MEAN_ONLY(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_METER_MEAN_ONLY),.FULL_FRAME_MEAN(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_METER_FULL_FRAME_MEAN)) display_meter(
-  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),.i_vs(lift_vs),.i_de(lift_de),
+  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.i_vs(lift_vs),.i_de(lift_de),
   .i_rgb({24'd0,lift_bdata,lift_gdata,lift_rdata}),.i_high_threshold(8'd232),
   .o_valid(display_stats_valid),.o_mean(display_stats_mean),.o_highlights(),.o_high_permille()
 );
@@ -1146,7 +1156,7 @@ wire osd_vs,osd_hs,osd_de,osd_hist_valid_hdmi,osd_hist_valid;
 wire [`CFG_BITS_8-1:0] osd_r,osd_g,osd_b;
 wire [`CFG_BITS_16-1:0] osd_hist_samples_hdmi,osd_hist_samples;
 hdmi_info_overlay #(.FRAME_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_INFORMATION_OVERLAY_FRAME_WIDTH),.FRAME_HEIGHT(`CFG_TI60F225_OOB_TOP_V_INST_INFORMATION_OVERLAY_FRAME_HEIGHT)) information_overlay(
-  .clk(hdmi_tx_slow_clk),.rst_n(vid_rst_n),
+  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),
   .i_vs(lift_vs),.i_hs(lift_hs),
   .i_de(lift_de),
   .i_r(lift_rdata),.i_g(lift_gdata),
@@ -1165,7 +1175,7 @@ isp_cdc_mailbox #(.WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_OSD_STATUS_MAILBOX_WIDTH))
 dvi_encoder dvi_encoder_m0
 (
 	.pixelclk      		(hdmi_tx_slow_clk          ),// system clock
-	.rst_p         		(~vid_rst_n      ),// reset
+	.rst_p         		(~display_reset_n),// reset
 	.i_bdata      		(osd_b),
 	.i_gdata     		(osd_g),
 	.i_rdata       		(osd_r),
@@ -1173,13 +1183,13 @@ dvi_encoder dvi_encoder_m0
 	.i_hs         		(osd_hs),
 	.i_vs         		(osd_vs),
 	
-  .video_format     (video_format), //// 00 = RGB, 01 = YCbCr 4:2:2, 10 = YCbCr 4:4:4
-  .video_VIC        (0),
-	.audio_L			    (audio_L),
-  .audio_R			    (audio_R),
-  .audio_valid		  (audio_valid),
+  .video_format     (2'b00), //// 00 = RGB, 01 = YCbCr 4:2:2, 10 = YCbCr 4:4:4
+  .video_VIC        (7'd4),
+	.audio_L			    (24'd0),
+  .audio_R			    (24'd0),
+  .audio_valid		  (1'b0),
   .audio_N                (6144),     //(20'h01880),//     
-  .audio_CTS              (148500),      //(20'h28488),//      
+  .audio_CTS              (74250),      //(20'h28488),//
   .audio_sample_frequency (audio_samp_freq),    //(3'b000),// 
   .audio_word_length      ({audio_samp_word_len,audio_max_word_length}),//(4'b1011),//
 
@@ -1242,11 +1252,11 @@ debug_edb_top debug_edb_top_inst (
     .vio0_ae_exposure   (ae_exposure),
     .vio0_ae_mean       (ae_mean),
     .la0_clk            ( vid_clk_dvi2        ),
-    .la0_ch0_g          ( ch0_g               ),
-    .la0_ch0_b          ( ch0_b               ),
-    .la0_ch0_de         ( ch0_de              ),
+    .la0_ch0_g          (capture_raw[7:0]),
+    .la0_ch0_b          (capture_raw[15:8]),
+    .la0_ch0_de         (capture_de),
     .la0_cal_done       ( cal_done            ),
-    .la0_ch0_vs         ( ch0_vs              ),
+    .la0_ch0_vs         (capture_vs),
     .la0_raw_row_odd    ( raw_row_odd         )
 );
 
