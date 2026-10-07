@@ -28,6 +28,8 @@
 
 ## 回归命令
 
+本轮提交：`a851252`、`31053d5`（UART/SPI 顶层端口、peri 引脚约束及实际编译资源更新）。
+
 - `python tools/check_rtl_config.py` PASS
 - `python tools/test_resize_checks.py`、`python tools/test_resize.py` PASS
 - `python tools/run_rtl_checks.py` PASS
