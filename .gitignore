@@ -1,0 +1,67 @@
+# Efinity synthesis, place-and-route, debug and output directories.
+# Root-anchored: do not hide similarly named source directories in IP/BSP.
+/work_syn/
+/work_pnr/
+/work_dbg/
+/outflow/
+/netlist/
+
+# Local project lock held by the FPGA tool while the project is open.
+/.lock
+
+# Simulator work libraries and generated waveforms.
+*.vcd
+*.fst
+*.wlf
+*.vpd
+*.fsdb
+*.vvp
+vsim.wlf
+transcript
+modelsim.ini
+/work/
+/xsim.dir/
+/.Xil/
+
+# Embedded software build output (keep BSP, linker scripts and boot images).
+**/Debug/
+**/Release/
+**/build/
+*.o
+*.obj
+*.d
+*.elf
+*.axf
+*.map
+*.su
+
+# IDE workspace state; keep project configuration and launch definitions.
+.metadata/
+.vs/
+*.code-workspace
+
+# Python caches for helper scripts.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Editor backups and operating-system clutter.
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Deliberately keep:
+# - rtl/ and ip/ (including generated/encrypted RTL required for compilation)
+# - *.xml, *.peri.xml, *.sdc and package_settings.xml
+# - debug_top.v, debug.json and debug_profile.wizard.json
+#   (the current project references the debug source/profile)
+# - *.mem, *.memh, *.hex, *.bin and *.mif (ROM/firmware initialization assets)
+# - *.gtkw (reusable waveform viewing configuration)
+# - ooc/ (do not exclude future out-of-context input configurations wholesale)
