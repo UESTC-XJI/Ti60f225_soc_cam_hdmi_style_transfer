@@ -12,7 +12,7 @@
 | 1 基线备份 | `reports/baseline/sources.tar`、checkout、原始 artifacts、manifest 已保存；基线 Efinity map/debug/interface/PNR/PGM PASS；`tools/test_resize.py` 完整 1080p→720p、DMA、CVO 回归 PASS。基线为 RAW10 1920×1080/4 lane，采集 148.5 MHz 双像素，HDMI 74.25 MHz 单像素，TMDS 371.25 MHz；基线资源 XLR 29,505/60,800、RAM 135/256、DSP 11/160、GBUF 19/32、RBUF 1/32。|
 | 2 接口与时钟 | `docs/VIDEO_INTERCONNECT.md` 记录 CSI→RAW gearbox→Debayer/gain/AE→area resize→frame_buffer DDR→CVO→tone/lift→histogram/overlay→OSD→DVI/TMDS。OSD 输入是最终单像素域 RGB/DE/HS/VS，双像素 148.5 MHz 与单像素 74.25 MHz 关系已明确。|
 | 3 固定 OSD | `osd_font8x16.sv`、`osd_fixed_text.sv` 实现 8×16 ASCII 与流水同步；`osd_fixed_text_tb.sv` PASS，`HELLO SOC` 194 个有效字模像素；主顶层 OSD 进入 `dvi_encoder` 前。|
-| 4 SoC 资源 | 导入实际 `soc/efx_sapphire_soc/soc/soc.v`、settings/init/BSP；`soc_video_ddr_integration.sv` 接 UART、Sapphire I2C、CPU hard JTAG、APB 和唯一 DDR；CPU 使用 USER1，Efinity auto debugger 使用 USER2；VIO gain/tone 路径改固定默认值/APB。|
+| 4 SoC 资源 | 导入实际 `soc/efx_sapphire_soc/soc/soc.v`、settings/init/BSP；`soc_video_ddr_integration.sv` 接 UART TX/RX、SPI SS/SCLK/D0/D1、Sapphire I2C、CPU hard JTAG、APB 和唯一 DDR；UART/SPI 已贯通到顶层及 peri 引脚；CPU 使用 USER1，Efinity auto debugger 使用 USER2；VIO gain/tone 路径改固定默认值/APB。|
 | 5 DDR 地址 | `docs/DDR_ADDRESS_MAP.md`、`ddr_address_map_check.sv` 固定 CPU scratch `0x0100_0000..0x0110_0000`，视频 `0x0400_0000` 起始，三帧 stride `0x0038_4200`，开区间结束 `0x04A8_C600`；仿真断言不重叠且 16-byte 对齐。|
 | 6 共享 DDR | `axi_shared_ddr_2m.sv` 保留一个 DDR3 控制器，CPU/视频两个 master；CPU ID8→DDR ID4，保存完整 ID/owner，B/R 响应完整归属，地址和数据在 backpressure 下保持；4-beat burst、仲裁、公平性、B/R 错误及并发模型 PASS。|
 | 7 复位屏障 | `ddr_startup_barrier.sv` 将实际 `pll_locked`/`cal_done` 分别同步到 core/display 域，阻塞 CPU/video AXI；已接入顶层 `barrier_sys_reset_n/barrier_vid_reset_n`。多次复位、cal_done 前禁止访问的 TB PASS。|
@@ -24,7 +24,7 @@
 
 ## 最终 Efinity 证据
 
-2026-10-08 主工程 `C:/Efinity/2026.1/bin/efx_run.bat ti60f225_cam_hdmi.xml --flow compile --timeout 1200`：map PASS、debugger auto instantiation PASS、interface PASS、PNR PASS、PGM PASS。最终 map 资源（`outflow/ti60f225_oob.map.rpt`）：RAM10 140/256、DPRAM10 4、DSP48 11/160、FF 15,325、LUT4 16,680；bitstream `outflow/ti60f225_oob.bit`，SHA256 `5B0EF258CEEEE7056BC282A66C9CF3AED8E4A2A73CAE5900F7D3A67266027B71`。调试配置由 `tools/generate_soc_debug.py` 固定为 USER2、6 个 1-bit 关键 probe、capture depth 512，避免 RAM 紧张。
+2026-10-08 主工程 `C:/Efinity/2026.1/bin/efx_run.bat ti60f225_cam_hdmi.xml --flow compile --timeout 1200`：map PASS、debugger auto instantiation PASS、interface PASS、PNR PASS、PGM PASS。UART/SPI 顶层端口和 peri 约束已纳入本次编译。最终 map 资源（`outflow/ti60f225_oob.map.rpt`）：RAM10 141/256、DPRAM10 4、DSP48 11/160、FF 15,347、LUT4 16,825；bitstream `outflow/ti60f225_oob.bit`，SHA256 `4E39809ACFF0C22563B7C162F8CC06473A3901D88519EC67D0F7C915B6AD4DD0`。调试配置由 `tools/generate_soc_debug.py` 固定为 USER2、6 个 1-bit 关键 probe、capture depth 512；RAM10 余量 115，未触发进一步削减。
 
 ## 回归命令
 
@@ -34,6 +34,6 @@
 - `python tools/test_firmware_driver.py` PASS
 - 新增 AXI、startup barrier、APB、double buffer、status counter、I2C mux、fixed OSD TB 全部 PASS
 - `python tools/build_firmware.py` PASS：host/BSP `.elf/.bin`
-- 最终 Efinity map 资源和 bitstream 哈希已按本次编译产物更新；调试探针维持 6 个 1-bit 信号、512 深度。
+- 最终 Efinity map 资源和 bitstream 哈希已按 UART/SPI 贯通后的编译产物更新；调试探针维持 6 个 1-bit 信号、512 深度。
 
 “PASS”均指仿真、协议模型、静态检查或 Efinity compile 证据；由于用户明确取消上板，本日志不把物理摄像头画面或真实 JTAG CPU 指令执行描述为已在板确认。

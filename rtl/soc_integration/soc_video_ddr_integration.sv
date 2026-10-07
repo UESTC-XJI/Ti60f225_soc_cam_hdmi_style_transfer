@@ -8,6 +8,8 @@ module soc_video_ddr_integration (
   output wire [15:0] apb_paddr, output wire apb_psel, output wire apb_penable, input wire apb_pready, output wire apb_pwrite, output wire [31:0] apb_pwdata, input wire [31:0] apb_prdata, input wire apb_pslverr,
   input wire jtag_tck,jtag_tdi,jtag_capture,jtag_shift,jtag_update,jtag_reset,jtag_enable, output wire jtag_tdo,
   output wire uart_txd, input wire uart_rxd, input wire i2c_scl_in, output wire i2c_scl_out, input wire i2c_sda_in, output wire i2c_sda_out,
+  input wire spi_d0_in, input wire spi_d1_in, output wire spi_ss, output wire spi_sclk,
+  output wire spi_d0_out, output wire spi_d0_oe, output wire spi_d1_out, output wire spi_d1_oe,
   output wire soc_system_reset,soc_memory_reset, output wire [31:0] axi_error_count
 );
   wire  io_systemClk;
@@ -207,8 +209,8 @@ module soc_video_ddr_integration (
   assign axiA_rdata = '0;
   assign axiA_rid = '0;
   assign axiA_rresp = '0;
-  assign system_spi_0_io_data_0_read = '0;
-  assign system_spi_0_io_data_1_read = '0;
+  assign system_spi_0_io_data_0_read = spi_d0_in;
+  assign system_spi_0_io_data_1_read = spi_d1_in;
   assign system_spi_0_io_data_2_read = '0;
   assign system_spi_0_io_data_3_read = '0;
   assign userInterruptA = '0;
@@ -242,6 +244,12 @@ module soc_video_ddr_integration (
   assign io_ddrMasters_0_aw_payload_addr = '0;
   assign io_ddrMasters_0_aw_valid = '0;
   assign system_gpio_0_io_read = '0;
+  assign spi_ss=system_spi_0_io_ss;
+  assign spi_sclk=system_spi_0_io_sclk_write;
+  assign spi_d0_out=system_spi_0_io_data_0_write;
+  assign spi_d0_oe=system_spi_0_io_data_0_writeEnable;
+  assign spi_d1_out=system_spi_0_io_data_1_write;
+  assign spi_d1_oe=system_spi_0_io_data_1_writeEnable;
   // The generated IP exposes an auxiliary 32-bit AXI master and a second
   // DDR master port. They are intentionally tied off; only io_ddrA is CPU DDR.
   soc u_soc (

@@ -67,6 +67,17 @@ module ti60f225_oob_top #(
   (* syn_peri_port = 0 *) input jtag_inst1_UPDATE,
   (* syn_peri_port = 0 *) output jtag_inst1_TDO,
 
+  input wire system_uart_0_io_rxd,
+  output wire system_uart_0_io_txd,
+  input wire system_spi_0_io_data_0_IN,
+  input wire system_spi_0_io_data_1_IN,
+  output wire system_spi_0_io_ss,
+  output wire system_spi_0_io_sclk_write,
+  output wire system_spi_0_io_data_0_OUT,
+  output wire system_spi_0_io_data_0_OE,
+  output wire system_spi_0_io_data_1_OUT,
+  output wire system_spi_0_io_data_1_OE,
+
    //Clocks
 	input	wire	i_arstn,
     input	wire	i_mipi_rx_pclk,
@@ -774,6 +785,7 @@ wire [127:0] soc_vid_rdata;
 wire [15:0] soc_apb_paddr; wire soc_apb_psel,soc_apb_penable,soc_apb_pwrite; wire [31:0] soc_apb_pwdata;
 wire [31:0] soc_apb_prdata; wire soc_apb_pready,soc_apb_pslverr;
 wire soc_uart_txd,soc_i2c_scl_out,soc_i2c_sda_out,soc_system_reset,soc_memory_reset;
+wire soc_spi_ss,soc_spi_sclk,soc_spi_d0_out,soc_spi_d0_oe,soc_spi_d1_out,soc_spi_d1_oe;
 // CPU Sapphire I2C is the default camera owner.  The mux disconnects the
 // legacy RTL master from the pads while preserving it for simulation hooks.
 wire soc_i2c_owner = 1'b1;
@@ -818,7 +830,16 @@ soc_video_ddr_integration soc_video_inst(
   .ddr_awid(s_axi_awid),.ddr_awaddr(s_axi_awaddr),.ddr_awlen(s_axi_awlen),.ddr_awsize(s_axi_awsize),.ddr_awburst(s_axi_awburst),.ddr_awvalid(s_axi_awvalid),.ddr_awready(s_axi_awready),.ddr_wdata(s_axi_wdata),.ddr_wstrb(s_axi_wstrb),.ddr_wlast(s_axi_wlast),.ddr_wvalid(s_axi_wvalid),.ddr_wready(s_axi_wready),.ddr_bid(s_axi_bid),.ddr_bresp(s_axi_bresp),.ddr_bvalid(s_axi_bvalid),.ddr_bready(s_axi_bready),.ddr_arid(s_axi_arid),.ddr_araddr(s_axi_araddr),.ddr_arlen(s_axi_arlen),.ddr_arsize(s_axi_arsize),.ddr_arburst(s_axi_arburst),.ddr_arvalid(s_axi_arvalid),.ddr_arready(s_axi_arready),.ddr_rid(s_axi_rid),.ddr_rdata(s_axi_rdata),.ddr_rresp(s_axi_rresp),.ddr_rlast(s_axi_rlast),.ddr_rvalid(s_axi_rvalid),.ddr_rready(s_axi_rready),
   .apb_paddr(soc_apb_paddr),.apb_psel(soc_apb_psel),.apb_penable(soc_apb_penable),.apb_pready(soc_apb_pready),.apb_pwrite(soc_apb_pwrite),.apb_pwdata(soc_apb_pwdata),.apb_prdata(soc_apb_prdata),.apb_pslverr(soc_apb_pslverr),
   .jtag_tck(jtag_inst1_TCK),.jtag_tdi(jtag_inst1_TDI),.jtag_capture(jtag_inst1_CAPTURE),.jtag_shift(jtag_inst1_SHIFT),.jtag_update(jtag_inst1_UPDATE),.jtag_reset(jtag_inst1_RESET),.jtag_enable(jtag_inst1_SEL),.jtag_tdo(jtag_inst1_TDO),
-  .uart_txd(soc_uart_txd),.uart_rxd(1'b1),.i2c_scl_in(io_cam_scl_IN),.i2c_scl_out(soc_i2c_scl_out),.i2c_sda_in(io_cam_sda_IN),.i2c_sda_out(soc_i2c_sda_out),.soc_system_reset(soc_system_reset),.soc_memory_reset(soc_memory_reset),.axi_error_count(soc_axi_error_count));
+  .uart_txd(soc_uart_txd),.uart_rxd(system_uart_0_io_rxd),.i2c_scl_in(io_cam_scl_IN),.i2c_scl_out(soc_i2c_scl_out),.i2c_sda_in(io_cam_sda_IN),.i2c_sda_out(soc_i2c_sda_out),
+  .spi_d0_in(system_spi_0_io_data_0_IN),.spi_d1_in(system_spi_0_io_data_1_IN),.spi_ss(soc_spi_ss),.spi_sclk(soc_spi_sclk),.spi_d0_out(soc_spi_d0_out),.spi_d0_oe(soc_spi_d0_oe),.spi_d1_out(soc_spi_d1_out),.spi_d1_oe(soc_spi_d1_oe),
+  .soc_system_reset(soc_system_reset),.soc_memory_reset(soc_memory_reset),.axi_error_count(soc_axi_error_count));
+assign system_uart_0_io_txd=soc_uart_txd;
+assign system_spi_0_io_ss=soc_spi_ss;
+assign system_spi_0_io_sclk_write=soc_spi_sclk;
+assign system_spi_0_io_data_0_OUT=soc_spi_d0_out;
+assign system_spi_0_io_data_0_OE=soc_spi_d0_oe;
+assign system_spi_0_io_data_1_OUT=soc_spi_d1_out;
+assign system_spi_0_io_data_1_OE=soc_spi_d1_oe;
 assign fb_bid=soc_vid_bid[5:0]; assign fb_rid=soc_vid_rid[5:0]; assign fb_bresp=soc_vid_bresp; assign fb_rresp=soc_vid_rresp; assign fb_bvalid=soc_vid_bvalid; assign fb_rvalid=soc_vid_rvalid; assign fb_rlast=soc_vid_rlast; assign fb_rdata=soc_vid_rdata;
 osd_apb_regs osd_apb(
   .pclk(core_clk),.preset_n(w_arstn),.psel(soc_apb_psel),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr),.pwdata(soc_apb_pwdata),.prdata(soc_apb_prdata),.pready(soc_apb_pready),.pslverr(soc_apb_pslverr),

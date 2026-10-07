@@ -10,7 +10,7 @@
 - 128 位 `io_ddrA_*` CPU AXI 端口；
 - 8 位 CPU AXI ID；
 - `jtagCtrl_*` 硬 JTAG 通道；
-- UART、SPI、I2C 和 APB 外设在生成 SoC 内部。
+- UART、SPI、I2C 和 APB 外设在生成 SoC 内部；UART TX/RX、SPI SS/SCLK/D0/D1 已从 wrapper 接到顶层端口。
 
 ## 通道冲突处理
 
@@ -28,4 +28,3 @@
 ## 资源紧张策略
 
 逻辑分析仪和 EDB 的捕获 RAM 优先级低于视频、DDR 和 SoC。若 Efinity 资源报告显示 RAM 或 GBUF 不足，先将 EDB 探针压缩为采集 `DE/VS/RAW` 三组状态，再减少捕获深度；该策略不改变视频数据路径和协议验证。
-
