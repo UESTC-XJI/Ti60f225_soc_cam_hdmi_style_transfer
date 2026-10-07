@@ -67,7 +67,7 @@ module ti60f225_oob_top #(
   (* syn_peri_port = 0 *) input jtag_inst1_UPDATE,
   (* syn_peri_port = 0 *) output jtag_inst1_TDO,
 
-   //Clocks 
+   //Clocks
 	input	wire	i_arstn,
     input	wire	i_mipi_rx_pclk,
     input wire  vid_clk_dvi2,
@@ -92,13 +92,13 @@ module ti60f225_oob_top #(
     output io_cam_scl_OE,
 
     output	wire		o_cam_rst_p,
-    
+
     input	wire		i_cam_ck_LP_P_IN,
     input	wire		i_cam_ck_LP_N_IN,
     output	wire		o_cam_ck_HS_TERM,
     output	wire		o_cam_ck_HS_ENA,
     input	wire		i_cam_ck_CLKOUT,
-    
+
     input	wire	[`CFG_BITS_8-1:0]			cam_d0_HS_IN,
     input	  wire		      cam_d0_LP_P_IN,
     input	  wire		      cam_d0_LP_N_IN,
@@ -107,7 +107,7 @@ module ti60f225_oob_top #(
     output	wire		      cam_d0_RST,
     output	wire		      cam_d0_FIFO_RD,
     input	  wire		      cam_d0_FIFO_EMPTY,
-    
+
     input 	wire	[`CFG_BITS_8-1:0]			cam_d1_HS_IN,
     input	  wire		        cam_d1_LP_P_IN,
     input	  wire		        cam_d1_LP_N_IN,
@@ -116,7 +116,7 @@ module ti60f225_oob_top #(
     output	wire		        cam_d1_RST,
     output	wire		        cam_d1_FIFO_RD,
     input	  wire		        cam_d1_FIFO_EMPTY,
-    
+
     input 	wire	[`CFG_BITS_8-1:0]			cam_d2_HS_IN,
     input	  wire		        cam_d2_LP_P_IN,
     input	  wire		        cam_d2_LP_N_IN,
@@ -124,8 +124,8 @@ module ti60f225_oob_top #(
     output	wire		        cam_d2_HS_ENA,
     output	wire		        cam_d2_RST,
     output	wire		        cam_d2_FIFO_RD,
-    input	  wire		        cam_d2_FIFO_EMPTY,  
-   
+    input	  wire		        cam_d2_FIFO_EMPTY,
+
     input 	wire	[`CFG_BITS_8-1:0]			cam_d3_HS_IN,
     input	  wire		        cam_d3_LP_P_IN,
     input	  wire		        cam_d3_LP_N_IN,
@@ -135,16 +135,16 @@ module ti60f225_oob_top #(
     output	wire		        cam_d3_FIFO_RD,
     input	  wire		        cam_d3_FIFO_EMPTY,
 
-	
+
 	input 					tx_cal_clk_90edge,
   	input 					rx_cal_clk,
   	input 					tx_cal_clk,
 	input                              core_clk,     // CORE CLK @ 100MHz
 	input                              sdram_clk,    // SDRAM CK @ 400MHz
-	// PLL status flags  
+	// PLL status flags
 	output [`CFG_BITS_3-1:0]                       pll_shift,
 	output [`CFG_BITS_5-1:0]                       pll_shift_sel,
-	output                             pll_shift_ena,  
+	output                             pll_shift_ena,
 	// memory interface ports
 	output                             ddr_ck_hi,
 	output                             ddr_ck_lo,
@@ -153,16 +153,16 @@ module ti60f225_oob_top #(
 	output [`CFG_TI60F225_OOB_TOP_V_RANGE_2]             ddr_addr,
 	output [`CFG_TI60F225_OOB_TOP_V_RANGE_3]            ddr_ba,
 	output                             ddr_cas_n,
- 
+
 	output [`CFG_TI60F225_OOB_TOP_V_RANGE_4]   ddr_cs_n,
 	output                             ddr_ras_n,
 	output                             ddr_we_n,
-	
+
 	input  [`CFG_TI60F225_OOB_TOP_V_RANGE_5]             ddr_dqs_in_hi,
 	input  [`CFG_TI60F225_OOB_TOP_V_RANGE_6]             ddr_dqs_in_lo,
 	input  [`CFG_TI60F225_OOB_TOP_V_RANGE_7]              ddr_dq_in_hi,
 	input  [`CFG_TI60F225_OOB_TOP_V_RANGE_8]              ddr_dq_in_lo,
-	
+
 	output [`CFG_TI60F225_OOB_TOP_V_RANGE_9]             ddr_dqs_oe,
 	output [`CFG_TI60F225_OOB_TOP_V_RANGE_10]             ddr_dqs_oe_n,
 	output [`CFG_TI60F225_OOB_TOP_V_RANGE_11]              ddr_dq_oe,
@@ -279,7 +279,7 @@ localparam VBP      = `CFG_TI60F225_OOB_TOP_V_LOCALPARAM_VBP;
 //===============================================================================
 //signal
 //===============================================================================
-   
+
 wire                              app_sr_active;
 wire                              app_ref_ack;
 wire                              app_zq_ack;
@@ -325,6 +325,16 @@ wire [`CFG_TI60F225_OOB_TOP_V_RANGE_27]         s_axi_rdata;
 wire [`CFG_BITS_2-1:0]                        s_axi_rresp;
 wire                              s_axi_rlast;
 wire                              s_axi_rvalid;
+
+// Frame-buffer AXI master before CPU/video arbitration.  The frame buffer
+// uses six-bit IDs; the Sapphire CPU uses eight-bit IDs.  The shared bridge
+// zero-extends frame IDs and preserves the CPU ID until B/R completion.
+wire [5:0] fb_awid,fb_arid,fb_bid,fb_rid;
+wire [31:0] fb_awaddr,fb_araddr;
+wire [7:0] fb_awlen,fb_arlen; wire [2:0] fb_awsize,fb_arsize; wire [1:0] fb_awburst,fb_arburst;
+wire [3:0] fb_awcache,fb_arcache; wire [2:0] fb_awprot,fb_arprot; wire fb_awlock,fb_arlock;
+wire fb_awvalid,fb_awready,fb_wvalid,fb_wready,fb_wlast,fb_bvalid,fb_bready,fb_arvalid,fb_arready,fb_rvalid,fb_rready,fb_rlast;
+wire [127:0] fb_wdata,fb_rdata; wire [15:0] fb_wstrb; wire [1:0] fb_bresp,fb_rresp;
 
 
 
@@ -373,7 +383,7 @@ inst_reset_ctrl
 
 reg [`CFG_BITS_26-1:0] cnt = 'd0;
 always @( posedge core_clk)
-begin 
+begin
        cnt <= cnt + 1'b1;
 end
 assign led[0]  = cal_done ? cnt[24] : 1'b0;
@@ -388,9 +398,9 @@ assign i_mipi_clk = core_clk;
 		assign	cam_d1_RST		= 1'b0;
 		assign  cam_d2_RST = 1'b0;
     assign  cam_d3_RST = 1'b0;
-	
+
 wire [`CFG_BITS_16-1:0] mipi_debug_out;
-		
+
 
 		csi_rx_controller inst_efx_csi2_rx
 		(
@@ -400,12 +410,12 @@ wire [`CFG_BITS_16-1:0] mipi_debug_out;
               .clk_byte_HS		  (i_cam_ck_CLKOUT),
               .reset_pixel_n		(w_mipi_rx_pclk_arstn),
               .clk_pixel			  (i_mipi_rx_pclk),
-              
+
               .Rx_LP_CLK_P		  (i_cam_ck_LP_P_IN),
               .Rx_LP_CLK_N		  (i_cam_ck_LP_N_IN),
               .Rx_HS_enable_C		(o_cam_ck_HS_ENA),
               .LVDS_termen_C		(o_cam_ck_HS_TERM),
-              
+
               .Rx_LP_D_P			({cam_d3_LP_P_IN, cam_d2_LP_P_IN, cam_d1_LP_P_IN, cam_d0_LP_P_IN}),//(r_mipi_rx_data_LP_P_IN_2P),
               .Rx_LP_D_N			({cam_d3_LP_N_IN, cam_d2_LP_N_IN, cam_d1_LP_N_IN, cam_d0_LP_N_IN}),//(r_mipi_rx_data_LP_N_IN_2P),
               .Rx_HS_D_0			(cam_d0_HS_IN),//(r_mipi_rx_data_HS_IN_2P[0*8+:8]),
@@ -424,7 +434,7 @@ wire [`CFG_BITS_16-1:0] mipi_debug_out;
               .DLY_inc_D			(),
               .u_dly_enable_D		(),
               .u_dly_inc_D		       (),
-              
+
               .axi_clk			(1'b0),
               .axi_reset_n		       (1'b0),
               .axi_awaddr			(6'b0),
@@ -433,7 +443,7 @@ wire [`CFG_BITS_16-1:0] mipi_debug_out;
               .axi_wdata			(32'b0),
               .axi_wvalid			(1'b0),
               .axi_wready			(),
-              
+
               .axi_bvalid			(),
               .axi_bready			(1'b0),
               .axi_araddr			(6'b0),
@@ -442,7 +452,7 @@ wire [`CFG_BITS_16-1:0] mipi_debug_out;
               .axi_rdata			(),
               .axi_rvalid			(),
               .axi_rready			(1'b1),
-              
+
               .hsync_vc0			(w_mipi_rx_hs),
               .hsync_vc1			(),
               .hsync_vc2			(),
@@ -477,7 +487,7 @@ wire [`CFG_BITS_16-1:0] mipi_debug_out;
 //     .o_vs(w1_mipi_rx_vs),
 //     .o_de(w1_mipi_rx_de),
 //     .o_dat(w1_mipi_rx_data)
-   
+
 //   );
 
 
@@ -488,29 +498,31 @@ wire mdebug_ecc_1bit_error      = mipi_debug_out[3] ;
 wire mdebug_ecc_2bit_error      = mipi_debug_out[4] ;
 wire mdebug_undersize_pkt_error = mipi_debug_out[5] ;
 wire mdebug_line_vc0_error      = mipi_debug_out[6] ;
-wire mdebug_frame_vc0_error    = mipi_debug_out[10];   
+wire mdebug_frame_vc0_error    = mipi_debug_out[10];
 wire mdebug_receive_error      = mipi_debug_out[14];
 
 
 //========================================================================================================
 //
 //========================================================================================================
-		
+
 
 //*************** imx219 config********************/
 // mipi_config_imx219_top u_config_imx219(
-// 										.i_sys_clk(CLK_5M)    	,    /////48M 
+// 										.i_sys_clk(CLK_5M)    	,    /////48M
 // 										.sys_rstn(vid_rst_n )    ,
 // 										.o_sen_rst_n(o_cam_rstn)  	,
-										
+
 										// .o_iic_sda_OE(io_cam_sda_OE) ,
 										// .i_iic_sda(io_cam_sda_IN)   	,
 										// .o_iic_sda(io_cam_sda_OUT)   	,
-										// .o_iic_scl(io_cam_scl)    	
-										// ); 	
+										// .o_iic_scl(io_cam_scl)
+										// );
 
 wire scl_padoen_o;
 wire sda_padoen_o;
+wire legacy_i2c_scl_out, legacy_i2c_sda_out;
+wire legacy_i2c_scl_oe, legacy_i2c_sda_oe;
 
 
 reg [`CFG_BITS_13-1:0] i2c_rst_cnt = '0;
@@ -519,7 +531,7 @@ always @( posedge CLK_5M or negedge w_arstn )
 begin
     if( !w_arstn )
        i2c_rst_cnt <= 'd0;
-    else 
+    else
        i2c_rst_cnt <= i2c_rst_cnt[12] ? i2c_rst_cnt : i2c_rst_cnt + 1'b1;
 end
 wire i2c_rst_n = i2c_rst_cnt[12];
@@ -615,19 +627,19 @@ i2c_master_ctrl_top #(.RUNTIME_ENABLE(`CFG_TI60F225_OOB_TOP_V_INST_U2_I2C_MASTER
   /*i*/.clk			(CLK_5M		),
   /*i*/.rst_n			(i2c_rst_n		),
   /*i*/.scl_pad_i     (io_cam_scl_IN),//(1'b1),
-  /*o*/.scl_pad_o     (io_cam_scl_OUT),
+  /*o*/.scl_pad_o     (legacy_i2c_scl_out),
   /*o*/.scl_padoen_o  (scl_padoen_o),
   /*i*/.sda_pad_i     (io_cam_sda_IN),
-  /*o*/.sda_pad_o     (io_cam_sda_OUT),
+  /*o*/.sda_pad_o     (legacy_i2c_sda_out),
   /*o*/.sda_padoen_o  (sda_padoen_o),
   .runtime_wr_en(ae_wr_en),.runtime_rd_en(ae_rd_en),.runtime_addr(ae_addr),.runtime_data(ae_write_data),
   .config_done(sensor_config_done),.runtime_wr_done(ae_wr_done),.runtime_rd_done(ae_rd_done),
   .runtime_wr_error(ae_wr_error),.runtime_rd_error(ae_rd_error),.runtime_read_data(ae_read_data)
-  
+
   );
 assign o_cam_rst_p = ~w_arstn;
-assign io_cam_scl_OE = ~scl_padoen_o;
-assign io_cam_sda_OE = ~sda_padoen_o;
+assign legacy_i2c_scl_oe = ~scl_padoen_o;
+assign legacy_i2c_sda_oe = ~sda_padoen_o;
 
 //=====================================================================================
 //frame buffer
@@ -642,8 +654,17 @@ wire [`CFG_BITS_32-1:0] display_pixel;
 wire ch0_vs,ch0_hs,ch0_de;
 wire display_underflow;
 wire capture_reset_n,display_reset_n;
+// DDR startup barrier: readiness is synchronized separately into the CPU and
+// display domains; no AXI master is released on an asynchronous cal_done edge.
+wire barrier_sys_reset_n,barrier_vid_reset_n,barrier_allow_sys,barrier_allow_vid,barrier_cpu_waiting;
+ddr_startup_barrier ddr_startup(
+  .sys_clk(core_clk), .vid_clk(hdmi_tx_slow_clk), .global_reset_n(w_arstn),
+  .pll_locked(1'b1), .ddr_cal_done(cal_done),
+  .sys_reset_n(barrier_sys_reset_n), .vid_reset_n(barrier_vid_reset_n),
+  .master_allow_sys(barrier_allow_sys), .master_allow_vid(barrier_allow_vid),
+  .cpu_waiting(barrier_cpu_waiting));
 // Wait for DDR calibration, then release resets synchronously in each domain.
-wire video_reset_n = vid_rst_n && cal_done && user_pll_locked;
+wire video_reset_n = vid_rst_n && barrier_vid_reset_n;
 rst_n_piple #(.DLY(`CFG_TI60F225_OOB_TOP_V_INST_CAPTURE_RESET_DLY)) capture_reset(.clk(vid_clk_dvi2),.rst_n_i(video_reset_n),.rst_n_o(capture_reset_n));
 rst_n_piple #(.DLY(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_RESET_DLY)) display_reset(.clk(hdmi_tx_slow_clk),.rst_n_i(video_reset_n),.rst_n_o(display_reset_n));
 wire csi_reset_n;
@@ -690,7 +711,7 @@ wire  fifo_rd_period;
 /*i*/.i_vs			(resize_vs),
 /*i*/.i_de			(resize_valid && !capture_fault && !resize_fault),
 /*i*/.vin 			(resize_data),
-                     
+
 /*i*/.o_clk			(hdmi_tx_slow_clk),//(i_mipi_rx_pclk	),
 /*i*/.fifo_rd_period(fifo_rd_period),//(fifo_rd_period  ),
 
@@ -699,52 +720,114 @@ wire  fifo_rd_period;
     .m_axis_tready (m_axis_tready),
     .m_axis_tuser  (m_axis_tuser),
     .m_axis_tlast  (m_axis_tlast),
-	
-
-       .awid			(s_axi_awid	),      
-       .awaddr		(s_axi_awaddr	),
-       .awlen			(s_axi_awlen	),
-       .awsize		(s_axi_awsize	),
-       .awburst		(s_axi_awburst),
-       .awprot    (s_axi_awprot ),
-       .awcache   (s_axi_awcache),
-       .awlock		(s_axi_awlock	),
-       .awvalid		(s_axi_awvalid),
-       .awready		(s_axi_awready),
-
-       .arid			(s_axi_arid	  ),
-       .araddr		(s_axi_araddr	),
-       .arlen			(s_axi_arlen	),
-       .arsize		(s_axi_arsize	),
-       .arburst 	(s_axi_arburst),
-
-       .arprot    (s_axi_arprot ),
-       .arcache   (s_axi_arcache),
-       .arlock 		(s_axi_arlock	),
-       .arvalid		(s_axi_arvalid),
-       .arready		(s_axi_arready),
-
-       .wdata			(s_axi_wdata	),
-       .wstrb			(s_axi_wstrb	),
-       .wlast			(s_axi_wlast	),
-       .wvalid		(s_axi_wvalid	),
-       .wready		(s_axi_wready	),
 
 
-       .rid			  (s_axi_rid	),
-       .rdata			(s_axi_rdata	),
-       .rlast			(s_axi_rlast	),
-       .rvalid 		(s_axi_rvalid	),
-       .rready		(s_axi_rready	),
-       .rresp			(s_axi_rresp	),
+       .awid			(fb_awid	),
+       .awaddr		(fb_awaddr	),
+       .awlen			(fb_awlen	),
+       .awsize		(fb_awsize	),
+       .awburst		(fb_awburst),
+       .awprot    (fb_awprot ),
+       .awcache   (fb_awcache),
+       .awlock		(fb_awlock	),
+       .awvalid		(fb_awvalid),
+       .awready		(fb_awready),
 
-       .bid			  (s_axi_bid	),
-       .bvalid		(s_axi_bvalid	),
-       .bready	  (s_axi_bready	)
+       .arid			(fb_arid	  ),
+       .araddr		(fb_araddr	),
+       .arlen			(fb_arlen	),
+       .arsize		(fb_arsize	),
+       .arburst 	(fb_arburst),
+
+       .arprot    (fb_arprot ),
+       .arcache   (fb_arcache),
+       .arlock 		(fb_arlock	),
+       .arvalid		(fb_arvalid),
+       .arready		(fb_arready),
+
+       .wdata			(fb_wdata	),
+       .wstrb			(fb_wstrb	),
+       .wlast			(fb_wlast	),
+       .wvalid		(fb_wvalid	),
+       .wready		(fb_wready	),
+
+
+       .rid			  (fb_rid	),
+       .rdata			(fb_rdata	),
+       .rlast			(fb_rlast	),
+       .rvalid 		(fb_rvalid	),
+       .rready		(fb_rready	),
+       .rresp			(fb_rresp	),
+
+       .bid			  (fb_bid	),
+       .bvalid		(fb_bvalid	),
+       .bready	  (fb_bready	)
 );
 
-		    
-		    
+
+
+// Sapphire CPU + shared DDR bridge.  The generated SoC uses USER1 hard JTAG;
+// the Efinity auto debugger remains on USER2, so there is one owner per TAP.
+wire [7:0] soc_vid_bid,soc_vid_rid; wire [1:0] soc_vid_bresp,soc_vid_rresp;
+wire soc_vid_bvalid,soc_vid_rready,soc_vid_rvalid,soc_vid_rlast;
+wire [127:0] soc_vid_rdata;
+wire [15:0] soc_apb_paddr; wire soc_apb_psel,soc_apb_penable,soc_apb_pwrite; wire [31:0] soc_apb_pwdata;
+wire [31:0] soc_apb_prdata; wire soc_apb_pready,soc_apb_pslverr;
+wire soc_uart_txd,soc_i2c_scl_out,soc_i2c_sda_out,soc_system_reset,soc_memory_reset;
+// CPU Sapphire I2C is the default camera owner.  The mux disconnects the
+// legacy RTL master from the pads while preserving it for simulation hooks.
+wire soc_i2c_owner = 1'b1;
+i2c_owner_mux camera_i2c_owner_mux(
+  .cpu_owner(soc_i2c_owner), .cpu_scl_write(soc_i2c_scl_out), .cpu_sda_write(soc_i2c_sda_out),
+  .legacy_scl_out(legacy_i2c_scl_out), .legacy_sda_out(legacy_i2c_sda_out),
+  .legacy_scl_oe(legacy_i2c_scl_oe), .legacy_sda_oe(legacy_i2c_sda_oe),
+  .scl_out(io_cam_scl_OUT), .sda_out(io_cam_sda_OUT), .scl_oe(io_cam_scl_OE), .sda_oe(io_cam_sda_OE));
+wire [31:0] soc_axi_error_count;
+wire osd_apb_enable; wire [11:0] osd_apb_x,osd_apb_y; wire [23:0] osd_apb_color;
+wire osd_apb_char_we,osd_apb_char_page,osd_apb_commit_toggle,osd_apb_commit_page; wire [6:0] osd_apb_char_addr; wire [7:0] osd_apb_char_data;
+wire osd_db_ack,osd_db_active,osd_db_busy;
+// One-second capture/display statistics are exposed through the APB status
+// register. Events are edge-qualified so level faults are counted once.
+wire [31:0] status_capture_frames,status_display_frames,status_drop_count,status_underflow_count,status_error_count;
+wire [15:0] status_capture_fps,status_display_fps;
+reg [31:0] status_resize_frames_d; reg status_display_vs_d; reg [26:0] status_tick_count;
+wire status_capture_event = (resize_completed_frames != status_resize_frames_d);
+wire status_display_event = ch0_vs && !status_display_vs_d;
+wire status_interval_tick = (status_tick_count == 27'd99_999_999);
+always @(posedge core_clk or negedge barrier_sys_reset_n) begin
+  if(!barrier_sys_reset_n) begin status_resize_frames_d<=0; status_display_vs_d<=0; status_tick_count<=0; end
+  else begin
+    status_resize_frames_d <= resize_completed_frames; status_display_vs_d <= ch0_vs;
+    if(status_interval_tick) status_tick_count<=0; else status_tick_count<=status_tick_count+1'b1;
+  end
+end
+video_status_counters status_counters(
+  .clk(core_clk),.rst_n(barrier_sys_reset_n),.frame_start(status_capture_event),
+  .display_frame_start(status_display_event),.capture_overflow(capture_fault),
+  .display_underflow(display_underflow),.axi_error(soc_axi_error_count != 0),
+  .interval_tick(status_interval_tick),.capture_frames(status_capture_frames),
+  .display_frames(status_display_frames),.drop_count(status_drop_count),
+  .underflow_count(status_underflow_count),.error_count(status_error_count),
+  .capture_fps(status_capture_fps),.display_fps(status_display_fps));
+soc_video_ddr_integration soc_video_inst(
+  .clk(core_clk),.rst_n(barrier_sys_reset_n),.allow_access(barrier_allow_sys),
+  .vid_awid({2'b0,fb_awid}),.vid_awaddr(fb_awaddr),.vid_awlen(fb_awlen),.vid_awsize(fb_awsize),.vid_awburst(fb_awburst),.vid_awvalid(fb_awvalid),.vid_awready(fb_awready),
+  .vid_wdata(fb_wdata),.vid_wstrb(fb_wstrb),.vid_wlast(fb_wlast),.vid_wvalid(fb_wvalid),.vid_wready(fb_wready),.vid_bid(soc_vid_bid),.vid_bresp(soc_vid_bresp),.vid_bvalid(soc_vid_bvalid),.vid_bready(fb_bready),
+  .vid_arid({2'b0,fb_arid}),.vid_araddr(fb_araddr),.vid_arlen(fb_arlen),.vid_arsize(fb_arsize),.vid_arburst(fb_arburst),.vid_arvalid(fb_arvalid),.vid_arready(fb_arready),.vid_rid(soc_vid_rid),.vid_rdata(soc_vid_rdata),.vid_rresp(soc_vid_rresp),.vid_rlast(soc_vid_rlast),.vid_rvalid(soc_vid_rvalid),.vid_rready(fb_rready),
+  .ddr_awid(s_axi_awid),.ddr_awaddr(s_axi_awaddr),.ddr_awlen(s_axi_awlen),.ddr_awsize(s_axi_awsize),.ddr_awburst(s_axi_awburst),.ddr_awvalid(s_axi_awvalid),.ddr_awready(s_axi_awready),.ddr_wdata(s_axi_wdata),.ddr_wstrb(s_axi_wstrb),.ddr_wlast(s_axi_wlast),.ddr_wvalid(s_axi_wvalid),.ddr_wready(s_axi_wready),.ddr_bid(s_axi_bid),.ddr_bresp(s_axi_bresp),.ddr_bvalid(s_axi_bvalid),.ddr_bready(s_axi_bready),.ddr_arid(s_axi_arid),.ddr_araddr(s_axi_araddr),.ddr_arlen(s_axi_arlen),.ddr_arsize(s_axi_arsize),.ddr_arburst(s_axi_arburst),.ddr_arvalid(s_axi_arvalid),.ddr_arready(s_axi_arready),.ddr_rid(s_axi_rid),.ddr_rdata(s_axi_rdata),.ddr_rresp(s_axi_rresp),.ddr_rlast(s_axi_rlast),.ddr_rvalid(s_axi_rvalid),.ddr_rready(s_axi_rready),
+  .apb_paddr(soc_apb_paddr),.apb_psel(soc_apb_psel),.apb_penable(soc_apb_penable),.apb_pready(soc_apb_pready),.apb_pwrite(soc_apb_pwrite),.apb_pwdata(soc_apb_pwdata),.apb_prdata(soc_apb_prdata),.apb_pslverr(soc_apb_pslverr),
+  .jtag_tck(jtag_inst1_TCK),.jtag_tdi(jtag_inst1_TDI),.jtag_capture(jtag_inst1_CAPTURE),.jtag_shift(jtag_inst1_SHIFT),.jtag_update(jtag_inst1_UPDATE),.jtag_reset(jtag_inst1_RESET),.jtag_enable(jtag_inst1_SEL),.jtag_tdo(jtag_inst1_TDO),
+  .uart_txd(soc_uart_txd),.uart_rxd(1'b1),.i2c_scl_in(io_cam_scl_IN),.i2c_scl_out(soc_i2c_scl_out),.i2c_sda_in(io_cam_sda_IN),.i2c_sda_out(soc_i2c_sda_out),.soc_system_reset(soc_system_reset),.soc_memory_reset(soc_memory_reset),.axi_error_count(soc_axi_error_count));
+assign fb_bid=soc_vid_bid[5:0]; assign fb_rid=soc_vid_rid[5:0]; assign fb_bresp=soc_vid_bresp; assign fb_rresp=soc_vid_rresp; assign fb_bvalid=soc_vid_bvalid; assign fb_rvalid=soc_vid_rvalid; assign fb_rlast=soc_vid_rlast; assign fb_rdata=soc_vid_rdata;
+osd_apb_regs osd_apb(
+  .pclk(core_clk),.preset_n(w_arstn),.psel(soc_apb_psel),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr),.pwdata(soc_apb_pwdata),.prdata(soc_apb_prdata),.pready(soc_apb_pready),.pslverr(soc_apb_pslverr),
+  .o_enable(osd_apb_enable),.o_x(osd_apb_x),.o_y(osd_apb_y),.o_color(osd_apb_color),.o_char_we(osd_apb_char_we),.o_char_addr(osd_apb_char_addr),.o_char_page(osd_apb_char_page),.o_char_data(osd_apb_char_data),.o_commit_toggle(osd_apb_commit_toggle),.o_commit_page(osd_apb_commit_page),.i_ack_toggle(osd_db_ack),.i_active_page(osd_db_active),.i_busy(osd_db_busy),.i_frame_count(status_display_fps),.i_capture_fps(status_capture_fps),.i_display_fps(status_display_fps),.i_drop_count(status_drop_count[15:0]),.i_error_count(status_error_count[15:0]));
+
+wire db_vs,db_hs,db_de,db_char_pixel; wire [7:0] db_r,db_g,db_b;
+osd_text_double_buffer #(.FRAME_WIDTH(1280),.FRAME_HEIGHT(720),.PAGE_SIZE(80)) osd_db(
+  .wr_clk(core_clk),.pix_clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.wr_en(osd_apb_char_we),.wr_page(osd_apb_char_page),.wr_addr(osd_apb_char_addr),.wr_data(osd_apb_char_data),.wr_commit(osd_apb_commit_toggle),.wr_commit_page(osd_apb_commit_page),.wr_enable(osd_apb_enable),.wr_x(osd_apb_x),.wr_y(osd_apb_y),.wr_color(osd_apb_color),
+  .i_vs(osd_vs),.i_hs(osd_hs),.i_de(osd_de),.i_r(osd_r),.i_g(osd_g),.i_b(osd_b),.o_vs(db_vs),.o_hs(db_hs),.o_de(db_de),.o_r(db_r),.o_g(db_g),.o_b(db_b),.o_char_pixel(db_char_pixel),.ack_toggle(osd_db_ack),.active_page(osd_db_active),.busy(osd_db_busy));
+
 cvo_axi # (
     .SYMBOL_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_CVO_AXI_INST_SYMBOL_WIDTH),
     .SYMBOL_NUM(`CFG_TI60F225_OOB_TOP_V_INST_CVO_AXI_INST_SYMBOL_NUM),
@@ -779,7 +862,7 @@ cvo_axi # (
     .o_hs           (ch0_hs         ),
     .o_vs           (ch0_vs         ),
     .o_de           (ch0_de         )
-  );		       
+  );
 
 
 ddr3_top                 u_ddr3_top
@@ -787,23 +870,23 @@ ddr3_top                 u_ddr3_top
 
 .axi_clk                (core_clk            ),
 .core_clk               (core_clk            ),
-.sdram_clk              (sdram_clk           ),  
+.sdram_clk              (sdram_clk           ),
 .rx_cal_clk             (rx_cal_clk          ),
 .tx_cal_clk             (tx_cal_clk          ),
 .tx_cal_clk_90edge      (tx_cal_clk_90edge   ),
-.rstn                   (w_arstn             ),      
+.rstn                   (w_arstn             ),
 .pll_shift              (pll_shift           ),
 .pll_shift_sel          (pll_shift_sel       ),
-.pll_shift_ena          (pll_shift_ena       ),       
+.pll_shift_ena          (pll_shift_ena       ),
 ///////////////DDR BUS
 .ddr_ck_hi              (ddr_ck_hi           ),
 .ddr_ck_lo              (ddr_ck_lo           ),
-.ddr_cke                (ddr_cke             ),    
+.ddr_cke                (ddr_cke             ),
 .ddr_reset_n            (ddr_reset_n         ),
 .ddr_cs_n               (ddr_cs_n            ),
 .ddr_ras_n              (ddr_ras_n           ),
 .ddr_cas_n              (ddr_cas_n           ),
-.ddr_we_n               (ddr_we_n            ),     
+.ddr_we_n               (ddr_we_n            ),
 .ddr_addr               (ddr_addr            ),
 .ddr_ba                 (ddr_ba              ),
 
@@ -874,13 +957,13 @@ ddr3_top                 u_ddr3_top
 .s_axi_rlast                    (s_axi_rlast       ),
 .s_axi_rvalid                   (s_axi_rvalid      ),
 .s_axi_rready                   (s_axi_rready      ),
-//DEBUG       
+//DEBUG
 .wrlvl_dq_check                 (wrlvl_dq_check    ) ,
 .rd_level_dqs_check             (rd_level_dqs_check) ,
 .init_cur_state                 (init_cur_state    ) ,
 .idelay_ld                      (idelay_ld         ) ,
 .mpr_rdlvl_dly                  (mpr_rdlvl_dly     ) ,
-.cal_done                       (cal_done          ) 
+.cal_done                       (cal_done          )
 );
 
 //***************************************************************************
@@ -908,7 +991,7 @@ debayer_top_2to1 #(
 (
 	.in_pclk		  (vid_clk_dvi2),//(i_mipi_rx_pclk ),
 	.in_rstn		  (capture_reset_n),
-	
+
 	.raw_vs_i		  (capture_vs),
 	.raw_hs_i		  (capture_de),
 	.raw_de_i		  (capture_de),
@@ -947,7 +1030,7 @@ assign led[7:4] = resize_completed_frames[3:0];
 //==============================================================================
 // MIPI DSI
 //==============================================================================
-// signal 
+// signal
 
 reg		[`CFG_BITS_26-1:0]	r_rst_cnt;
 
@@ -982,7 +1065,7 @@ always@(posedge i_mipi_clk or  negedge w_arstn )
 begin
   if ( !w_arstn ) begin
     r_rst_cnt	<= 'd0;
-  end else 		
+  end else
     r_rst_cnt	<= r_rst_cnt[25] ? r_rst_cnt :r_rst_cnt + 1'b1;
 end
 
@@ -996,9 +1079,9 @@ begin
     dly_cnt <= 'd0;
   else if( w_confdone )
     dly_cnt <= dly_cnt[26] ? dly_cnt :(dly_cnt + 1'b1);
-  else 
+  else
     dly_cnt <= 'd0;
-end 
+end
 
 assign vid_rst_n = dly_cnt[26];
 
@@ -1011,7 +1094,7 @@ wire de;
 wire [`CFG_BITS_8-1:0] rgb_r;
 wire [`CFG_BITS_8-1:0] rgb_g;
 wire [`CFG_BITS_8-1:0] rgb_b;
-  
+
   // color_bar_rgb #(
   // .HS_POLORY 		(1'b1		),
   // .VS_POLORY 		(1'b1		),
@@ -1035,11 +1118,11 @@ wire [`CFG_BITS_8-1:0] rgb_b;
   // /*o*/.rgb_r	(rgb_r),    //像素数据、红色分量
   // /*o*/.rgb_g	(rgb_g),    //像素数据、绿色分量
   // /*o*/.rgb_b (rgb_b)    //像素数据、蓝色分量
-  
+
   // );
 
 //=================================================================================
-//hdmi tx ctrl 
+//hdmi tx ctrl
 //=================================================================================
 wire                            video_hs;
 wire                            video_vs;
@@ -1186,7 +1269,9 @@ osd_fixed_text #(
 ) fixed_text_osd(
   .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),
   .i_vs(osd_vs),.i_hs(osd_hs),.i_de(osd_de),
-  .i_r(osd_r),.i_g(osd_g),.i_b(osd_b),.i_enable(osd_controls[3]),
+  // The fixed-text acceptance image is enabled by default.  APB control in
+  // the integrated SoC revision replaces this constant after milestone 9.
+  .i_r(osd_r),.i_g(osd_g),.i_b(osd_b),.i_enable(osd_apb_enable),
   .o_vs(fixed_osd_vs),.o_hs(fixed_osd_hs),.o_de(fixed_osd_de),
   .o_r(fixed_osd_r),.o_g(fixed_osd_g),.o_b(fixed_osd_b),.o_char_pixel(fixed_osd_char_pixel)
 );
@@ -1195,21 +1280,21 @@ dvi_encoder dvi_encoder_m0
 (
 	.pixelclk      		(hdmi_tx_slow_clk          ),// system clock
 	.rst_p         		(~display_reset_n),// reset
-	.i_bdata      		(fixed_osd_b),
-	.i_gdata     		(fixed_osd_g),
-	.i_rdata       		(fixed_osd_r),
-  .i_de            	(fixed_osd_de),
-	.i_hs         		(fixed_osd_hs),
-	.i_vs         		(fixed_osd_vs),
-	
+	.i_bdata      		(db_b),
+	.i_gdata     		(db_g),
+	.i_rdata       		(db_r),
+  .i_de            	(db_de),
+	.i_hs         		(db_hs),
+	.i_vs         		(db_vs),
+
   .video_format     (2'b00), //// 00 = RGB, 01 = YCbCr 4:2:2, 10 = YCbCr 4:4:4
   .video_VIC        (7'd4),
 	.audio_L			    (24'd0),
   .audio_R			    (24'd0),
   .audio_valid		  (1'b0),
-  .audio_N                (6144),     //(20'h01880),//     
+  .audio_N                (6144),     //(20'h01880),//
   .audio_CTS              (74250),      //(20'h28488),//
-  .audio_sample_frequency (audio_samp_freq),    //(3'b000),// 
+  .audio_sample_frequency (audio_samp_freq),    //(3'b000),//
   .audio_word_length      ({audio_samp_word_len,audio_max_word_length}),//(4'b1011),//
 
 	.tmds_data0    		(tmds_data0),
@@ -1222,61 +1307,15 @@ assign tmds_tx_data0_TX_DATA = ~tmds_data0;
 assign tmds_tx_data1_TX_DATA = ~tmds_data1;
 assign tmds_tx_data2_TX_DATA = ~tmds_data2;
 
-debug_edb_top debug_edb_top_inst (
-    .bscan_CAPTURE      ( jtag_inst1_CAPTURE  ),
-    .bscan_DRCK         ( jtag_inst1_DRCK     ),
-    .bscan_RESET        ( jtag_inst1_RESET    ),
-    .bscan_RUNTEST      ( jtag_inst1_RUNTEST  ),
-    .bscan_SEL          ( jtag_inst1_SEL      ),
-    .bscan_SHIFT        ( jtag_inst1_SHIFT    ),
-    .bscan_TCK          ( jtag_inst1_TCK      ),
-    .bscan_TDI          ( jtag_inst1_TDI      ),
-    .bscan_TMS          ( jtag_inst1_TMS      ),
-    .bscan_UPDATE       ( jtag_inst1_UPDATE   ),
-    .bscan_TDO          ( jtag_inst1_TDO      ),
-    .vio0_clk           ( vid_clk_dvi2        ),
-    .vio0_r_gain        ( r_gain              ),
-    .vio0_g_gain        ( g_gain              ),
-    .vio0_b_gain        ( b_gain              ),
-    .vio0_osd_hist_enable (osd_hist_enable),
-    .vio0_osd_hist_mode (osd_hist_mode),
-    .vio0_osd_text_enable (osd_text_enable),
-    .vio0_osd_hist_valid (osd_hist_valid),
-    .vio0_osd_hist_samples (osd_hist_samples),
-    .vio0_ae_enable     (ae_enable),
-    .vio0_ae_target     (ae_target),
-    .vio0_ae_high_protect (ae_high_protect),
-    .vio0_ae_high_threshold (ae_high_threshold),
-    .vio0_ae_high_limit  (ae_high_limit),
-    .vio0_lift_auto_enable (lift_auto_enable),
-    .vio0_lift_auto_max (lift_auto_max),
-    .vio0_ae_display_mean (ae_display_mean),
-    .vio0_ae_exposure_constrained (ae_exposure_constrained),
-    .vio0_lift_actual_strength (lift_actual_strength),
-    .vio0_lift_at_max (lift_at_max),
-    .vio0_lift_enable   (lift_enable),
-    .vio0_lift_strength (lift_strength),
-    .vio0_tone_enable   (tone_enable),
-    .vio0_high_green_strength (high_green_strength),
-    .vio0_dark_red_strength   (dark_red_strength),
-    .vio0_ae_ready      (ae_ready),
-    .vio0_ae_fault      (ae_fault),
-    .vio0_ae_at_limit   (ae_at_limit),
-    .vio0_ae_at_min     (ae_at_min),
-    .vio0_ae_at_max     (ae_at_max),
-    .vio0_ae_highlights (ae_highlights),
-    .vio0_ae_high_permille (ae_high_permille),
-    .vio0_ae_highlight_limited (ae_highlight_limited),
-    .vio0_ae_vts        (ae_vts),
-    .vio0_ae_exposure   (ae_exposure),
-    .vio0_ae_mean       (ae_mean),
-    .la0_clk            ( vid_clk_dvi2        ),
-    .la0_ch0_g          (capture_raw[7:0]),
-    .la0_ch0_b          (capture_raw[15:8]),
-    .la0_ch0_de         (capture_de),
-    .la0_cal_done       ( cal_done            ),
-    .la0_ch0_vs         (capture_vs),
-    .la0_raw_row_odd    ( raw_row_odd         )
-);
+// USER1 is owned by the Sapphire hard-JTAG channel.  The former manual
+// VIO/LA instance was removed to avoid a second USER1 TAP; Efinity auto-debug
+// probes use USER2 and the control values below are deterministic defaults.
+assign r_gain=16'd255; assign g_gain=16'd255; assign b_gain=16'd255;
+assign osd_hist_enable=1'b0; assign osd_hist_mode=2'b0; assign osd_text_enable=osd_apb_enable;
+assign ae_enable=1'b0; assign ae_target=8'd128; assign ae_high_protect=1'b0;
+assign ae_high_threshold=8'd232; assign ae_high_limit=8'd0;
+assign lift_auto_enable=1'b0; assign lift_auto_max=8'd0;
+assign lift_enable=1'b0; assign lift_strength=8'd0; assign tone_enable=1'b0;
+assign high_green_strength=8'd0; assign dark_red_strength=8'd0;
 
 endmodule

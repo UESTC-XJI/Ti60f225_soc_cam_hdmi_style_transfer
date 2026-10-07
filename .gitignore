@@ -66,3 +66,4 @@ Desktop.ini
 # - *.mem, *.memh, *.hex, *.bin and *.mif (ROM/firmware initialization assets)
 # - *.gtkw (reusable waveform viewing configuration)
 # - ooc/ (do not exclude future out-of-context input configurations wholesale)
+/reports/baseline/

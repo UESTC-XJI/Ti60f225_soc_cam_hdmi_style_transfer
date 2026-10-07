@@ -23,7 +23,7 @@ module ddr_address_map_check #(
   initial begin
     if (!(CPU_BASE+CPU_LENGTH <= VIDEO_BASE)) $fatal(1,"CPU and video DDR windows overlap");
     if ((VIDEO_BASE % `SOC_DDR_AXI_DATA_BYTES) != 0) $fatal(1,"Video base is not AXI aligned");
+    if ((VIDEO_BASE + FRAME_BYTES*FRAME_COUNT) > 32'h1000_0000) $fatal(1,"Video allocation exceeds 256 MiB DDR");
   end
 `endif
 endmodule
-
