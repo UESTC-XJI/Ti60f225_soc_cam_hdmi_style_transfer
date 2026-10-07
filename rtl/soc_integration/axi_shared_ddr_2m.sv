@@ -35,10 +35,12 @@ module axi_shared_ddr_2m #(
   // Count B/R protocol or ownership errors once per response beat.  These
   // are wires so simultaneous B and R errors are accumulated together rather
   // than losing one increment to two nonblocking assignments.
+  wire [DDR_ID_W-1:0] expected_bid={wr_owner,wr_id[SRC_ID_W-1:0]};
+  wire [DDR_ID_W-1:0] expected_rid={rd_owner,rd_id[SRC_ID_W-1:0]};
   wire b_error = ddr_bvalid && ddr_bready &&
-                 (ddr_bresp != 2'b00 || ddr_bid[DDR_ID_W-1] !== wr_owner);
+                 (ddr_bresp != 2'b00 || ddr_bid !== expected_bid);
   wire r_error = ddr_rvalid && ddr_rready &&
-                 (ddr_rresp != 2'b00 || ddr_rid[DDR_ID_W-1] !== rd_owner);
+                 (ddr_rresp != 2'b00 || ddr_rid !== expected_rid);
 
   always_comb begin
     cpu_awready=allow_access&&!wr_busy&&cpu_awvalid&&!choose_vid_w;

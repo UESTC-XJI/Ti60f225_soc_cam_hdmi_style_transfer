@@ -659,7 +659,7 @@ wire capture_reset_n,display_reset_n;
 wire barrier_sys_reset_n,barrier_vid_reset_n,barrier_allow_sys,barrier_allow_vid,barrier_cpu_waiting;
 ddr_startup_barrier ddr_startup(
   .sys_clk(core_clk), .vid_clk(hdmi_tx_slow_clk), .global_reset_n(w_arstn),
-  .pll_locked(1'b1), .ddr_cal_done(cal_done),
+  .pll_locked(pll_locked), .ddr_cal_done(cal_done),
   .sys_reset_n(barrier_sys_reset_n), .vid_reset_n(barrier_vid_reset_n),
   .master_allow_sys(barrier_allow_sys), .master_allow_vid(barrier_allow_vid),
   .cpu_waiting(barrier_cpu_waiting));
@@ -790,21 +790,22 @@ wire osd_db_ack,osd_db_active,osd_db_busy;
 // register. Events are edge-qualified so level faults are counted once.
 wire [31:0] status_capture_frames,status_display_frames,status_drop_count,status_underflow_count,status_error_count;
 wire [15:0] status_capture_fps,status_display_fps;
-reg [31:0] status_resize_frames_d; reg status_display_vs_d; reg [26:0] status_tick_count;
+reg [31:0] status_resize_frames_d,status_axi_error_d; reg status_display_vs_d; reg [26:0] status_tick_count;
 wire status_capture_event = (resize_completed_frames != status_resize_frames_d);
 wire status_display_event = ch0_vs && !status_display_vs_d;
 wire status_interval_tick = (status_tick_count == 27'd99_999_999);
+wire status_axi_error_event = (soc_axi_error_count != status_axi_error_d);
 always @(posedge core_clk or negedge barrier_sys_reset_n) begin
-  if(!barrier_sys_reset_n) begin status_resize_frames_d<=0; status_display_vs_d<=0; status_tick_count<=0; end
+  if(!barrier_sys_reset_n) begin status_resize_frames_d<=0; status_axi_error_d<=0; status_display_vs_d<=0; status_tick_count<=0; end
   else begin
-    status_resize_frames_d <= resize_completed_frames; status_display_vs_d <= ch0_vs;
+    status_resize_frames_d <= resize_completed_frames; status_axi_error_d <= soc_axi_error_count; status_display_vs_d <= ch0_vs;
     if(status_interval_tick) status_tick_count<=0; else status_tick_count<=status_tick_count+1'b1;
   end
 end
 video_status_counters status_counters(
   .clk(core_clk),.rst_n(barrier_sys_reset_n),.frame_start(status_capture_event),
   .display_frame_start(status_display_event),.capture_overflow(capture_fault),
-  .display_underflow(display_underflow),.axi_error(soc_axi_error_count != 0),
+  .display_underflow(display_underflow),.axi_error(status_axi_error_event),
   .interval_tick(status_interval_tick),.capture_frames(status_capture_frames),
   .display_frames(status_display_frames),.drop_count(status_drop_count),
   .underflow_count(status_underflow_count),.error_count(status_error_count),
