@@ -32,8 +32,8 @@
 
 ### 4. SoC 资源整理
 
-- [ ] 移入 Sapphire SoC IP/BSP。
-- [ ] 检查 UART、SPI、JTAG、时钟和引脚资源冲突。
+- [x] 移入实际 Sapphire SoC IP/BSP（`soc/efx_sapphire_soc/`、`software/bsp/`）。
+- [x] 检查 UART、SPI、JTAG、时钟和引脚资源冲突；`soc_jtag_channel_mux` 固定 JTAG 所有者并报告双使能错误。
 
 ### 5. DDR 地址空间
 
@@ -81,3 +81,4 @@
 | 2026-10-07 | 1 | `python tools/test_resize_checks.py` | PASS |
 | 2026-10-07 | 1 | `python tools/run_rtl_checks.py` | 运行通过基础用例 |
 | 2026-10-07 | 3 | `iverilog ... osd_fixed_text_tb.sv` | PASS，117 个字符像素 |
+| 2026-10-07 | 4 | `iverilog ... soc_jtag_channel_mux_tb.sv` | PASS |
