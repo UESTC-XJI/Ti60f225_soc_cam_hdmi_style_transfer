@@ -118,3 +118,26 @@ Efinity map/debug/interface/PNR/PGM 全部 PASS；时钟关系汇总最小 setup
 配套产物保存在 `reports/raw_resize/raw_resize.bit`、`soc_video_app.elf`、`soc_video_app.bin`；时序报告 `timing.rpt`，仿真记录 `diagnostics_test.log`、`firmware_runtime.json`。bitstream SHA256 `180B337E29A0200219B5EF93EF56872501FE195CA72496010AF3059CC347C050`；ELF SHA256 `D352E991DDB1770EDBF2EA4AB85FBFE3BA63CA8F7FFF9EC868B7A591D6B5D2E4`。
 
 按用户之前“暂不烧录”的要求，本轮未访问硬件或下载 bitstream，尚无实板 RAW/RESIZE 测量结果。必须使用包含该诊断逻辑的新 bitstream 与新 ELF 后，屏幕或串口才能看到 RAW/RESIZE 数值；仿真中的 RAW 30/RESIZE 9 是受控测试数据，不能当作摄像头实际帧率。
+
+
+## 2026-10-08 统一APB / 采集统计 / 软件AE与AWB实施完成（未烧录）
+
+用户明确要求完成实现。新增 `video_apb_ctrl.sv` 作为唯一Sapphire视频APB入口，保留旧OSD/READY/帧率映射，扩展gain、tone/lift、同帧统计、hist冻结和诊断；全16位译码无高地址别名。CAPTURE/DISPLAY各自帧边界整组应用，core只在apply-ACK后更新ACTIVE镜像/版本。`capture_frame_stats.sv` 取代采集AE meter，统一Y和/计数/任一RGB高光/64bin和gain前BGGR AWB；实际输入为gearbox截取后的RAW8，G_SUM含两个绿色。五拍配置标签匹配真实gain/Debayer VS流水线，RAW新帧不误标旧RGB帧尾。标量整包CDC及78项hist/META握手、锁定期间实时发布均已实现。
+
+CPU读取实际VTS限制曝光，Group Hold保留位写入和读回确认；包装不再无条件成功，检查RX ACK VALID/NACK、START/STOP dropped与有界timeout，错误时尝试释放Hold。曝光排队至下一CSI事件，成功后源/采集帧同时至少前进3帧才继续（保守N+2）。软件AWB用绝对RAW比例、有效候选门限、限幅/平滑/死区/步幅/四帧限频，固定/自动/锁定及AE优先协调。启动默认AE/AWB自动；自动lift关闭，VTS/PLL/模拟gain不改。运行OSD非阻塞，每秒DDR压测移至仅启动，UART每秒输出3A状态。直方图可由IDE app_hist_enable开启，每次服务至多读4项。
+
+统一APB与真实gain/Debayer小尺寸回归、两张完整1080p（32400 AE样本/16200 AWB单元/全部64bin）、neutral端点、尺寸/故障/overrun/回绕/中途复位、短VS RAW/RGB帧尾重叠PASS。实际RV32 ELF控制和完整_start/main，包括独立响应模型AE收敛、AWB两绿公式、旧CFG/曝光等待协调、缺样本/读撕裂、I²C NACK/timeout/missing VALID/START/STOP dropped/释放失败/写入不保留读回失败及非阻塞hist读取PASS。原有启动彩条、RAW/RESIZE诊断、完整RTL、面积缩放/CSI/DDR-DMA/CVO与200次并发CPU shared-DDR突发回归PASS，受保护RTL/DDR和校准默认值审计、IDE/OpenOCD仅配置解析、git diff --check通过。
+
+Efinity map/debug/interface/PNR/PGM PASS；最终最小setup=0.397ns、hold=0.026ns，vid_clk_dvi2 setup=1.537ns、HDMI=5.580ns、core=3.321ns。基础综合LUT4=31764、FF=27676、DSP48=17、DSP24=2、RAM10=142、DPRAM10=4；资源成本包含新增冻结缓存/动态绘图，未声称总资源减少。固件text=10508、data=4、BSS=488，BIN=10512字节。
+
+配套bit/ELF及全部报告保存于 `reports/software_3a/`，manifest记录源文件和产物哈希。bit SHA256 `F2BBDC0A73C9979784AF07BEB0113B783705777A44B40F1E4DA34A7C30FA0F9F`；ELF `9231F57B87E4B81984AB4272E87CF7F23AFF352CC02F8B0171AEE6A4C40AC7F6`。Efinity的XML格式改写经语义一致校验后恢复，未动用户IDE launch。未提交改动，保留用户已有方案修改及删除文件。
+
+本轮未烧录/下载/访问串口，保留此前“暂不烧录”约束；灰/白卡、实际光源和曝光效果、真实VTS、黑电平及物理时序尚待实板确认。用户报告RAW和RESIZE均约12FPS，原因未确定，AE不承诺提升帧率。完整行为与边界见 docs/VIDEO_3A_IMPLEMENTATION.md；最新交接和烧录README已同步。
+
+## 2026-10-09 SoC遗留逻辑清理与文字使能修复
+
+用户授权按审计清单清理，确认直方图配置已在HDMI域并要求修复en2遗漏同步。顶层移除旧AE/I²C及相关CDC、owner mux、固定文字、无消费者状态mailbox与冗余OSD控制mailbox；手动lift替换为等价限幅。活动工程移除10项旧源，历史源码/测试保留。顶层1394→1084行。CPU开漏pad、统一APB/采集统计、动态两页80字符COMMIT/ACK、启动彩条、共享DDR/复位/保护及USER1/USER2分配保留。
+
+动态文字补齐两级使能同步，并在VS边界锁存，无需COMMIT即可开关。实际RTL回归覆盖帧中开关、关闭时提交、活动页写保护、RGB透传，缺失en2反例准确复现旧故障。实际顶层pad与全部256档手动lift对旧模块等价；统一APB、完整RTL含两帧1080p、启动/诊断、resize/DMA/CVO与并发共享DDR回归全部PASS。105份RTL/DDR/受保护内容及校准默认值审计PASS。
+
+Efinity 2026.1 map/debug/interface/PNR/PGM全PASS；最小setup=0.260ns、hold=0.026ns；采集域setup=1.307ns。综合LUT4=31356（较software_3a少408）、FF=27668（少8），RAM/DSP不变。新bit与配套AE调整ELF及验证记录归档reports/soc_cleanup/，原release未覆盖；软件算法本轮未修改。生成bit不等于配置板卡，本轮未烧录/下载，实板文字开关待用户验证。

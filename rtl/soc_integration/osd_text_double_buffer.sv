@@ -24,7 +24,10 @@ module osd_text_double_buffer #(
   end
   always_ff @(posedge wr_clk) if(wr_en && wr_addr<PAGE_SIZE && (wr_page!=active_wr2)) page_mem[wr_page][wr_addr]<=wr_data;
 
-  logic cmt1,cmt2,cmt_seen,page1,page2,en1,en2; logic [11:0] x1,x2,y1,y2; logic [23:0] col1,col2;
+  logic cmt1,cmt2,cmt_seen,page1,page2;
+  (* ASYNC_REG="TRUE" *) logic en1,en2;
+  logic active_enable;
+  logic [11:0] x1,x2,y1,y2; logic [23:0] col1,col2;
   logic [11:0] x,y,sx,sy; logic vs_d; logic s_de,s_hs,s_vs,s_en; logic [7:0] sr,sg,sb;
   logic [23:0] active_color; logic [11:0] active_x,active_y; logic [7:0] font_bits,active_ch; logic [3:0] font_row; logic in_text,s_bit; logic [6:0] char_idx; logic [2:0] glyph_col;
   always_comb begin
@@ -47,14 +50,17 @@ module osd_text_double_buffer #(
   always_ff @(posedge pix_clk or negedge rst_n) begin
     if(!rst_n) begin
       cmt1<=0;cmt2<=0;cmt_seen<=0;page1<=1;page2<=1;en1<=1;en2<=1;x1<=16;x2<=16;y1<=16;y2<=16;col1<=24'h20ff40;col2<=24'h20ff40;
-      active_page<=0;ack_toggle<=0;active_color<=24'h20ff40;active_x<=16;active_y<=16;x<=0;y<=0;sx<=0;sy<=0;vs_d<=0;s_de<=0;s_hs<=0;s_vs<=0;s_en<=0;sr<=0;sg<=0;sb<=0;o_vs<=0;o_hs<=0;o_de<=0;o_r<=0;o_g<=0;o_b<=0;o_char_pixel<=0;
+      active_page<=0;ack_toggle<=0;active_enable<=1;active_color<=24'h20ff40;active_x<=16;active_y<=16;x<=0;y<=0;sx<=0;sy<=0;vs_d<=0;s_de<=0;s_hs<=0;s_vs<=0;s_en<=0;sr<=0;sg<=0;sb<=0;o_vs<=0;o_hs<=0;o_de<=0;o_r<=0;o_g<=0;o_b<=0;o_char_pixel<=0;
     end else begin
-      cmt1<=wr_commit;cmt2<=cmt1;page1<=wr_commit_page;page2<=page1;en1<=wr_enable;x1<=wr_x;x2<=x1;y1<=wr_y;y2<=y1;col1<=wr_color;col2<=col1;
+      cmt1<=wr_commit;cmt2<=cmt1;page1<=wr_commit_page;page2<=page1;en1<=wr_enable;en2<=en1;x1<=wr_x;x2<=x1;y1<=wr_y;y2<=y1;col1<=wr_color;col2<=col1;
       o_vs<=s_vs;o_hs<=s_hs;o_de<=s_de;o_char_pixel<=s_bit;
       if(s_bit) begin o_r<=active_color[23:16];o_g<=active_color[15:8];o_b<=active_color[7:0]; end else begin o_r<=sr;o_g<=sg;o_b<=sb; end
-      sx<=x;sy<=y;s_de<=i_de;s_hs<=i_hs;s_vs<=i_vs;s_en<=en2;sr<=i_r;sg<=i_g;sb<=i_b;vs_d<=i_vs;
+      sx<=x;sy<=y;s_de<=i_de;s_hs<=i_hs;s_vs<=i_vs;s_en<=active_enable;sr<=i_r;sg<=i_g;sb<=i_b;vs_d<=i_vs;
       if(i_vs&&!vs_d) begin
         x<=0;y<=0;
+        // Enable changes do not require a text COMMIT, but apply only at VS
+        // after two-flop synchronization to avoid cutting a glyph mid-frame.
+        active_enable<=en2;
         if(cmt2!=cmt_seen) begin active_page<=page2;active_x<=x2;active_y<=y2;active_color<=col2;cmt_seen<=cmt2;ack_toggle<=cmt2; end
       end else if(i_de) begin if(x==FRAME_WIDTH-1) begin x<=0;if(y<FRAME_HEIGHT-1)y<=y+1'b1;end else x<=x+1'b1; end
     end

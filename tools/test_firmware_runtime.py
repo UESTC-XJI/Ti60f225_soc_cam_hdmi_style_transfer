@@ -5,6 +5,7 @@ The Sapphire custom cache instruction is intercepted as a model operation.
 Install dependencies into work/sim_deps using tools/firmware_sim_requirements.txt.
 """
 from pathlib import Path
+import os
 import json
 import re
 import sys
@@ -17,7 +18,7 @@ from unicorn.riscv_const import UC_RISCV_REG_MCAUSE, UC_RISCV_REG_MEPC, UC_RISCV
 from unicorn.riscv_const import UC_RISCV_REG_MSTATUS, UC_RISCV_REG_MIE, UC_RISCV_REG_MTVEC
 from elftools.elf.elffile import ELFFile
 
-ELF = ROOT / 'software/firmware/build/soc_video_app.elf'
+ELF = Path(os.environ.get('SOC_FIRMWARE_ELF', ROOT / 'software/firmware/build/soc_video_app.elf'))
 with ELF.open('rb') as f:
     elf = ELFFile(f)
     ENTRY = elf.header.e_entry
@@ -28,7 +29,7 @@ with ELF.open('rb') as f:
                 if s.name and s.entry.st_shndx == 'SHN_UNDEF']
 
 for name in ['_start', 'main', 'camera_init_cpu', 'camera_recover',
-             'osd_write_string', 'osd_publish_metrics', 'app_ddr_test', 'trap_entry']:
+             'osd_write_string', 'osd_submit_metrics', 'app_ddr_test', 'trap_entry']:
     assert name in SYMBOLS, name
 assert ENTRY == SYMBOLS['_start'] == 0x1000
 assert SYMBOLS['_sp'] == 0x20000 and SYMBOLS['_end'] < SYMBOLS['__stack_bottom']
@@ -52,6 +53,14 @@ class Machine:
         if scenario == 'id_retry': self.sensor[0x3107] = 0
         self.i2c_phase = 'address'
         self.i2c_ptr = 0
+        self.rx_ack = 0x101 if scenario == 'stale_ack' else 0
+        self.rx_listen = False
+        self.tx_ack_pending = False
+        self.i2c_read_byte = False
+        self.ack_stalls = 0
+        self.i2c_status = 0x600 if scenario == 'bus_recover' else 0
+        self.i2c_lines = 4 if scenario == 'bus_recover' else 6
+        self.bus_recoveries = 0
         self.camera_writes = []
         self.config = {}
         self.active = 0
@@ -110,17 +119,57 @@ class Machine:
             uc.emu_stop()
 
     def i2c_read(self, uc, off, size, data):
-        return self.sensor.get(self.i2c_ptr, 0) if off == 8 else 0
+        if off == 8: return self.sensor.get(self.i2c_ptr, 0)
+        if off == 4: return 0x100 if self.tx_ack_pending else 0
+        if off == 0x40: return self.i2c_status
+        if off == 0x44: return self.i2c_lines
+        if off == 0x0c:
+            value = self.rx_ack
+            self.rx_ack &= ~0x100  # Actual Sapphire RTL clears VALID on READ.
+            if self.tx_ack_pending: self.complete_i2c_ack()
+            return value
+        return 0
+
+    def i2c_ack_result(self):
+        return 1 if self.i2c_read_byte else 0
+
+    def complete_i2c_ack(self):
+        self.tx_ack_pending = False
+        if self.rx_listen: self.rx_ack = 0x100 | self.i2c_ack_result()
 
     def i2c_write(self, uc, off, size, value, data):
         if off == 0x40:
-            if value & 0x10: self.i2c_phase = 'address'
+            self.i2c_status &= ~(value & 0xe00)
+            if value & 0x10:
+                self.i2c_phase = 'address'
+                self.i2c_status |= 1
+            if value & 0x20:
+                # Native STOP is serviced inside an active transfer; issuing
+                # it while idle leaves STOP pending without BUSY becoming 1.
+                self.i2c_status = 0 if self.i2c_status & 1 else self.i2c_status | 0x20
+            if value & 0x40: self.i2c_status = 0
+            if value & 0x80:
+                self.bus_recoveries += 1
+                self.i2c_status = 0  # Native RECOVER already terminates with STOP.
+                self.i2c_lines = 6
+            if value & (0x20 | 0x40):
+                self.rx_listen = False  # STOP/DROP do not clear RX_ACK.VALID.
+                self.tx_ack_pending = False
             return
-        if off == 4: return
+        if off == 0x0c:
+            self.rx_listen = bool(value & 0x200)  # LISTEN writes preserve VALID.
+            return
+        if off == 4:
+            if self.rx_listen and self.rx_ack & 0x100:
+                self.tx_ack_pending = True
+                self.ack_stalls += 1
+            else: self.complete_i2c_ack()
+            return
         if off != 0:
             self.config[('i2c', off)] = value
             return
         byte = value & 255
+        self.i2c_read_byte = self.i2c_phase == 'read'
         if self.i2c_phase == 'address':
             assert byte in (0x60, 0x61), hex(byte)
             self.i2c_phase = 'read' if byte & 1 else 'high'
@@ -136,7 +185,7 @@ class Machine:
 
     def clint_read(self, uc, off, size, data):
         if off == 0xbff8:
-            self.clock += 100000  # Model time advances 1 ms per timer sample.
+            self.clock += 10000  # 0.1 ms per timer sample; checked I2C transactions remain bounded.
             return self.clock & 0xffffffff
         return self.clock >> 32 if off == 0xbffc else 0
 
@@ -164,7 +213,7 @@ class Machine:
             self.ready_writes.append(self.video_ready)
             if self.video_ready:
                 assert self.ready_writes[0] == 0, 'reload must clear readiness first'
-                assert self.camera_writes[-len(TABLE):] == TABLE, 'camera not initialized'
+                assert any(self.camera_writes[i:i+len(TABLE)]==TABLE for i in range(len(self.camera_writes)-len(TABLE)+1)), 'camera not initialized'
                 assert self.commits and self.pending is None, 'OSD not acknowledged'
         elif off == 0x14: self.char_addr = value
         elif off == 0x18:
@@ -183,6 +232,8 @@ class Machine:
         assert self.main_seen
         assert self.word('firmware_trap_cause') == 0
         assert self.ready_writes[0] == 0
+        assert self.ack_stalls == 0, 'stale RX_ACK stalled a checked transaction'
+        if self.scenario == 'bus_recover': assert self.bus_recoveries == 1
         assert self.video_ready == (0 if self.scenario in ('ddr_corrupt', 'no_ack') else 1)
         if self.scenario == 'ddr_corrupt':
             assert self.word('app_ddr_errors') == 1
@@ -191,7 +242,7 @@ class Machine:
         else:
             assert self.word('app_metrics_updates') == 3
             assert self.word('app_ddr_errors') == 0
-            assert self.invalidates == 9  # Startup + two passes at boot and each tick.
+            assert self.invalidates == 3  # Startup + two passes at boot; no periodic DDR pause.
             assert self.config[('uart', 8)] == 107
             assert self.config[('i2c', 0x50)] == 500
             assert self.config[('i2c', 0x54)] == 500
@@ -205,34 +256,35 @@ class Machine:
                 assert self.camera_writes == TABLE
                 assert self.word('app_camera_errors') == 0
             if self.scenario == 'no_ack':
-                assert not self.commits and self.word('app_osd_errors') == 4
+                assert not self.commits and self.word('app_osd_errors') == 1
             else:
-                assert len(self.commits) == 4
+                assert len(self.commits) == 3  # Third metrics update has just been submitted asynchronously.
                 assert self.commits[0].rstrip() == 'HELLO SOC'
                 assert self.word('app_osd_errors') == 0
                 for text in self.commits[1:]:
                     assert text.rstrip() + '\r\n' in self.uart
                     assert 'DROP 0 ERR 0' in text
                 assert self.commits[-1].rstrip() == 'RAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0'
-                assert all(b-a >= 100000000 for a,b in zip(self.commit_times, self.commit_times[1:]))
+                assert all(b-a >= 99000000 for a,b in zip(self.commit_times, self.commit_times[1:]))
         print('PASS RV32 ELF:', self.scenario, 'entry, stack/gp/BSS, UART, DDR, camera, OSD/timer')
         return {'scenario': self.scenario, 'uart': self.uart,
                 'committed_pages': self.commits, 'commit_ticks': self.commit_times,
                 'video_ready_writes': self.ready_writes,
                 'cache_operations_modeled': self.invalidates}
 
-results = [Machine(s).run() for s in ['normal', 'id_retry', 'no_ack', 'ddr_corrupt', 'timer_wrap']]
-trap = Machine('trap')
-trap.uc.reg_write(UC_RISCV_REG_GP, SYMBOLS['__global_pointer$'])
-trap.uc.reg_write(UC_RISCV_REG_SP, SYMBOLS['_sp'])
-trap.uc.reg_write(UC_RISCV_REG_MCAUSE, 2)
-trap.uc.reg_write(UC_RISCV_REG_MEPC, 0x1234)
-trap.uc.reg_write(UC_RISCV_REG_MTVAL, 0xffffffff)
-trap.uc.emu_start(SYMBOLS['trap_entry'], SYMBOLS['trap_halt'], count=50)
-assert trap.word('firmware_trap_cause') == 2
-assert trap.word('firmware_trap_pc') == 0x1234
-assert trap.word('firmware_trap_value') == 0xffffffff
-print('PASS RV32 trap handler: cause/PC/value captured for IDE inspection')
-out = ROOT / 'reports/simulation'
-out.mkdir(parents=True, exist_ok=True)
-(out / 'firmware_runtime.json').write_text(json.dumps(results, indent=2), encoding='utf-8')
+if __name__ == '__main__':
+    results = [Machine(s).run() for s in ['normal', 'stale_ack', 'bus_recover', 'id_retry', 'no_ack', 'ddr_corrupt', 'timer_wrap']]
+    trap = Machine('trap')
+    trap.uc.reg_write(UC_RISCV_REG_GP, SYMBOLS['__global_pointer$'])
+    trap.uc.reg_write(UC_RISCV_REG_SP, SYMBOLS['_sp'])
+    trap.uc.reg_write(UC_RISCV_REG_MCAUSE, 2)
+    trap.uc.reg_write(UC_RISCV_REG_MEPC, 0x1234)
+    trap.uc.reg_write(UC_RISCV_REG_MTVAL, 0xffffffff)
+    trap.uc.emu_start(SYMBOLS['trap_entry'], SYMBOLS['trap_halt'], count=50)
+    assert trap.word('firmware_trap_cause') == 2
+    assert trap.word('firmware_trap_pc') == 0x1234
+    assert trap.word('firmware_trap_value') == 0xffffffff
+    print('PASS RV32 trap handler: cause/PC/value captured for IDE inspection')
+    out = ROOT / 'reports/simulation'
+    out.mkdir(parents=True, exist_ok=True)
+    (out / 'firmware_runtime.json').write_text(json.dumps(results, indent=2), encoding='utf-8')

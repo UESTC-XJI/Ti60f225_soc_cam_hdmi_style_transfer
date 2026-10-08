@@ -1,0 +1,184 @@
+{
+  "date": "2026-10-09",
+  "hardware": "reports/soc_cleanup/soc_cleanup.bit",
+  "firmware": "reports/soc_cleanup/soc_video_app.elf",
+  "status": "regressions_and_fpga_compile_passed_hardware_validation_pending",
+  "files": {
+    "rtl/ti60f225_oob_top.v": {
+      "bytes": 53426,
+      "sha256": "CEB0BFD0475CCC9CD260EA032C13C7BC6E319BD66E42E048D5317D02608BE63A"
+    },
+    "rtl/soc_integration/osd_text_double_buffer.sv": {
+      "bytes": 4236,
+      "sha256": "CD0931CB8EDF2192EDAF1ACBA7A658BC104A4EA3926ACBEF8A3A3A35A4595ECF"
+    },
+    "rtl/soc_integration/video_apb_ctrl.sv": {
+      "bytes": 14204,
+      "sha256": "C4FBB81D776B751751B3332DD671137647576D52B35EE998FD2DC8B56424D5CF"
+    },
+    "rtl/soc_integration/video_cfg_cdc.sv": {
+      "bytes": 1162,
+      "sha256": "F48855BB178B0789263CD9E646611BD13C8325210DD25D28A4310504888A3777"
+    },
+    "rtl/isp/capture_frame_stats.sv": {
+      "bytes": 8993,
+      "sha256": "0182E19BD147FD5205FCCD80D52B82121143EBB5FAFB6AD0625070F5407A3D69"
+    },
+    "rtl/soc_integration/osd_apb_regs.sv": {
+      "bytes": 4045,
+      "sha256": "CE3EC1EB5B7D74DBD2225693427BAEA20407C07D995CD501AD054DA857263BCA"
+    },
+    "rtl/soc_integration/axi_shared_ddr_2m.sv": {
+      "bytes": 7441,
+      "sha256": "A416BB04BCB3A64F43D7A2E870252348D9D3860487FA985C9BC86F8FEDA99B16"
+    },
+    "rtl/soc_integration/soc_video_ddr_integration.sv": {
+      "bytes": 22510,
+      "sha256": "45359A7708785FAF5F08C7CDA0B303858D2C19087C8C2908F094DD4659D223F9"
+    },
+    "rtl/isp/hdmi_info_overlay.v": {
+      "bytes": 4002,
+      "sha256": "031607506DF771D67FF253C8A5E93F8451F86FBFA56D4EB1FC825E51065C8953"
+    },
+    "rtl/soc_integration/hdmi_startup_colorbar.sv": {
+      "bytes": 3476,
+      "sha256": "ACD13122829FEB5617654EA908667B7C6A8A60FBF8D33A14C6B4CB79E9EC306B"
+    },
+    "software/firmware/camera_ae.c": {
+      "bytes": 1186,
+      "sha256": "0A33C27DD08374078E443EB7830A30392728B22EAC7B8E1D07BEA4FCCE348770"
+    },
+    "software/firmware/camera_awb.c": {
+      "bytes": 898,
+      "sha256": "70B682A10EEAE8776D68385A520774AA5560FBA5DD8E22DBF04E18C8D374AC0C"
+    },
+    "software/firmware/camera_3a.c": {
+      "bytes": 7465,
+      "sha256": "81EEBDE9FD75AE3FC71A65AB43A779AE0FDFEE790A6E949DD8122A2F03CB9728"
+    },
+    "software/firmware/camera_3a.h": {
+      "bytes": 1265,
+      "sha256": "30FE0ECEA24A771389EB88C7BA5519A33E375396744307B112F81934E21D8AC3"
+    },
+    "ti60f225_cam_hdmi.xml": {
+      "bytes": 14402,
+      "sha256": "EE6CE3BE3F1E6AF3B664F303919C7B9EADC9F901EB0FAE2560E8AB15D253B3CB"
+    },
+    "ti60f225_oob.peri.xml": {
+      "bytes": 81606,
+      "sha256": "4EB421D2FA7BA18874357B4E871021C721E2BD7560B688F67867E2DFCD067126"
+    },
+    "ti60f225_oob.sdc": {
+      "bytes": 41674,
+      "sha256": "8F399F93F2D8E67C675D2E1058546AAB43720C70D7670483CE49FE09DCF84046"
+    },
+    "debug_profile.wizard.json": {
+      "bytes": 9241,
+      "sha256": "FCD233298CBE8C04DE65CF42780F42B22741133B5664CDDD9D0DCC19D0F86950"
+    },
+    "tests/osd_text_double_buffer_tb.sv": {
+      "bytes": 3597,
+      "sha256": "C8D60FF1CA592AC9C563D88094F736190D4D2F3BAC2E7866C3D2E2F9868BC7EE"
+    },
+    "tools/test_soc_cleanup.py": {
+      "bytes": 5417,
+      "sha256": "925F1CFC3CA78405C5F9A08A9C49BF87EBBC93B5CB0893513D79810383587032"
+    },
+    "docs/SOC_BLOCK_DIAGRAM.md": {
+      "bytes": 5777,
+      "sha256": "FB679B2913437665B47A8E900EFA3CF5C4D9E908EBC94299E605B64F3F7FF78F"
+    },
+    "docs/VIDEO_3A_IMPLEMENTATION.md": {
+      "bytes": 10639,
+      "sha256": "8D7CFFCBA586116B4ED145061DE09879C80D1786F9F678703E7D01AD0832A35B"
+    },
+    "README_PROGRAMMING.md": {
+      "bytes": 15177,
+      "sha256": "5077A59ACAEFB544922C1F40AE643FF47DD25CB50A19A370C27EE1DF04571CBA"
+    },
+    "reports/soc_cleanup/build_project.xml": {
+      "bytes": 14402,
+      "sha256": "EE6CE3BE3F1E6AF3B664F303919C7B9EADC9F901EB0FAE2560E8AB15D253B3CB"
+    },
+    "reports/soc_cleanup/cleanup_equivalence_tb.log": {
+      "bytes": 262,
+      "sha256": "3C0C6D407A0E9B815A8AD9D61328E5E92A8B4D482C4623433847FD6C70671C75"
+    },
+    "reports/soc_cleanup/compile.log": {
+      "bytes": 1950,
+      "sha256": "3B3310C8F85803F129D82EB0AF2FA2D35DC37AB961752E247F11279A485A7715"
+    },
+    "reports/soc_cleanup/hdmi_startup.log": {
+      "bytes": 523,
+      "sha256": "0E91533DA39C28255180EEBD5ABCC379A8B7C130C9CEEDBB6A411BBDEB7B7636"
+    },
+    "reports/soc_cleanup/osd_text_double_buffer_tb.log": {
+      "bytes": 218,
+      "sha256": "6BC884E84B0BBD808D2A465B126523B9A5EF8224CF8C9FB52EBCACC67394FEAE"
+    },
+    "reports/soc_cleanup/osd_text_double_buffer_tb_negative.log": {
+      "bytes": 141,
+      "sha256": "87CE6217056C422106D75F1E0EF68900CF8E44E6F765E72B87A72B2BC4D5740A"
+    },
+    "reports/soc_cleanup/placement.rpt": {
+      "bytes": 2746,
+      "sha256": "DD4ED45899F06178BD5DB5F7FF658CC9E668B775D2B6681C22C8F396BBE91316"
+    },
+    "reports/soc_cleanup/README.md": {
+      "bytes": 3454,
+      "sha256": "14B0085FD920DC0D44B46DCF3681AF5BB2FAF90ACF35535B188954B77EE3EBCA"
+    },
+    "reports/soc_cleanup/resize.log": {
+      "bytes": 1649,
+      "sha256": "FA2505D896E6A4DCC6ECA85166FC0F592812F249228578F7E13394AFF77796A2"
+    },
+    "reports/soc_cleanup/resources.rpt": {
+      "bytes": 761481,
+      "sha256": "17F0B1EA57360AE52D1B46FFC25FBF30B025C87A6B67F16BA2F075803D40FF03"
+    },
+    "reports/soc_cleanup/routing.rpt": {
+      "bytes": 1662,
+      "sha256": "460778C5CEBCFD79FE38D40EA7AEA3D3F1278799C7AFDE493C0D5B2313A12BB1"
+    },
+    "reports/soc_cleanup/rtl_regression.log": {
+      "bytes": 6894,
+      "sha256": "AC0A38EF91A61C9E39086E07AAE223927980C426BD0BE520E544665B9A2B24FC"
+    },
+    "reports/soc_cleanup/shared_ddr.log": {
+      "bytes": 1447,
+      "sha256": "986D2C71146E7529EC6AB7FE56D6BF41879EC486BDA850E49888EFCC635DF738"
+    },
+    "reports/soc_cleanup/soc_cleanup.bit": {
+      "bytes": 3067752,
+      "sha256": "4C2341F179CF75DC24874E23277D6777319D366ACF4ECB76A5445CBD3DAC9D4B"
+    },
+    "reports/soc_cleanup/soc_cleanup.json": {
+      "bytes": 506,
+      "sha256": "1B903142A0D36DFFB289142B50F61672DEE78ECD55B6DEEE9EBA8BEAAEA93E01"
+    },
+    "reports/soc_cleanup/soc_video_app.bin": {
+      "bytes": 11468,
+      "sha256": "E3830CC9499791D56FDD4F3B730769C3D79D6EE3C6861A1E20570FB4259134B2"
+    },
+    "reports/soc_cleanup/soc_video_app.elf": {
+      "bytes": 137844,
+      "sha256": "38F86A2D6E9CB35C4008C94F8D89263FA546BB8422D09D24631C9AEF8A476108"
+    },
+    "reports/soc_cleanup/soc_video_app.map": {
+      "bytes": 82442,
+      "sha256": "83E0CB2B5A5B98F96ECB53AD4FB0B9C2A02D1D50917E4F9F6A72FF6E22402137"
+    },
+    "reports/soc_cleanup/timing.rpt": {
+      "bytes": 1691519,
+      "sha256": "BC10FA6126912D3340703749921A046D5C4C7A22858AE6F78B9E209378D2EA0F"
+    },
+    "reports/soc_cleanup/validation.json": {
+      "bytes": 5457,
+      "sha256": "C7DF73ABEBB1D271076AD23A58B5352C0662E0B18570E161D4B0DEA8D72DD80E"
+    },
+    "reports/soc_cleanup/video_frame_diagnostics.log": {
+      "bytes": 518,
+      "sha256": "1D05D3528F53A117FA19B04B130197CEF45FF86CA3913321AB52BFFBBA814718"
+    }
+  }
+}

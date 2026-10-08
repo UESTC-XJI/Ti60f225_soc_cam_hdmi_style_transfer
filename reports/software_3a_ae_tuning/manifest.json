@@ -1,0 +1,75 @@
+{
+  "date": "2026-10-09",
+  "hardware": "reports/software_3a/software_3a.bit",
+  "status": "regressions_passed_hardware_tuning_validation_pending",
+  "files": {
+    "software/firmware/camera_ae.c": {
+      "bytes": 1186,
+      "sha256": "0A33C27DD08374078E443EB7830A30392728B22EAC7B8E1D07BEA4FCCE348770"
+    },
+    "software/firmware/camera_3a.c": {
+      "bytes": 7465,
+      "sha256": "81EEBDE9FD75AE3FC71A65AB43A779AE0FDFEE790A6E949DD8122A2F03CB9728"
+    },
+    "software/firmware/camera_3a.h": {
+      "bytes": 1265,
+      "sha256": "30FE0ECEA24A771389EB88C7BA5519A33E375396744307B112F81934E21D8AC3"
+    },
+    "software/firmware/camera_awb.c": {
+      "bytes": 898,
+      "sha256": "70B682A10EEAE8776D68385A520774AA5560FBA5DD8E22DBF04E18C8D374AC0C"
+    },
+    "software/firmware/soc_video_driver.c": {
+      "bytes": 10214,
+      "sha256": "5710217E93A1C4DCB4DD253C3AEFA2E7AD26BD0A59B9BB60C237CCE8EB6D0143"
+    },
+    "software/firmware/soc_video_driver.h": {
+      "bytes": 517,
+      "sha256": "A60842E023B45E1ED4861B3098CF7C6DD4E3B6ACEC8009014DE905113E5B64DC"
+    },
+    "software/firmware/main.c": {
+      "bytes": 4551,
+      "sha256": "351FD646077DF4B296EE414112BA1A1867153C0A63BFF0222AF16F685AA0E2A7"
+    },
+    "software/firmware/video_regs.h": {
+      "bytes": 2135,
+      "sha256": "EA4AF65C07EDACFC37730F3488B47990604FE387E2DABA229D9E5BD148AFD5A3"
+    },
+    "tools/test_camera_3a_runtime.py": {
+      "bytes": 21938,
+      "sha256": "32045E5AC53B77E1E5E9DC02353A77530A2EE692512331DA1BC7565C91F9E524"
+    },
+    "reports/software_3a/software_3a.bit": {
+      "bytes": 3064377,
+      "sha256": "F2BBDC0A73C9979784AF07BEB0113B783705777A44B40F1E4DA34A7C30FA0F9F"
+    },
+    "reports/hardware_debug/camera_ae_pumping_before_20261009.log": {
+      "bytes": 830,
+      "sha256": "D966C2E1E3E9A0F63994629FCEC43D38C6F5F1B9072FA64D60074F13A69635EB"
+    },
+    "reports/software_3a_ae_tuning/camera_3a_runtime.json": {
+      "bytes": 2071,
+      "sha256": "D89517003352280EA348F54A1792D8AB36971CCD27978A5EBBCD6C50E39F46A0"
+    },
+    "reports/software_3a_ae_tuning/firmware_runtime.json": {
+      "bytes": 4765,
+      "sha256": "DFA31336C817DB18DF7EABDE32F1B01CE4DCB31E9CF94479001E2E02C3393134"
+    },
+    "reports/software_3a_ae_tuning/README.md": {
+      "bytes": 2463,
+      "sha256": "6B5BBF4E142323706AD0E7AB6A07D0DA185AAEE7E2140FE4CAF123368F3FF096"
+    },
+    "reports/software_3a_ae_tuning/soc_video_app.bin": {
+      "bytes": 11468,
+      "sha256": "E3830CC9499791D56FDD4F3B730769C3D79D6EE3C6861A1E20570FB4259134B2"
+    },
+    "reports/software_3a_ae_tuning/soc_video_app.elf": {
+      "bytes": 137844,
+      "sha256": "38F86A2D6E9CB35C4008C94F8D89263FA546BB8422D09D24631C9AEF8A476108"
+    },
+    "reports/software_3a_ae_tuning/soc_video_app.map": {
+      "bytes": 82442,
+      "sha256": "83E0CB2B5A5B98F96ECB53AD4FB0B9C2A02D1D50917E4F9F6A72FF6E22402137"
+    }
+  }
+}

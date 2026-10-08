@@ -4,6 +4,10 @@
 
 下载文件：`build/soc_video_app.elf`。使用 BSP 实际 UART/I²C/CLINT 驱动，入口 `_start=0x1000`。旧 `work/soc_video_driver*.elf` 是只有摄像头函数入口的历史产物，不用于整机运行；新构建脚本只生成完整应用。
 
+2026-10-09：ACK/RECOVER和延迟曝光确认修复已实板恢复RAW/RESIZE30，用户确认AE工作，UART显示AE/AWB均更新、code/err0。最新`reports/software_3a_ae_tuning/`针对小高光抽动：高光有限降低亮度目标、粗调加快、细调阻尼与滞回/连续统计确认；仿真通过，防抽动效果尚待实板验证，UART增加goal/hold。原`reports/software_3a_i2c_fix/`保留。若 RAW 有计数而 RESIZE=0、DROP=1、3A state=7，不要反复只重载 ELF：先重新配置当前配套bit清除视频fault，再加载最新ELF。进入 DDR 测试的 pass 循环两次是正常的两组数据模式。
+
+同日推荐硬件已更新为`reports/soc_cleanup/soc_cleanup.bit`：清理旧AE/I²C/OSD链，修复动态文字使能CDC并在帧边界开关。统一APB接口兼容，软件算法未再修改，配套归档ELF在`reports/soc_cleanup/`且与本目录build完全一致。新bit完成编译/时序检查，实板效果待验证；旧bit仅用于历史回退。
+
 ## 应用行为
 
 FPGA 配置完成、HDMI 时钟锁定后，输出独立的 1280×720 / 60 Hz 八色彩条（74.25 MHz，1650×750 总时序），不等待 DDR 校准或固件下载。新增 APB `VIDEO_READY` 寄存器 `0xf8100028`，bit 0 可读写，复位为 0；写 0 显示彩条，写 1 请求摄像头输出。固件进入 `main` 首先清零该寄存器，DDR 测试、摄像头初始化及 OSD COMMIT/ACK 成功后置 1；初始化失败保持彩条，后续恢复和 OSD 提交成功可重新放行。旧固件不会写该寄存器，需下载本版 ELF 才能切到摄像头。
@@ -12,7 +16,7 @@ RTL 在 HDMI 域同步就绪标志；观察到摄像头帧同步后，完成当�
 
 `start.S` 禁止中断、初始化 GP/SP、设置异常入口、同步 cache、处理数据段并清零 BSS 后进入 `main()`。程序异常时记录 `firmware_trap_cause/pc/value` 并停在 `trap_halt`，供 IDE 观察。
 
-主程序初始化 UART 115200/8N1，在隔离 scratch DDR 前 64 KiB 执行两种地址相关模式的读写测试；初始化 100 kHz Sapphire I²C，等待 20 ms，验证 SC431HAI ID `0xCD6B` 并写入 165 项初始化表，然后提交 `HELLO SOC`。摄像头 ID/init 失败时每秒调用恢复。主循环轮询 CLINT，前次更新完成至少一秒后再次执行 DDR 测试并发布 `RAW/RESIZE/DISP/DROP/ERR`；无需定时器中断。
+主程序初始化 UART 115200/8N1，在隔离 scratch DDR 前 64 KiB 执行两种地址相关模式的读写测试；初始化 100 kHz Sapphire I²C，等待 20 ms，验证 SC431HAI ID `0xCD6B` 并写入 165 项初始化表，然后提交 `HELLO SOC`。摄像头 ID/init 失败时每秒调用恢复。主循环轮询 CLINT，约1ms服务一次软件 AE/AWB，每秒异步提交 `RAW/RESIZE/DISP/DROP/ERR`；DDR 压测只在启动执行，避免周期性阻塞3A。无需定时器中断。
 
 诊断文字中的 `RAW` 是 CSI 接收端原始 VS 下降沿频率；`RESIZE` 是 area resize 完成帧频；两者由不同源时钟域的事件同步后，在同一个 1 秒窗口锁存。`DISP` 仍是 CVO 显示帧频。新增只读寄存器：`0xf810002c`=`RAW_FPS`、`0xf8100030`=`RESIZE_FPS`；`0xf8100024` 保持原来的 `DISP_FPS:RESIZE_FPS` 兼容布局。
 
@@ -25,9 +29,15 @@ p /u *(unsigned int *)0xf810002c
 p /u *(unsigned int *)0xf8100030
 ```
 
-每秒窗口为 100 MHz core_clk 的 100,000,000 个周期，RAW/RESIZE/DISP 同拍更新，均以 16 位饱和到 65535。初始不足一秒时读回 0；CPU 读不同地址时若恰逢更新边界，可能取到相邻窗口，判断时应观察多个样本。当前更改仅增加观测，不调整摄像头曝光、VTS 或视频处理参数。
+每秒窗口为 100 MHz core_clk 的 100,000,000 个周期，RAW/RESIZE/DISP 同拍更新，均以 16 位饱和到 65535。初始不足一秒时读回 0；CPU 读不同地址时若恰逢更新边界，可能取到相邻窗口，判断时应观察多个样本。当前版本在诊断基础上增加软件 AE/AWB：调整曝光与 RAW 数字gain，VTS/PLL保持初始化模式。
 
-每次 OSD 更新写满非显示页的 80 个字符，短字符串尾部补空格。COMMIT 等待 ACK 的最长时间为 250 ms，busy 时拒绝继续写页；失败会增加 `app_osd_errors` 并打印日志。正常提交的 UART 内容与字符页一致。`app_ddr_errors/app_camera_errors/app_metrics_updates` 可在 IDE 中查看。
+每次 OSD 更新写满非显示页的 80 个字符，短字符串尾部补空格。启动 COMMIT 等待 ACK 最长250ms；运行期改为非阻塞 submit/poll，250ms超时记录错误，busy时拒绝写页。正常提交的 UART 内容与字符页一致。`app_ddr_errors/app_camera_errors/app_metrics_updates` 可在 IDE 中查看。
+
+## 统一统计与软件 AE/AWB
+
+详见 [实现说明](../../docs/VIDEO_3A_IMPLEMENTATION.md)。新 bit/ELF 配套；默认启用软件 AE/AWB（需硬件 CAPS 与真实 VTS/I²C 检查通过）。`app_3a` 为 IDE 可见状态和更新计数，`app_awb_mode`=0固定校准/1自动/2锁定。曝光Group Hold、真实NACK/timeout、读回验证及保守N+2等待均在CPU执行。gain与筛选参数通过统一APB在RAW帧边界生效；AE/AWB同帧、同版本整包发布。
+
+采集统计实际使用增益前RAW8和增益后RGB；64bin Y histogram可冻结读取。自动lift关闭、手动强度32；不修改传感器VTS/PLL，不承诺提高当前约12FPS。新功能未实板验证，历史3898字节固件的上板记录仅适用于旧版本。
 
 ## 构建与仿真
 
@@ -41,6 +51,8 @@ p /u *(unsigned int *)0xf8100030
 python tools/build_firmware.py
 python -m pip install --target work/sim_deps -r tools/firmware_sim_requirements.txt
 python tools/test_firmware_runtime.py
+python tools/test_camera_3a_runtime.py
+python tools/test_video_3a.py
 python tools/check_firmware_config.py
 ```
 
@@ -56,7 +68,7 @@ python tools/check_firmware_config.py
 4. **Project → Build Project**。工程使用 Python 外部构建脚本，必须让 IDE 能找到 `python`；产物为 `software/firmware/build/soc_video_app.elf`。
 5. **Run → Debug Configurations → GDB OpenOCD Debugging**，选择共享配置 `soc_video_app_ti`。若未自动出现，刷新项目，再通过 **File → Import → Run/Debug → Launch Configurations** 导入项目中的 `.launch`。
 6. Main 页核对 Project 为 `soc_video_app`，C/C++ Application 为 `${workspace_loc:/soc_video_app/build/soc_video_app.elf}`；该变量指向工程真实目录，与 IDE workspace 存放目录无关。OpenOCD/GDB 来自 2026.1 的安装目录。配置引用 `openocd/soc_video.cfg` 和本项目匹配的 `cpu0.yaml`，采用 native VexRiscv/USER1，FTDI channel 1，JTAG 800 kHz。
-7. 共享 launch 使用 GDB `13333`、Tcl `16666`、Telnet `14444`，避开失败会话残留的默认端口。重新导入更新后的共享 launch；已存在的 GUI 配置需要核对 Startup 的初始化命令为 `monitor reset halt`、运行命令为 `set $pc = _start`、停止位置为 `*main`，GDB 初始化命令包含 `set riscv use-compressed-breakpoints no`。本 CPU 未启用压缩指令，使用 4 字节断点并停在函数准确入口。点击 **Debug**：CPU reset/halt → 加载 ELF/symbols → 设置 PC 为 `_start` → 在 `main` 入口临时断点停下。点击 **Resume**（F8）后运行应用。
+7. 共享 launch 使用主机 `127.0.0.1`、GDB `13333`、Tcl `16666`、Telnet `14444`。本机 vendor GDB 使用 `localhost` 可复现 error 138，详见根目录 `README_PROGRAMMING.md` 的排查记录。使用其他端口不能替代清理旧 OpenOCD 和释放 USB adapter。重新导入更新后的共享 launch；已存在的 GUI 配置需要核对 Startup 的初始化命令为 `monitor reset halt`、运行命令为 `set $pc = _start`、停止位置为 `*main`，GDB 初始化命令包含 `set riscv use-compressed-breakpoints no`。本 CPU 未启用压缩指令，使用 4 字节断点并停在函数准确入口。点击 **Debug**：CPU reset/halt → 加载 ELF/symbols → 设置 PC 为 `_start` → 在 `main` 入口临时断点停下。点击 **Resume**（F8）后运行应用。
 8. 串口 **COM4，115200/8N1** 查看 `SOC VIDEO boot`、`DDR scratch PASS`、`Camera CD6B initialized`、`HELLO SOC` 和每秒的统计。本次实际确认串口为 COM4，重新枚举后端口号可能变化。帧率由 FPGA 寄存器提供，不是固件自造数值。
 
 此 launch 在下载前通过 native debug 复位 CPU，不在下载后重置整块 FPGA。实板取指异常时，仅设置 PC 曾无法恢复；`reset halt` 后重新下载已验证可启动。RAM 下载不提供断电保留；当前 bitstream 内的 boot ROM 不包含这份新应用，上电自动启动需要另做 Flash 镜像。

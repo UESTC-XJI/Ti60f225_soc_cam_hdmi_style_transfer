@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-09",
+  "hardware": "reports/software_3a/software_3a.bit",
+  "files": {
+    "software/firmware/soc_video_driver.c": {
+      "bytes": 10214,
+      "sha256": "5710217E93A1C4DCB4DD253C3AEFA2E7AD26BD0A59B9BB60C237CCE8EB6D0143"
+    },
+    "software/firmware/main.c": {
+      "bytes": 4551,
+      "sha256": "351FD646077DF4B296EE414112BA1A1867153C0A63BFF0222AF16F685AA0E2A7"
+    },
+    "software/firmware/camera_3a.c": {
+      "bytes": 6639,
+      "sha256": "8478E5D61EC5D80319DA52B55316606EBF00AE7715B6D273E3622BF7931C9E63"
+    },
+    "software/firmware/camera_ae.c": {
+      "bytes": 677,
+      "sha256": "D9911BF067661198BE3B7DF9D99CA83B2FBFBFF3EABBBFA360BB08022504E74B"
+    },
+    "software/firmware/camera_awb.c": {
+      "bytes": 898,
+      "sha256": "70B682A10EEAE8776D68385A520774AA5560FBA5DD8E22DBF04E18C8D374AC0C"
+    },
+    "software/firmware/video_ctrl.c": {
+      "bytes": 687,
+      "sha256": "2EA94623CF891CE3B3110FFE1EF9AE863C8B67D9FB1089B15B69745405BEE8D4"
+    },
+    "software/firmware/video_stats.c": {
+      "bytes": 1841,
+      "sha256": "51127C4B50721BD39E2932F66ED3B16904EC3B7ACC7585EF272740EE7EAEEA34"
+    },
+    "software/firmware/soc_video_app_ti.launch": {
+      "bytes": 6136,
+      "sha256": "353E3FCA29868279B978090407E427EB679A363B778439D7E82ACDE8EBCB8ED5"
+    },
+    "tools/test_firmware_runtime.py": {
+      "bytes": 14137,
+      "sha256": "33CB6C973AA997FA5856C54B7587FBEB6830C13BB174CED8A796CCA7FB084B55"
+    },
+    "tools/test_camera_3a_runtime.py": {
+      "bytes": 17395,
+      "sha256": "DA183822E5C4F25BF6F31BF2DBE08454892A8D11ED94820D77AB5A0A97A14A3C"
+    },
+    "tools/test_sapphire_i2c_ack.py": {
+      "bytes": 987,
+      "sha256": "7BDD5BD315D0E71641CFB2EF403893F371AA2FF63F9C483BE22DC54CEA8B9B2E"
+    },
+    "tests/sapphire_i2c_ack_tb.sv": {
+      "bytes": 6223,
+      "sha256": "B75004199FD89288C4051000917608F4B5B69921DE6194D8ECB3BEE760F7A2C3"
+    },
+    "soc/efx_sapphire_soc/soc/source/hardware/netlist/source_efinity/EfxSapphireSoc.v": {
+      "bytes": 1619783,
+      "sha256": "C0A694FDEC5C9A67E8D5719F813AA0486DF130F34B5916C9F2F469FF61478310"
+    },
+    "reports/software_3a/software_3a.bit": {
+      "bytes": 3064377,
+      "sha256": "F2BBDC0A73C9979784AF07BEB0113B783705777A44B40F1E4DA34A7C30FA0F9F"
+    },
+    "reports/software_3a_i2c_fix/soc_video_app.elf": {
+      "bytes": 135972,
+      "sha256": "7A47F75D78F8F3D0685802DA03848E726C0A3BFD409206380242152D48150290"
+    },
+    "reports/software_3a_i2c_fix/soc_video_app.bin": {
+      "bytes": 11108,
+      "sha256": "2FCAEEF69C82E59C735EDABC92AF4078C280FC7D4AE36EC98E2BDDAC7B5D3DD1"
+    },
+    "reports/software_3a_i2c_fix/soc_video_app.map": {
+      "bytes": 82202,
+      "sha256": "242138DBB91E1C69ED8C6F9EE7758C6725163AFD2A5DF8714E901F3B385B7704"
+    },
+    "software/firmware/camera_3a.h": {
+      "bytes": 1166,
+      "sha256": "42E5B0699C21C2A29EE927DE1F5350711FF1822A12208B8E86B681C166ABBD78"
+    },
+    "software/firmware/video_regs.h": {
+      "bytes": 2135,
+      "sha256": "EA4AF65C07EDACFC37730F3488B47990604FE387E2DABA229D9E5BD148AFD5A3"
+    },
+    "software/firmware/soc_video_driver.h": {
+      "bytes": 517,
+      "sha256": "A60842E023B45E1ED4861B3098CF7C6DD4E3B6ACEC8009014DE905113E5B64DC"
+    },
+    "reports/hardware_debug/camera_ack_fix_uart_latest_20261009.log": {
+      "bytes": 834,
+      "sha256": "00ED44941543CFF92795DC7931974D54D7C9468F81FC32A609990866111368D5"
+    },
+    "reports/hardware_debug/camera_3a_confirm_uart_20261009.log": {
+      "bytes": 1026,
+      "sha256": "B5B6774A8D5B27DC40673D758EC210581A65936AA2576AEC4B1433CC3DB9C5C3"
+    }
+  }
+}

@@ -1,0 +1,3 @@
+# Preserve exact release bytes, including ASCII-format FPGA bitstreams.
+*.bit binary
+*.elf binary

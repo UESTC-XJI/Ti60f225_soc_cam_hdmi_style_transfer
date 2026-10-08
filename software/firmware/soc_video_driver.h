@@ -9,3 +9,9 @@ int camera_init_cpu(void);
 int camera_start(void);
 int camera_stop(void);
 int camera_recover(void);
+
+int camera_reg_read(uint16_t reg,uint8_t *value);
+int camera_reg_write(uint16_t reg,uint8_t value);
+int osd_submit_string(const char *text);
+int osd_submit_metrics(void);
+int osd_poll(void);

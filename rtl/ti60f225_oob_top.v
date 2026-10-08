@@ -16,19 +16,19 @@
 //`define SOFT_TAP 1
 `include "ddr3_controller/ddr3_parameter.vh"
 // Include ISP modules here so GUI project-file saves cannot drop their sources.
-// These four modules should not also be added as separate project design files.
+// Included modules should not also be added as separate project design files.
 `include "isp/isp_cdc_mailbox.v"
 `include "isp/ae_frame_stats.v"
-`include "isp/sc431hai_auto_exposure.v"
 `include "isp/luma_color_suppress.v"
 `include "isp/luma_tone_map.v"
-`include "isp/auto_tone_lift.v"
 `include "isp/hdmi_frame_histogram.v"
 `include "isp/hdmi_info_overlay.v"
 `include "soc_integration/osd_font8x16.sv"
-`include "soc_integration/osd_fixed_text.sv"
 `include "soc_integration/hdmi_startup_colorbar.sv"
 `include "soc_integration/video_frame_diagnostics.sv"
+`include "soc_integration/video_cfg_cdc.sv"
+`include "isp/capture_frame_stats.sv"
+`include "soc_integration/video_apb_ctrl.sv"
 // `include "define.v"
 
 module ti60f225_oob_top #(
@@ -365,7 +365,6 @@ wire		       w_mipi_rx_hs;
 wire	       w_mipi_rx_de;
 wire	[`CFG_BITS_64-1:0]			w_mipi_rx_data	;
 
-wire					io_systemReset;
 
 
 
@@ -404,8 +403,7 @@ assign led[0]  = cal_done ? cnt[24] : 1'b0;
 //========================================================================================================
 //MIPI RX
 //========================================================================================================
-wire i_mipi_clk ;
-assign i_mipi_clk = core_clk;
+wire i_mipi_clk = core_clk;
 
 		assign	cam_d0_RST		= 1'b0;
 		assign	cam_d1_RST		= 1'b0;
@@ -520,139 +518,7 @@ wire mdebug_receive_error      = mipi_debug_out[14];
 //========================================================================================================
 
 
-//*************** imx219 config********************/
-// mipi_config_imx219_top u_config_imx219(
-// 										.i_sys_clk(CLK_5M)    	,    /////48M
-// 										.sys_rstn(vid_rst_n )    ,
-// 										.o_sen_rst_n(o_cam_rstn)  	,
-
-										// .o_iic_sda_OE(io_cam_sda_OE) ,
-										// .i_iic_sda(io_cam_sda_IN)   	,
-										// .o_iic_sda(io_cam_sda_OUT)   	,
-										// .o_iic_scl(io_cam_scl)
-										// );
-
-wire scl_padoen_o;
-wire sda_padoen_o;
-wire legacy_i2c_scl_out, legacy_i2c_sda_out;
-wire legacy_i2c_scl_oe, legacy_i2c_sda_oe;
-
-
-reg [`CFG_BITS_13-1:0] i2c_rst_cnt = '0;
-
-always @( posedge CLK_5M or negedge w_arstn )
-begin
-    if( !w_arstn )
-       i2c_rst_cnt <= 'd0;
-    else
-       i2c_rst_cnt <= i2c_rst_cnt[12] ? i2c_rst_cnt : i2c_rst_cnt + 1'b1;
-end
-wire i2c_rst_n = i2c_rst_cnt[12];
-
-// Runtime exposure control. All camera register traffic stays in CLK_5M.
-wire ae_enable,tone_enable;
-wire [`CFG_BITS_8-1:0] ae_target,high_green_strength,dark_red_strength;
-wire ae_high_protect,lift_enable,lift_auto_enable;
-wire [`CFG_BITS_8-1:0] lift_auto_max,ae_display_mean,lift_actual_strength;
-wire lift_at_max;
-wire [`CFG_BITS_8-1:0] ae_high_threshold,ae_high_limit,lift_strength;
-wire sensor_config_done,ae_wr_en,ae_rd_en,ae_wr_done,ae_rd_done,ae_wr_error,ae_rd_error;
-wire [`CFG_BITS_16-1:0] ae_addr;
-wire [`CFG_BITS_8-1:0] ae_write_data,ae_read_data;
-wire [`CFG_BITS_16-1:0] ae_exposure_i2c,ae_vts_i2c;
-wire [`CFG_BITS_8-1:0] ae_mean_i2c;
-wire ae_ready_i2c,ae_fault_i2c,ae_limit_i2c;
-wire stats_valid,stats_hot;
-wire [`CFG_BITS_8-1:0] stats_mean;
-wire [`CFG_BITS_10-1:0] stats_high_permille;
-wire ae_highlight_limited_i2c,ae_exposure_constrained_i2c;
-wire ae_stats_valid;
-wire [`CFG_BITS_36-1:0] ae_stats_message;
-(* ASYNC_REG="TRUE" *) reg ae_enable_meta,ae_enable_i2c;
-reg sensor_vs_d,sensor_frame_toggle;
-(* ASYNC_REG="TRUE" *) reg sensor_fs_meta,sensor_fs_sync;
-reg sensor_fs_seen;
-wire sensor_frame_start=sensor_fs_sync^sensor_fs_seen;
-always @(posedge i_mipi_rx_pclk or negedge w_arstn) begin
-  if(!w_arstn) begin sensor_vs_d<=0;sensor_frame_toggle<=0;end
-  else begin
-    sensor_vs_d<=w_mipi_rx_vs;
-    if(sensor_vs_d && !w_mipi_rx_vs) sensor_frame_toggle<=~sensor_frame_toggle;
-  end
-end
-always @(posedge CLK_5M or negedge i2c_rst_n) begin
-  if(!i2c_rst_n) begin
-    ae_enable_meta<=0;ae_enable_i2c<=0;sensor_fs_meta<=0;sensor_fs_sync<=0;sensor_fs_seen<=0;
-  end else begin
-    ae_enable_meta<=ae_enable;ae_enable_i2c<=ae_enable_meta;
-    sensor_fs_meta<=sensor_frame_toggle;sensor_fs_sync<=sensor_fs_meta;sensor_fs_seen<=sensor_fs_sync;
-  end
-end
-isp_cdc_mailbox #(.WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_AE_STATISTICS_MAILBOX_WIDTH)) ae_statistics_mailbox(
-  .s_clk(vid_clk_dvi2),.s_rst_n(w_arstn),.s_valid(stats_valid),
-  .s_data({ae_high_protect,ae_high_limit,ae_target,stats_hot,stats_high_permille,stats_mean}),.s_ready(),
-  .d_clk(CLK_5M),.d_rst_n(w_arstn),.d_valid(ae_stats_valid),.d_data(ae_stats_message)
-);
-sc431hai_auto_exposure ae_controller(
-  .clk(CLK_5M),.rst_n(i2c_rst_n),.i_config_done(sensor_config_done),
-  .i_enable(ae_enable_i2c),.i_sensor_frame_start(sensor_frame_start),
-  .i_stats_valid(ae_stats_valid),.i_highlights(ae_stats_message[18]),
-  .i_mean(ae_stats_message[7:0]),.i_target(ae_stats_message[26:19]),
-  .i_high_protect(ae_stats_message[35]),.i_high_limit(ae_stats_message[34:27]),
-  .i_high_permille(ae_stats_message[17:8]),.o_highlight_limited(ae_highlight_limited_i2c),
-  .o_exposure_constrained(ae_exposure_constrained_i2c),
-  .o_wr_en(ae_wr_en),.o_rd_en(ae_rd_en),.o_addr(ae_addr),.o_data(ae_write_data),
-  .i_wr_done(ae_wr_done),.i_rd_done(ae_rd_done),.i_wr_error(ae_wr_error),.i_rd_error(ae_rd_error),
-  .i_read_data(ae_read_data),.o_exposure(ae_exposure_i2c),.o_vts(ae_vts_i2c),
-  .o_mean(ae_mean_i2c),.o_ready(ae_ready_i2c),.o_at_limit(ae_limit_i2c),.o_error(ae_fault_i2c)
-);
-wire ae_ready,ae_fault,ae_at_limit,ae_highlights;
-wire [`CFG_BITS_16-1:0] ae_exposure,ae_vts;
-wire [`CFG_BITS_8-1:0] ae_mean;
-wire [`CFG_BITS_10-1:0] ae_high_permille;
-wire ae_highlight_limited,ae_exposure_constrained;
-wire ae_at_min=ae_ready && ae_exposure<=16'd4;
-wire [`CFG_BITS_17-1:0] ae_maximum={ae_vts,1'b0}-17'd11;
-wire ae_at_max=ae_ready && {1'b0,ae_exposure}>=ae_maximum;
-reg ae_hot_i2c;
-reg [`CFG_BITS_10-1:0] ae_high_permille_i2c;
-always @(posedge CLK_5M or negedge i2c_rst_n) begin
-  if(!i2c_rst_n) begin ae_hot_i2c<=0;ae_high_permille_i2c<=0;end
-  else if(ae_stats_valid) begin
-    ae_hot_i2c<=ae_stats_message[18];ae_high_permille_i2c<=ae_stats_message[17:8];
-  end
-end
-wire [`CFG_BITS_56-1:0] ae_status={ae_exposure_constrained_i2c,ae_highlight_limited_i2c,ae_high_permille_i2c,ae_ready_i2c,ae_fault_i2c,ae_limit_i2c,ae_hot_i2c,ae_vts_i2c,ae_exposure_i2c,ae_mean_i2c};
-reg [`CFG_BITS_56-1:0] ae_status_sent;
-wire status_ready;
-wire [`CFG_BITS_56-1:0] ae_status_video;
-always @(posedge CLK_5M or negedge i2c_rst_n) begin
-  if(!i2c_rst_n) ae_status_sent<=0;
-  else if(status_ready && ae_status!=ae_status_sent) ae_status_sent<=ae_status;
-end
-isp_cdc_mailbox #(.WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_AE_STATUS_MAILBOX_WIDTH)) ae_status_mailbox(
-  .s_clk(CLK_5M),.s_rst_n(w_arstn),.s_valid(ae_status!=ae_status_sent),.s_data(ae_status),.s_ready(status_ready),
-  .d_clk(vid_clk_dvi2),.d_rst_n(w_arstn),.d_valid(),.d_data(ae_status_video)
-);
-assign {ae_exposure_constrained,ae_highlight_limited,ae_high_permille,ae_ready,ae_fault,ae_at_limit,ae_highlights,ae_vts,ae_exposure,ae_mean}=ae_status_video;
-
-i2c_master_ctrl_top #(.RUNTIME_ENABLE(`CFG_TI60F225_OOB_TOP_V_INST_U2_I2C_MASTER_CTRL_TOP_RUNTIME_ENABLE)) u2_i2c_master_ctrl_top(
-  /*i*/.clk			(CLK_5M		),
-  /*i*/.rst_n			(i2c_rst_n		),
-  /*i*/.scl_pad_i     (io_cam_scl_IN),//(1'b1),
-  /*o*/.scl_pad_o     (legacy_i2c_scl_out),
-  /*o*/.scl_padoen_o  (scl_padoen_o),
-  /*i*/.sda_pad_i     (io_cam_sda_IN),
-  /*o*/.sda_pad_o     (legacy_i2c_sda_out),
-  /*o*/.sda_padoen_o  (sda_padoen_o),
-  .runtime_wr_en(ae_wr_en),.runtime_rd_en(ae_rd_en),.runtime_addr(ae_addr),.runtime_data(ae_write_data),
-  .config_done(sensor_config_done),.runtime_wr_done(ae_wr_done),.runtime_rd_done(ae_rd_done),
-  .runtime_wr_error(ae_wr_error),.runtime_rd_error(ae_rd_error),.runtime_read_data(ae_read_data)
-
-  );
 assign o_cam_rst_p = ~w_arstn;
-assign legacy_i2c_scl_oe = ~scl_padoen_o;
-assign legacy_i2c_sda_oe = ~sda_padoen_o;
 
 //=====================================================================================
 //frame buffer
@@ -681,6 +547,7 @@ ddr_startup_barrier ddr_startup(
   .master_allow_sys(barrier_allow_sys), .master_allow_vid(barrier_allow_vid),
   .cpu_waiting(barrier_cpu_waiting));
 // Wait for DDR calibration, then release resets synchronously in each domain.
+wire vid_rst_n;
 wire video_reset_n = vid_rst_n && barrier_vid_reset_n;
 rst_n_piple #(.DLY(`CFG_TI60F225_OOB_TOP_V_INST_CAPTURE_RESET_DLY)) capture_reset(.clk(vid_clk_dvi2),.rst_n_i(video_reset_n),.rst_n_o(capture_reset_n));
 rst_n_piple #(.DLY(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_RESET_DLY)) display_reset(.clk(hdmi_tx_slow_clk),.rst_n_i(video_reset_n),.rst_n_o(display_reset_n));
@@ -792,14 +659,12 @@ wire [15:0] soc_apb_paddr; wire soc_apb_psel,soc_apb_penable,soc_apb_pwrite; wir
 wire [31:0] soc_apb_prdata; wire soc_apb_pready,soc_apb_pslverr;
 wire soc_uart_txd,soc_i2c_scl_out,soc_i2c_sda_out,soc_system_reset,soc_memory_reset;
 wire soc_spi_ss,soc_spi_sclk,soc_spi_d0_out,soc_spi_d0_oe,soc_spi_d1_out,soc_spi_d1_oe;
-// CPU Sapphire I2C is the default camera owner.  The mux disconnects the
-// legacy RTL master from the pads while preserving it for simulation hooks.
-wire soc_i2c_owner = 1'b1;
-i2c_owner_mux camera_i2c_owner_mux(
-  .cpu_owner(soc_i2c_owner), .cpu_scl_write(soc_i2c_scl_out), .cpu_sda_write(soc_i2c_sda_out),
-  .legacy_scl_out(legacy_i2c_scl_out), .legacy_sda_out(legacy_i2c_sda_out),
-  .legacy_scl_oe(legacy_i2c_scl_oe), .legacy_sda_oe(legacy_i2c_sda_oe),
-  .scl_out(io_cam_scl_OUT), .sda_out(io_cam_sda_OUT), .scl_oe(io_cam_scl_OE), .sda_oe(io_cam_sda_OE));
+// Sapphire is the sole camera I2C master. A high write releases the pad;
+// a low write drives it low (open drain).
+assign io_cam_scl_OUT = soc_i2c_scl_out;
+assign io_cam_sda_OUT = soc_i2c_sda_out;
+assign io_cam_scl_OE = ~soc_i2c_scl_out;
+assign io_cam_sda_OE = ~soc_i2c_sda_out;
 wire [31:0] soc_axi_error_count;
 wire osd_apb_enable; wire [11:0] osd_apb_x,osd_apb_y; wire [23:0] osd_apb_color;
 wire osd_apb_char_we,osd_apb_char_page,osd_apb_commit_toggle,osd_apb_commit_page; wire [6:0] osd_apb_char_addr; wire [7:0] osd_apb_char_data;
@@ -825,10 +690,14 @@ always @(posedge core_clk or negedge status_reset_n) begin
     if(status_interval_tick) status_tick_count<=0; else status_tick_count<=status_tick_count+1'b1;
   end
 end
+(* ASYNC_REG="TRUE" *) reg [1:0] capture_fault_sync,underflow_sync;
+always @(posedge core_clk or negedge status_reset_n)
+  if(!status_reset_n)begin capture_fault_sync<=0;underflow_sync<=0;end
+  else begin capture_fault_sync<={capture_fault_sync[0],capture_fault};underflow_sync<={underflow_sync[0],display_underflow};end
 video_status_counters status_counters(
   .clk(core_clk),.rst_n(status_reset_n),.frame_start(status_capture_event),.raw_frame_start(status_raw_event),
-  .display_frame_start(status_display_event),.capture_overflow(capture_fault),
-  .display_underflow(display_underflow),.axi_error(status_axi_error_event),
+  .display_frame_start(status_display_event),.capture_overflow(capture_fault_sync[1]),
+  .display_underflow(underflow_sync[1]),.axi_error(status_axi_error_event),
   .interval_tick(status_interval_tick),.capture_frames(status_capture_frames),
   .display_frames(status_display_frames),.drop_count(status_drop_count),
   .underflow_count(status_underflow_count),.error_count(status_error_count),
@@ -852,9 +721,26 @@ assign system_spi_0_io_data_0_OE=soc_spi_d0_oe;
 assign system_spi_0_io_data_1_OUT=soc_spi_d1_out;
 assign system_spi_0_io_data_1_OE=soc_spi_d1_oe;
 assign fb_bid=soc_vid_bid[5:0]; assign fb_rid=soc_vid_rid[5:0]; assign fb_bresp=soc_vid_bresp; assign fb_rresp=soc_vid_rresp; assign fb_bvalid=soc_vid_bvalid; assign fb_rvalid=soc_vid_rvalid; assign fb_rlast=soc_vid_rlast; assign fb_rdata=soc_vid_rdata;
-osd_apb_regs osd_apb(
+wire [31:0] video_display_tone,video_display_lift;wire [2:0] video_display_hist;
+reg [6:0] video_csi_sticky;
+always @(posedge i_mipi_rx_pclk or negedge csi_reset_n)
+  if(!csi_reset_n) video_csi_sticky<=0;
+  else video_csi_sticky<=video_csi_sticky|{mdebug_receive_error,mdebug_frame_vc0_error,
+    mdebug_line_vc0_error,mdebug_undersize_pkt_error,mdebug_ecc_2bit_error,mdebug_ecc_1bit_error,mdebug_crc_error};
+video_apb_ctrl osd_apb(
+  .capture_clk(vid_clk_dvi2),.display_clk(hdmi_tx_slow_clk),
+  .raw_vs(capture_vs),.raw_de(capture_de),.raw_data(capture_raw),
+  .rgb_vs(rgb_vs),.rgb_de(rgb_de),.rgb_data(rgb_datax2),.display_vs(ch0_vs),
+  .capture_fault(capture_fault),.resize_fault(resize_fault),.raw_event(status_raw_event),
+  .drop_count32(status_drop_count),.axi_errors32(soc_axi_error_count),.underflows32(status_underflow_count),
+  .resize_frames32(status_capture_frames),.display_frames32(status_display_frames),.csi_errors(video_csi_sticky),
+  .reset_status({display_reset_n,capture_reset_n,cal_done,pll_locked,barrier_sys_reset_n}),
+  .display_stats_valid(display_stats_valid),.display_mean(display_stats_mean),
+  .display_strength(effective_lift_strength),.display_at_max(1'b0),
+  .gain_r(r_gain),.gain_g(g_gain),.gain_b(b_gain),
+  .display_tone(video_display_tone),.display_lift(video_display_lift),.display_hist(video_display_hist),
   .i_raw_fps(status_raw_fps),
-  .pclk(core_clk),.preset_n(w_arstn && barrier_sys_reset_n && !soc_system_reset),.psel(soc_apb_psel),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr),.pwdata(soc_apb_pwdata),.prdata(soc_apb_prdata),.pready(soc_apb_pready),.pslverr(soc_apb_pslverr),
+  .pclk(core_clk),.preset_n(status_reset_n && !soc_system_reset),.psel(soc_apb_psel),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr),.pwdata(soc_apb_pwdata),.prdata(soc_apb_prdata),.pready(soc_apb_pready),.pslverr(soc_apb_pslverr),
   .o_enable(osd_apb_enable),.o_x(osd_apb_x),.o_y(osd_apb_y),.o_color(osd_apb_color),.o_char_we(osd_apb_char_we),.o_char_addr(osd_apb_char_addr),.o_char_page(osd_apb_char_page),.o_char_data(osd_apb_char_data),.o_commit_toggle(osd_apb_commit_toggle),.o_commit_page(osd_apb_commit_page),.o_video_ready(osd_video_ready),.i_ack_toggle(osd_db_ack),.i_active_page(osd_db_active),.i_busy(osd_db_busy),.i_frame_count(status_display_fps),.i_capture_fps(status_capture_fps),.i_display_fps(status_display_fps),.i_drop_count(status_drop_count[15:0]),.i_error_count(status_error_count[15:0]));
 
 wire db_vs,db_hs,db_de,db_char_pixel; wire [7:0] db_r,db_g,db_b;
@@ -1013,8 +899,6 @@ wire [`CFG_BITS_48-1:0] rgb_datax2;
 wire [`CFG_BITS_16-1:0] r_gain;
 wire [`CFG_BITS_16-1:0] g_gain;
 wire [`CFG_BITS_16-1:0] b_gain;
-// RAW input row phase from the gain selector; sampled with capture RAW.
-wire raw_row_odd;
 // Measured white RAW: the matched green samples are even/high and odd/low.
 // Preserve pixel order and use BGGR processing for this camera configuration.
 localparam CAM_RAW_GREEN_FIRST = `CFG_TI60F225_OOB_TOP_V_LOCALPARAM_CAM_RAW_GREEN_FIRST;
@@ -1039,12 +923,7 @@ debayer_top_2to1 #(
 	.rgb_de_o		  (rgb_de         ),
 	.rgb_valid_o	(rgb_valid      ),
 	.rgb_datax2_o (rgb_datax2     ),//b,g,r,b,g,r
-	.raw_row_odd_o (raw_row_odd   )
-);
-ae_frame_stats #(.FRAME_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_AE_METER_FRAME_WIDTH),.FRAME_HEIGHT(`CFG_TI60F225_OOB_TOP_V_INST_AE_METER_FRAME_HEIGHT),.FULL_FRAME_MEAN(`CFG_TI60F225_OOB_TOP_V_INST_AE_METER_FULL_FRAME_MEAN)) ae_meter(
-  .clk(vid_clk_dvi2),.rst_n(capture_reset_n),.i_vs(rgb_vs),.i_de(rgb_de),.i_rgb(rgb_datax2),
-  .i_high_threshold(ae_high_threshold),.o_high_permille(stats_high_permille),
-  .o_valid(stats_valid),.o_mean(stats_mean),.o_highlights(stats_hot)
+	.raw_row_odd_o ()
 );
 wire [`CFG_BITS_8-1:0] hdmi_tx_rdata = display_pixel[7:0];
 wire [`CFG_BITS_8-1:0] hdmi_tx_gdata = display_pixel[15:8];
@@ -1066,55 +945,21 @@ assign led[7:4] = resize_completed_frames[3:0];
 //==============================================================================
 // signal
 
-reg		[`CFG_BITS_26-1:0]	r_rst_cnt;
-
-wire	[`CFG_BITS_32-1:0]	w_axi_rdata;
-wire			w_axi_awready;
-wire			w_axi_wready;
-wire			w_axi_arready;
-wire			w_axi_rvalid;
-wire			w_axi_bvalid;
-
-wire	[`CFG_BITS_7-1:0]	w_axi_awaddr;
-wire			w_axi_awvalid;
-wire	[`CFG_BITS_32-1:0]	w_axi_wdata;
-wire			w_axi_wvalid;
-wire			w_axi_bready;
-wire	[`CFG_BITS_7-1:0]	w_axi_araddr;
-wire			w_axi_arvalid;
-wire			w_axi_rready;
-
-wire			w_confdone;
-assign w_confdone = 1'b1;
-
 assign  LCD_POWER 			= i_arstn;
-assign	LCD_RST_P	      = ~w_arstn;//~r_rst_cnt[23]; LCD复位先释放，然后再释放MIPI 的复位
+assign	LCD_RST_P	      = ~w_arstn;// LCD复位先释放，然后再释放MIPI 的复位
 assign	mipi_dp_clk_RST		= ~i_arstn;
 assign	mipi_dp_data0_RST	= ~i_arstn;
 assign	mipi_dp_data1_RST	= ~i_arstn;
 assign	mipi_dp_data2_RST	= ~i_arstn;
 assign	mipi_dp_data3_RST	= ~i_arstn;
-////////////////////////////////////////////////////////////////
-always@(posedge i_mipi_clk or  negedge w_arstn )
-begin
-  if ( !w_arstn ) begin
-    r_rst_cnt	<= 'd0;
-  end else
-    r_rst_cnt	<= r_rst_cnt[25] ? r_rst_cnt :r_rst_cnt + 1'b1;
-end
-
-wire axi_rst_n = r_rst_cnt[25];
-
 reg [`CFG_BITS_27-1:0] dly_cnt = 'd0;
 
 always @( posedge vid_clk_dvi2 or negedge w_arstn )
 begin
   if( !w_arstn )
     dly_cnt <= 'd0;
-  else if( w_confdone )
-    dly_cnt <= dly_cnt[26] ? dly_cnt :(dly_cnt + 1'b1);
   else
-    dly_cnt <= 'd0;
+    dly_cnt <= dly_cnt[26] ? dly_cnt :(dly_cnt + 1'b1);
 end
 
 assign vid_rst_n = dly_cnt[26];
@@ -1122,49 +967,9 @@ assign vid_rst_n = dly_cnt[26];
 
 
 
-wire hs;
-wire vs;
-wire de;
-wire [`CFG_BITS_8-1:0] rgb_r;
-wire [`CFG_BITS_8-1:0] rgb_g;
-wire [`CFG_BITS_8-1:0] rgb_b;
-
-  // color_bar_rgb #(
-  // .HS_POLORY 		(1'b1		),
-  // .VS_POLORY 		(1'b1		),
-  // .H_FRONT_PORCH 	(HFP		),///2
-  // .H_SYNC 		(HSP		),//
-  // .H_VALID 		(MAX_HRES	),//
-  // .H_BACK_PORCH 	(HBP		),//
-  // .V_FRONT_PORCH 	(VFP		),
-  // .V_SYNC 		(VSP		),
-  // .V_VALID 		(MAX_VRES	),
-  // .V_BACK_PORCH 	(VBP		),
-  // .TEST_MODE 		(2'd2)
-  // )u_color_bar_rgb1(
-  // /*i*/.clk	(vid_clk_dvi2),//(vid_clk),
-  // /*i*/.rst_n	(vid_rst_n),
-  // /*o*/.hs	(hs),
-  // /*o*/.vs	(vs),
-  // /*o*/.de	(de),
-  // // /*O*/.h_cnt (h_cnt),
-  // // /*O*/.v_cnt (v_cnt),
-  // /*o*/.rgb_r	(rgb_r),    //像素数据、红色分量
-  // /*o*/.rgb_g	(rgb_g),    //像素数据、绿色分量
-  // /*o*/.rgb_b (rgb_b)    //像素数据、蓝色分量
-
-  // );
-
 //=================================================================================
 //hdmi tx ctrl
 //=================================================================================
-wire                            video_hs;
-wire                            video_vs;
-wire                            video_de;
-wire[`CFG_BITS_8-1:0]                       video_r;
-wire[`CFG_BITS_8-1:0]                       video_g;
-wire[`CFG_BITS_8-1:0]                       video_b;
-
 assign tmds_tx_data0_TX_OE = 1'b1;
 assign tmds_tx_data1_TX_OE = 1'b1;
 assign tmds_tx_data2_TX_OE = 1'b1;
@@ -1175,53 +980,16 @@ assign tmds_tx_data1_TX_RST = 1'b0;
 assign tmds_tx_data2_TX_RST = 1'b0;
 assign tmds_tx_clk_TX_RST   = 1'b0;
 
-// 	  color_bar color_bar_m0(
-// 	.clk(hdmi_tx_slow_clk),
-// 	.rst(~vid_rst_n),
-// 	.hs(video_hs),
-// 	.vs(video_vs),
-// 	.de(video_de),
-// 	.rgb_r(video_r),
-// 	.rgb_g(video_g),
-// 	.rgb_b(video_b)
-// );
-
 wire [`CFG_BITS_10-1:0] tmds_data0;
 wire [`CFG_BITS_10-1:0] tmds_data1;
 wire [`CFG_BITS_10-1:0] tmds_data2;
 wire [`CFG_BITS_10-1:0] tmds_clk ;
 
-wire [`CFG_BITS_8-1:0] con_rdata ;
-wire [`CFG_BITS_8-1:0] con_gdata ;
-wire [`CFG_BITS_8-1:0] con_bdata ;
-wire con_de;
-wire con_hs;
-wire con_vs;
-wire con_sel;
-
-wire [`CFG_BITS_8-1:0] BRIGHT_SIG    ;
-wire CONTRAST_SIG_G;
-wire CONTRAST_SIG_R;
-wire [`CFG_BITS_8-1:0] CONTRAST_G    ;
-wire CONTRAST_SIG_B;
-wire [`CFG_BITS_8-1:0] BRIGHT        ;
-wire [`CFG_BITS_8-1:0] CONTRAST_R    ;
-
-
-wire CONTRAST_B    ;
-
-
 wire [`CFG_BITS_8-1:0] tone_rdata,tone_gdata,tone_bdata;
 wire tone_vs,tone_hs,tone_de;
-wire [`CFG_BITS_46-1:0] tone_controls;
-isp_cdc_mailbox #(.WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_TONE_CONTROL_MAILBOX_WIDTH)) tone_control_mailbox(
-  .s_clk(vid_clk_dvi2),.s_rst_n(w_arstn),.s_valid(1'b1),
-  .s_data({ae_exposure_constrained,ae_enable,ae_high_protect,lift_auto_enable,lift_auto_max,ae_target,lift_enable,lift_strength,tone_enable,high_green_strength,dark_red_strength}),.s_ready(),
-  .d_clk(hdmi_tx_slow_clk),.d_rst_n(w_arstn),.d_valid(),.d_data(tone_controls)
-);
 luma_color_suppress tone_adjustment(
-  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.i_enable(tone_controls[16]),
-  .i_high_green(tone_controls[15:8]),.i_dark_red(tone_controls[7:0]),
+  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.i_enable(video_display_tone[0]),
+  .i_high_green(video_display_tone[15:8]),.i_dark_red(video_display_tone[23:16]),
   .i_vs(hdmi_tx_vs),.i_hs(hdmi_tx_hs),.i_de(hdmi_tx_de),
   .i_r(CAM_RAW_GREEN_FIRST ? hdmi_tx_bdata : hdmi_tx_rdata),.i_g(hdmi_tx_gdata),
   .i_b(CAM_RAW_GREEN_FIRST ? hdmi_tx_rdata : hdmi_tx_bdata),
@@ -1232,16 +1000,11 @@ wire [`CFG_BITS_8-1:0] lift_rdata,lift_gdata,lift_bdata;
 wire lift_vs,lift_hs,lift_de;
 wire display_stats_valid;
 wire [`CFG_BITS_8-1:0] display_stats_mean,effective_lift_strength;
-wire automatic_lift_at_max;
-wire automatic_lift_enabled=tone_controls[44] && tone_controls[43] && tone_controls[42] && tone_controls[25];
-auto_tone_lift automatic_lift(
-  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.i_enable(automatic_lift_enabled),.i_can_lift(tone_controls[45]),
-  .i_valid(display_stats_valid),.i_mean(display_stats_mean),.i_target(tone_controls[33:26]),
-  .i_max_strength(tone_controls[41:34]),.i_manual_strength(tone_controls[24:17]),
-  .o_strength(effective_lift_strength),.o_at_max(automatic_lift_at_max)
-);
+// Automatic lift is disabled by the APB contract; retain the old manual
+// strength clamp without the inactive feedback controller.
+assign effective_lift_strength = video_display_lift[15:8]>8'd128 ? 8'd128 : video_display_lift[15:8];
 luma_tone_map #(.HIGHLIGHT_SAFE(`CFG_TI60F225_OOB_TOP_V_INST_LIFT_ADJUSTMENT_HIGHLIGHT_SAFE)) lift_adjustment(
-  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.i_enable(tone_controls[25]),.i_strength(effective_lift_strength),
+  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.i_enable(video_display_lift[0]),.i_strength(effective_lift_strength),
   .i_vs(tone_vs),.i_hs(tone_hs),.i_de(tone_de),.i_r(tone_rdata),.i_g(tone_gdata),.i_b(tone_bdata),
   .o_vs(lift_vs),.o_hs(lift_hs),.o_de(lift_de),.o_r(lift_rdata),.o_g(lift_gdata),.o_b(lift_bdata)
 );
@@ -1252,64 +1015,21 @@ ae_frame_stats #(.FRAME_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_METER_FRAME_W
   .i_rgb({24'd0,lift_bdata,lift_gdata,lift_rdata}),.i_high_threshold(8'd232),
   .o_valid(display_stats_valid),.o_mean(display_stats_mean),.o_highlights(),.o_high_permille()
 );
-wire [`CFG_BITS_17-1:0] display_status;
-isp_cdc_mailbox #(.WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_STATUS_MAILBOX_WIDTH)) display_status_mailbox(
-  .s_clk(hdmi_tx_slow_clk),.s_rst_n(w_arstn),.s_valid(display_stats_valid),
-  .s_data({automatic_lift_at_max,effective_lift_strength,display_stats_mean}),.s_ready(),
-  .d_clk(vid_clk_dvi2),.d_rst_n(w_arstn),.d_valid(),.d_data(display_status)
-);
-assign {lift_at_max,lift_actual_strength,ae_display_mean}=display_status;
-
-
-// Replace these Debugger sources with APB register outputs in the CPU revision.
-// Bits: [3] text enable, [2:1] histogram mode Y/R/G/B, [0] histogram enable.
-wire osd_hist_enable,osd_text_enable;
-wire [`CFG_BITS_2-1:0] osd_hist_mode;
-wire [`CFG_BITS_4-1:0] osd_controls;
-isp_cdc_mailbox #(.WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_OSD_CONTROL_MAILBOX_WIDTH)) osd_control_mailbox(
-  .s_clk(vid_clk_dvi2),.s_rst_n(w_arstn),.s_valid(1'b1),
-  .s_data({osd_text_enable,osd_hist_mode,osd_hist_enable}),.s_ready(),
-  .d_clk(hdmi_tx_slow_clk),.d_rst_n(w_arstn),.d_valid(),.d_data(osd_controls)
-);
-wire osd_vs,osd_hs,osd_de,osd_hist_valid_hdmi,osd_hist_valid;
+wire osd_vs,osd_hs,osd_de;
 wire [`CFG_BITS_8-1:0] osd_r,osd_g,osd_b;
-wire [`CFG_BITS_16-1:0] osd_hist_samples_hdmi,osd_hist_samples;
+// Histogram controls already belong to this HDMI clock domain after the
+// display_config frame-boundary APPLY/ACK. Text is drawn by osd_db.
 hdmi_info_overlay #(.FRAME_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_INFORMATION_OVERLAY_FRAME_WIDTH),.FRAME_HEIGHT(`CFG_TI60F225_OOB_TOP_V_INST_INFORMATION_OVERLAY_FRAME_HEIGHT)) information_overlay(
   .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),
   .i_vs(lift_vs),.i_hs(lift_hs),
   .i_de(lift_de),
   .i_r(lift_rdata),.i_g(lift_gdata),
   .i_b(lift_bdata),
-  .i_hist_enable(osd_controls[0]),.i_hist_mode(osd_controls[2:1]),.i_text_enable(osd_controls[3]),
+  .i_hist_enable(video_display_hist[0]),.i_hist_mode(video_display_hist[2:1]),.i_text_enable(1'b0),
   .i_text_valid(1'b0),.i_text_rgb(24'd0),.o_x(),.o_y(),
-  .o_hist_valid(osd_hist_valid_hdmi),.o_hist_samples(osd_hist_samples_hdmi),
+  .o_hist_valid(),.o_hist_samples(),
   .o_vs(osd_vs),.o_hs(osd_hs),.o_de(osd_de),.o_r(osd_r),.o_g(osd_g),.o_b(osd_b)
 );
-isp_cdc_mailbox #(.WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_OSD_STATUS_MAILBOX_WIDTH)) osd_status_mailbox(
-  .s_clk(hdmi_tx_slow_clk),.s_rst_n(w_arstn),.s_valid(1'b1),
-  .s_data({osd_hist_valid_hdmi,osd_hist_samples_hdmi}),.s_ready(),
-  .d_clk(vid_clk_dvi2),.d_rst_n(w_arstn),.d_valid(),.d_data({osd_hist_valid,osd_hist_samples})
-);
-
-// Fixed text is rendered in the final single-pixel HDMI domain.  The enable
-// comes from the coherent OSD control mailbox; the APB revision can replace
-// that source without changing the dvi_encoder interface.
-wire fixed_osd_vs,fixed_osd_hs,fixed_osd_de,fixed_osd_char_pixel;
-wire [`CFG_BITS_8-1:0] fixed_osd_r,fixed_osd_g,fixed_osd_b;
-osd_fixed_text #(
-  .FRAME_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_INFORMATION_OVERLAY_FRAME_WIDTH),
-  .FRAME_HEIGHT(`CFG_TI60F225_OOB_TOP_V_INST_INFORMATION_OVERLAY_FRAME_HEIGHT),
-  .BASE_X(16),.BASE_Y(16),.TEXT_LEN(9),.FG_RGB(24'h20ff40)
-) fixed_text_osd(
-  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),
-  .i_vs(osd_vs),.i_hs(osd_hs),.i_de(osd_de),
-  // The fixed-text acceptance image is enabled by default.  APB control in
-  // the integrated SoC revision replaces this constant after milestone 9.
-  .i_r(osd_r),.i_g(osd_g),.i_b(osd_b),.i_enable(osd_apb_enable),
-  .o_vs(fixed_osd_vs),.o_hs(fixed_osd_hs),.o_de(fixed_osd_de),
-  .o_r(fixed_osd_r),.o_g(fixed_osd_g),.o_b(fixed_osd_b),.o_char_pixel(fixed_osd_char_pixel)
-);
-
 // Stable bars are shown until the CPU has initialized the camera and first
 // OSD page. Switch only at a frame boundary in the HDMI clock domain.
 wire bar_hs,bar_vs,bar_de;
@@ -1358,17 +1078,6 @@ assign tmds_tx_data0_TX_DATA = ~tmds_data0;
 assign tmds_tx_data1_TX_DATA = ~tmds_data1;
 assign tmds_tx_data2_TX_DATA = ~tmds_data2;
 
-// USER1 is owned by the Sapphire hard-JTAG channel.  The former manual
-// VIO/LA instance was removed to avoid a second USER1 TAP; Efinity auto-debug
-// probes use USER2 and the control values below are deterministic defaults.
-// Preserve the baseline VIO calibration when the CPU owns USER1.
-assign r_gain=16'h0168; assign g_gain=16'h0100; assign b_gain=16'h01a9;
-assign osd_hist_enable=1'b0; assign osd_hist_mode=2'b0; assign osd_text_enable=osd_apb_enable;
-// Legacy AE cannot control the sensor while the CPU owns the I2C pads.
-assign ae_enable=1'b0; assign ae_target=8'd96; assign ae_high_protect=1'b1;
-assign ae_high_threshold=8'd232; assign ae_high_limit=8'd10;
-assign lift_auto_enable=1'b0; assign lift_auto_max=8'd0;
-assign lift_enable=1'b1; assign lift_strength=8'd32; assign tone_enable=1'b1;
-assign high_green_strength=8'd32; assign dark_red_strength=8'd32;
+// Efinity auto-debug uses USER2; the Sapphire CPU owns USER1.
 
 endmodule

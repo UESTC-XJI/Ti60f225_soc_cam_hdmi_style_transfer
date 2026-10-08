@@ -11,7 +11,6 @@
         <efx:design_file name="rtl/soc_integration/axi_shared_ddr_2m.sv" version="default" library="default" />
         <efx:design_file name="rtl/soc_integration/osd_apb_regs.sv" version="default" library="default" />
         <efx:design_file name="rtl/soc_integration/osd_text_double_buffer.sv" version="default" library="default" />
-        <efx:design_file name="rtl/soc_integration/i2c_owner_mux.sv" version="default" library="default" />
         <efx:design_file name="rtl/soc_integration/video_status_counters.sv" version="default" library="default" />
         <efx:design_file name="rtl/soc_integration/ddr_startup_barrier.sv" version="default" library="default" />
         <efx:design_file name="rtl/soc_integration/soc_video_ddr_integration.sv" version="default" library="default" />
@@ -38,15 +37,6 @@
         <efx:design_file name="rtl/debayer/line_buffer.v" version="default" library="default" />
         <efx:design_file name="rtl/debayer/debayer_top_2to1.v" version="default" library="default" />
         <efx:design_file name="rtl/debayer/raw_to_rgb.v" version="default" library="default" />
-        <efx:design_file name="rtl/mipi_config/panel_config.v" version="default" library="default" />
-        <efx:design_file name="rtl/cam_i2c_ctrl/i2c_master/i2c_master_byte_ctrl.v" version="default" library="default" />
-        <efx:design_file name="rtl/cam_i2c_ctrl/i2c_master/i2c_master_top.v" version="default" library="default" />
-        <efx:design_file name="rtl/cam_i2c_ctrl/i2c_master/i2c_master_bit_ctrl.v" version="default" library="default" />
-        <efx:design_file name="rtl/cam_i2c_ctrl/i2c_master/oc_i2c_master.v" version="default" library="default" />
-        <efx:design_file name="rtl/cam_i2c_ctrl/i2c/i2c_16addr_8data.v" version="default" library="default" />
-        <efx:design_file name="rtl/cam_i2c_ctrl/i2c/i2c_master_reg_rom.v" version="default" library="default" />
-        <efx:design_file name="rtl/cam_i2c_ctrl/i2c/i2c_master_reg_set.v" version="default" library="default" />
-        <efx:design_file name="rtl/cam_i2c_ctrl/i2c/i2c_master_ctrl_top.v" version="default" library="default" />
         <efx:design_file name="rtl/dvi_tx/ecc_calc_v1.v" version="default" library="default" />
         <efx:design_file name="rtl/dvi_tx/audio_clock_regeneration_packet.sv" version="default" library="default" />
         <efx:design_file name="rtl/dvi_tx/audio_packet.sv" version="default" library="default" />

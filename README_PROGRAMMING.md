@@ -4,20 +4,26 @@
 
 运行顺序：**板卡上电 → JTAG 配置 FPGA → 释放 Programmer 的 JTAG 连接 → 下载配套 ELF → Resume/F8 运行**。FPGA 配置完成并锁定时钟后显示 720p 彩条；CPU 成功初始化摄像头和 OSD 后切换到摄像头画面。
 
-截至 2026-10-08，下面两套产物均已通过编译与仿真，尚未完成对应版本的实板烧录/显示验证。本文提供操作步骤；撰写本文时没有执行硬件下载。
+2026-10-09 用户已实板恢复RAW/RESIZE30并确认AE工作，UART可见AE/AWB更新且无错误。最新固件针对小高光光源下的曝光抽动与响应速度，验证记录见 `reports/software_3a_ae_tuning/README.md`；此调整待实板确认。曾出现只热重载ELF导致视频fault锁存，更新时按先停止IDE、重配原bit、再加载新ELF的顺序执行一次。
+
+同日SoC清理已完成：旧硬件AE/I²C和无效OSD链移除，修复文字使能同步并在帧边界生效。新硬件`reports/soc_cleanup/soc_cleanup.bit`已完成全部编译与时序检查，详细记录见[清理版产物](reports/soc_cleanup/README.md)。此RTL修复须配置新bit；配套ELF仍是上一轮AE调整固件，实板待验证。
 
 ## 1. 选择配套文件
 
-默认使用最新的 **RAW/RESIZE 帧率诊断版**，包含启动彩条。
+默认使用最新的 **统一 APB / 软件 AE/AWB 版**，包含启动彩条、RAW/RESIZE诊断及原始直方图快照。实现与运行状态见 [实现说明](docs/VIDEO_3A_IMPLEMENTATION.md)，产物校验值与测试记录见 [配套产物](reports/software_3a/README.md)。
 
 | 版本 | FPGA bitstream | CPU 固件 ELF | 运行后的统计文字 |
 | --- | --- | --- | --- |
-| RAW/RESIZE 诊断版（推荐） | `reports/raw_resize/raw_resize.bit` | `reports/raw_resize/soc_video_app.elf` | `RAW / RESIZE / DISP / DROP / ERR` |
+| SoC清理版（推荐，含文字使能修复、I²C修复及AE调整） | `reports/soc_cleanup/soc_cleanup.bit` | `reports/soc_cleanup/soc_video_app.elf` | `RAW / RESIZE / DISP / DROP / ERR`，UART另有3A状态 |
+| 统一 APB / AE/AWB 版（历史） | `reports/software_3a/software_3a.bit` | `reports/software_3a_ae_tuning/soc_video_app.elf` | 同上；未包含文字使能修复 |
+| RAW/RESIZE 诊断版（历史） | `reports/raw_resize/raw_resize.bit` | `reports/raw_resize/soc_video_app.elf` | `RAW / RESIZE / DISP / DROP / ERR` |
 | 早期启动彩条版 | `reports/startup_colorbar/startup_colorbar.bit` | `reports/startup_colorbar/soc_video_app.elf` | `FPS / DISP / DROP / ERR` |
 
 **必须使用同一行的 bitstream 与 ELF。** 旧固件不写 `VIDEO_READY`，搭配彩条版 bitstream 会一直显示彩条；新的诊断固件也需要支持 RAW/RESIZE 寄存器的 bitstream。
 
 `.bit` 配置 FPGA；`.elf` 包含 CPU 程序、加载地址和调试符号，下载到 DDR。IDE/GDB 选择 `.elf`。同目录 `.bin` 是原始程序数据，起始加载地址为 `0x1000`，不是 Flash 启动镜像。
+
+软件 AE 默认在真实 ID/VTS/I²C 检查通过后启用；AWB默认自动，`app_awb_mode`=0固定/1自动/2锁定。UART每秒打印 `3A state ... exp ... vts ... mean ... hot ... goal ... hold ... R ... B ... AE ... AWB ... code ... req ... rb ... err ...`；状态和计数也可在IDE查看 `app_3a`。`app_hist_enable`=1可开启非阻塞快照读取，默认0。VTS/PLL保持不变。
 
 ## 2. 接线与工作目录
 
@@ -46,7 +52,7 @@ Get-PnpDevice -PresentOnly |
 ### Efinity Programmer 图形界面
 
 1. 打开 Efinity Programmer，选择 Ti60F225 板卡的 JTAG 接口。
-2. 选择 **JTAG 配置模式**，添加 `reports/raw_resize/raw_resize.bit`。
+2. 选择 **JTAG 配置模式**，添加 `reports/software_3a/software_3a.bit`。
 3. 执行 Program，确认 Programmer 报告配置成功。不要只凭窗口关闭或命令返回码判断成功。
 4. 时钟锁定后应显示 1280×720 / 60 Hz 八色彩条。此时未下载应用，彩条属于预期行为。
 5. 等待 DDR 校准完成，再连接 CPU 调试。**彩条出现不代表 DDR 已校准**，彩条发生器不依赖 DDR；有监测条件时检查 `cal_done`。
@@ -58,7 +64,7 @@ Get-PnpDevice -PresentOnly |
 
 ```powershell
 & 'C:/Efinity/2026.1/pgm/bin/ftdi_pgm.bat' `
-    'reports/raw_resize/raw_resize.bit' `
+    'reports/software_3a/software_3a.bit' `
     -m jtag `
     -u 'ftdi://0x0403:0x6011:0:2/1' `
     --jtag_clock_freq 1000000
@@ -73,7 +79,7 @@ Get-PnpDevice -PresentOnly |
 1. 打开 **Efinity RISC-V IDE 2026.1**。
 2. **File → Import → General → Existing Projects into Workspace**，选择工程下的 `software/firmware`，导入项目 `soc_video_app`。不勾选 **Copy projects into workspace**，保留 BSP/tools 的相对路径。
 3. **Run → Debug Configurations → GDB OpenOCD Debugging**，选择共享配置 `soc_video_app_ti`。若未出现，通过 **File → Import → Run/Debug → Launch Configurations** 导入 `software/firmware/soc_video_app_ti.launch`。
-4. Main 页 Project 选择 `soc_video_app`。为了下载本文保存的诊断版，在 **C/C++ Application** 中 Browse 选择工程下的 **`reports/raw_resize/soc_video_app.elf`**；关闭该配置的下载前自动构建。共享 launch 默认是 `build/soc_video_app.elf`，不会自动选择 reports 中的保存版本。
+4. Main 页 Project 选择 `soc_video_app`。为了下载本文保存的 I²C 修复版，在 **C/C++ Application** 中 Browse 选择工程下的 **`reports/software_3a_i2c_fix/soc_video_app.elf`**；关闭该配置的下载前自动构建。共享 launch 默认是 `build/soc_video_app.elf`，不会自动选择 reports 中的保存版本。
 5. 核对以下配置，点击 Apply：
 
 | 项目 | 值 |
@@ -82,6 +88,7 @@ Get-PnpDevice -PresentOnly |
 | GDB executable | `C:/Efinity/efinity-riscv-ide-2026.1/toolchain/bin/riscv-none-elf-gdb.exe` |
 | OpenOCD executable | `C:/Efinity/efinity-riscv-ide-2026.1/openocd/bin/openocd.exe` |
 | IDE GDB / Tcl / Telnet 端口 | `13333 / 16666 / 14444` |
+| IDE GDB 主机地址 | `127.0.0.1`（共享 launch 已设置） |
 | Startup 初始化命令 | `monitor reset halt` |
 | Startup 运行命令 | `set $pc = _start` |
 | Stop at | `*main` |
@@ -112,7 +119,7 @@ Get-PnpDevice -PresentOnly |
 
 ```powershell
 & 'C:/Efinity/efinity-riscv-ide-2026.1/toolchain/bin/riscv-none-elf-gdb.exe' `
-    'reports/raw_resize/soc_video_app.elf' `
+    'reports/software_3a_i2c_fix/soc_video_app.elf' `
     -x 'software/firmware/openocd/download.gdb'
 ```
 
@@ -210,6 +217,12 @@ Get-NetTCPConnection -State Listen |
     Where-Object { $_.LocalPort -in 3333,6666,4444,13333,16666,14444 } |
     Select-Object LocalPort,OwningProcess
 ```
+
+### GDB 连接 localhost:13333 报 error 138
+
+2026-10-08 使用 IDE 自带 GDB 和仅绑定 IPv4 的本机模拟 RSP 服务复现：`target remote localhost:<port>` 报相同 error 138，`target remote 127.0.0.1:<port>` 正常完成协议握手和 detach。错误中的“系统试图将驱动器合并……”是本次 GDB 的错误文本，不应据此修改盘符、OneDrive 路径或 USB 驱动。共享 `soc_video_app_ti.launch` 已将主机地址改为 `127.0.0.1`；IDE 中刷新项目，核对 Debug Configurations → Debugger → Remote Target 的 Host name 为 `127.0.0.1`、Port 为 `13333`，Apply 后重试。
+
+同时检查旧 OpenOCD：本次发现 PID 6760/33136 仍占用两组端口、Tcl 无响应，而 taskkill 报没有运行的实例。仅显示 Listen 不能证明服务可用，换一组端口也不能释放旧 USB 会话。先终止 IDE 中失败的会话；若进程无法结束，保持板卡独立供电，仅重新拔插 JTAG USB，再检查旧端口是否释放。若 JTAG USB 同时为板卡供电，应使用原有供电/恢复流程；断电会丢失 FPGA 配置。必要时重启 Windows 释放残留状态。本次未进行实板重连、烧录或 ELF 下载。
 
 ### IDE 提示 binary not found
 

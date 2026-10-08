@@ -4,8 +4,20 @@
 /work_pnr/
 /work_dbg/
 /outflow/
-/reports/simulation/
+/outflow_*/
 /netlist/
+
+# Regression reports, intermediate release copies and hardware-debug captures.
+# Keep notes, release checksums and the exact build input XML.
+# Re-include directories so the file exceptions also work in future releases.
+/reports/**/*
+!/reports/**/
+!/reports/**/*.md
+!/reports/**/manifest.json
+!/reports/**/build_project.xml
+# Baseline source snapshots and simulation work products stay wholly local.
+/reports/baseline/
+/reports/simulation/
 
 # Local project lock held by the FPGA tool while the project is open.
 /.lock
@@ -36,6 +48,10 @@ modelsim.ini
 *.map
 *.su
 
+# Versioned release artifacts (after *.elf so published firmware stays visible).
+!/reports/**/*.bit
+!/reports/**/*.elf
+
 # IDE workspace state; keep project configuration and launch definitions.
 .metadata/
 .vs/
@@ -63,7 +79,7 @@ Desktop.ini
 # - *.xml, *.peri.xml, *.sdc and package_settings.xml
 # - debug_top.v, debug.json and debug_profile.wizard.json
 #   (the current project references the debug source/profile)
-# - *.mem, *.memh, *.hex, *.bin and *.mif (ROM/firmware initialization assets)
+# - *.mem, *.memh, *.hex, *.bin and *.mif outside output directories
+#   (ROM/firmware initialization assets required by RTL/IP)
 # - *.gtkw (reusable waveform viewing configuration)
 # - ooc/ (do not exclude future out-of-context input configurations wholesale)
-/reports/baseline/

@@ -1,11 +1,14 @@
 #include "bsp.h"
 #include "i2c.h"
 #include "soc_video_driver.h"
+#include "camera_3a.h"
 
 /* Inspect these in the IDE if a trap stops normal UART output. */
 volatile uint32_t firmware_trap_cause, firmware_trap_pc, firmware_trap_value;
 volatile uint32_t app_ddr_errors, app_osd_errors, app_camera_errors;
 volatile uint32_t app_metrics_updates;
+volatile uint32_t app_hist_enable,app_hist_updates,app_hist_errors;
+video_hist_t app_hist;
 
 #define DDR_TEST_BASE 0x01000000u
 #define DDR_TEST_WORDS (64u * 1024u / 4u)
@@ -63,22 +66,46 @@ int main(void) {
     }
     if (camera_rc == 0 && osd_rc == 0) osd_set_video_ready(1);
     uint64_t last_update = clint_getTime(BSP_CLINT);
+    if(!camera_rc) {
+        int rc=camera_3a_init(&app_3a,last_update);
+        uart_writeStr(BSP_UART_TERMINAL,rc?"Software AE/AWB unavailable (CAPS/VTS/I2C); inspect app_3a\r\n":
+                      "Software AE/AWB enabled; RAW8 stats, fixed VTS, manual lift\r\n");
+    }
+    uint64_t last_service=last_update,osd_started=last_update;
+    int osd_pending=0;
     for (;;) {
         uint64_t now = clint_getTime(BSP_CLINT);
+        if(now-last_service>=BSP_CLINT_HZ/1000u) {
+            if(!camera_rc)camera_3a_service(&app_3a,now);
+            if(app_hist_enable) {
+                int rc=video_hist_poll(&app_hist);
+                if(rc>0)++app_hist_updates;else if(rc<0)++app_hist_errors;
+            }
+            last_service=now;
+        }
+        if(osd_pending) {
+            if(osd_poll()) {osd_pending=0;osd_rc=0;if(!camera_rc)osd_set_video_ready(1);}
+            else if(now-osd_started>=BSP_CLINT_HZ/4u) {
+                osd_pending=0;osd_rc=-1;++app_osd_errors;
+                uart_writeStr(BSP_UART_TERMINAL,"OSD metrics COMMIT timeout\r\n");
+            }
+        }
         if (now - last_update < BSP_CLINT_HZ) continue;
         if (camera_rc) {
             camera_rc = camera_recover();
             if (camera_rc) ++app_camera_errors;
-            else uart_writeStr(BSP_UART_TERMINAL, "Camera recovered\r\n");
+            else {
+                uart_writeStr(BSP_UART_TERMINAL, "Camera recovered\r\n");
+                camera_3a_init(&app_3a,clint_getTime(BSP_CLINT));
+            }
         }
-        if (app_ddr_test())
-            uart_writeStr(BSP_UART_TERMINAL, "DDR concurrent scratch FAIL\r\n");
-        osd_rc = osd_publish_metrics();
-        if (osd_rc) {
-            ++app_osd_errors;
-            uart_writeStr(BSP_UART_TERMINAL, "OSD metrics COMMIT timeout\r\n");
+        // Full DDR stress runs at boot; do not pause 3A for a 64 KiB test each second.
+        if(!osd_pending) {
+            osd_rc=osd_submit_metrics();
+            if(!osd_rc){osd_pending=1;osd_started=clint_getTime(BSP_CLINT);}
+            else if(!( *(volatile uint32_t *)(0xf8100020u)&4u))++app_osd_errors;
         }
-        if (camera_rc == 0 && osd_rc == 0) osd_set_video_ready(1);
+        if(app_3a.enabled||app_3a.status)camera_3a_log(&app_3a);
         ++app_metrics_updates;
         last_update = clint_getTime(BSP_CLINT);
     }

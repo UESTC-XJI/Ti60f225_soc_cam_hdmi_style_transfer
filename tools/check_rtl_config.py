@@ -67,11 +67,21 @@ def main():
     removal = (ROOT / 'tools/remove_manual_debug.py').read_text(encoding='utf-8')
     for name in ['r_gain','g_gain','b_gain','tone_enable','high_green_strength',
                  'dark_red_strength','lift_enable','lift_strength']:
-        for text in [top, removal]:
+        texts=[removal] if 'video_apb_ctrl osd_apb' in top else [top,removal]
+        for text in texts:
             value = re.search(r'\b' + name + r"\s*=\s*\d+'([bdh])([0-9a-fA-F]+)", text)
             assert value, 'missing calibrated control: ' + name
             actual = int(value[2], {'b': 2, 'd': 10, 'h': 16}[value[1]])
             assert actual == calibrated[name], 'baseline camera calibration changed: ' + name
+    if 'video_apb_ctrl osd_apb' in top:
+        control=(ROOT/'rtl/soc_integration/video_apb_ctrl.sv').read_text()
+        cap=re.search(r'CAP_DEFAULT=([^;]+)',control)[1]
+        vals=re.findall(r"16'h([0-9a-fA-F]+)",cap)
+        assert [int(v,16) for v in vals[-3:]]==[calibrated['b_gain'],calibrated['g_gain'],calibrated['r_gain']]
+        disp=re.search(r'DISP_DEFAULT=([^;]+)',control)[1]
+        lift,tone=[int(v,16) for v in re.findall(r"32'h([0-9a-fA-F]+)",disp)]
+        assert (tone&1)==calibrated['tone_enable'] and (tone>>8&255)==calibrated['high_green_strength'] and (tone>>16&255)==calibrated['dark_red_strength']
+        assert (lift&1)==calibrated['lift_enable'] and (lift>>8&255)==calibrated['lift_strength']
     print('PASS baseline white balance and manual tone calibration survive VIO removal.')
     updated = sum('expanded_token_sha256' in row for row in rows)
     print(f'PASS: {len(rows)} RTL files checked; {updated} intentional 720p imports match their pre-migration tokens; remaining RTL/DDR/encrypted contents match baseline.')
