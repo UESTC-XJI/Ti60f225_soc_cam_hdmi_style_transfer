@@ -1,0 +1,26 @@
+mww 0xf9000e00 0x00140413
+
+mww 0xf9000e04 0xffdff06f
+
+reg x8 0
+x8 (/32): 0x00000000
+
+resume 0xf9000e00
+
+sleep 200
+
+halt
+
+sleep 200
+
+reg x8
+x8 (/32): 0x00000000
+
+reg pc force
+pc (/32): 0x00000008
+
+reg mcause force
+mcause (/32): 0x00000001
+
+reg mepc force
+mepc (/32): 0x00000000

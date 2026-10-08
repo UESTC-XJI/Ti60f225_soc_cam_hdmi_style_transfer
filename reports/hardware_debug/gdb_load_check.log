@@ -1,0 +1,9 @@
+The target architecture is set to "riscv:rv32".
+0x00000000 in ?? ()
+Loading section .init, size 0x88 lma 0x1000
+Loading section .text, size 0x9c0 lma 0x1088
+Loading section .rodata, size 0x4f2 lma 0x1a48
+Start address 0x00001000, load size 3898
+Transfer rate: 24 KB/sec, 1299 bytes/write.
+0x1000 <_start>:	0x30047073	0x30401073	0x00001197	0x73418193
+target memory fault, section .init, range 0x1000 -- 0x1088

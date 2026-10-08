@@ -1,0 +1,17 @@
+The target architecture is set to "riscv:rv32".
+0x00000000 in ?? ()
+Loading section .init, size 0x88 lma 0x1000
+Loading section .text, size 0x9c0 lma 0x1088
+Loading section .rodata, size 0x4f2 lma 0x1a48
+Start address 0x00001000, load size 3898
+Transfer rate: 24 KB/sec, 1299 bytes/write.
+pc             0x1000	0x1000 <_start>
+sp             0xf9000434	0xf9000434
+gp             0xf9000b18	0xf9000b18
+No registers.
+The program has no registers now.
+The program is not being run.
+The program has no registers now.
+The program is not being run.
+The program has no registers now.
+You can't do that when your target is `exec'

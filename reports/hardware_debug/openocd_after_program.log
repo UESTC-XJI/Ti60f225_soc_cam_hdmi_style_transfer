@@ -1,0 +1,694 @@
+Debug: 6 2 log.c:247 handle_log_output_command(): set log_output to "reports/hardware_debug/openocd_after_program.log"
+Debug: 7 2 options.c:244 add_default_dirs(): bindir=C:/app/msys64/ucrt64/bin
+Debug: 8 2 options.c:245 add_default_dirs(): pkgdatadir=C:/app/msys64/ucrt64/share/openocd
+Debug: 9 2 options.c:246 add_default_dirs(): exepath=C:/Efinity/efinity-riscv-ide-2026.1/openocd/bin
+Debug: 10 2 options.c:247 add_default_dirs(): bin2data=../share/openocd
+Debug: 11 2 configuration.c:44 add_script_search_dir(): adding C:/Users/Goodmann/AppData/Roaming/OpenOCD
+Debug: 12 2 configuration.c:44 add_script_search_dir(): adding C:/Efinity/efinity-riscv-ide-2026.1/openocd/bin/../share/openocd/site
+Debug: 13 3 configuration.c:44 add_script_search_dir(): adding C:/Efinity/efinity-riscv-ide-2026.1/openocd/bin/../share/openocd/scripts
+Debug: 14 3 command.c:166 script_debug(): command - gdb_port 23333
+Debug: 15 3 command.c:166 script_debug(): command - telnet_port 24444
+Debug: 16 3 command.c:166 script_debug(): command - tcl_port 26666
+Debug: 17 3 command.c:166 script_debug(): command - ocd_find software/firmware/openocd/soc_video.cfg
+Debug: 18 3 configuration.c:99 find_file(): found software/firmware/openocd/soc_video.cfg
+Debug: 19 4 command.c:166 script_debug(): command - adapter driver ftdi
+Debug: 20 4 command.c:166 script_debug(): command - ftdi vid_pid 0x0403 0x6011
+Debug: 21 4 command.c:166 script_debug(): command - ftdi channel 1
+Debug: 22 4 command.c:166 script_debug(): command - ftdi layout_init 0x08 0x0b
+Debug: 23 4 command.c:166 script_debug(): command - adapter speed 800
+Debug: 24 4 adapter.c:179 adapter_config_khz(): handle adapter khz
+Debug: 25 4 adapter.c:143 adapter_khz_to_speed(): convert khz to adapter specific speed value
+Debug: 26 4 adapter.c:143 adapter_khz_to_speed(): convert khz to adapter specific speed value
+Debug: 27 4 command.c:166 script_debug(): command - adapter srst delay 260
+Debug: 28 4 command.c:166 script_debug(): command - transport select
+Info : 29 4 transport.c:276 jim_transport_select(): auto-selecting first available session transport "jtag". To override use 'transport select <transport>'.
+Debug: 30 4 command.c:166 script_debug(): command - transport select
+Debug: 31 4 command.c:166 script_debug(): command - expr  [ string first "jtag" $_TRANSPORT ] != -1 
+Debug: 32 4 command.c:166 script_debug(): command - jtag_ntrst_delay 250
+Debug: 33 4 command.c:166 script_debug(): command - gdb_target_description disable
+Debug: 34 4 command.c:166 script_debug(): command - jtag newtap fpga_spinal bridge -expected-id 0x10660A79 -irlen 5 -ircapture 0x5 -irmask 0xF
+Debug: 35 4 tcl.c:603 jim_newtap_cmd(): Creating New Tap, Chip: fpga_spinal, Tap: bridge, Dotted: fpga_spinal.bridge, 8 params
+Debug: 36 4 tcl.c:628 jim_newtap_cmd(): Processing option: -expected-id
+Debug: 37 5 tcl.c:628 jim_newtap_cmd(): Processing option: -irlen
+Debug: 38 5 tcl.c:628 jim_newtap_cmd(): Processing option: -ircapture
+Debug: 39 5 tcl.c:628 jim_newtap_cmd(): Processing option: -irmask
+Debug: 40 5 core.c:1487 jtag_tap_init(): Created Tap: fpga_spinal.bridge @ abs position 0, irlen 5, capture: 0x5 mask: 0xf
+Debug: 41 5 command.c:166 script_debug(): command - target create fpga_spinal.cpu0 vexriscv -endian little -chain-position fpga_spinal.bridge -coreid 0 -dbgbase 0x10B80000 -work-area-phys 0xF9000000 -work-area-size 1024
+Debug: 42 5 target.c:2215 target_free_all_working_areas_restore(): freeing all working areas
+Debug: 43 5 target.c:2215 target_free_all_working_areas_restore(): freeing all working areas
+Debug: 44 5 target.c:2215 target_free_all_working_areas_restore(): freeing all working areas
+Debug: 45 5 vexriscv.c:273 vexriscv_target_create(): vexriscv_target_create
+
+Debug: 46 5 command.c:166 script_debug(): command - vexriscv readWaitCycles 40
+Debug: 47 5 command.c:166 script_debug(): command - vexriscv cpuConfigFile software/firmware/cpu0.yaml
+Debug: 48 5 command.c:166 script_debug(): command - vexriscv jtagMapping 8 8 0 1 2 2
+Debug: 49 5 command.c:166 script_debug(): command - poll_period 50
+Info : 50 5 server.c:792 handle_poll_period_command(): set servers polling period to 50ms
+Debug: 51 5 command.c:166 script_debug(): command - init
+Debug: 52 5 command.c:166 script_debug(): command - target init
+Debug: 53 5 command.c:166 script_debug(): command - target names
+Debug: 54 5 command.c:166 script_debug(): command - fpga_spinal.cpu0 cget -event gdb-flash-erase-start
+Debug: 55 5 command.c:166 script_debug(): command - fpga_spinal.cpu0 configure -event gdb-flash-erase-start reset init
+Debug: 56 5 command.c:166 script_debug(): command - fpga_spinal.cpu0 cget -event gdb-flash-write-end
+Debug: 57 5 command.c:166 script_debug(): command - fpga_spinal.cpu0 configure -event gdb-flash-write-end reset halt
+Debug: 58 5 command.c:166 script_debug(): command - fpga_spinal.cpu0 cget -event gdb-attach
+Debug: 59 5 command.c:166 script_debug(): command - fpga_spinal.cpu0 configure -event gdb-attach halt 1000
+Debug: 60 5 target.c:1672 handle_target_init_command(): Initializing targets...
+Debug: 61 5 vexriscv.c:669 vexriscv_init_target(): vexriscv_init_target
+
+Debug: 62 5 vexriscv.c:670 vexriscv_init_target(): vexriscv_init_target
+Debug: 63 5 vexriscv.c:433 vexriscv_build_reg_cache(): -
+Debug: 64 5 semihosting_common.c:130 semihosting_common_init():  
+Debug: 65 6 ftdi.c:742 ftdi_initialize(): ftdi interface using shortest path jtag state transitions
+Debug: 66 22 mpsse.c:437 mpsse_purge(): -
+Debug: 67 22 mpsse.c:718 mpsse_loopback_config(): off
+Debug: 68 22 mpsse.c:763 mpsse_set_frequency(): target 800000 Hz
+Debug: 69 22 mpsse.c:755 mpsse_rtck_config(): off
+Debug: 70 22 mpsse.c:744 mpsse_divide_by_5_config(): off
+Debug: 71 22 mpsse.c:724 mpsse_set_divisor(): 37
+Debug: 72 22 mpsse.c:787 mpsse_set_frequency(): actually 789473 Hz
+Debug: 73 22 adapter.c:143 adapter_khz_to_speed(): convert khz to adapter specific speed value
+Debug: 74 22 adapter.c:147 adapter_khz_to_speed(): have adapter set up
+Debug: 75 22 mpsse.c:763 mpsse_set_frequency(): target 800000 Hz
+Debug: 76 22 mpsse.c:755 mpsse_rtck_config(): off
+Debug: 77 22 mpsse.c:744 mpsse_divide_by_5_config(): off
+Debug: 78 22 mpsse.c:724 mpsse_set_divisor(): 37
+Debug: 79 22 mpsse.c:787 mpsse_set_frequency(): actually 789473 Hz
+Debug: 80 22 adapter.c:143 adapter_khz_to_speed(): convert khz to adapter specific speed value
+Debug: 81 22 adapter.c:147 adapter_khz_to_speed(): have adapter set up
+Info : 82 22 adapter.c:107 adapter_init(): clock speed 800 kHz
+Debug: 83 22 openocd.c:143 handle_init_command(): Debug Adapter init complete
+Debug: 84 23 command.c:166 script_debug(): command - transport init
+Debug: 85 23 transport.c:230 handle_transport_init(): handle_transport_init
+Debug: 86 23 core.c:842 jtag_add_reset(): SRST line released
+Debug: 87 23 core.c:867 jtag_add_reset(): TRST line released
+Debug: 88 23 core.c:323 jtag_call_event_callbacks(): jtag event: TAP reset
+Debug: 89 23 core.c:1064 jtag_reset_callback(): tap->bypass set to false at jtag_reset_callback
+Debug: 90 814 command.c:166 script_debug(): command - jtag arp_init
+Debug: 91 814 target.c:1858 target_call_event_callbacks(): target event 0 (gdb-halt) for core fpga_spinal.cpu0
+Debug: 92 814 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> -4, next attempt in 100ms
+Debug: 93 814 core.c:1522 jtag_init_inner(): Init JTAG chain
+Debug: 94 814 core.c:323 jtag_call_event_callbacks(): jtag event: TAP reset
+Debug: 95 814 core.c:1064 jtag_reset_callback(): tap->bypass set to false at jtag_reset_callback
+Debug: 96 814 core.c:1247 jtag_examine_chain(): DR scan interrogation for IDCODE/BYPASS
+Debug: 97 814 core.c:323 jtag_call_event_callbacks(): jtag event: TAP reset
+Debug: 98 814 core.c:1064 jtag_reset_callback(): tap->bypass set to false at jtag_reset_callback
+Info : 99 815 core.c:1146 jtag_examine_chain_display(): JTAG tap: fpga_spinal.bridge tap/device found: 0x10660a79 (mfg: 0x53c (Efinix Inc), part: 0x0660, ver: 0x1)
+Debug: 100 815 core.c:1377 jtag_validate_ircapture(): IR capture validation scan
+Debug: 101 815 core.c:1434 jtag_validate_ircapture(): fpga_spinal.bridge: IR capture 0x05
+Debug: 102 815 command.c:166 script_debug(): command - dap init
+Debug: 103 815 arm_dap.c:107 dap_init_all(): Initializing all DAPs ...
+Debug: 104 815 openocd.c:160 handle_init_command(): Examining targets...
+Debug: 105 815 target.c:1858 target_call_event_callbacks(): target event 19 (examine-start) for core fpga_spinal.cpu0
+Debug: 106 815 vexriscv.c:1858 vexriscv_examine(): vexriscv_examine
+User : 107 816 target.c:767 target_examine_one(): [fpga_spinal.cpu0] Target successfully examined.
+Debug: 108 816 target.c:1858 target_call_event_callbacks(): target event 21 (examine-end) for core fpga_spinal.cpu0
+Debug: 109 816 command.c:166 script_debug(): command - flash init
+Debug: 110 816 tcl.c:1387 handle_flash_init_command(): Initializing flash devices...
+Debug: 111 816 command.c:166 script_debug(): command - nand init
+Debug: 112 816 tcl.c:498 handle_nand_init_command(): Initializing NAND devices...
+Debug: 113 816 command.c:166 script_debug(): command - pld init
+Debug: 114 816 pld.c:205 handle_pld_init_command(): Initializing PLDs...
+Debug: 115 816 command.c:166 script_debug(): command - tpiu init
+Info : 116 816 gdb_server.c:3810 gdb_target_start(): starting gdb server for fpga_spinal.cpu0 on 23333
+Info : 117 817 server.c:314 add_service(): Listening on port 23333 for gdb connections
+Debug: 118 817 command.c:166 script_debug(): command - halt
+Debug: 119 817 target.c:3310 handle_halt_command(): -
+Debug: 120 817 vexriscv.c:879 vexriscv_halt(): target->state: running
+Debug: 121 817 vexriscv.c:860 vexriscv_debug_entry(): -
+Debug: 122 817 vexriscv.c:786 vexriscv_save_context(): -
+Debug: 123 828 target.c:1858 target_call_event_callbacks(): target event 0 (gdb-halt) for core fpga_spinal.cpu0
+Debug: 124 828 target.c:1858 target_call_event_callbacks(): target event 1 (halted) for core fpga_spinal.cpu0
+Debug: 125 828 vexriscv.c:723 vexriscv_arch_state(): vexriscv_arch_state
+
+Debug: 126 828 vexriscv.c:724 vexriscv_arch_state(): vexriscv_arch_state
+Info : 127 828 server.c:314 add_service(): Listening on port 26666 for tcl connections
+Info : 128 828 server.c:314 add_service(): Listening on port 24444 for telnet connections
+Debug: 129 828 command.c:166 script_debug(): command - init
+Debug: 130 890 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 131 951 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 132 1014 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 133 1076 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 134 1138 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 135 1199 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 136 1260 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 137 1322 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 138 1384 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 139 1445 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 140 1508 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 141 1571 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 142 1633 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 143 1695 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 144 1758 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 145 1819 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 146 1881 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 147 1945 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 148 2007 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 149 2068 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 150 2130 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 151 2192 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 152 2254 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 153 2316 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 154 2377 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 155 2439 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 156 2500 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 157 2562 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 158 2623 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 159 2684 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 160 2744 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 161 2806 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 162 2870 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 163 2932 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 164 2993 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 165 3056 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 166 3118 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 167 3180 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 168 3241 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 169 3304 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 170 3365 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 171 3429 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 172 3491 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 173 3553 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 174 3615 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 175 3677 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 176 3738 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 177 3800 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 178 3860 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 179 3923 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 180 3984 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 181 4046 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 182 4108 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 183 4171 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 184 4232 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 185 4293 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 186 4356 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 187 4419 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 188 4481 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 189 4542 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 190 4604 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 191 4665 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 192 4727 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 193 4789 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 194 4851 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 195 4914 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 196 4975 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 197 5038 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 198 5101 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 199 5164 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 200 5224 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 201 5286 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 202 5349 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 203 5410 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 204 5472 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 205 5534 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 206 5596 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 207 5658 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 208 5721 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 209 5783 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 210 5845 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 211 5906 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 212 5967 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 213 6029 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 214 6090 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 215 6151 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 216 6212 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 217 6274 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 218 6337 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 219 6398 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 220 6460 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 221 6521 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 222 6584 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 223 6646 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 224 6708 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 225 6771 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 226 6833 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 227 6894 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 228 6956 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 229 7017 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 230 7079 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 231 7141 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 232 7203 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 233 7263 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 234 7325 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 235 7387 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 236 7449 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 237 7511 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 238 7572 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 239 7634 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 240 7697 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 241 7758 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 242 7822 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 243 7884 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 244 7946 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 245 8009 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 246 8071 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 247 8133 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 248 8194 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 249 8256 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 250 8318 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 251 8382 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 252 8444 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 253 8506 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 254 8567 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 255 8629 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 256 8690 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 257 8751 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 258 8814 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 259 8874 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 260 8936 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 261 8997 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 262 9059 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 263 9120 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 264 9182 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 265 9242 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 266 9304 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 267 9366 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 268 9428 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 269 9491 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 270 9554 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 271 9616 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 272 9680 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 273 9743 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 274 9804 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 275 9868 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 276 9930 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 277 9991 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 278 10053 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 279 10116 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 280 10178 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 281 10238 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 282 10300 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 283 10362 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 284 10423 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 285 10485 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 286 10549 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 287 10612 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 288 10673 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 289 10735 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 290 10798 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 291 10860 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 292 10923 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 293 10986 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 294 11048 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 295 11110 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 296 11172 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 297 11235 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 298 11298 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 299 11360 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 300 11422 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 301 11483 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 302 11544 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 303 11605 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 304 11669 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 305 11732 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 306 11794 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 307 11856 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 308 11919 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 309 11983 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 310 12044 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 311 12106 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 312 12167 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 313 12229 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 314 12291 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 315 12352 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 316 12413 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 317 12476 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 318 12537 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 319 12597 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 320 12660 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 321 12722 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 322 12785 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 323 12848 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 324 12911 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 325 12973 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 326 13034 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 327 13096 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 328 13159 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 329 13221 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 330 13281 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 331 13342 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 332 13406 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 333 13467 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 334 13530 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 335 13593 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 336 13656 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 337 13718 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 338 13782 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 339 13842 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 340 13904 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 341 13965 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 342 14027 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 343 14091 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 344 14154 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 345 14217 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 346 14279 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 347 14342 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 348 14404 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 349 14465 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 350 14527 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 351 14588 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 352 14649 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 353 14713 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 354 14775 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 355 14838 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 356 14899 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 357 14961 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 358 15024 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 359 15087 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 360 15148 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 361 15210 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 362 15271 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 363 15332 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 364 15394 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 365 15457 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 366 15518 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 367 15580 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 368 15643 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 369 15704 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 370 15767 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 371 15830 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 372 15892 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 373 15954 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 374 16017 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 375 16080 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 376 16140 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 377 16202 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 378 16263 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 379 16325 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 380 16385 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 381 16447 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 382 16510 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 383 16572 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 384 16633 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 385 16697 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 386 16759 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 387 16822 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 388 16883 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 389 16945 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 390 17007 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 391 17070 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 392 17131 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 393 17193 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 394 17253 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 395 17315 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 396 17376 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 397 17438 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 398 17500 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 399 17560 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 400 17622 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 401 17683 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 402 17745 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 403 17807 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 404 17869 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 405 17932 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 406 17992 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 407 18055 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 408 18119 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 409 18182 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 410 18242 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 411 18305 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 412 18367 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 413 18429 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 414 18491 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 415 18553 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 416 18615 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 417 18678 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 418 18741 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 419 18804 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 420 18865 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 421 18927 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 422 18989 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 423 19052 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 424 19113 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 425 19176 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 426 19236 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 427 19299 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 428 19360 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 429 19422 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 430 19485 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 431 19546 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 432 19608 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 433 19670 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 434 19731 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 435 19793 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 436 19855 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 437 19916 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 438 19978 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 439 20040 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 440 20102 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 441 20162 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 442 20223 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 443 20285 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 444 20347 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 445 20410 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 446 20473 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 447 20534 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 448 20596 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 449 20656 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 450 20718 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 451 20780 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 452 20843 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 453 20904 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 454 20965 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 455 21029 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 456 21092 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 457 21153 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 458 21216 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 459 21280 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 460 21342 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 461 21404 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 462 21467 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 463 21528 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 464 21591 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 465 21653 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 466 21714 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 467 21776 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 468 21838 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 469 21899 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 470 21961 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 471 22023 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 472 22084 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 473 22146 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 474 22208 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 475 22269 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 476 22330 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 477 22392 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 478 22455 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 479 22518 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 480 22579 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 481 22642 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 482 22703 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 483 22766 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 484 22826 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 485 22887 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 486 22949 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 487 23011 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 488 23073 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 489 23134 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 490 23197 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 491 23259 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 492 23322 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 493 23384 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 494 23448 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 495 23508 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 496 23570 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 497 23630 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 498 23692 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 499 23756 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 500 23817 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 501 23879 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 502 23941 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 503 24002 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 504 24065 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 505 24126 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 506 24189 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 507 24250 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 508 24313 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 509 24375 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 510 24436 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 511 24498 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 512 24558 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 513 24620 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 514 24682 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 515 24744 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 516 24805 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 517 24867 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 518 24928 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 519 24990 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 520 25054 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 521 25116 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 522 25177 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 523 25240 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 524 25301 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 525 25364 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 526 25426 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 527 25489 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 528 25550 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 529 25612 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 530 25675 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 531 25735 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 532 25797 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 533 25859 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 534 25922 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 535 25983 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 536 26046 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 537 26108 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 538 26170 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 539 26233 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 540 26295 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 541 26356 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 542 26418 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 543 26482 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 544 26543 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 545 26606 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 546 26669 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 547 26731 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 548 26794 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 549 26856 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 550 26920 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 551 26983 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 552 27045 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 553 27107 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 554 27169 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 555 27233 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 556 27295 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 557 27356 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 558 27418 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 559 27479 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 560 27540 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 561 27601 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 562 27664 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 563 27727 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 564 27789 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 565 27851 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 566 27913 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 567 27974 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 568 28037 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 569 28098 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 570 28161 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 571 28223 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 572 28284 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 573 28347 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 574 28408 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 575 28471 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 576 28532 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 577 28594 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Info : 578 28621 server.c:107 add_connection(): accepting 'gdb' connection on tcp/23333
+Debug: 579 28622 breakpoints.c:377 breakpoint_clear_target_internal(): Delete all breakpoints for target: fpga_spinal.cpu0
+Debug: 580 28622 breakpoints.c:557 watchpoint_clear_target(): Delete all watchpoints for target: fpga_spinal.cpu0
+Debug: 581 28640 target.c:1858 target_call_event_callbacks(): target event 22 (gdb-attach) for core fpga_spinal.cpu0
+Debug: 582 28640 target.c:5093 target_handle_event(): target(0): fpga_spinal.cpu0 (vexriscv) event: 22 (gdb-attach) action: halt 1000
+Debug: 583 28640 command.c:166 script_debug(): command - halt 1000
+Debug: 584 28640 target.c:3310 handle_halt_command(): -
+Debug: 585 28640 vexriscv.c:879 vexriscv_halt(): target->state: halted
+Debug: 586 28641 gdb_server.c:1090 gdb_new_connection(): New GDB Connection: 1, Target fpga_spinal.cpu0, state: halted
+Debug: 587 28641 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: qSupported:multiprocess+;swbreak+;hwbreak+;qRelocInsn+;fork-events+;vfork-events+;exec-events+;vContSupported+;QThreadEvents+;QThreadOptions+;no-resumed+;memory-tagging+;error-message+
+Debug: 588 28641 vexriscv.c:1597 vexriscv_get_gdb_reg_list(): vexriscv_get_gdb_reg_list 0
+
+Warn : 589 28641 gdb_server.c:2891 gdb_query_packet(): Target Descriptions Supported, but disabled
+Debug: 590 28641 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $PacketSize=4000;qXfer:memory-map:read-;qXfer:features:read-;qXfer:threads:read+;QStartNoAckMode+;vContSupported+#06
+Debug: 591 28641 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: +
+Debug: 592 28641 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: vCont?
+Debug: 593 28641 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $vCont;c;C;s;S#62
+Debug: 594 28641 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: +
+Debug: 595 28641 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: vMustReplyEmpty
+Debug: 596 28641 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $#00
+Debug: 597 28641 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: +
+Debug: 598 28641 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: QStartNoAckMode
+Debug: 599 28641 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $OK#9a
+Debug: 600 28641 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: +
+Debug: 601 28641 gdb_server.c:710 gdb_get_packet_inner(): Received first acknowledgment after entering noack mode. Ignoring it.
+Debug: 602 28641 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: !
+Debug: 603 28641 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $OK#9a
+Debug: 604 28641 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: Hg0
+Debug: 605 28641 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $OK#9a
+Debug: 606 28641 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: qTStatus
+Debug: 607 28641 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $#00
+Debug: 608 28641 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: ?
+Debug: 609 28641 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $S02#b5
+Debug: 610 28641 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: qXfer:threads:read::0,1000
+Debug: 611 28641 gdb_server.c:418 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $<binary-data-44-bytes>#02
+Debug: 612 28643 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: Hc-1
+Debug: 613 28643 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $OK#9a
+Debug: 614 28643 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: qC
+Debug: 615 28643 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $QC0#c4
+Debug: 616 28643 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: qAttached
+Debug: 617 28643 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $1#31
+Debug: 618 28643 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: qOffsets
+Debug: 619 28643 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $Text=0;Data=0;Bss=0#04
+Debug: 620 28643 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: g
+Debug: 621 28643 vexriscv.c:1597 vexriscv_get_gdb_reg_list(): vexriscv_get_gdb_reg_list 1
+
+Debug: 622 28643 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $00000000500000f9340400f9180b00f900000000000000000010000000000000000000000000000000000200ffff0000ff000000004001f8ffff00000008000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000#74
+Debug: 623 28643 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: p20
+Debug: 624 28643 vexriscv.c:1597 vexriscv_get_gdb_reg_list(): vexriscv_get_gdb_reg_list 0
+
+Debug: 625 28644 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $00000000#80
+Debug: 626 28644 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 627 28644 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: qXfer:threads:read::0,1000
+Debug: 628 28644 gdb_server.c:418 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $<binary-data-44-bytes>#02
+Debug: 629 28644 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: qSymbol::
+Debug: 630 28644 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $OK#9a
+Debug: 631 28645 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: qRcmd,68616c74
+Debug: 632 28645 gdb_server.c:2770 gdb_query_packet(): qRcmd: halt
+Debug: 633 28645 command.c:166 script_debug(): command - halt
+Debug: 634 28645 target.c:3310 handle_halt_command(): -
+Debug: 635 28645 vexriscv.c:879 vexriscv_halt(): target->state: halted
+Debug: 636 28645 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $OK#9a
+Debug: 637 28645 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: X1000,0:
+Debug: 638 28645 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $OK#9a
+Debug: 639 28645 gdb_server.c:398 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: X1000,88:<binary-data-10-bytes>
+Debug: 640 28645 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $OK#9a
+Debug: 641 28645 gdb_server.c:1690 gdb_write_memory_binary_packet(): addr: 0x1000, len: 0x00000088
+Debug: 642 28645 target.c:2424 target_write_buffer(): writing buffer of 136 byte at 0x00001000
+Debug: 643 28645 vexriscv.c:1400 vexriscv_write_memory(): Writing memory at physical address 0x1000; size 4; count 34
+Debug: 644 28645 vexriscv.c:1461 vexriscv_write_memory(): SAVED : d
+
+Debug: 645 28648 gdb_server.c:398 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: X1088,9c0:<binary-data-6-bytes>
+Debug: 646 28648 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $OK#9a
+Debug: 647 28648 gdb_server.c:1690 gdb_write_memory_binary_packet(): addr: 0x1088, len: 0x000009c0
+Debug: 648 28648 target.c:2424 target_write_buffer(): writing buffer of 2496 byte at 0x00001088
+Debug: 649 28648 vexriscv.c:1400 vexriscv_write_memory(): Writing memory at physical address 0x1088; size 4; count 624
+Debug: 650 28648 vexriscv.c:1461 vexriscv_write_memory(): SAVED : 1af
+
+Debug: 651 28799 gdb_server.c:398 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: X1a48,4f2:<binary-data-16-bytes>
+Debug: 652 28800 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $OK#9a
+Debug: 653 28800 gdb_server.c:1690 gdb_write_memory_binary_packet(): addr: 0x1a48, len: 0x000004f2
+Debug: 654 28800 target.c:2424 target_write_buffer(): writing buffer of 1266 byte at 0x00001a48
+Debug: 655 28800 vexriscv.c:1400 vexriscv_write_memory(): Writing memory at physical address 0x1a48; size 4; count 316
+Debug: 656 28800 vexriscv.c:1461 vexriscv_write_memory(): SAVED : c4
+
+Debug: 657 28880 vexriscv.c:1400 vexriscv_write_memory(): Writing memory at physical address 0x1f38; size 2; count 1
+Debug: 658 28881 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: P20=00100000
+Debug: 659 28881 vexriscv.c:1597 vexriscv_get_gdb_reg_list(): vexriscv_get_gdb_reg_list 0
+
+Debug: 660 28881 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $OK#9a
+Debug: 661 28888 target.c:3073 handle_target(): [fpga_spinal.cpu0] target_poll() -> 0, next attempt in 100ms
+Debug: 662 28888 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: p20
+Debug: 663 28888 vexriscv.c:1597 vexriscv_get_gdb_reg_list(): vexriscv_get_gdb_reg_list 0
+
+Debug: 664 28888 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $00100000#81
+Debug: 665 28888 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: g
+Debug: 666 28888 vexriscv.c:1597 vexriscv_get_gdb_reg_list(): vexriscv_get_gdb_reg_list 1
+
+Debug: 667 28888 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $00000000500000f9340400f9180b00f900000000000000000010000000000000000000000000000000000200ffff0000ff000000004001f8ffff00000008000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000#74
+Debug: 668 28889 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: vCont;s:0;c
+Debug: 669 28889 gdb_server.c:3117 gdb_handle_vcont_packet(): target fpga_spinal.cpu0 single-step thread 0
+Debug: 670 28889 target.c:1858 target_call_event_callbacks(): target event 7 (gdb-start) for core fpga_spinal.cpu0
+Debug: 671 28889 target.c:1858 target_call_event_callbacks(): target event 5 (step-start) for core fpga_spinal.cpu0
+Debug: 672 28889 vexriscv.c:1769 vexriscv_resume_or_step(): Addr: 0x0, stepping: yes, handle breakpoints no
+
+Debug: 673 28889 target.c:2215 target_free_all_working_areas_restore(): freeing all working areas
+Debug: 674 28890 vexriscv.c:835 vexriscv_restore_context(): -
+Debug: 675 28890 target.c:1858 target_call_event_callbacks(): target event 2 (resumed) for core fpga_spinal.cpu0
+Debug: 676 28890 vexriscv.c:1827 vexriscv_resume_or_step(): Target resumed at 0x00001000
+Debug: 677 28890 target.c:1858 target_call_event_callbacks(): target event 6 (step-end) for core fpga_spinal.cpu0
+Debug: 678 28891 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $T05#b9
+Debug: 679 28891 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: p20
+Debug: 680 28891 vexriscv.c:1597 vexriscv_get_gdb_reg_list(): vexriscv_get_gdb_reg_list 0
+
+Debug: 681 28891 gdb_server.c:421 gdb_log_outgoing_packet(): [fpga_spinal.cpu0] sending packet: $180b00f9#fa
+Debug: 682 28891 gdb_server.c:405 gdb_log_incoming_packet(): [fpga_spinal.cpu0] received packet: m0,2
+Debug: 683 28891 gdb_server.c:1542 gdb_read_memory_packet(): addr: 0x0000000000000000, len: 0x00000002
+Debug: 684 28891 target.c:2489 target_read_buffer(): reading buffer of 2 byte at 0x00000000
+Debug: 685 28892 server.c:625 sig_handler(): Terminating on Signal 22

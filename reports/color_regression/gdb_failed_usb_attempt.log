@@ -1,0 +1,3 @@
+The target architecture is set to "riscv:rv32".
+work/gdb_main_check.gdb:6: Error in sourced command file:
+could not connect (error 138): 系统试图将驱动器合并到合并驱动器上的目录。

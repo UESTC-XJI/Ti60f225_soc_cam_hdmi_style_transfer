@@ -19,8 +19,8 @@ class OSD:
 
 osd=OSD(); osd.write_string('HELLO SOC'); assert ''.join(osd.pages[osd.active][:9])=='HELLO SOC'
 for n in range(20):
-    old=osd.ack; osd.write_string(f'FPS {n:02d} DISP {n+1:02d} DROP 0 ERR 0'); assert osd.ack!=old
-assert ''.join(osd.pages[osd.active][:6])=='FPS 19'
+    old=osd.ack; osd.write_string(f'RAW {n:02d} RESIZE {n+1:02d} DISP 60 DROP 0 ERR 0'); assert osd.ack!=old
+assert ''.join(osd.pages[osd.active][:7])=='RAW 19 '
 
 # Camera-side protocol model: the CPU reads the two-byte sensor ID before
 # applying the generated table, then exercises stream stop/start/recovery.

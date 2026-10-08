@@ -1,0 +1,35 @@
+poll
+background polling: off
+TAP: fpga_spinal.bridge (enabled)
+
+sleep 100
+
+targets
+    TargetName         Type       Endian TapName            State       
+--  ------------------ ---------- ------ ------------------ ------------
+ 0* fpga_spinal.cpu0   vexriscv   little fpga_spinal.bridge halted
+
+reg pc force
+pc (/32): 0x00000000
+
+reg x2 force
+
+reg x3 force
+
+reg misa force
+misa (/32): 0x00000000
+
+reg mtvec force
+mtvec (/32): 0x00000000
+
+reg mepc force
+mepc (/32): 0x00000000
+
+reg mcause force
+mcause (/32): 0x00000000
+
+reg mtval force
+mtval (/32): 0x00000000
+
+mdw 0x10b80000 2
+0x10b80000: 91320108 0014aa40 

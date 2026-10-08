@@ -1,0 +1,6 @@
+PASS frame-event CDC: independent clocks, short pulses, binary carries, 3:1 RAW/RESIZE, idle and reset
+tests/video_frame_diagnostics_tb.sv:65: $finish called at 29140000 (1ps)
+PASS independent RAW/RESIZE/DISP windows, boundary events, idle, saturation and cumulative faults
+tests/video_status_counters_tb.sv:34: $finish called at 655461000 (1ps)
+PASS APB OSD registers, CDC busy gate, FPS status, video readiness set/clear/reset and access-only writes
+tests/osd_apb_regs_tb.sv:30: $finish called at 341000 (1ps)

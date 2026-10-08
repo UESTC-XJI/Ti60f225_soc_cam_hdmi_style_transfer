@@ -1,0 +1,21 @@
+Info : auto-selecting first available session transport "jtag". To override use 'transport select <transport>'.
+Info : set servers polling period to 50ms
+Info : clock speed 800 kHz
+Info : JTAG tap: fpga_spinal.bridge tap/device found: 0x10660a79 (mfg: 0x53c (Efinix Inc), part: 0x0660, ver: 0x1)
+[fpga_spinal.cpu0] Target successfully examined.
+Info : starting gdb server for fpga_spinal.cpu0 on 23333
+Info : Listening on port 23333 for gdb connections
+Info : Listening on port 26666 for tcl connections
+Info : Listening on port 24444 for telnet connections
+Info : accepting 'tcl' connection on tcp/26666
+Info : JTAG tap: fpga_spinal.bridge tap/device found: 0x10660a79 (mfg: 0x53c (Efinix Inc), part: 0x0660, ver: 0x1)
+2546 bytes written at address 0x00001000
+downloaded 2546 bytes in 0.159422s (15.596 KiB/s)
+
+Info : dropped 'tcl' connection
+Info : accepting 'tcl' connection on tcp/26666
+Info : JTAG tap: fpga_spinal.bridge tap/device found: 0x10660a79 (mfg: 0x53c (Efinix Inc), part: 0x0660, ver: 0x1)
+3898 bytes written at address 0x00001000
+downloaded 3898 bytes in 0.234094s (16.261 KiB/s)
+
+shutdown command invoked

@@ -1,0 +1,93 @@
+[
+  {
+    "scenario": "normal",
+    "uart": "SOC VIDEO boot\r\nDDR scratch PASS\r\nCamera CD6B initialized\r\nHELLO SOC\r\nRAW 30 RESIZE 30 DISP 60 DROP 0 ERR 0\r\nRAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0\r\nRAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0\r\n",
+    "committed_pages": [
+      "HELLO SOC                                                                       ",
+      "RAW 30 RESIZE 30 DISP 60 DROP 0 ERR 0                                           ",
+      "RAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0                                            ",
+      "RAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0                                            "
+    ],
+    "commit_ticks": [
+      4900000,
+      106700000,
+      208500000,
+      310300000
+    ],
+    "video_ready_writes": [
+      0,
+      1,
+      1,
+      1,
+      1
+    ],
+    "cache_operations_modeled": 9
+  },
+  {
+    "scenario": "id_retry",
+    "uart": "SOC VIDEO boot\r\nDDR scratch PASS\r\nCamera ID/init FAIL; retry every second\r\nHELLO SOC\r\nCamera recovered\r\nRAW 30 RESIZE 30 DISP 60 DROP 0 ERR 0\r\nRAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0\r\nRAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0\r\n",
+    "committed_pages": [
+      "HELLO SOC                                                                       ",
+      "RAW 30 RESIZE 30 DISP 60 DROP 0 ERR 0                                           ",
+      "RAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0                                            ",
+      "RAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0                                            "
+    ],
+    "commit_ticks": [
+      3900000,
+      107400000,
+      209200000,
+      311000000
+    ],
+    "video_ready_writes": [
+      0,
+      1,
+      1,
+      1
+    ],
+    "cache_operations_modeled": 9
+  },
+  {
+    "scenario": "no_ack",
+    "uart": "SOC VIDEO boot\r\nDDR scratch PASS\r\nCamera CD6B initialized\r\nOSD initial COMMIT timeout\r\nRAW 30 RESIZE 30 DISP 60 DROP 0 ERR 0\r\nOSD metrics COMMIT timeout\r\nRAW 30 RESIZE 30 DISP 60 DROP 0 ERR 0\r\nOSD metrics COMMIT timeout\r\nRAW 30 RESIZE 30 DISP 60 DROP 0 ERR 0\r\nOSD metrics COMMIT timeout\r\n",
+    "committed_pages": [],
+    "commit_ticks": [],
+    "video_ready_writes": [
+      0
+    ],
+    "cache_operations_modeled": 9
+  },
+  {
+    "scenario": "ddr_corrupt",
+    "uart": "SOC VIDEO boot\r\nDDR scratch FAIL\r\n",
+    "committed_pages": [],
+    "commit_ticks": [],
+    "video_ready_writes": [
+      0
+    ],
+    "cache_operations_modeled": 3
+  },
+  {
+    "scenario": "timer_wrap",
+    "uart": "SOC VIDEO boot\r\nDDR scratch PASS\r\nCamera CD6B initialized\r\nHELLO SOC\r\nRAW 30 RESIZE 30 DISP 60 DROP 0 ERR 0\r\nRAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0\r\nRAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0\r\n",
+    "committed_pages": [
+      "HELLO SOC                                                                       ",
+      "RAW 30 RESIZE 30 DISP 60 DROP 0 ERR 0                                           ",
+      "RAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0                                            ",
+      "RAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0                                            "
+    ],
+    "commit_ticks": [
+      4299801760,
+      4401601760,
+      4503401760,
+      4605201760
+    ],
+    "video_ready_writes": [
+      0,
+      1,
+      1,
+      1,
+      1
+    ],
+    "cache_operations_modeled": 9
+  }
+]

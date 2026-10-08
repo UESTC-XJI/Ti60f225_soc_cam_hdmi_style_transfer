@@ -1,0 +1,39 @@
+Info : auto-selecting first available session transport "jtag". To override use 'transport select <transport>'.
+Info : set servers polling period to 50ms
+Info : clock speed 800 kHz
+Info : JTAG tap: fpga_spinal.bridge tap/device found: 0x10660a79 (mfg: 0x53c (Efinix Inc), part: 0x0660, ver: 0x1)
+[fpga_spinal.cpu0] Target successfully examined.
+Info : starting gdb server for fpga_spinal.cpu0 on 13333
+Info : Listening on port 13333 for gdb connections
+Info : Listening on port 16666 for tcl connections
+Info : Listening on port 14444 for telnet connections
+Info : accepting 'tcl' connection on tcp/16666
+    TargetName         Type       Endian TapName            State       
+--  ------------------ ---------- ------ ------------------ ------------
+ 0* fpga_spinal.cpu0   vexriscv   little fpga_spinal.bridge halted
+
+pc (/32): 0x00000000
+
+register sp not found in current target
+
+0x00001000: ffffffff ffffffff ffffffff ffffffff 
+
+Info : dropped 'tcl' connection
+Info : accepting 'gdb' connection on tcp/13333
+Warn : Target Descriptions Supported, but disabled
+Info : dropped 'gdb' connection
+Info : accepting 'gdb' connection on tcp/13333
+Warn : Target Descriptions Supported, but disabled
+Error: Target fpga_spinal.cpu0 doesn't support checksum_memory
+Info : dropped 'gdb' connection
+Info : accepting 'gdb' connection on tcp/13333
+Warn : Target Descriptions Supported, but disabled
+Info : dropped 'gdb' connection
+Info : accepting 'gdb' connection on tcp/13333
+Warn : Target Descriptions Supported, but disabled
+Info : dropped 'gdb' connection
+Info : accepting 'gdb' connection on tcp/13333
+Warn : Target Descriptions Supported, but disabled
+Info : dropped 'gdb' connection
+Info : accepting 'tcl' connection on tcp/16666
+shutdown command invoked

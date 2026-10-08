@@ -37,6 +37,7 @@ int app_ddr_test(void) {
 }
 
 int main(void) {
+    osd_set_video_ready(0);  /* Also return to bars after a debugger reload. */
     bsp_init();
     uart_writeStr(BSP_UART_TERMINAL, "SOC VIDEO boot\r\n");
     if (app_ddr_test()) {
@@ -53,12 +54,14 @@ int main(void) {
     } else {
         uart_writeStr(BSP_UART_TERMINAL, "Camera CD6B initialized\r\n");
     }
-    if (osd_write_string("HELLO SOC")) {
+    int osd_rc = osd_write_string("HELLO SOC");
+    if (osd_rc) {
         ++app_osd_errors;
         uart_writeStr(BSP_UART_TERMINAL, "OSD initial COMMIT timeout\r\n");
     } else {
         uart_writeStr(BSP_UART_TERMINAL, "HELLO SOC\r\n");
     }
+    if (camera_rc == 0 && osd_rc == 0) osd_set_video_ready(1);
     uint64_t last_update = clint_getTime(BSP_CLINT);
     for (;;) {
         uint64_t now = clint_getTime(BSP_CLINT);
@@ -70,10 +73,12 @@ int main(void) {
         }
         if (app_ddr_test())
             uart_writeStr(BSP_UART_TERMINAL, "DDR concurrent scratch FAIL\r\n");
-        if (osd_publish_metrics()) {
+        osd_rc = osd_publish_metrics();
+        if (osd_rc) {
             ++app_osd_errors;
             uart_writeStr(BSP_UART_TERMINAL, "OSD metrics COMMIT timeout\r\n");
         }
+        if (camera_rc == 0 && osd_rc == 0) osd_set_video_ready(1);
         ++app_metrics_updates;
         last_update = clint_getTime(BSP_CLINT);
     }

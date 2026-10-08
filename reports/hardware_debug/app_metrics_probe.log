@@ -1,0 +1,28 @@
+resume
+
+sleep 1500
+
+halt
+
+sleep 100
+
+reg pc
+pc (/32): 0x00001310
+
+mdw 0x1f3c 7
+0x00001f3c: 00000002 00000000 00000000 00000000 00000000 00000000 00000000 
+
+reg mcause force
+mcause (/32): 0x00000001
+
+reg mepc force
+mepc (/32): 0x00000000
+
+mdw 0x1000 1
+0x00001000: 30047073 
+
+reg mcause
+mcause (/32): 0x00000001
+
+reg mepc
+mepc (/32): 0x00000000

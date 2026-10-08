@@ -56,6 +56,23 @@ def main():
         assert a == b, 'expanded RTL differs from baseline: ' + name
         protected = r'`pragma protect begin_protected[\s\S]*?`pragma protect end_protected'
         assert re.findall(protected, old.replace('\r\n', '\n')) == re.findall(protected, new.replace('\r\n', '\n')), 'protected content modified: ' + name
+    # Removing VIO must retain the measured white balance and manual tone
+    # calibration. Equal gains passed the former structural checks but
+    # regressed the real camera image to green.
+    baseline_debug = json.loads(subprocess.check_output(
+        git + ['show', BASELINE + ':debug.json'], cwd=ROOT))
+    probes = next(c for c in baseline_debug['debug_cores'] if c['name'] == 'vio0')['probes']
+    calibrated = {p['name']: int(p['init'], 0) for p in probes if p['init'] is not None}
+    top = (ROOT / 'rtl/ti60f225_oob_top.v').read_text(encoding='latin1')
+    removal = (ROOT / 'tools/remove_manual_debug.py').read_text(encoding='utf-8')
+    for name in ['r_gain','g_gain','b_gain','tone_enable','high_green_strength',
+                 'dark_red_strength','lift_enable','lift_strength']:
+        for text in [top, removal]:
+            value = re.search(r'\b' + name + r"\s*=\s*\d+'([bdh])([0-9a-fA-F]+)", text)
+            assert value, 'missing calibrated control: ' + name
+            actual = int(value[2], {'b': 2, 'd': 10, 'h': 16}[value[1]])
+            assert actual == calibrated[name], 'baseline camera calibration changed: ' + name
+    print('PASS baseline white balance and manual tone calibration survive VIO removal.')
     updated = sum('expanded_token_sha256' in row for row in rows)
     print(f'PASS: {len(rows)} RTL files checked; {updated} intentional 720p imports match their pre-migration tokens; remaining RTL/DDR/encrypted contents match baseline.')
 

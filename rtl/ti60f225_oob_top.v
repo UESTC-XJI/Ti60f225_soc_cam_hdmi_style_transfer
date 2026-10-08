@@ -27,6 +27,8 @@
 `include "isp/hdmi_info_overlay.v"
 `include "soc_integration/osd_font8x16.sv"
 `include "soc_integration/osd_fixed_text.sv"
+`include "soc_integration/hdmi_startup_colorbar.sv"
+`include "soc_integration/video_frame_diagnostics.sv"
 // `include "define.v"
 
 module ti60f225_oob_top #(
@@ -665,6 +667,10 @@ wire [`CFG_BITS_32-1:0] display_pixel;
 wire ch0_vs,ch0_hs,ch0_de;
 wire display_underflow;
 wire capture_reset_n,display_reset_n;
+// The HDMI test pattern and encoder do not wait for DDR or CPU startup.
+wire hdmi_output_reset_n;
+rst_n_piple #(.DLY(3)) hdmi_output_reset(
+  .clk(hdmi_tx_slow_clk),.rst_n_i(w_arstn),.rst_n_o(hdmi_output_reset_n));
 // DDR startup barrier: readiness is synchronized separately into the CPU and
 // display domains; no AXI master is released on an asynchronous cal_done edge.
 wire barrier_sys_reset_n,barrier_vid_reset_n,barrier_allow_sys,barrier_allow_vid,barrier_cpu_waiting;
@@ -797,31 +803,36 @@ i2c_owner_mux camera_i2c_owner_mux(
 wire [31:0] soc_axi_error_count;
 wire osd_apb_enable; wire [11:0] osd_apb_x,osd_apb_y; wire [23:0] osd_apb_color;
 wire osd_apb_char_we,osd_apb_char_page,osd_apb_commit_toggle,osd_apb_commit_page; wire [6:0] osd_apb_char_addr; wire [7:0] osd_apb_char_data;
-wire osd_db_ack,osd_db_active,osd_db_busy;
+wire osd_db_ack,osd_db_active,osd_db_busy,osd_video_ready;
 // One-second capture/display statistics are exposed through the APB status
 // register. Events are edge-qualified so level faults are counted once.
 wire [31:0] status_capture_frames,status_display_frames,status_drop_count,status_underflow_count,status_error_count;
-wire [15:0] status_capture_fps,status_display_fps;
-reg [31:0] status_resize_frames_d,status_axi_error_d; reg status_display_vs_d; reg [26:0] status_tick_count;
-wire status_capture_event = (resize_completed_frames != status_resize_frames_d);
-wire status_display_event = ch0_vs && !status_display_vs_d;
+wire [15:0] status_capture_fps,status_display_fps,status_raw_fps;
+reg [31:0] status_axi_error_d; reg [26:0] status_tick_count;
+wire status_raw_event,status_capture_event,status_display_event;
+wire status_reset_n=barrier_sys_reset_n && capture_reset_n && display_reset_n;
+video_frame_diagnostics frame_diagnostics(
+  .raw_clk(i_mipi_rx_pclk),.resize_clk(vid_clk_dvi2),.display_clk(hdmi_tx_slow_clk),
+  .core_clk(core_clk),.rst_n(status_reset_n),.raw_vs(w_mipi_rx_vs),
+  .resize_completed_frames(resize_completed_frames),.display_vs(ch0_vs),
+  .raw_event(status_raw_event),.resize_event(status_capture_event),.display_event(status_display_event));
 wire status_interval_tick = (status_tick_count == 27'd99_999_999);
 wire status_axi_error_event = (soc_axi_error_count != status_axi_error_d);
-always @(posedge core_clk or negedge barrier_sys_reset_n) begin
-  if(!barrier_sys_reset_n) begin status_resize_frames_d<=0; status_axi_error_d<=0; status_display_vs_d<=0; status_tick_count<=0; end
+always @(posedge core_clk or negedge status_reset_n) begin
+  if(!status_reset_n) begin status_axi_error_d<=0; status_tick_count<=0; end
   else begin
-    status_resize_frames_d <= resize_completed_frames; status_axi_error_d <= soc_axi_error_count; status_display_vs_d <= ch0_vs;
+    status_axi_error_d <= soc_axi_error_count;
     if(status_interval_tick) status_tick_count<=0; else status_tick_count<=status_tick_count+1'b1;
   end
 end
 video_status_counters status_counters(
-  .clk(core_clk),.rst_n(barrier_sys_reset_n),.frame_start(status_capture_event),
+  .clk(core_clk),.rst_n(status_reset_n),.frame_start(status_capture_event),.raw_frame_start(status_raw_event),
   .display_frame_start(status_display_event),.capture_overflow(capture_fault),
   .display_underflow(display_underflow),.axi_error(status_axi_error_event),
   .interval_tick(status_interval_tick),.capture_frames(status_capture_frames),
   .display_frames(status_display_frames),.drop_count(status_drop_count),
   .underflow_count(status_underflow_count),.error_count(status_error_count),
-  .capture_fps(status_capture_fps),.display_fps(status_display_fps));
+  .capture_fps(status_capture_fps),.display_fps(status_display_fps),.raw_fps(status_raw_fps));
 soc_video_ddr_integration soc_video_inst(
   .clk(core_clk),.rst_n(barrier_sys_reset_n),.allow_access(barrier_allow_sys),
   .vid_awid({2'b0,fb_awid}),.vid_awaddr(fb_awaddr),.vid_awlen(fb_awlen),.vid_awsize(fb_awsize),.vid_awburst(fb_awburst),.vid_awvalid(fb_awvalid),.vid_awready(fb_awready),
@@ -842,8 +853,9 @@ assign system_spi_0_io_data_1_OUT=soc_spi_d1_out;
 assign system_spi_0_io_data_1_OE=soc_spi_d1_oe;
 assign fb_bid=soc_vid_bid[5:0]; assign fb_rid=soc_vid_rid[5:0]; assign fb_bresp=soc_vid_bresp; assign fb_rresp=soc_vid_rresp; assign fb_bvalid=soc_vid_bvalid; assign fb_rvalid=soc_vid_rvalid; assign fb_rlast=soc_vid_rlast; assign fb_rdata=soc_vid_rdata;
 osd_apb_regs osd_apb(
-  .pclk(core_clk),.preset_n(w_arstn),.psel(soc_apb_psel),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr),.pwdata(soc_apb_pwdata),.prdata(soc_apb_prdata),.pready(soc_apb_pready),.pslverr(soc_apb_pslverr),
-  .o_enable(osd_apb_enable),.o_x(osd_apb_x),.o_y(osd_apb_y),.o_color(osd_apb_color),.o_char_we(osd_apb_char_we),.o_char_addr(osd_apb_char_addr),.o_char_page(osd_apb_char_page),.o_char_data(osd_apb_char_data),.o_commit_toggle(osd_apb_commit_toggle),.o_commit_page(osd_apb_commit_page),.i_ack_toggle(osd_db_ack),.i_active_page(osd_db_active),.i_busy(osd_db_busy),.i_frame_count(status_display_fps),.i_capture_fps(status_capture_fps),.i_display_fps(status_display_fps),.i_drop_count(status_drop_count[15:0]),.i_error_count(status_error_count[15:0]));
+  .i_raw_fps(status_raw_fps),
+  .pclk(core_clk),.preset_n(w_arstn && barrier_sys_reset_n && !soc_system_reset),.psel(soc_apb_psel),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr),.pwdata(soc_apb_pwdata),.prdata(soc_apb_prdata),.pready(soc_apb_pready),.pslverr(soc_apb_pslverr),
+  .o_enable(osd_apb_enable),.o_x(osd_apb_x),.o_y(osd_apb_y),.o_color(osd_apb_color),.o_char_we(osd_apb_char_we),.o_char_addr(osd_apb_char_addr),.o_char_page(osd_apb_char_page),.o_char_data(osd_apb_char_data),.o_commit_toggle(osd_apb_commit_toggle),.o_commit_page(osd_apb_commit_page),.o_video_ready(osd_video_ready),.i_ack_toggle(osd_db_ack),.i_active_page(osd_db_active),.i_busy(osd_db_busy),.i_frame_count(status_display_fps),.i_capture_fps(status_capture_fps),.i_display_fps(status_display_fps),.i_drop_count(status_drop_count[15:0]),.i_error_count(status_error_count[15:0]));
 
 wire db_vs,db_hs,db_de,db_char_pixel; wire [7:0] db_r,db_g,db_b;
 osd_text_double_buffer #(.FRAME_WIDTH(1280),.FRAME_HEIGHT(720),.PAGE_SIZE(80)) osd_db(
@@ -1298,16 +1310,33 @@ osd_fixed_text #(
   .o_r(fixed_osd_r),.o_g(fixed_osd_g),.o_b(fixed_osd_b),.o_char_pixel(fixed_osd_char_pixel)
 );
 
+// Stable bars are shown until the CPU has initialized the camera and first
+// OSD page. Switch only at a frame boundary in the HDMI clock domain.
+wire bar_hs,bar_vs,bar_de;
+wire [7:0] bar_r,bar_g,bar_b;
+hdmi_startup_colorbar #(.HACT(HACT),.HFP(HFP),.HSP(HSP),.HBP(HBP),
+  .VACT(VACT),.VFP(VFP),.VSP(VSP),.VBP(VBP)) startup_bars(
+  .clk(hdmi_tx_slow_clk),.rst_n(hdmi_output_reset_n),.hs(bar_hs),.vs(bar_vs),.de(bar_de),
+  .r(bar_r),.g(bar_g),.b(bar_b));
+wire out_vs,out_hs,out_de;
+wire [7:0] out_r,out_g,out_b;
+hdmi_startup_select startup_select(
+  .clk(hdmi_tx_slow_clk),.rst_n(hdmi_output_reset_n),
+  .ready_async(osd_video_ready && barrier_vid_reset_n && display_reset_n),
+  .bar_vs(bar_vs),.bar_hs(bar_hs),.bar_de(bar_de),.bar_r(bar_r),.bar_g(bar_g),.bar_b(bar_b),
+  .cam_vs(db_vs),.cam_hs(db_hs),.cam_de(db_de),.cam_r(db_r),.cam_g(db_g),.cam_b(db_b),
+  .out_vs(out_vs),.out_hs(out_hs),.out_de(out_de),.out_r(out_r),.out_g(out_g),.out_b(out_b));
+
 dvi_encoder dvi_encoder_m0
 (
 	.pixelclk      		(hdmi_tx_slow_clk          ),// system clock
-	.rst_p         		(~display_reset_n),// reset
-	.i_bdata      		(db_b),
-	.i_gdata     		(db_g),
-	.i_rdata       		(db_r),
-  .i_de            	(db_de),
-	.i_hs         		(db_hs),
-	.i_vs         		(db_vs),
+	.rst_p         		(~hdmi_output_reset_n),// reset
+	.i_bdata      		(out_b),
+	.i_gdata     		(out_g),
+	.i_rdata       		(out_r),
+  .i_de            	(out_de),
+	.i_hs         		(out_hs),
+	.i_vs         		(out_vs),
 
   .video_format     (2'b00), //// 00 = RGB, 01 = YCbCr 4:2:2, 10 = YCbCr 4:4:4
   .video_VIC        (7'd4),
@@ -1332,12 +1361,14 @@ assign tmds_tx_data2_TX_DATA = ~tmds_data2;
 // USER1 is owned by the Sapphire hard-JTAG channel.  The former manual
 // VIO/LA instance was removed to avoid a second USER1 TAP; Efinity auto-debug
 // probes use USER2 and the control values below are deterministic defaults.
-assign r_gain=16'd255; assign g_gain=16'd255; assign b_gain=16'd255;
+// Preserve the baseline VIO calibration when the CPU owns USER1.
+assign r_gain=16'h0168; assign g_gain=16'h0100; assign b_gain=16'h01a9;
 assign osd_hist_enable=1'b0; assign osd_hist_mode=2'b0; assign osd_text_enable=osd_apb_enable;
-assign ae_enable=1'b0; assign ae_target=8'd128; assign ae_high_protect=1'b0;
-assign ae_high_threshold=8'd232; assign ae_high_limit=8'd0;
+// Legacy AE cannot control the sensor while the CPU owns the I2C pads.
+assign ae_enable=1'b0; assign ae_target=8'd96; assign ae_high_protect=1'b1;
+assign ae_high_threshold=8'd232; assign ae_high_limit=8'd10;
 assign lift_auto_enable=1'b0; assign lift_auto_max=8'd0;
-assign lift_enable=1'b0; assign lift_strength=8'd0; assign tone_enable=1'b0;
-assign high_green_strength=8'd0; assign dark_red_strength=8'd0;
+assign lift_enable=1'b1; assign lift_strength=8'd32; assign tone_enable=1'b1;
+assign high_green_strength=8'd32; assign dark_red_strength=8'd32;
 
 endmodule

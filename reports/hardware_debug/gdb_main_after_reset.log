@@ -1,0 +1,20 @@
+The target architecture is set to "riscv:rv32".
+0x00001310 in main () at C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_soc_sim\software\firmware\main.c:65
+65	        if (now - last_update < BSP_CLINT_HZ) continue;
+Loading section .init, size 0x88 lma 0x1000
+Loading section .text, size 0x9c0 lma 0x1088
+Loading section .rodata, size 0x4f2 lma 0x1a48
+Start address 0x00001000, load size 3898
+Transfer rate: 24 KB/sec, 1299 bytes/write.
+Temporary breakpoint 1 at 0x1184: file software/bsp/driver/io.h, line 38.
+
+Program stopped.
+main () at software/bsp/driver/io.h:38
+38	        *((volatile u32*) address) = data;
+pc             0x1184	0x1184 <main>
+sp             0x20000	0x20000
+gp             0x273c	0x273c
+0x1f3c <app_metrics_updates>:	0x00000000	0x00000000	0x00000000	0x00000000
+0x1f4c <firmware_trap_value>:	0x00000000	0x00000000	0x00000000
+[Inferior 1 (Remote target) detached]
+JTAG tap: fpga_spinal.bridge tap/device found: 0x10660a79 (mfg: 0x53c (Efinix Inc), part: 0x0660, ver: 0x1)

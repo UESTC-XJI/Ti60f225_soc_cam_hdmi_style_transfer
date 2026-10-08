@@ -1,0 +1,32 @@
+mww 0x1000 0x00140413
+
+mww 0x1004 0xffdff06f
+
+reg x8 0
+x8 (/32): 0x00000000
+
+resume 0x1000
+
+sleep 200
+
+halt
+
+sleep 200
+
+reg x8
+x8 (/32): 0x00000000
+
+reg pc force
+pc (/32): 0x00000004
+
+reg mcause force
+mcause (/32): 0x00000001
+
+reg mepc force
+mepc (/32): 0x00000000
+
+reg mtval force
+mtval (/32): 0x00000000
+
+mdw 0x1000 2
+0x00001000: 00140413 ffdff06f 

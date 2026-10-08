@@ -1,0 +1,37 @@
+poll off
+
+proc bridge_write {addr data} {irscan fpga_spinal.bridge 8; drscan fpga_spinal.bridge 2 0 8 0 32 $addr 32 $data 1 1 2 2; runtest 1000}
+bridge_write
+proc bridge_read {addr} {irscan fpga_spinal.bridge 8; drscan fpga_spinal.bridge 2 0 8 0 32 $addr 32 0 1 0 2 2; runtest 1000; drscan fpga_spinal.bridge 4 1 32 0}
+bridge_read
+bridge_read 0x10b80000
+04 00000002
+bridge_write 0x10b80004 0x00000017
+
+bridge_read 0x10b80004
+04 00000008
+bridge_write 0x10b80004 0x000010b7
+
+bridge_write 0x10b80004 0x00008067
+
+bridge_write 0x10b80004 0x00000017
+
+bridge_read 0x10b80004
+04 00001000
+bridge_write 0x10b80000 0x02000000
+
+sleep 200
+
+bridge_write 0x10b80000 0x00020000
+
+bridge_read 0x10b80000
+04 00001002
+bridge_write 0x10b80004 0x00040013
+
+bridge_read 0x10b80004
+04 00000000
+bridge_write 0x10b80004 0x00000017
+
+bridge_read 0x10b80004
+04 00000004
+poll on

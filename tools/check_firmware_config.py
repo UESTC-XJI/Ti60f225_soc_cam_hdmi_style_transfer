@@ -21,7 +21,9 @@ binary_path = Path(binary)
 if not binary_path.is_absolute(): binary_path = APP / binary_path
 assert binary_path.is_file(), binary_path
 assert binary_path.read_bytes()[:4] == b'\x7fELF'
-assert attrs['org.eclipse.cdt.debug.gdbjtag.core.stopAt'] == 'main'
+assert attrs['org.eclipse.cdt.debug.gdbjtag.core.stopAt'] == '*main'
+assert attrs['ilg.gnumcueclipse.debug.gdbjtag.openocd.otherInitCommands'] == 'monitor reset halt'
+assert 'set riscv use-compressed-breakpoints no' in attrs['ilg.gnumcueclipse.debug.gdbjtag.openocd.gdbClientOtherCommands']
 assert attrs['ilg.gnumcueclipse.debug.gdbjtag.openocd.otherRunCommands'] == 'set $pc = _start'
 jar = next((IDE / 'Efinity-RISCV-IDE/plugins').glob('*openocd.core_*.jar'))
 with ZipFile(jar) as z:

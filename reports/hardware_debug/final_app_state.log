@@ -1,0 +1,33 @@
+halt
+
+sleep 100
+
+reg pc
+pc (/32): 0x000012f8
+
+reg x2
+x2 (/32): 0x0001ffd0
+
+reg x3
+x3 (/32): 0x0000273c
+
+mdw 0x1f3c 7
+0x00001f3c: 00000008 00000000 00000000 00000000 00000000 00000000 00000000 
+
+dump_image reports/hardware_debug/final_firmware_readback.bin 0x1000 3898
+dumped 3898 bytes in 0.517010s (7.363 KiB/s)
+
+resume
+
+sleep 1500
+
+halt
+
+sleep 100
+
+mdw 0x1f3c 7
+0x00001f3c: 0000000a 00000000 00000000 00000000 00000000 00000000 00000000 
+
+resume
+
+shutdown

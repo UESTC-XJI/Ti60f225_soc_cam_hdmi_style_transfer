@@ -1,0 +1,1 @@
+PASS: DDR readback matches all 3898 firmware bytes.

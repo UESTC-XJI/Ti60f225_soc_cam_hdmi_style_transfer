@@ -1,0 +1,14 @@
+rtl/soc_integration/axi_shared_ddr_2m.sv:45: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
+rtl/soc_integration/axi_shared_ddr_2m.sv:45: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
+rtl/frame_buffer_V4/ddr_buffer.v:126: warning: Port 5 (total_burst_len) of ddr_wr_buffer1 expects 25 bits, got 32.
+rtl/frame_buffer_V4/ddr_buffer.v:126:        : Pruning 7 high bits of the expression.
+rtl/frame_buffer_V4/ddr_buffer.v:176: warning: Port 5 (burst_len) of ddr_rd_buffer expects 25 bits, got 32.
+rtl/frame_buffer_V4/ddr_buffer.v:176:        : Pruning 7 high bits of the expression.
+rtl/frame_buffer_V4/ddr_buffer.v:224: warning: Port 5 (wr_bank) of bank_switch expects 2 bits, got 1.
+rtl/frame_buffer_V4/ddr_buffer.v:224:        : Padding 1 high bits of the port.
+rtl/frame_buffer_V4/ddr_buffer.v:224: warning: Port 6 (rd_bank) of bank_switch expects 2 bits, got 1.
+rtl/frame_buffer_V4/ddr_buffer.v:224:        : Padding 1 high bits of the port.
+rtl/frame_buffer_V4/frame_buffer.v:194: warning: Port 9 (test_cnt) of ddr_buffer expects 8 bits, got 1.
+rtl/frame_buffer_V4/frame_buffer.v:194:        : Padding 7 high bits of the port.
+PASS shared DDR + real XRGB DMA + 200 concurrent CPU write/read bursts: 3 frames, 10400 AXI writes, stalls + 4KiB boundaries
+work/tb_video_dma_shared.sv:139: $finish called at 813521072 (1ps)

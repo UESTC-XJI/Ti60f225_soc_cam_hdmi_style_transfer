@@ -2,10 +2,11 @@
 set pagination off
 set mem inaccessible-by-default off
 set arch riscv:rv32
+set riscv use-compressed-breakpoints no
 set remotetimeout 250
-target remote localhost:3333
-monitor halt
+target extended-remote localhost:3333
+monitor reset halt
 load
 set $pc = _start
-tbreak main
+tbreak *main
 continue

@@ -61,6 +61,8 @@ class Machine:
         self.pages = [list(' ' * 80), list(' ' * 80)]
         self.commits = []
         self.commit_times = []
+        self.video_ready = 1  # A previous debugger-loaded application left it set.
+        self.ready_writes = []
         self.invalidates = 0
         self.main_seen = False
         self.uc.mmio_map(0xf8010000, 0x1000, self.uart_read, None, self.uart_write, None)
@@ -151,10 +153,20 @@ class Machine:
         if off == 0: return 0x4f534431
         if off == 0x20: return self.ack | self.active << 1 | bool(self.pending) << 2
         if off == 0x24: return (60 << 16) | (30 if len(self.commits) < 2 else 9)
+        if off == 0x28: return self.video_ready
+        if off == 0x2c: return 30
+        if off == 0x30: return 30 if len(self.commits) < 2 else 9
         return 0
 
     def osd_write(self, uc, off, size, value, data):
-        if off == 0x14: self.char_addr = value
+        if off == 0x28:
+            self.video_ready = value & 1
+            self.ready_writes.append(self.video_ready)
+            if self.video_ready:
+                assert self.ready_writes[0] == 0, 'reload must clear readiness first'
+                assert self.camera_writes[-len(TABLE):] == TABLE, 'camera not initialized'
+                assert self.commits and self.pending is None, 'OSD not acknowledged'
+        elif off == 0x14: self.char_addr = value
         elif off == 0x18:
             page, pos = self.char_addr >> 7, self.char_addr & 127
             assert page != self.active and pos < 80
@@ -170,6 +182,8 @@ class Machine:
         self.uc.emu_start(ENTRY, 0x20000, count=10000000)
         assert self.main_seen
         assert self.word('firmware_trap_cause') == 0
+        assert self.ready_writes[0] == 0
+        assert self.video_ready == (0 if self.scenario in ('ddr_corrupt', 'no_ack') else 1)
         if self.scenario == 'ddr_corrupt':
             assert self.word('app_ddr_errors') == 1
             assert not self.camera_writes
@@ -199,11 +213,12 @@ class Machine:
                 for text in self.commits[1:]:
                     assert text.rstrip() + '\r\n' in self.uart
                     assert 'DROP 0 ERR 0' in text
-                assert self.commits[-1].rstrip() == 'FPS 9 DISP 60 DROP 0 ERR 0'
+                assert self.commits[-1].rstrip() == 'RAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0'
                 assert all(b-a >= 100000000 for a,b in zip(self.commit_times, self.commit_times[1:]))
         print('PASS RV32 ELF:', self.scenario, 'entry, stack/gp/BSS, UART, DDR, camera, OSD/timer')
         return {'scenario': self.scenario, 'uart': self.uart,
                 'committed_pages': self.commits, 'commit_ticks': self.commit_times,
+                'video_ready_writes': self.ready_writes,
                 'cache_operations_modeled': self.invalidates}
 
 results = [Machine(s).run() for s in ['normal', 'id_retry', 'no_ack', 'ddr_corrupt', 'timer_wrap']]

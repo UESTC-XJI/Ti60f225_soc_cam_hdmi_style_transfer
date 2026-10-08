@@ -11,7 +11,7 @@
 #endif
 
 #ifdef SOC_DRIVER_HOST
-extern volatile uint32_t soc_osd_mmio[10];
+extern volatile uint32_t soc_osd_mmio[13];
 #define SOC_OSD_BASE ((uintptr_t)&soc_osd_mmio[0])
 #elif !defined(SOC_OSD_BASE)
 #define SOC_OSD_BASE 0xf8100000u
@@ -26,6 +26,9 @@ extern volatile uint32_t soc_osd_mmio[10];
 #define OSD_COMMIT   0x1cu
 #define OSD_STATUS   0x20u
 #define OSD_STATUS2  0x24u
+#define OSD_VIDEO_READY 0x28u
+#define OSD_RAW_FPS     0x2cu
+#define OSD_RESIZE_FPS  0x30u
 #define CAMERA_SENSOR_ID 0xcd6bu
 
 static inline void osd_write(uint32_t off,uint32_t value) {
@@ -60,6 +63,7 @@ __attribute__((weak)) void sapphire_uart_log(const char *s) { (void)s; }
 #endif
 
 static uint32_t osd_status(void) { return osd_read(OSD_STATUS); }
+void osd_set_video_ready(uint32_t ready) { osd_write(OSD_VIDEO_READY,ready & 1u); }
 static int osd_wait_ack(uint32_t old_ack) {
 #ifdef EFX_SAPPHIRE_BSP
   uint64_t start=clint_getTime(BSP_CLINT);
@@ -123,9 +127,12 @@ static char *put_dec(char *p,uint32_t v) {
 }
 int osd_publish_metrics(void) {
   uint32_t s=osd_status(), s2=osd_read(OSD_STATUS2); char text[80],*p=text;
-  uint32_t capture_fps=s2&0xffffu, display_fps=(s2>>16)&0xffffu;
+  uint32_t raw_fps=osd_read(OSD_RAW_FPS)&0xffffu;
+  uint32_t resize_fps=osd_read(OSD_RESIZE_FPS)&0xffffu;
+  uint32_t display_fps=(s2>>16)&0xffffu;
   uint32_t drop=(s>>11)&0xffu, err=(s>>19)&0xffu;
-  p[0]='F';p[1]='P';p[2]='S';p[3]=' ';p=put_dec(p+4,capture_fps);
+  p[0]='R';p[1]='A';p[2]='W';p[3]=' ';p=put_dec(p+4,raw_fps);
+  *p++=' ';*p++='R';*p++='E';*p++='S';*p++='I';*p++='Z';*p++='E';*p++=' ';p=put_dec(p,resize_fps);
   *p++=' ';*p++='D';*p++='I';*p++='S';*p++='P';*p++=' ';p=put_dec(p,display_fps);
   *p++=' ';*p++='D';*p++='R';*p++='O';*p++='P';*p++=' ';p=put_dec(p,drop);
   *p++=' ';*p++='E';*p++='R';*p++='R';*p++=' ';p=put_dec(p,err);*p=0;

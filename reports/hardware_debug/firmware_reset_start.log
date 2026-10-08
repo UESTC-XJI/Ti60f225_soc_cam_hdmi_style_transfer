@@ -1,0 +1,40 @@
+halt
+
+load_image reports/hardware_debug/ocr_before_reset.bin 0xf9000000 bin
+4096 bytes written at address 0xf9000000
+downloaded 4096 bytes in 0.120485s (33.199 KiB/s)
+
+reset halt
+
+sleep 100
+
+load_image software/firmware/build/soc_video_app.elf
+3898 bytes written at address 0x00001000
+downloaded 3898 bytes in 0.234749s (16.216 KiB/s)
+
+mdw 0x1000 4
+0x00001000: 30047073 30401073 00001197 73418193 
+
+bp 0x1184 4 sw
+length option value ('sw') is not valid
+resume 0x1000
+
+sleep 400
+
+halt
+
+sleep 100
+
+reg pc
+pc (/32): 0x00001310
+
+reg x2
+x2 (/32): 0x0001ffd0
+
+reg x3
+x3 (/32): 0x0000273c
+
+mdw 0x1f3c 7
+0x00001f3c: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 
+
+rbp 0x1184

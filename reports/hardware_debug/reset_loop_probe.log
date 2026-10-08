@@ -1,0 +1,55 @@
+halt
+
+sleep 100
+
+dump_image reports/hardware_debug/ocr_before_reset.bin 0xf9000000 4096
+dumped 4096 bytes in 0.543155s (7.364 KiB/s)
+
+mww 0xf9000000 0x00140413
+
+mww 0xf9000004 0xffdff06f
+
+mdw 0xf9000000 2
+0xf9000000: 00140413 ffdff06f 
+
+poll off
+
+bridge_write 0x10b80004 0x00000413
+
+bridge_write 0x10b80004 0x0000500f
+
+bridge_write 0x10b80004 0x0000100f
+
+bridge_write 0x10b80000 0x00010000
+
+sleep 100
+
+bridge_read 0x10b80000
+04 00000003
+bridge_write 0x10b80000 0x03000000
+
+sleep 100
+
+bridge_write 0x10b80000 0x00020000
+
+sleep 100
+
+bridge_read 0x10b80000
+04 f9000002
+bridge_write 0x10b80004 0x00040013
+
+bridge_read 0x10b80004
+04 001cf9db
+bridge_write 0x10b80004 0x00000017
+
+bridge_read 0x10b80004
+04 f9000000
+bridge_write 0x10b80004 0x34202073
+
+bridge_read 0x10b80004
+04 00000001
+bridge_write 0x10b80004 0x34102073
+
+bridge_read 0x10b80004
+04 00000000
+poll on
