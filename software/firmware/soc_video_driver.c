@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "camera_init_table.h"
+#include "soc_video_driver.h"
 
 #ifdef EFX_SAPPHIRE_BSP
 #include "bsp.h"
@@ -60,7 +61,12 @@ __attribute__((weak)) void sapphire_uart_log(const char *s) { (void)s; }
 
 static uint32_t osd_status(void) { return osd_read(OSD_STATUS); }
 static int osd_wait_ack(uint32_t old_ack) {
+#ifdef EFX_SAPPHIRE_BSP
+  uint64_t start=clint_getTime(BSP_CLINT);
+  while(clint_getTime(BSP_CLINT)-start < BSP_CLINT_HZ/4u) {
+#else
   for(uint32_t timeout=0;timeout<1000000u;timeout++) {
+#endif
     uint32_t s=osd_status();
     if(((s&1u)!=0u) != (old_ack!=0u) && !(s&(1u<<2))) return 0;
   }
@@ -69,8 +75,14 @@ static int osd_wait_ack(uint32_t old_ack) {
 
 int osd_write_string(const char *text) {
   uint32_t before=osd_status(), page=((before>>1)&1u)^1u;
+  if(!text || (before&(1u<<2))) return -1;
   osd_write(OSD_ENABLE,1); osd_write(OSD_X,16); osd_write(OSD_Y,16); osd_write(OSD_COLOR,0x20ff40);
-  for(uint32_t i=0;text[i] && i<80;i++) { osd_write(OSD_CHARADDR,(page<<7)|i); osd_write(OSD_CHARDATA,(uint8_t)text[i]); }
+  uint32_t ended=0;
+  for(uint32_t i=0;i<80;i++) {
+    uint8_t ch=' ';
+    if(!ended) { if(text[i]) ch=(uint8_t)text[i]; else ended=1; }
+    osd_write(OSD_CHARADDR,(page<<7)|i); osd_write(OSD_CHARDATA,ch);
+  }
   osd_write(OSD_CHARADDR,page<<7); osd_write(OSD_COMMIT,1);
   return osd_wait_ack(before&1u);
 }
@@ -117,6 +129,6 @@ int osd_publish_metrics(void) {
   *p++=' ';*p++='D';*p++='I';*p++='S';*p++='P';*p++=' ';p=put_dec(p,display_fps);
   *p++=' ';*p++='D';*p++='R';*p++='O';*p++='P';*p++=' ';p=put_dec(p,drop);
   *p++=' ';*p++='E';*p++='R';*p++='R';*p++=' ';p=put_dec(p,err);*p=0;
-  sapphire_uart_log(text); sapphire_uart_log("\n");
+  sapphire_uart_log(text); sapphire_uart_log("\r\n");
   return osd_write_string(text);
 }

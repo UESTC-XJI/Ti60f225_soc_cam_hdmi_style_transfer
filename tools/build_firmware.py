@@ -1,21 +1,43 @@
-"""Build the camera/OSD driver with the Efinity RISC-V toolchain."""
+"""Build the complete JTAG-downloadable Sapphire video application."""
 from pathlib import Path
+import os
 import subprocess
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-GCC = Path(r'C:/Efinity/efinity-riscv-ide-2026.1/toolchain/bin/riscv-none-elf-gcc.exe')
-OBJCOPY = GCC.with_name('riscv-none-elf-objcopy.exe')
-OUT = ROOT / 'work'
-OUT.mkdir(exist_ok=True)
-common = ['-march=rv32im','-mabi=ilp32','-ffreestanding','-fno-builtin','-Os',
-          '-ffunction-sections','-fdata-sections']
-def run(args): subprocess.run([str(GCC), *args], cwd=ROOT, check=True)
+APP = ROOT / 'software/firmware'
+OUT = APP / 'build'
+TOOLCHAIN = Path(os.environ.get('SOC_RISCV_TOOLCHAIN',
+    'C:/Efinity/efinity-riscv-ide-2026.1/toolchain/bin'))
+GCC = TOOLCHAIN / 'riscv-none-elf-gcc.exe'
+COMMON = ['-march=rv32im_zicsr_zifencei', '-mabi=ilp32', '-msmall-data-limit=0',
+          '-ffreestanding', '-fno-builtin', '-Os', '-g3',
+          '-ffunction-sections', '-fdata-sections',
+          '-DEFX_SAPPHIRE_BSP', '-Isoftware/bsp/EfxSapphireSoc/include',
+          '-Isoftware/bsp/driver']
 
-for suffix, extra in [('', []), ('_bsp', ['-DEFX_SAPPHIRE_BSP',
-    '-Isoftware/bsp/EfxSapphireSoc/include','-Isoftware/bsp/driver'])]:
-    obj=OUT/f'soc_video_driver{suffix}.o'; elf=OUT/f'soc_video_driver{suffix}.elf'; binary=OUT/f'soc_video_driver{suffix}.bin'
-    run([*common,*extra,'-c','software/firmware/soc_video_driver.c','-o',str(obj)])
-    run([*common,'-nostdlib','-Wl,--gc-sections,-e,camera_init_cpu',
-         '-T','software/bsp/EfxSapphireSoc/linker/default.ld',str(obj),'-o',str(elf)])
-    subprocess.run([str(OBJCOPY),'-O','binary',str(elf),str(binary)],cwd=ROOT,check=True)
-    print(f'PASS {elf.name} and {binary.name}')
+def run(exe, *args):
+    subprocess.run([str(exe), *map(str, args)], cwd=ROOT, check=True)
+
+def main():
+    if '--clean' in sys.argv:
+        if OUT.exists():
+            for path in OUT.iterdir():
+                if path.is_file(): path.unlink()
+        return
+    OUT.mkdir(exist_ok=True)
+    objects = []
+    for source in ['start.S', 'main.c', 'soc_video_driver.c']:
+        obj = OUT / (Path(source).stem + '.o')
+        run(GCC, *COMMON, '-c', APP / source, '-o', obj)
+        objects.append(obj)
+    elf = OUT / 'soc_video_app.elf'
+    run(GCC, *COMMON, '-nostdlib', '-Wl,--gc-sections,--no-undefined',
+        '-Wl,-Map,' + (OUT / 'soc_video_app.map').as_posix(),
+        '-T', APP / 'app.ld', *objects, '-lgcc', '-o', elf)
+    run(TOOLCHAIN / 'riscv-none-elf-objcopy.exe', '-O', 'binary', elf,
+        OUT / 'soc_video_app.bin')
+    run(TOOLCHAIN / 'riscv-none-elf-size.exe', elf)
+    print('PASS complete application:', elf)
+
+if __name__ == '__main__': main()

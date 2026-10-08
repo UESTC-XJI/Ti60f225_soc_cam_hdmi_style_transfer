@@ -14,7 +14,9 @@
 
 ## 通道冲突处理
 
-原视频工程的 v7 EDB 使用 `jtag_inst1_*`，Sapphire 使用 `jtagCtrl_*`。两者不能并行连接到同一个器件硬 JTAG 通道。`soc_jtag_channel_mux` 固定选择一个拥有者，并将另一端置为复位/空闲；`conflict` 用于仿真断言。默认 SoC 版本选择 `use_soc_jtag=1`，保留片上逻辑调试时改为0并关闭 CPU 调试输入。
+原视频工程的 v7 EDB 使用 USER1。集成顶层将 `jtag_inst1_*` 直接连接到 Sapphire 的 `jtagCtrl_*`，CPU 独占 USER1；原手动 VIO/LA 已移除，Efinity auto debugger 移至 USER2。`soc_jtag_channel_mux` 只是保留的独立模块，当前顶层未实例化。RISC-V IDE 使用 native VexRiscv OpenOCD target，`jtagMapping 8 8 0 1 2 2`；不要选择标准 RISC-V DMI 或 soft TAP。虽然通道独立，同一 USB JTAG adapter 仍须由单一主机程序使用。
+
+完整固件和 IDE 下载步骤见 `software/firmware/README.md`。下载 ELF 在 DDR `0x1000` 运行；4 KiB 片上 boot RAM 位于 `0xF9000000`，不能将两者混淆。
 
 ## 视频控制资源
 
