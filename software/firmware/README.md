@@ -42,6 +42,10 @@ python tools/check_firmware_config.py
 
 先选中项目按 F5 刷新，关闭再打开项目以重载 `.cproject` 中的 ELF Binary Parser。使用 **Run → Debug Configurations → GDB OpenOCD Debugging → soc_video_app_ti**，而不是直接从 C/C++ Application 的本机 Run 配置启动。Main 页的 Project 必须为 `soc_video_app`，C/C++ Application 可通过 Browse 选择项目的 `build/soc_video_app.elf`；不要选择 `.bin`。点击 Apply 再 Debug。若启动的配置未显示上述 ELF 变量，重新导入更新后的共享 `.launch`，或在当前配置中手动 Browse ELF。
 
+### OpenOCD 配置路径报 Not implemented
+
+Windows 版 vendor OpenOCD 的 Jim Tcl 未实现 `file normalize`，而且 `file dirname` 只识别正斜杠。当前 `soc_video.cfg` 先将配置文件路径中的反斜杠转换为正斜杠，再用 dirname 获取工程目录。更新该 cfg 后可直接重新 Debug，不需要重编 ELF 或 bitstream。`check_firmware_config.py` 直接执行原始 cfg，覆盖全反斜杠、混合分隔符、全正斜杠和相对路径；只用 `SOC_CONFIG_CHECK` 跳过硬件 init/halt，IDE 正常启动时不要设置此变量。
+
 ## 命令行备用下载
 
 仍在工作区根目录，先在第一个 PowerShell 终端启动：

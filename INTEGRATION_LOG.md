@@ -58,3 +58,9 @@
 ## 2026-10-08 IDE binary not found 修正
 
 用户在 GUI Build 后点击 Run 报 binary not found。检查实际 `software/firmware/build/soc_video_app.elf` 已存在，构建产物并未缺失；原 `.cproject` 未显式配置 ELF Binary Parser。补入安装版 CDT 支持的 `org.eclipse.cdt.core.ELF`，共享 launch 改为 `${workspace_loc:/soc_video_app/build/soc_video_app.elf}` 明确绑定工程文件，静态检查同时验证 parser、变量解析和 ELF magic。README 补充项目 F5/重开、选择 GDB OpenOCD Debugging 配置和 Main 页 Browse ELF 的操作。仅验证配置/构建，不启动实际硬件调试。
+
+## 2026-10-08 Windows OpenOCD 路径命令兼容修正
+
+用户 OpenOCD 报 `soc_video.cfg:3: Error: Not implemented`。在同一 vendor OpenOCD 0.11.0+dev 二进制中独立执行 `file normalize .` 复现退出码 1；`file dirname` 和 `file join` 正常，但 dirname 仅识别正斜杠。先对 `[info script]` 执行反斜杠→正斜杠 string map，再连续两次 dirname 获取 app_dir，移除 normalize。
+
+此前 `check_firmware_config.py` 将 app_dir 行替换为绝对路径，导致漏测原路径逻辑；本轮删除替换流程，直接执行原始 cfg。仅通过 `SOC_CONFIG_CHECK=1` 跳过最终硬件 init/halt，其余路径、source、FTDI、target、cpu0.yaml 和 JTAG mapping 语句照常执行。Windows 绝对路径、用户日志的混合分隔符路径、正斜杠绝对路径和工程目录相对路径四种检查均 PASS。检查脚本兼容 GUI 保存的相对 ELF 路径、listAttribute 以及其他调试插件属性；保留用户已有 `.launch` 改动。未做硬件访问。
