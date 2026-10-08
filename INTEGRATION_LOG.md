@@ -54,3 +54,7 @@
 - `test_firmware_driver.py` 旧独立协议模型仍 PASS。完整应用大小：text 3898、data 0、BSS 28 bytes；无未解析符号，摄像头/OSD/main/start 函数均保留。
 - 完整 ELF SHA256：`49B575225F1235B8D83F3EC27C06786ED697144CDE20145BB3811E2C205CC2C6`；BIN SHA256：`C4B02209B9FD3A3D9A72050540D46EA036C78C784B77825EF765D23BBA347329`。输出路径 `software/firmware/build/`；仿真细节 `reports/simulation/firmware_runtime.json`。
 - 下载步骤与验证边界见 `software/firmware/README.md`。未连接板卡做下载、真实 UART、摄像头或 cache/DDR 时序测试，也未制作 Flash 自动启动镜像。
+
+## 2026-10-08 IDE binary not found 修正
+
+用户在 GUI Build 后点击 Run 报 binary not found。检查实际 `software/firmware/build/soc_video_app.elf` 已存在，构建产物并未缺失；原 `.cproject` 未显式配置 ELF Binary Parser。补入安装版 CDT 支持的 `org.eclipse.cdt.core.ELF`，共享 launch 改为 `${workspace_loc:/soc_video_app/build/soc_video_app.elf}` 明确绑定工程文件，静态检查同时验证 parser、变量解析和 ELF magic。README 补充项目 F5/重开、选择 GDB OpenOCD Debugging 配置和 Main 页 Browse ELF 的操作。仅验证配置/构建，不启动实际硬件调试。

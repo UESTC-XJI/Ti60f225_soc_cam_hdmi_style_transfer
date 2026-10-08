@@ -32,11 +32,15 @@ python tools/check_firmware_config.py
 3. IDE 中 **File → Import → General → Existing Projects into Workspace**，选择当前工作区的 `software/firmware`，导入 `soc_video_app`。不要勾选 Copy projects into workspace，否则工程的相对 BSP/tools 路径会失效。
 4. **Project → Build Project**。工程使用 Python 外部构建脚本，必须让 IDE 能找到 `python`；产物为 `software/firmware/build/soc_video_app.elf`。
 5. **Run → Debug Configurations → GDB OpenOCD Debugging**，选择共享配置 `soc_video_app_ti`。若未自动出现，刷新项目，再通过 **File → Import → Run/Debug → Launch Configurations** 导入项目中的 `.launch`。
-6. 核对 ELF 为 `build/soc_video_app.elf`，OpenOCD/GDB 来自 2026.1 的安装目录。配置引用 `openocd/soc_video.cfg` 和本项目匹配的 `cpu0.yaml`，采用 native VexRiscv/USER1，FTDI channel 1，JTAG 800 kHz。
+6. Main 页核对 Project 为 `soc_video_app`，C/C++ Application 为 `${workspace_loc:/soc_video_app/build/soc_video_app.elf}`；该变量指向工程真实目录，与 IDE workspace 存放目录无关。OpenOCD/GDB 来自 2026.1 的安装目录。配置引用 `openocd/soc_video.cfg` 和本项目匹配的 `cpu0.yaml`，采用 native VexRiscv/USER1，FTDI channel 1，JTAG 800 kHz。
 7. 点击 **Debug**：halt → 加载 ELF/symbols → 设置 PC 为 `_start` → 在 `main` 临时断点停下。点击 **Resume** 后运行应用。
 8. 串口 115200/8N1 查看 `SOC VIDEO boot`、`DDR scratch PASS`、`Camera CD6B initialized`、`HELLO SOC` 和每秒的统计。帧率由 FPGA 寄存器提供，不是固件自造数值。
 
 此 launch 避免下载后的硬复位，以免破坏 DDR 启动状态；重新运行应再次从 `_start` 进入。RAM 下载不提供断电保留；当前 bitstream 内的 boot ROM 不包含这份新应用，上电自动启动需要另做 Flash 镜像。当前只验证 IDE headless 导入/构建及 OpenOCD 配置解析，未连接硬件做真实下载。
+
+### Launch failed: binary not found
+
+先选中项目按 F5 刷新，关闭再打开项目以重载 `.cproject` 中的 ELF Binary Parser。使用 **Run → Debug Configurations → GDB OpenOCD Debugging → soc_video_app_ti**，而不是直接从 C/C++ Application 的本机 Run 配置启动。Main 页的 Project 必须为 `soc_video_app`，C/C++ Application 可通过 Browse 选择项目的 `build/soc_video_app.elf`；不要选择 `.bin`。点击 Apply 再 Debug。若启动的配置未显示上述 ELF 变量，重新导入更新后的共享 `.launch`，或在当前配置中手动 Browse ELF。
 
 ## 命令行备用下载
 

@@ -10,11 +10,15 @@ APP = ROOT / 'software/firmware'
 IDE = Path('C:/Efinity/efinity-riscv-ide-2026.1')
 project = ET.parse(APP / '.project').getroot().findtext('name')
 assert project == 'soc_video_app'
-ET.parse(APP / '.cproject')
+cproject = ET.parse(APP / '.cproject')
+assert cproject.find('.//extension[@id="org.eclipse.cdt.core.ELF"]') is not None
 launch = ET.parse(APP / 'soc_video_app_ti.launch').getroot()
 attrs = {e.attrib['key']: e.attrib['value'] for e in launch}
 assert attrs['org.eclipse.cdt.launch.PROJECT_ATTR'] == project
-assert (APP / attrs['org.eclipse.cdt.launch.PROGRAM_NAME']).is_file()
+binary = attrs['org.eclipse.cdt.launch.PROGRAM_NAME']
+binary = binary.replace('${workspace_loc:/soc_video_app/', APP.as_posix() + '/').removesuffix('}')
+assert Path(binary).is_absolute() and Path(binary).is_file(), binary
+assert Path(binary).read_bytes()[:4] == b'\x7fELF'
 assert attrs['org.eclipse.cdt.debug.gdbjtag.core.stopAt'] == 'main'
 assert attrs['ilg.gnumcueclipse.debug.gdbjtag.openocd.otherRunCommands'] == 'set $pc = _start'
 jar = next((IDE / 'Efinity-RISCV-IDE/plugins').glob('*openocd.core_*.jar'))
