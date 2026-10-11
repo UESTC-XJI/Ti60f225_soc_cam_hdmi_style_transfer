@@ -1,0 +1,13 @@
+{
+  "width": 640,
+  "height": 48,
+  "cycles": 1298011,
+  "milliseconds": 8.740814814814815,
+  "vga_height_scaling_fps_estimate": 11.440581012025321,
+  "display_pixels": 339200,
+  "capture_beats": 76800,
+  "captured_frame_exact_pixels": 307200,
+  "underflows": 0,
+  "profile": "real integrated RTL; prepared display slot0, 640x48 job slot1, dense 1080p camera stream slot2; randomized DDR stalls; no external CPU or DDR PHY model",
+  "wall_seconds": 211.6720000000205
+}

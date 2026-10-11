@@ -1,0 +1,5 @@
+WARNING: cannot find correct IV value
+Creating C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\outflow_style_final
+Creating C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\work_style_final
+Running: efx_run_map.py ti60f225_oob --family Titanium --device Ti60F225 --project_xml C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\ti60f225_cam_hdmi.xml --output_dir outflow_style_final --work_dir work_style_final --opt root=ti60f225_oob_top --opt veri_options=verilog_mode=sv_09,vhdl_mode=vhdl_2008 work-dir=work_style_final write_efx_verilog=on
+   map :	PASS 

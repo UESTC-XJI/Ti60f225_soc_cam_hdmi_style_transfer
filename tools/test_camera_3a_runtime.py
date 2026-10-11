@@ -350,7 +350,7 @@ class Boot3A(ControlMachine):
     def __init__(self):
         super().__init__();self.boot_frame=0
     def osd_read(self,uc,off,size,data):
-        if off<=0x30:return Machine.osd_read(self,uc,off,size,data)
+        if off<=0x30 or off>=0x200:return Machine.osd_read(self,uc,off,size,data)
         frame=self.clock//8333333
         if frame!=self.boot_frame:
             self.boot_frame=frame
@@ -359,7 +359,7 @@ class Boot3A(ControlMachine):
             self.frame(frame,200 if exp>2000 else 96)
         return ControlMachine.osd_read(self,uc,off,size,data)
     def osd_write(self,uc,off,size,value,data):
-        if off<=0x30:return Machine.osd_write(self,uc,off,size,value,data)
+        if off<=0x30 or off>=0x200:return Machine.osd_write(self,uc,off,size,value,data)
         return ControlMachine.osd_write(self,uc,off,size,value,data)
 m=Boot3A();m.uc.emu_start(SYMBOLS['_start'],0x20000,count=20000000)
 assert m.word('app_metrics_updates')==3 and m.video_ready and m.state().enabled

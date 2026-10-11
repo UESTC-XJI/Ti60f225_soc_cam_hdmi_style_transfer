@@ -1,6 +1,9 @@
 # Efinity synthesis, place-and-route, debug and output directories.
 # Root-anchored: do not hide similarly named source directories in IP/BSP.
 /work_syn/
+/work_style/
+/work_style_next/
+/work_style_final/
 /work_pnr/
 /work_dbg/
 # /outflow/
@@ -18,6 +21,9 @@
 # Baseline source snapshots and simulation work products stay wholly local.
 /reports/baseline/
 /reports/simulation/
+# Superseded split; the selected data_v2 manifest is versioned explicitly.
+/reports/style_demo/data/
+!/reports/style_demo/data_v2/*.json
 
 # Local project lock held by the FPGA tool while the project is open.
 /.lock
@@ -50,6 +56,7 @@ modelsim.ini
 *.su
 
 # Versioned release artifacts (after *.elf so published firmware stays visible).
+!/reports/style_demo/release/
 !/reports/**/*.bit
 !/reports/**/*.elf
 
@@ -57,6 +64,7 @@ modelsim.ini
 .metadata/
 .vs/
 *.code-workspace
+!/MonetStyleDemo.code-workspace
 
 # Python caches for helper scripts.
 __pycache__/

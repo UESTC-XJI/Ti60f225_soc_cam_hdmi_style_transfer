@@ -1,0 +1,2 @@
+PASS style_network 32x24 full graph exact RGB, AXI random stalls cycles=26993 reads=217 writes=193
+tests/style_network_tb.sv:39: $finish called at 269980000 (1ps)

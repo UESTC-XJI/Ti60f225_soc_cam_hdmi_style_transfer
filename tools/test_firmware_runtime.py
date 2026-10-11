@@ -12,10 +12,12 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'work/sim_deps'))
+sys.path.insert(0, str(ROOT.parent / 'Ti60f225_soc_cam_hdmi_soc_sim/work/sim_deps'))
 from unicorn import Uc, UC_ARCH_RISCV, UC_MODE_RISCV32, UC_HOOK_CODE, UC_HOOK_MEM_WRITE
 from unicorn.riscv_const import UC_RISCV_REG_PC, UC_RISCV_REG_SP, UC_RISCV_REG_GP
 from unicorn.riscv_const import UC_RISCV_REG_MCAUSE, UC_RISCV_REG_MEPC, UC_RISCV_REG_MTVAL
 from unicorn.riscv_const import UC_RISCV_REG_MSTATUS, UC_RISCV_REG_MIE, UC_RISCV_REG_MTVEC
+from unicorn.riscv_const import UC_RISCV_REG_X1
 from elftools.elf.elffile import ELFFile
 
 ELF = Path(os.environ.get('SOC_FIRMWARE_ELF', ROOT / 'software/firmware/build/soc_video_app.elf'))
@@ -29,7 +31,7 @@ with ELF.open('rb') as f:
                 if s.name and s.entry.st_shndx == 'SHN_UNDEF']
 
 for name in ['_start', 'main', 'camera_init_cpu', 'camera_recover',
-             'osd_write_string', 'osd_submit_metrics', 'app_ddr_test', 'trap_entry']:
+             'osd_write_string', 'style_submit_metrics', 'app_ddr_test', 'trap_entry']:
     assert name in SYMBOLS, name
 assert ENTRY == SYMBOLS['_start'] == 0x1000
 assert SYMBOLS['_sp'] == 0x20000 and SYMBOLS['_end'] < SYMBOLS['__stack_bottom']
@@ -44,6 +46,8 @@ class Machine:
         self.uc = Uc(UC_ARCH_RISCV, UC_MODE_RISCV32)
         self.uc.mem_map(0, 0x20000)
         self.uc.mem_map(0x01000000, 0x100000)
+        self.uc.mem_map(0x05000000, 0x10000)
+        self.uc.mem_map(0x05800000, 0x10000)
         for addr, data in SEGMENTS: self.uc.mem_write(addr, data)
         self.uc.mem_write(SYMBOLS['__bss_start'], b'\xa5' *
                           (SYMBOLS['__bss_end'] - SYMBOLS['__bss_start']))
@@ -74,10 +78,23 @@ class Machine:
         self.ready_writes = []
         self.invalidates = 0
         self.main_seen = False
+        self.style_regs={0:0x3154534e,8:16,0x30:0}
+        self.initial_coeff_count=6144 if scenario=='style_reload' else 0
+        self.style_regs[0x30]=self.initial_coeff_count*0x10001
+        self.coeff_addr=0;self.coeff_writes=[];self.style_enabled=False
+        self.irq_pending=False;self.irq_claimed=False;self.irq_snapshot=None;self.irq_returns=0
+        self.plic={}
+        self.expected_coeff=(ROOT/'rtl/style/model/coeff.bin').read_bytes()
+        fixture=(ROOT/'software/firmware/style_selftest.h').read_text()
+        self.style_input=[int(x,16) for x in re.findall(r'0x([0-9a-f]{8})u',fixture.split('style_test_expected')[0])]
+        self.style_output=[int(x,16) for x in re.findall(r'0x([0-9a-f]{8})u',fixture.split('style_test_expected')[1])]
+        assert len(self.style_input)==len(self.style_output)==768
         self.uc.mmio_map(0xf8010000, 0x1000, self.uart_read, None, self.uart_write, None)
         self.uc.mmio_map(0xf8016000, 0x1000, self.i2c_read, None, self.i2c_write, None)
         self.uc.mmio_map(0xf8b00000, 0x10000, self.clint_read, None, self.ignore_write, None)
         self.uc.mmio_map(0xf8100000, 0x1000, self.osd_read, None, self.osd_write, None)
+        self.uc.mmio_map(0xf8c00000, 0x400000, self.plic_read, None, self.plic_write, None)
+        self.uc.hook_add(UC_HOOK_CODE,self.interrupt_check)
         self.uc.hook_add(UC_HOOK_CODE, self.at_main, begin=SYMBOLS['main'], end=SYMBOLS['main'])
         for base, data in TEXT:
             for i in range(0, len(data), 4):
@@ -116,6 +133,8 @@ class Machine:
         if self.scenario == 'id_retry' and 'retry every second\r\n' in self.uart:
             self.sensor[0x3107] = 0xcd
         if self.scenario == 'ddr_corrupt' and 'DDR scratch FAIL\r\n' in self.uart:
+            uc.emu_stop()
+        if self.scenario == 'style_corrupt' and 'STYLE weights/IRQ/RGB self-test FAIL' in self.uart:
             uc.emu_stop()
 
     def i2c_read(self, uc, off, size, data):
@@ -193,6 +212,7 @@ class Machine:
         pass
 
     def osd_read(self, uc, off, size, data):
+        if 0x200<=off<0x300:return self.style_regs.get(off-0x200,0)
         if self.pending and self.scenario != 'no_ack' and self.clock >= self.pending[1]:
             self.active = self.pending[0]
             self.pending = None
@@ -208,6 +228,28 @@ class Machine:
         return 0
 
     def osd_write(self, uc, off, size, value, data):
+        if 0x200<=off<0x300:
+            off-=0x200
+            if off==0x28:self.coeff_addr=value
+            elif off==0x2c:
+                row=self.coeff_addr>>8;word=self.coeff_addr&31
+                assert word<24 and row<256
+                expect=int.from_bytes(self.expected_coeff[(row*24+word)*4:(row*24+word+1)*4],'little')
+                assert value==expect
+                self.coeff_writes.append((row,word));n=(len(self.coeff_writes)+self.initial_coeff_count)&65535
+                self.style_regs[0x30]=n|(n<<16)
+            elif off==8:self.style_regs[8]&=~(value&6)
+            elif off==4:
+                if value&1:
+                    assert len(self.coeff_writes)==6144 and self.style_regs[0x18]==0x00180020
+                    assert list(int.from_bytes(uc.mem_read(0x05000000+i*4,4),'little') for i in range(768))==self.style_input
+                    raw=b''.join(v.to_bytes(4,'little') for v in self.style_output)
+                    if self.scenario=='style_corrupt':raw=bytes([raw[0]^1])+raw[1:]
+                    uc.mem_write(0x05800000,raw)
+                    self.style_regs[8]|=2;self.irq_pending=True
+                self.style_enabled=bool(value&16)
+            else:self.style_regs[off]=value
+            return
         if off == 0x28:
             self.video_ready = value & 1
             self.ready_writes.append(self.video_ready)
@@ -224,6 +266,32 @@ class Machine:
             assert self.pending is None
             self.pending = (self.char_addr >> 7, self.clock + 1666667)
 
+    def plic_read(self,uc,off,size,data):
+        if off==0x200004:
+            if self.irq_pending and not self.irq_claimed:
+                self.irq_claimed=True;return 16
+            return 0
+        return self.plic.get(off,0)
+
+    def plic_write(self,uc,off,size,value,data):
+        if off==0x200004:
+            assert value==16 and self.irq_claimed and not(self.style_regs[8]&6)
+            self.irq_pending=False;self.irq_claimed=False
+        else:self.plic[off]=value
+
+    def interrupt_check(self,uc,addr,size,data):
+        if self.irq_snapshot is not None and addr==self.irq_snapshot[0]:
+            assert [uc.reg_read(UC_RISCV_REG_X1+i) for i in range(31)]==self.irq_snapshot[1], 'IRQ register restore'
+            assert uc.reg_read(UC_RISCV_REG_MSTATUS)&8
+            self.irq_snapshot=None;self.irq_returns+=1
+        if self.irq_pending and not self.irq_claimed and uc.reg_read(UC_RISCV_REG_MIE)&(1<<11) and uc.reg_read(UC_RISCV_REG_MSTATUS)&8:
+            assert self.plic.get(0x40)==1 and self.plic.get(0x2000,0)&(1<<16)
+            self.irq_snapshot=(addr,[uc.reg_read(UC_RISCV_REG_X1+i) for i in range(31)])
+            uc.reg_write(UC_RISCV_REG_MEPC,addr);uc.reg_write(UC_RISCV_REG_MCAUSE,0x8000000b)
+            status=uc.reg_read(UC_RISCV_REG_MSTATUS)
+            uc.reg_write(UC_RISCV_REG_MSTATUS,(status&~8)|128|0x1800)
+            uc.reg_write(UC_RISCV_REG_PC,uc.reg_read(UC_RISCV_REG_MTVEC))
+
     def word(self, name):
         return int.from_bytes(self.uc.mem_read(SYMBOLS[name], 4), 'little')
 
@@ -234,15 +302,21 @@ class Machine:
         assert self.ready_writes[0] == 0
         assert self.ack_stalls == 0, 'stale RX_ACK stalled a checked transaction'
         if self.scenario == 'bus_recover': assert self.bus_recoveries == 1
-        assert self.video_ready == (0 if self.scenario in ('ddr_corrupt', 'no_ack') else 1)
+        assert self.video_ready == (0 if self.scenario in ('ddr_corrupt', 'style_corrupt', 'no_ack') else 1)
         if self.scenario == 'ddr_corrupt':
             assert self.word('app_ddr_errors') == 1
             assert not self.camera_writes
             assert 'DDR scratch FAIL' in self.uart
+        elif self.scenario=='style_corrupt':
+            assert self.word('app_style_selftest_errors')==1 and not self.style_enabled
+            assert self.irq_returns==1 and self.word('app_style_irqs')==1
+            assert not self.camera_writes and self.word('app_style_errors')==1
         else:
             assert self.word('app_metrics_updates') == 3
             assert self.word('app_ddr_errors') == 0
-            assert self.invalidates == 3  # Startup + two passes at boot; no periodic DDR pause.
+            assert self.invalidates == 5  # Startup + DDR passes + CNN input/output cache operations.
+            assert self.style_enabled and self.irq_returns==1 and self.word('app_style_irqs')==1
+            assert self.word('app_style_selftest_errors')==0
             assert self.config[('uart', 8)] == 107
             assert self.config[('i2c', 0x50)] == 500
             assert self.config[('i2c', 0x54)] == 500
@@ -259,12 +333,12 @@ class Machine:
                 assert not self.commits and self.word('app_osd_errors') == 1
             else:
                 assert len(self.commits) == 3  # Third metrics update has just been submitted asynchronously.
-                assert self.commits[0].rstrip() == 'HELLO SOC'
+                assert self.commits[0].rstrip() == 'MONET VGA'
                 assert self.word('app_osd_errors') == 0
                 for text in self.commits[1:]:
                     assert text.rstrip() + '\r\n' in self.uart
-                    assert 'DROP 0 ERR 0' in text
-                assert self.commits[-1].rstrip() == 'RAW 30 RESIZE 9 DISP 60 DROP 0 ERR 0'
+                    assert 'DROP 0 MS 0 ERR 0' in text
+                assert self.commits[-1].rstrip() == 'MONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0'
                 assert all(b-a >= 99000000 for a,b in zip(self.commit_times, self.commit_times[1:]))
         print('PASS RV32 ELF:', self.scenario, 'entry, stack/gp/BSS, UART, DDR, camera, OSD/timer')
         return {'scenario': self.scenario, 'uart': self.uart,
@@ -273,7 +347,7 @@ class Machine:
                 'cache_operations_modeled': self.invalidates}
 
 if __name__ == '__main__':
-    results = [Machine(s).run() for s in ['normal', 'stale_ack', 'bus_recover', 'id_retry', 'no_ack', 'ddr_corrupt', 'timer_wrap']]
+    results = [Machine(s).run() for s in ['normal', 'stale_ack', 'bus_recover', 'id_retry', 'no_ack', 'ddr_corrupt', 'timer_wrap','style_corrupt','style_reload']]
     trap = Machine('trap')
     trap.uc.reg_write(UC_RISCV_REG_GP, SYMBOLS['__global_pointer$'])
     trap.uc.reg_write(UC_RISCV_REG_SP, SYMBOLS['_sp'])

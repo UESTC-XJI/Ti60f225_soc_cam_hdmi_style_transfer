@@ -1,0 +1,40 @@
+{
+  "files": {
+    "student_fp.pt": {
+      "bytes": 199867,
+      "sha256": "82d1d0a49dc6ca7af502e50c405c407b1ef9a948f78065cff0a505eb2deb70ee"
+    },
+    "student_qat.pt": {
+      "bytes": 200123,
+      "sha256": "320aa954ef74893f5f8c314010dde797866378591fb5b849d7fda5a427c19b70"
+    },
+    "teacher.pt": {
+      "bytes": 5552449,
+      "sha256": "9e91d279190d35bf6e011cb97258305995dd5c181395a7d9fd93e0f29ba6cf36"
+    },
+    "integer/coeff.bin": {
+      "bytes": 24576,
+      "sha256": "15121a117241020762202bc93d13409dd585059ea7221c4d78ebbd04448b0835"
+    },
+    "integer/coeff.hex": {
+      "bytes": 49664,
+      "sha256": "c77186a13d0df904ec0dc73631aab89fd47c45bf39b51cecdbb2000fe5258b5f"
+    },
+    "integer/graph.json": {
+      "bytes": 10011,
+      "sha256": "b940c056d61896640065b59af25cfc6e7f3cee410448bcf6ba847095374dbfa8"
+    },
+    "integer/model.bin": {
+      "bytes": 11056,
+      "sha256": "321b9e798d576d03c67882225748763d7f0d1288c8e8342e2241b605a20fd5dc"
+    },
+    "integer/parameters.npz": {
+      "bytes": 32427,
+      "sha256": "37b03d567f315f30e54b2013e2355a51ea4bda795b9bfee8a41a173666311ae6"
+    }
+  },
+  "teacher": "weights only, optimizer removed; trained teacher_v2 step 2500",
+  "student_qat": "original selected checkpoint, optimizer retained, step 3000",
+  "student_fp": "original FP checkpoint step 5000",
+  "loss_note": "legacy checkpoint loss string is stale; actual QAT weights: content .1, style 0, distill 50, TV .03"
+}

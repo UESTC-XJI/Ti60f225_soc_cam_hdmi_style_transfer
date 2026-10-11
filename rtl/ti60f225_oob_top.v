@@ -558,96 +558,15 @@ camera_raw_gearbox #(.SOURCE_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_CAMERA_REPLAY_SO
   .d_clk(vid_clk_dvi2),.d_rst_n(capture_reset_n),
   .d_vs(capture_vs),.d_de(capture_de),.d_data(capture_raw),.fault(capture_fault)
 );
-rgb_area_resize_3to2 #(.SOURCE_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_AREA_RESIZE_SOURCE_WIDTH),.SOURCE_HEIGHT(`CFG_TI60F225_OOB_TOP_V_INST_AREA_RESIZE_SOURCE_HEIGHT)) area_resize(
-  .clk(vid_clk_dvi2),.rst_n(capture_reset_n),.i_vs(rgb_vs),.i_de(rgb_de),.i_rgb(rgb_datax2),
-  .o_vs(resize_vs),.o_valid(resize_valid),.o_data(resize_data),
-  .fault(resize_fault),.completed_frames(resize_completed_frames)
-);
+assign resize_vs=rgb_vs;
+assign resize_valid=1'b0;
+assign resize_data=64'b0;
 wire [`CFG_BITS_32-1:0] m_axis_tdata;
 wire           m_axis_tvalid;
 wire           m_axis_tready;
 wire           m_axis_tlast;
 wire           m_axis_tuser;
 wire  fifo_rd_period;
-// SC431HAI resized XBGR8888 frame buffer.
-  frame_buffer #(
-.I_VID_WIDTH         (`CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_I_VID_WIDTH),
-.O_VID_WIDTH         (`CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_O_VID_WIDTH),
-.START_ADDR          (`CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_START_ADDR        ),
-.AXI_DATA_WIDTH      ( `CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_AXI_DATA_WIDTH	),
-.AXI_ADDR_WIDTH      ( `CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_AXI_ADDR_WIDTH	),
-.WR_FIFO_DEPTH	      ( `CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_WR_FIFO_DEPTH		),
-.RD_FIFO_DEPTH 	      ( `CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_RD_FIFO_DEPTH 	),
-.BURST_LEN  	        (`CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_BURST_LEN),
-.FB_NUM	              (`CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_FB_NUM),
-.MAX_VID_WIDTH	      (`CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_MAX_VID_WIDTH) ,
-.MAX_VID_HIGHT	      (`CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_MAX_VID_HIGHT),
-.O_FRAME_WIDTH      (`CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_O_FRAME_WIDTH),
-.O_FRAME_HEIGHT     (`CFG_TI60F225_OOB_TOP_V_INST_CHECKER0_O_FRAME_HEIGHT)
-
-)checker0(
-       .axi_clk		(core_clk 	        ),
-       .rst_n			(video_reset_n),
-
-/*i*/.i_clk			(vid_clk_dvi2),
-/*i*/.i_vs			(resize_vs),
-/*i*/.i_de			(resize_valid && !capture_fault && !resize_fault),
-/*i*/.vin 			(resize_data),
-
-/*i*/.o_clk			(hdmi_tx_slow_clk),//(i_mipi_rx_pclk	),
-/*i*/.fifo_rd_period(fifo_rd_period),//(fifo_rd_period  ),
-
-    .m_axis_tdata  (m_axis_tdata),
-    .m_axis_tvalid (m_axis_tvalid),
-    .m_axis_tready (m_axis_tready),
-    .m_axis_tuser  (m_axis_tuser),
-    .m_axis_tlast  (m_axis_tlast),
-
-
-       .awid			(fb_awid	),
-       .awaddr		(fb_awaddr	),
-       .awlen			(fb_awlen	),
-       .awsize		(fb_awsize	),
-       .awburst		(fb_awburst),
-       .awprot    (fb_awprot ),
-       .awcache   (fb_awcache),
-       .awlock		(fb_awlock	),
-       .awvalid		(fb_awvalid),
-       .awready		(fb_awready),
-
-       .arid			(fb_arid	  ),
-       .araddr		(fb_araddr	),
-       .arlen			(fb_arlen	),
-       .arsize		(fb_arsize	),
-       .arburst 	(fb_arburst),
-
-       .arprot    (fb_arprot ),
-       .arcache   (fb_arcache),
-       .arlock 		(fb_arlock	),
-       .arvalid		(fb_arvalid),
-       .arready		(fb_arready),
-
-       .wdata			(fb_wdata	),
-       .wstrb			(fb_wstrb	),
-       .wlast			(fb_wlast	),
-       .wvalid		(fb_wvalid	),
-       .wready		(fb_wready	),
-
-
-       .rid			  (fb_rid	),
-       .rdata			(fb_rdata	),
-       .rlast			(fb_rlast	),
-       .rvalid 		(fb_rvalid	),
-       .rready		(fb_rready	),
-       .rresp			(fb_rresp	),
-
-       .bid			  (fb_bid	),
-       .bvalid		(fb_bvalid	),
-       .bready	  (fb_bready	)
-);
-
-
-
 // Sapphire CPU + shared DDR bridge.  The generated SoC uses USER1 hard JTAG;
 // the Efinity auto debugger remains on USER2, so there is one owner per TAP.
 wire [7:0] soc_vid_bid,soc_vid_rid; wire [1:0] soc_vid_bresp,soc_vid_rresp;
@@ -674,6 +593,24 @@ wire [15:0] status_capture_fps,status_display_fps,status_raw_fps;
 reg [31:0] status_axi_error_d; reg [26:0] status_tick_count;
 wire status_raw_event,status_capture_event,status_display_event;
 wire status_reset_n=barrier_sys_reset_n && capture_reset_n && display_reset_n;
+// Shared INT8 network and paired VGA video store, on the independent demo branch.
+wire [31:0] style_prdata,video_prdata;
+wire style_pready,style_pslverr,video_pready,video_pslverr,style_irq;
+wire style_select=soc_apb_paddr[15:8]==8'h02;
+assign soc_apb_prdata=style_select ? style_prdata:video_prdata;
+assign soc_apb_pready=style_select ? style_pready:video_pready;
+assign soc_apb_pslverr=style_select ? style_pslverr:video_pslverr;
+style_video_system style_demo(
+  .clk(core_clk),.cnn_clk(vid_clk_dvi2),.pix_clk(hdmi_tx_slow_clk),.rst_n(status_reset_n&&!soc_system_reset),
+  .rgb_vs(rgb_vs),.rgb_de(rgb_de),.rgb_data(rgb_datax2),
+  .psel(soc_apb_psel&&style_select),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr[7:0]),.pwdata(soc_apb_pwdata),
+  .prdata(style_prdata),.pready(style_pready),.pslverr(style_pslverr),.irq(style_irq),
+  .pixel(display_pixel),.hs(ch0_hs),.vs(ch0_vs),.de(ch0_de),.underflow(display_underflow),.capture_fault(resize_fault),.resized_frames(resize_completed_frames),
+  .awid(fb_awid),.awaddr(fb_awaddr),.awlen(fb_awlen),.awsize(fb_awsize),.awburst(fb_awburst),.awvalid(fb_awvalid),.awready(fb_awready),
+  .wdata(fb_wdata),.wstrb(fb_wstrb),.wlast(fb_wlast),.wvalid(fb_wvalid),.wready(fb_wready),.bid(fb_bid),.bresp(fb_bresp),.bvalid(fb_bvalid),.bready(fb_bready),
+  .arid(fb_arid),.araddr(fb_araddr),.arlen(fb_arlen),.arsize(fb_arsize),.arburst(fb_arburst),.arvalid(fb_arvalid),.arready(fb_arready),
+  .rid(fb_rid),.rdata(fb_rdata),.rresp(fb_rresp),.rlast(fb_rlast),.rvalid(fb_rvalid),.rready(fb_rready));
+
 video_frame_diagnostics frame_diagnostics(
   .raw_clk(i_mipi_rx_pclk),.resize_clk(vid_clk_dvi2),.display_clk(hdmi_tx_slow_clk),
   .core_clk(core_clk),.rst_n(status_reset_n),.raw_vs(w_mipi_rx_vs),
@@ -710,7 +647,7 @@ soc_video_ddr_integration soc_video_inst(
   .jtag_tck(jtag_inst1_TCK),.jtag_tdi(jtag_inst1_TDI),.jtag_capture(jtag_inst1_CAPTURE),.jtag_shift(jtag_inst1_SHIFT),.jtag_update(jtag_inst1_UPDATE),.jtag_reset(jtag_inst1_RESET),.jtag_enable(jtag_inst1_SEL),.jtag_tdo(jtag_inst1_TDO),
   .uart_txd(soc_uart_txd),.uart_rxd(system_uart_0_io_rxd),.i2c_scl_in(io_cam_scl_IN),.i2c_scl_out(soc_i2c_scl_out),.i2c_sda_in(io_cam_sda_IN),.i2c_sda_out(soc_i2c_sda_out),
   .spi_d0_in(system_spi_0_io_data_0_IN),.spi_d1_in(system_spi_0_io_data_1_IN),.spi_ss(soc_spi_ss),.spi_sclk(soc_spi_sclk),.spi_d0_out(soc_spi_d0_out),.spi_d0_oe(soc_spi_d0_oe),.spi_d1_out(soc_spi_d1_out),.spi_d1_oe(soc_spi_d1_oe),
-  .soc_system_reset(soc_system_reset),.soc_memory_reset(soc_memory_reset),.axi_error_count(soc_axi_error_count));
+  .soc_system_reset(soc_system_reset),.soc_memory_reset(soc_memory_reset),.axi_error_count(soc_axi_error_count),.style_irq(style_irq));
 assign system_uart_0_io_txd=soc_uart_txd;
 assign system_spi_0_io_ss=soc_spi_ss;
 assign system_spi_0_io_sclk_write=soc_spi_sclk;
@@ -738,50 +675,13 @@ video_apb_ctrl osd_apb(
   .gain_r(r_gain),.gain_g(g_gain),.gain_b(b_gain),
   .display_tone(video_display_tone),.display_lift(video_display_lift),.display_hist(video_display_hist),
   .i_raw_fps(status_raw_fps),
-  .pclk(core_clk),.preset_n(status_reset_n && !soc_system_reset),.psel(soc_apb_psel),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr),.pwdata(soc_apb_pwdata),.prdata(soc_apb_prdata),.pready(soc_apb_pready),.pslverr(soc_apb_pslverr),
+  .pclk(core_clk),.preset_n(status_reset_n && !soc_system_reset),.psel(soc_apb_psel&&!style_select),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr),.pwdata(soc_apb_pwdata),.prdata(video_prdata),.pready(video_pready),.pslverr(video_pslverr),
   .o_enable(osd_apb_enable),.o_x(osd_apb_x),.o_y(osd_apb_y),.o_color(osd_apb_color),.o_char_we(osd_apb_char_we),.o_char_addr(osd_apb_char_addr),.o_char_page(osd_apb_char_page),.o_char_data(osd_apb_char_data),.o_commit_toggle(osd_apb_commit_toggle),.o_commit_page(osd_apb_commit_page),.o_video_ready(osd_video_ready),.i_ack_toggle(osd_db_ack),.i_active_page(osd_db_active),.i_busy(osd_db_busy),.i_frame_count(status_display_fps),.i_capture_fps(status_capture_fps),.i_display_fps(status_display_fps),.i_drop_count(status_drop_count[15:0]),.i_error_count(status_error_count[15:0]));
 
 wire db_vs,db_hs,db_de,db_char_pixel; wire [7:0] db_r,db_g,db_b;
 osd_text_double_buffer #(.FRAME_WIDTH(1280),.FRAME_HEIGHT(720),.PAGE_SIZE(80)) osd_db(
   .wr_clk(core_clk),.pix_clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.wr_en(osd_apb_char_we),.wr_page(osd_apb_char_page),.wr_addr(osd_apb_char_addr),.wr_data(osd_apb_char_data),.wr_commit(osd_apb_commit_toggle),.wr_commit_page(osd_apb_commit_page),.wr_enable(osd_apb_enable),.wr_x(osd_apb_x),.wr_y(osd_apb_y),.wr_color(osd_apb_color),
   .i_vs(osd_vs),.i_hs(osd_hs),.i_de(osd_de),.i_r(osd_r),.i_g(osd_g),.i_b(osd_b),.o_vs(db_vs),.o_hs(db_hs),.o_de(db_de),.o_r(db_r),.o_g(db_g),.o_b(db_b),.o_char_pixel(db_char_pixel),.ack_toggle(osd_db_ack),.active_page(osd_db_active),.busy(osd_db_busy));
-
-cvo_axi # (
-    .SYMBOL_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_CVO_AXI_INST_SYMBOL_WIDTH),
-    .SYMBOL_NUM(`CFG_TI60F225_OOB_TOP_V_INST_CVO_AXI_INST_SYMBOL_NUM),
-    .PIXEL_NUM(`CFG_TI60F225_OOB_TOP_V_INST_CVO_AXI_INST_PIXEL_NUM),
-    .HSYNC_POL(`CFG_TI60F225_OOB_TOP_V_INST_CVO_AXI_INST_HSYNC_POL),
-    .VSYNC_POL(`CFG_TI60F225_OOB_TOP_V_INST_CVO_AXI_INST_VSYNC_POL),
-    .FIFO_DEPTH(`CFG_TI60F225_OOB_TOP_V_INST_CVO_AXI_INST_FIFO_DEPTH),
-    .FIFO_ALMOST_FULL(`CFG_TI60F225_OOB_TOP_V_INST_CVO_AXI_INST_FIFO_ALMOST_FULL),
-    .MAX_H_VALID(`CFG_TI60F225_OOB_TOP_V_INST_CVO_AXI_INST_MAX_H_VALID),
-    .MAX_V_VALID(`CFG_TI60F225_OOB_TOP_V_INST_CVO_AXI_INST_MAX_V_VALID)
-  )
-  cvo_axi_inst (
-    .o_clk          (hdmi_tx_slow_clk),
-    .rst_n          (display_reset_n),
-    .fifo_rd_period (fifo_rd_period ),
-    .fifo_rd_underflow(display_underflow),
-    .s_axi_clk      (hdmi_tx_slow_clk),
-    .s_axis_tdata   (m_axis_tdata   ),
-    .s_axis_tvalid  (m_axis_tvalid  ),
-    .s_axis_tready  (m_axis_tready  ),
-    .s_axis_tlast   (m_axis_tlast   ),
-    .s_axis_tuser   (m_axis_tuser   ),
-    .H_FRONT_PORCH  (HFP            ),
-    .H_SYNC         (HSP            ),
-    .H_VALID        (HACT           ),
-    .H_BACK_PORCH   (HBP            ),
-    .V_FRONT_PORCH  (VFP            ),
-    .V_SYNC         (VSP            ),
-    .V_VALID        (VACT           ),
-    .V_BACK_PORCH   (VBP            ),
-     .vout          (display_pixel),
-    .o_hs           (ch0_hs         ),
-    .o_vs           (ch0_vs         ),
-    .o_de           (ch0_de         )
-  );
-
 
 ddr3_top                 u_ddr3_top
 (

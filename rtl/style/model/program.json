@@ -1,0 +1,186 @@
+[
+  {
+    "layer": "enc.0",
+    "src": "0x0",
+    "dst": "0x6000000",
+    "skip": "0x0",
+    "inlevel": 0,
+    "outlevel": 1
+  },
+  {
+    "layer": "enc.1",
+    "src": "0x6000000",
+    "dst": "0x6120000",
+    "skip": "0x0",
+    "inlevel": 1,
+    "outlevel": 2
+  },
+  {
+    "layer": "enc.2",
+    "src": "0x6120000",
+    "dst": "0x60a0000",
+    "skip": "0x0",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.0.0",
+    "src": "0x60a0000",
+    "dst": "0x6000000",
+    "skip": "0x0",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.0.1",
+    "src": "0x6000000",
+    "dst": "0x6120000",
+    "skip": "0x0",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.0.2",
+    "src": "0x6120000",
+    "dst": "0x6000000",
+    "skip": "0x0",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.0.3",
+    "src": "0x6000000",
+    "dst": "0x6120000",
+    "skip": "0x60a0000",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.1.0",
+    "src": "0x6120000",
+    "dst": "0x6000000",
+    "skip": "0x0",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.1.1",
+    "src": "0x6000000",
+    "dst": "0x60a0000",
+    "skip": "0x0",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.1.2",
+    "src": "0x60a0000",
+    "dst": "0x6000000",
+    "skip": "0x0",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.1.3",
+    "src": "0x6000000",
+    "dst": "0x60a0000",
+    "skip": "0x6120000",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.2.0",
+    "src": "0x60a0000",
+    "dst": "0x6000000",
+    "skip": "0x0",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.2.1",
+    "src": "0x6000000",
+    "dst": "0x6120000",
+    "skip": "0x0",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.2.2",
+    "src": "0x6120000",
+    "dst": "0x6000000",
+    "skip": "0x0",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.2.3",
+    "src": "0x6000000",
+    "dst": "0x6120000",
+    "skip": "0x60a0000",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.3.0",
+    "src": "0x6120000",
+    "dst": "0x6000000",
+    "skip": "0x0",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.3.1",
+    "src": "0x6000000",
+    "dst": "0x60a0000",
+    "skip": "0x0",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.3.2",
+    "src": "0x60a0000",
+    "dst": "0x6000000",
+    "skip": "0x0",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "res.3.3",
+    "src": "0x6000000",
+    "dst": "0x60a0000",
+    "skip": "0x6120000",
+    "inlevel": 2,
+    "outlevel": 2
+  },
+  {
+    "layer": "dec.0",
+    "src": "0x60a0000",
+    "dst": "0x6200000",
+    "skip": "0x0",
+    "inlevel": 2,
+    "outlevel": 1
+  },
+  {
+    "layer": "dec.1",
+    "src": "0x6200000",
+    "dst": "0x6000000",
+    "skip": "0x0",
+    "inlevel": 1,
+    "outlevel": 1
+  },
+  {
+    "layer": "dec.2",
+    "src": "0x6000000",
+    "dst": "0x60a0000",
+    "skip": "0x0",
+    "inlevel": 1,
+    "outlevel": 0
+  },
+  {
+    "layer": "dec.3",
+    "src": "0x60a0000",
+    "dst": "0x0",
+    "skip": "0x0",
+    "inlevel": 0,
+    "outlevel": 0
+  }
+]

@@ -2,6 +2,7 @@
 #include "i2c.h"
 #include "soc_video_driver.h"
 #include "camera_3a.h"
+#include "style_driver.h"
 
 /* Inspect these in the IDE if a trap stops normal UART output. */
 volatile uint32_t firmware_trap_cause, firmware_trap_pc, firmware_trap_value;
@@ -48,6 +49,14 @@ int main(void) {
         for (;;) {}
     }
     uart_writeStr(BSP_UART_TERMINAL, "DDR scratch PASS\r\n");
+    int style_rc=style_init_and_selftest();
+    if(style_rc) {
+        ++app_style_errors;
+        uart_writeStr(BSP_UART_TERMINAL,"STYLE weights/IRQ/RGB self-test FAIL; inspect status\r\n");
+        for(;;) {}
+    }
+    uart_writeStr(BSP_UART_TERMINAL,"STYLE INT8 RGB self-test PASS; MONET VGA\r\n");
+    style_stream_enable();
     camera_bus_init();
     bsp_uDelay(20000);
     int camera_rc = camera_init_cpu();
@@ -57,12 +66,12 @@ int main(void) {
     } else {
         uart_writeStr(BSP_UART_TERMINAL, "Camera CD6B initialized\r\n");
     }
-    int osd_rc = osd_write_string("HELLO SOC");
+    int osd_rc = osd_write_string("MONET VGA");
     if (osd_rc) {
         ++app_osd_errors;
         uart_writeStr(BSP_UART_TERMINAL, "OSD initial COMMIT timeout\r\n");
     } else {
-        uart_writeStr(BSP_UART_TERMINAL, "HELLO SOC\r\n");
+        uart_writeStr(BSP_UART_TERMINAL, "MONET VGA\r\n");
     }
     if (camera_rc == 0 && osd_rc == 0) osd_set_video_ready(1);
     uint64_t last_update = clint_getTime(BSP_CLINT);
@@ -101,11 +110,12 @@ int main(void) {
         }
         // Full DDR stress runs at boot; do not pause 3A for a 64 KiB test each second.
         if(!osd_pending) {
-            osd_rc=osd_submit_metrics();
+            osd_rc=style_submit_metrics(now);
             if(!osd_rc){osd_pending=1;osd_started=clint_getTime(BSP_CLINT);}
             else if(!( *(volatile uint32_t *)(0xf8100020u)&4u))++app_osd_errors;
         }
         if(app_3a.enabled||app_3a.status)camera_3a_log(&app_3a);
+        style_update_metrics();
         ++app_metrics_updates;
         last_update = clint_getTime(BSP_CLINT);
     }

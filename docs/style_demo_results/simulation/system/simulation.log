@@ -1,0 +1,5 @@
+rtl/soc_integration/axi_shared_ddr_2m.sv:45: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
+rtl/soc_integration/axi_shared_ddr_2m.sv:45: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
+SYSTEM display_pixels=339200 capture_beats=76800 underflows=0
+PASS style_accel all 6144 APB coefficients+CDC+IRQ integrated 640x48 exact RGB + active 720p display + camera capture, AXI random stalls cycles=1298011 reads=6031 writes=5388
+C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\reports\style_demo\system\tb.sv:102: $finish called at 9110050000 (1ps)

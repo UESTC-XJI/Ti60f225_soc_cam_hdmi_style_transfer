@@ -28,7 +28,7 @@ def main():
     OUT.mkdir(exist_ok=True)
     objects = []
     for source in ['start.S', 'main.c', 'soc_video_driver.c', 'video_ctrl.c', 'video_stats.c',
-                   'camera_ae.c', 'camera_awb.c', 'camera_3a.c']:
+                   'camera_ae.c', 'camera_awb.c', 'camera_3a.c', 'style_driver.c']:
         obj = OUT / (Path(source).stem + '.o')
         run(GCC, *COMMON, '-c', APP / source, '-o', obj)
         objects.append(obj)

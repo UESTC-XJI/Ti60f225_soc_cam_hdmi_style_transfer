@@ -1,0 +1,27 @@
+[
+  [
+    "trainA/00735.jpg",
+    "trainA/00423.jpg",
+    3
+  ],
+  [
+    "trainA/00868.jpg",
+    "trainA/00711.jpg",
+    4
+  ],
+  [
+    "trainA/01258.jpg",
+    "trainA/00123.jpg",
+    4
+  ],
+  [
+    "testA/00620.jpg",
+    "trainA/00425.jpg",
+    1
+  ],
+  [
+    "testA/00820.jpg",
+    "trainA/00047.jpg",
+    4
+  ]
+]

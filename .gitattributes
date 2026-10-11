@@ -1,3 +1,9 @@
 # Preserve exact release bytes, including ASCII-format FPGA bitstreams.
 *.bit binary
 *.elf binary
+# Preserve published model, build and validation bytes used by SHA256 manifests.
+ml/style_transfer/artifacts/** -text whitespace=cr-at-eol
+rtl/style/model/** -text whitespace=cr-at-eol
+docs/style_demo_results/** -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+reports/style_demo/data_v2/** -text whitespace=cr-at-eol
+reports/style_demo/release/** -text whitespace=cr-at-eol

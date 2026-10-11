@@ -1,6 +1,7 @@
 // Actual generated Sapphire SoC wrapper used by the simulation/integration top.
 module soc_video_ddr_integration (
   input wire clk, rst_n, allow_access,
+  input wire style_irq,
   input wire [7:0] vid_awid, input wire [31:0] vid_awaddr, input wire [7:0] vid_awlen, input wire [2:0] vid_awsize, input wire [1:0] vid_awburst, input wire vid_awvalid, output wire vid_awready,
   input wire [127:0] vid_wdata, input wire [15:0] vid_wstrb, input wire vid_wlast, input wire vid_wvalid, output wire vid_wready, output wire [7:0] vid_bid, output wire [1:0] vid_bresp, output wire vid_bvalid, input wire vid_bready,
   input wire [7:0] vid_arid, input wire [31:0] vid_araddr, input wire [7:0] vid_arlen, input wire [2:0] vid_arsize, input wire [1:0] vid_arburst, input wire vid_arvalid, output wire vid_arready, output wire [7:0] vid_rid, output wire [127:0] vid_rdata, output wire [1:0] vid_rresp, output wire vid_rlast, output wire vid_rvalid, input wire vid_rready,
@@ -213,7 +214,7 @@ module soc_video_ddr_integration (
   assign system_spi_0_io_data_1_read = spi_d1_in;
   assign system_spi_0_io_data_2_read = '0;
   assign system_spi_0_io_data_3_read = '0;
-  assign userInterruptA = '0;
+  assign userInterruptA = style_irq;
   assign io_ddrMasters_0_clk = '0;
   assign io_ddrMasters_0_r_ready = '0;
   assign io_ddrMasters_0_ar_payload_prot = '0;

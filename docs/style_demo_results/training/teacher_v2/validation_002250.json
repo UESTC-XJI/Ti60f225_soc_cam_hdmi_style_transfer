@@ -1,0 +1,64 @@
+{
+  "step": 2250,
+  "content_feature_mse": 2.1063099652528763,
+  "style_gram_mse": 0.00011671438933369416,
+  "original_style_mse": 0.00029129382024706274,
+  "items": [
+    {
+      "path": "trainB/2013-11-14 14_11_02.jpg",
+      "content_feature_mse": 4.771410942077637,
+      "style_gram_mse": 7.408700187738759e-05,
+      "original_style_mse": 0.0009948227685754318,
+      "pixel_mae_from_input": 0.09564479440450668
+    },
+    {
+      "path": "trainB/2014-07-27 16_06_00.jpg",
+      "content_feature_mse": 1.8879473209381104,
+      "style_gram_mse": 0.000158125976639667,
+      "original_style_mse": 0.00024153206973664965,
+      "pixel_mae_from_input": 0.22759591042995453
+    },
+    {
+      "path": "trainB/2015-05-28 15_19_14.jpg",
+      "content_feature_mse": 0.8473092317581177,
+      "style_gram_mse": 0.00016823656767428474,
+      "original_style_mse": 0.00016782683437099877,
+      "pixel_mae_from_input": 0.08272328972816467
+    },
+    {
+      "path": "trainB/2015-09-04 03_32_02.jpg",
+      "content_feature_mse": 2.7168025970458984,
+      "style_gram_mse": 8.047808654509936e-05,
+      "original_style_mse": 0.00024238003436494182,
+      "pixel_mae_from_input": 0.08450913429260254
+    },
+    {
+      "path": "trainB/2015-12-25 03_22_09.jpg",
+      "content_feature_mse": 1.8273674249649048,
+      "style_gram_mse": 0.00015584922306288718,
+      "original_style_mse": 0.0002557865354901878,
+      "pixel_mae_from_input": 0.09253355860710144
+    },
+    {
+      "path": "trainB/2016-04-19 20_39_47.jpg",
+      "content_feature_mse": 1.1420732736587524,
+      "style_gram_mse": 0.00014348756337767554,
+      "original_style_mse": 0.00015736284314016302,
+      "pixel_mae_from_input": 0.12455801665782928
+    },
+    {
+      "path": "trainB/2016-07-28 09_43_58.jpg",
+      "content_feature_mse": 2.5553159713745117,
+      "style_gram_mse": 4.413906829370262e-05,
+      "original_style_mse": 0.00015287879841707763,
+      "pixel_mae_from_input": 0.1443863958120346
+    },
+    {
+      "path": "trainB/2017-01-02 22_42_51.jpg",
+      "content_feature_mse": 1.1022529602050781,
+      "style_gram_mse": 0.00010931162719884924,
+      "original_style_mse": 0.00011776067788105138,
+      "pixel_mae_from_input": 0.15862692892551422
+    }
+  ]
+}
