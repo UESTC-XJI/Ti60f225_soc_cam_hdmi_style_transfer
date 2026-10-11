@@ -26,7 +26,23 @@ module capture_frame_stats #(
   reg [31:0] done_rs,done_gs,done_bs,done_cells,done_total;
   reg done_bad;
   reg [31:0] ys,samples,hot;
-  reg [15:0] hist[0:63],frozen_hist[0:63];
+  // A counter bank remains frozen until the complete stream is accepted.
+  // Valid bits provide logical zero without resetting or clearing the RAM.
+  reg [15:0] hist_mem[0:127];
+  reg active_bank,frozen_bank;
+  reg [63:0] bin_valid,frozen_valid;
+  reg [2:0] hist_state;
+  reg [15:0] hist_q,freeze_q;
+  reg stream_loaded;
+  wire hist_we=(hist_state==3)||(hist_state==4);
+  wire [5:0] hist_addr=rgb_take ? bin0 : hist_state==1 || hist_state==4 ? pending_bin1 : pending_bin0;
+  wire [15:0] hist_wdata=hist_state==4 ? bin_value1+16'd1 :
+    bin_value0+(pending_bin0==pending_bin1 ? 16'd2 : 16'd1);
+  always @(posedge clk) begin
+    if(rst_n&&hist_we&&!rgb_start) hist_mem[{active_bank,hist_addr}]<=hist_wdata;
+    hist_q<=hist_mem[{active_bank,hist_addr}];
+    freeze_q<=hist_mem[{frozen_bank,stream_index[5:0]-6'd14}];
+  end
   reg [31:0] frozen_meta[0:13];
   // Sparse previous row only; never read before written in this frame.
   reg [15:0] previous_row[0:COLS-1];
@@ -35,7 +51,7 @@ module capture_frame_stats #(
   (* ASYNC_REG="TRUE" *) reg hist_req_meta,hist_req_sync;
   reg hist_seen,hist_pending,streaming;
   reg [6:0] stream_index;
-  reg hist_update;reg [5:0] pending_bin0,pending_bin1;
+  reg [5:0] pending_bin0,pending_bin1;
   reg [15:0] bin_value0,bin_value1;
   integer k;
   wire raw_start=rvs&&!raw_vs,rgb_start=cvs&&!rgb_vs;
@@ -45,8 +61,13 @@ module capture_frame_stats #(
   wire rgb_complete=(cy==FRAME_HEIGHT)||(rgb_line&&cy==FRAME_HEIGHT-1);
   wire raw_take=rstarted&&!raw_vs&&raw_de&&rx<FRAME_WIDTH/2&&ry<FRAME_HEIGHT&&rx[2:0]==0;
   wire rgb_take=cstarted&&!rgb_vs&&rgb_de&&cx<FRAME_WIDTH/2&&cy<FRAME_HEIGHT&&cx[2:0]==0&&cy[2:0]==0;
-  wire [15:0] prev=previous_row[rx>>3];
-  wire [7:0] b=prev[7:0],g0=prev[15:8],g1=raw_data[7:0],r=raw_data[15:8];
+  reg [15:0] prev,raw_pair_q;
+  reg awb_fetch;
+  always @(posedge clk) begin
+    if(rst_n&&raw_take&&ry[2:0]==0) previous_row[rx>>3]<=raw_data;
+    prev<=previous_row[rx>>3];
+  end
+  wire [7:0] b=prev[7:0],g0=prev[15:8],g1=raw_pair_q[7:0],r=raw_pair_q[15:8];
   wire [8:0] greens={1'b0,g0}+{1'b0,g1};
   // Sparse AWB sample spacing is eight clocks. Pipeline RAW fetch, gain
   // products, min/max, ratio products and comparison instead of putting
@@ -69,12 +90,12 @@ module capture_frame_stats #(
   // word0 Y,1 count,2 hot,3 R,4 G(two samples),5 B,6 N,7 total,
   // 8 flags,9 frame,10 config,11 source (1).
   wire [383:0] packet={32'd1,ctag,cid,flags,done_total,done_cells,done_bs,done_gs,done_rs,hot,samples,ys};
-  assign hist_valid=streaming;
-  assign hist_data={stream_index,stream_index<14 ? frozen_meta[stream_index] : {16'd0,frozen_hist[stream_index-14]}};
+  assign hist_valid=streaming&&stream_loaded;
+  assign hist_data={stream_index,stream_index<14 ? frozen_meta[stream_index] : {16'd0,(frozen_valid[stream_index[5:0]-6'd14] ? freeze_q : 16'd0)}};
   always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
       awb_pipe_valid<=0;range_ok<=0;corr_r<=0;corr_g<=0;corr_b<=0;color_max<=0;color_min<=0;neutral_lhs<=0;neutral_rhs<=0;
-      hist_update<=0;pending_bin0<=0;pending_bin1<=0;bin_value0<=0;bin_value1<=0;
+      hist_state<=0;active_bank<=0;frozen_bank<=1;bin_valid<=0;frozen_valid<=0;stream_loaded<=0;awb_fetch<=0;raw_pair_q<=0;pending_bin0<=0;pending_bin1<=0;bin_value0<=0;bin_value1<=0;
       for(k=0;k<4;k=k+1)begin pr[k]<=0;pg[k]<=0;pb[k]<=0;end
       rvs<=0;rde<=0;cvs<=0;cde<=0;rx<=0;ry<=0;cx<=0;cy<=0;
       rstarted<=0;cstarted<=0;rbad<=0;cbad<=0;raw_done<=0;done_bad<=0;
@@ -84,14 +105,15 @@ module capture_frame_stats #(
       threshold<=232;dark_min<=8;sat_max<=248;neutral_enable<=0;ratio<=512;
       gr<=16'h168;gg<=256;gb<=16'h1a9;stats_valid<=0;stats_data<=0;overrun<=0;
       hist_req_meta<=0;hist_req_sync<=0;hist_seen<=0;hist_pending<=0;streaming<=0;stream_index<=0;
-      for(k=0;k<64;k=k+1) begin hist[k]<=0;frozen_hist[k]<=0;end
       for(k=0;k<14;k=k+1) frozen_meta[k]<=0;
     end else begin
       rvs<=raw_vs;rde<=raw_de;cvs<=rgb_vs;cde<=rgb_de;
       hist_req_meta<=hist_request;hist_req_sync<=hist_req_meta;
       if(hist_req_sync!=hist_seen) begin hist_seen<=hist_req_sync;hist_pending<=1;end
       if(stats_valid&&stats_ready) stats_valid<=0;
-      if(streaming&&hist_ready) begin
+      if(streaming&&!stream_loaded) stream_loaded<=1;
+      if(hist_valid&&hist_ready) begin
+        stream_loaded<=0;
         if(stream_index==77) begin streaming<=0;stream_index<=0;end
         else stream_index<=stream_index+1'b1;
       end
@@ -109,8 +131,10 @@ module capture_frame_stats #(
         dark_min<=awb_filter[15:8];sat_max<=awb_filter[23:16];neutral_enable<=awb_filter[0];
         ratio<=neutral_ratio;gr<=gain_r;gg<=gain_g;gb<=gain_b;
       end
-      awb_pipe_valid<={awb_pipe_valid[2:0],raw_take&&ry[2:0]==1};
-      if(raw_take&&ry[2:0]==1)begin
+      awb_fetch<=raw_take&&ry[2:0]==1;
+      if(raw_take) raw_pair_q<=raw_data;
+      awb_pipe_valid<={awb_pipe_valid[2:0],awb_fetch};
+      if(awb_fetch)begin
         pr[0]<=r;pg[0]<=greens;pb[0]<=b;
         range_ok[0]<=b>=dark_min&&b<sat_max&&g0>=dark_min&&g0<sat_max&&
           g1>=dark_min&&g1<sat_max&&r>=dark_min&&r<sat_max;
@@ -126,7 +150,6 @@ module capture_frame_stats #(
         rs<=rs+pr[3];gs<=gs+pg[3];bs<=bs+pb[3];cells<=cells+1'b1;
       end
       if(raw_take) begin
-        if(ry[2:0]==0) previous_row[rx>>3]<=raw_data;
         if(ry[2:0]==1) begin
           total<=total+1'b1;
 
@@ -140,34 +163,47 @@ module capture_frame_stats #(
       if(rgb_start) begin
         cx<=0;cy<=0;cid<=cid+1'b1;ctag<=rgb_cfg_seq;cstarted<=1;cbad<=0;
         threshold<=high_threshold;ys<=0;samples<=0;hot<=0;
-        for(k=0;k<64;k=k+1) hist[k]<=0;
+        bin_valid<=0;hist_state<=0;
       end else if(rgb_line) begin
         if(cy<4095) cy<=cy+1'b1;
         if(cstarted&&cx!=FRAME_WIDTH/2) cbad<=1;
       end
-      hist_update<=rgb_take;
-      if(hist_update)begin
-        if(pending_bin0==pending_bin1)begin
-          if(bin_value0>65533)cbad<=1;else hist[pending_bin0]<=bin_value0+2;
-        end else begin
-          if(bin_value0==65535||bin_value1==65535)cbad<=1;
-          else begin hist[pending_bin0]<=bin_value0+1'b1;hist[pending_bin1]<=bin_value1+1'b1;end
+      // Two synchronous reads followed by at most two writes fit between
+      // samples. Check both counts before either write (atomic overflow).
+      if(!rgb_start) case(hist_state)
+        1: begin
+          bin_value0<=bin_valid[pending_bin0] ? hist_q : 16'd0;
+          hist_state<=2;
         end
-      end
+        2: begin
+          bin_value1<=bin_valid[pending_bin1] ? hist_q : 16'd0;
+          if((pending_bin0==pending_bin1 && bin_value0>65533)||
+             (pending_bin0!=pending_bin1 && (bin_value0==65535||
+              (bin_valid[pending_bin1]&&hist_q==65535)))) begin cbad<=1;hist_state<=0;end
+          else hist_state<=3;
+        end
+        3: begin
+          bin_valid[pending_bin0]<=1;
+          hist_state<=pending_bin0==pending_bin1 ? 0 : 4;
+        end
+        4: begin bin_valid[pending_bin1]<=1;hist_state<=0;end
+        default: begin end
+      endcase
       if(rgb_take) begin
         ys<=ys+{24'd0,y0[9:2]}+{24'd0,y1[9:2]};samples<=samples+2;
         hot<=hot+{31'd0,hot0}+{31'd0,hot1};
         pending_bin0<=bin0;pending_bin1<=bin1;
-        bin_value0<=hist[bin0];bin_value1<=hist[bin1];
+        if(hist_state!=0) cbad<=1;
+        else hist_state<=1;
       end
       if(rgb_end) begin
         cstarted<=0;
-        if(good) begin
+        if(good&&hist_state==0) begin
           if(!stats_valid||stats_ready) begin stats_data<=packet;stats_valid<=1;end
           else overrun<=1;
           if(hist_pending&&!streaming) begin
-            hist_pending<=0;streaming<=1;stream_index<=0;
-            for(k=0;k<64;k=k+1) frozen_hist[k]<=hist[k];
+            hist_pending<=0;streaming<=1;stream_index<=0;stream_loaded<=0;
+            frozen_bank<=active_bank;active_bank<=~active_bank;frozen_valid<=bin_valid;
             for(k=0;k<11;k=k+1) frozen_meta[k]<=packet[k*32+:32];
             frozen_meta[11]<=0;frozen_meta[12]<=0;frozen_meta[13]<=1;
           end

@@ -23,6 +23,7 @@
 /.lock
 
 # Simulator work libraries and generated waveforms.
+*.gtkw
 *.vcd
 *.fst
 *.wlf

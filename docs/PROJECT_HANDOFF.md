@@ -1,5 +1,13 @@
 # Ti60F225 项目交接：统一 APB / 软件 AE / AWB 已实施
 
+## 2026-10-12 P1/P2/P3资源优化（当前源码最新状态）
+
+用户要求修订资源优化方案并实施P1/P2/P3，无开发板连接。本轮已将采集/显示直方图、APB缓存、RAW前行和文字页改同步BRAM；保留冻结META、标量发布及ACTIVE镜像。关闭自动视频Debugger，保留CPU USER1/JTAG DEBUG；CSI仅保留RAW10实例，不改厂商源码。文字OSD RGB/DE/HS/VS输出延迟为三拍。
+
+本轮同工具同约束完整构建XLR为55,159（90.72%）→34,767（57.18%），RAM147→153，DSP19不变。优化版map/interface/PNR/PGM PASS，最终setup最小0.407ns、hold0.026ns；完整1080p统计、定向RAM/APB/逐像素OSD、原RTL/启动/诊断/resize/DMA/CVO/shared-DDR及真实RV32固件回归PASS。保留既有JTAG/接口约束警告，厂商加密CSI未进行完整协议仿真。
+
+当前新bit和未修改配套ELF在[resource_optimization](../reports/resource_optimization/README.md)，输入/报告哈希及RAM原语见同目录manifest.json/validation.json；修订方案见[RESOURCE_OPTIMIZATION_PLAN](RESOURCE_OPTIMIZATION_PLAN.md)。本轮未上板/未烧录，实际MIPI、显示及AE/AWB仍待验证；下节10月9日实板结论属于旧bit，不能视作本轮硬件验证。P4/P5/P6和加速器未实施。
+
 ## 2026-10-09 实板排障最新状态（优先于后文）
 
 - 用户已授权清理SoC遗留模块，并明确osd_control_mailbox可整体移除与文字en2同步遗漏。当前顶层已去掉旧硬件AE/I²C及其CDC、owner mux、固定文字、无消费者状态CDC、冗余直方图控制CDC、自动lift反馈控制及旧声明；保留历史源码/测试，活动XML仅移除10项旧源。I²C直接开漏连接，手动lift保留0～128限幅，直方图直连HDMI域已提交配置。文字en2补齐两级同步，active_enable在VS锁存，无COMMIT开关，原两页80字符COMMIT/ACK保留。

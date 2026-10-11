@@ -72,7 +72,9 @@
   {
     "file": "rtl/csi_rx_controller.sv",
     "config_expressions": 282,
-    "fixed_ranges": 88
+    "fixed_ranges": 88,
+    "expanded_token_sha256": "41293f25f719a172dacabd60eb60fd7690848abf723a27ae515306eb2c64aafe",
+    "intentional_change": "2026-10-12 P1 synchronous RAM / P3 RAW10-only; see RESOURCE_OPTIMIZATION_PLAN.md and reports/resource_optimization"
   },
   {
     "file": "rtl/ddr3_controller/axi4_bus_ctl/axi4_bus_ctl.v",
@@ -403,12 +405,16 @@
   {
     "file": "rtl/isp/hdmi_frame_histogram.v",
     "config_expressions": 7,
-    "fixed_ranges": 21
+    "fixed_ranges": 21,
+    "expanded_token_sha256": "b873f2a09922a132399b839eb33267ebaae58132f75252cd7af21f1cc0a9efd2",
+    "intentional_change": "2026-10-12 P1 synchronous RAM / P3 RAW10-only; see RESOURCE_OPTIMIZATION_PLAN.md and reports/resource_optimization"
   },
   {
     "file": "rtl/isp/hdmi_info_overlay.v",
     "config_expressions": 12,
-    "fixed_ranges": 15
+    "fixed_ranges": 15,
+    "expanded_token_sha256": "cceb26d493ba55d24dbc448c4316f9f718f6d698e288937a4b2250576e02c361",
+    "intentional_change": "2026-10-12 P1 synchronous RAM / P3 RAW10-only; see RESOURCE_OPTIMIZATION_PLAN.md and reports/resource_optimization"
   },
   {
     "file": "rtl/isp/hdmi_info_overlay_apb.v",

@@ -47,6 +47,17 @@ def main():
             assert re.findall(protected, old.replace('\r\n', '\n')) == re.findall(protected, new.replace('\r\n', '\n')), 'protected content modified: ' + name
             continue
         if 'expanded_token_sha256' in row:
+            # Intentional RAM/RAW10 changes may update the token digest, but
+            # must never waive the independent protected-vendor audit.
+            protected = r'`pragma protect begin_protected[\s\S]*?`pragma protect end_protected'
+            # Plain imported modules may not exist at the pre-import baseline.
+            baseline_file = subprocess.run(git + ['show', BASELINE + ':' + name], cwd=ROOT,
+                                           capture_output=True)
+            if baseline_file.returncode == 0:
+                old = baseline_file.stdout.decode('latin1')
+                assert re.findall(protected, old.replace('\r\n', '\n')) == re.findall(protected, new.replace('\r\n', '\n')), 'protected content modified: ' + name
+            else:
+                assert not re.search(protected, new), 'protected import lacks audit baseline: ' + name
             assert token_digest(new) == row['expanded_token_sha256'], 'imported RTL config differs: ' + name
             continue
         old = subprocess.check_output(git + ['show', BASELINE + ':' + name], cwd=ROOT).decode('latin1')
@@ -84,7 +95,7 @@ def main():
         assert (lift&1)==calibrated['lift_enable'] and (lift>>8&255)==calibrated['lift_strength']
     print('PASS baseline white balance and manual tone calibration survive VIO removal.')
     updated = sum('expanded_token_sha256' in row for row in rows)
-    print(f'PASS: {len(rows)} RTL files checked; {updated} intentional 720p imports match their pre-migration tokens; remaining RTL/DDR/encrypted contents match baseline.')
+    print(f'PASS: {len(rows)} RTL files checked; {updated} intentional imports/changes match recorded token fingerprints; remaining RTL/DDR/encrypted contents match baseline.')
 
 if __name__ == '__main__':
     main()

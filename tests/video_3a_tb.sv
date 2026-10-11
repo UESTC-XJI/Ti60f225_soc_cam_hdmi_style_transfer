@@ -30,6 +30,17 @@ module video_3a_tb #(parameter integer W=128,H=64);
       @(negedge pc);psel=0;penable=0;pwrite=0;
     end
   endtask
+  // Back-to-back APB transfers: keep PSEL asserted, omit the idle cycle.
+  task indexed_read(input [5:0] index,output [31:0] data);
+    begin
+      @(negedge pc);paddr='h118;pwdata=index;pwrite=1;psel=1;penable=0;
+      @(negedge pc);penable=1;
+      @(negedge pc);paddr='h11c;pwrite=0;penable=0;
+      @(negedge pc);penable=1;#1;data=prdata;
+      if(!pready||pslverr)$fatal(1,"continuous APB histogram read failed");
+      @(negedge pc);psel=0;penable=0;
+    end
+  endtask
   task read(input [15:0] addr,output [31:0] data,input bit error_expected=0);
     begin
       @(negedge pc);paddr=addr;pwrite=0;psel=1;penable=0;
@@ -133,6 +144,10 @@ module video_3a_tb #(parameter integer W=128,H=64);
       total_bin+=value;
     end
     if(total_bin!=ref_ns)$fatal(1,"bin sum mismatch");
+    for(k=63;k>=0;k--)begin
+      indexed_read(k,value);
+      if(value!==ref_bins[k])$fatal(1,"continuous INDEX/DATA bin %0d got %0d expected %0d",k,value,ref_bins[k]);
+    end
     if(W==1920)begin
       if(ref_ns!=32400||ref_n!=16200)$fatal(1,"1080p sample density mismatch");
       $display("PASS full 1920x1080 gain/Debayer/unified stats: two frames, 32400 AE pixels, 16200 RAW cells, exact 64 bins, CFG tag/apply");$finish;

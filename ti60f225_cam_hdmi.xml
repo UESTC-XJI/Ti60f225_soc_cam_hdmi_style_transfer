@@ -123,7 +123,7 @@
         <efx:param name="peri-syn-inference" value="0" value_type="e_option" />
         <efx:param name="ram-decomp-mode" value="0" value_type="e_option" />
         <efx:param name="max_threads" value="-1" value_type="e_integer" />
-        <efx:param name="enable-mark-debug" value="1" value_type="e_option" />
+        <efx:param name="enable-mark-debug" value="0" value_type="e_option" />
         <efx:param name="max-bit-blast-mem-size" value="10240" value_type="e_integer" />
         <efx:param name="suppress_info_msgs" value="off" value_type="e_bool" />
         <efx:param name="suppress_warning_msgs" value="off" value_type="e_bool" />
@@ -163,7 +163,7 @@
     </efx:bitstream_generation>
     <efx:debugger>
         <efx:param name="work_dir" value="work_dbg" value_type="e_string" />
-        <efx:param name="auto_instantiation" value="on" value_type="e_bool" />
+        <efx:param name="auto_instantiation" value="off" value_type="e_bool" />
         <efx:param name="profile" value="debug_profile.wizard.json" value_type="e_string" />
     </efx:debugger>
     <efx:security>

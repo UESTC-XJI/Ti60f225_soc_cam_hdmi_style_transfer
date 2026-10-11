@@ -141,3 +141,13 @@ Efinity map/debug/interface/PNR/PGM PASS；最终最小setup=0.397ns、hold=0.02
 动态文字补齐两级使能同步，并在VS边界锁存，无需COMMIT即可开关。实际RTL回归覆盖帧中开关、关闭时提交、活动页写保护、RGB透传，缺失en2反例准确复现旧故障。实际顶层pad与全部256档手动lift对旧模块等价；统一APB、完整RTL含两帧1080p、启动/诊断、resize/DMA/CVO与并发共享DDR回归全部PASS。105份RTL/DDR/受保护内容及校准默认值审计PASS。
 
 Efinity 2026.1 map/debug/interface/PNR/PGM全PASS；最小setup=0.260ns、hold=0.026ns；采集域setup=1.307ns。综合LUT4=31356（较software_3a少408）、FF=27668（少8），RAM/DSP不变。新bit与配套AE调整ELF及验证记录归档reports/soc_cleanup/，原release未覆盖；软件算法本轮未修改。生成bit不等于配置板卡，本轮未烧录/下载，实板文字开关待用户验证。
+
+## 2026-10-12 P1/P2/P3资源优化与离线验证
+
+已修订RESOURCE_OPTIMIZATION_PLAN.md并实施：P1同步BRAM化采集双bank直方图/previous_row、APB缓存、显示counts/heights和文字页；P2关闭自动视频Debugger而保留CPU USER1/JTAG DEBUG；P3仅CSI实例PACK_TYPE 15→1保留RAW10，不改厂商源码或受保护块。冻结META、标量同拍发布、ACTIVE镜像及软件协议保留。文字OSD改为三拍RGB/DE/HS/VS对齐，显示直方图仍为两拍。
+
+本轮修改前基线和优化版均完整Efinity 2026.1.132 compile通过。XLR55,159（90.72%）→34,767（57.18%），减少20,392；RAM147→153，DSP19不变。网表确认目标RAM新增7块，移除Debugger1块；层次保留depack40bit_inst，48/56/64位解包器消失。最终最小setup0.407ns/hold0.026ns；采集域1.609ns、HDMI域7.632ns、core域3.452ns。已有JTAG未匹配时钟及接口警告保留，时序结论限于当前SDC已分析路径。
+
+定向仿真覆盖同/异bin、未知RAM初值、跨三帧冻结背压、bank复用、复位、连续APB INDEX/DATA和52,800逐像素文字。统一统计两帧1920×1080精确AE/AWB/64bin、完整显示直方图、异步OSD、启动/帧率诊断、resize/DMA/CVO、200次并发CPU共享DDR、真实RV32固件和配置/受保护内容审计全部PASS。当前未修改ELF随新bit归档reports/resource_optimization/，README、validation.json、manifest.json记录结果和哈希。
+
+无开发板连接，本轮未烧录或访问串口/JTAG。厂商加密CSI完整协议无法在Icarus执行，未声明实板MIPI、颜色、显示或AE/AWB效果已验证。P4/P5/P6、扩展板和加速器设计不在本轮实施范围。

@@ -74,7 +74,14 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
     .s_data({14'd0,1'b1,display_at_max,display_strength,display_mean}),
     .d_clk(pclk),.d_rst_n(preset_n),.d_valid(display_stats_arrived),.d_data(display_stats_received));
   reg [383:0] scalar;reg [31:0] stats_seq,raw_frames;reg [63:0] ticks,stats_time;
-  reg [31:0] hist_cache[0:63],hist_meta[0:13];
+  reg [15:0] hist_cache[0:63];reg [31:0] hist_meta[0:13];
+  reg [15:0] hist_cache_q;
+  // Data is exposed only after all 78 words and timestamps are committed.
+  always @(posedge pclk) begin
+    if(preset_n&&stream_arrived&&hist_busy&&incoming_word==expected_word&&incoming_word>=14&&incoming_word<=77)
+      hist_cache[incoming_word-14]<=stream_received[15:0];
+    hist_cache_q<=hist_cache[bin_index];
+  end
   reg [5:0] bin_index;reg [3:0] meta_index;
   reg hist_busy,hist_locked,hist_fault;reg [31:0] hist_seq;
   reg [6:0] expected_word;wire [6:0] incoming_word=stream_received[38:32];
@@ -138,7 +145,7 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
       16'h110:prdata=hist_meta[9];
       16'h114:prdata=hist_meta[1];
       16'h118:begin ext_writable=1;prdata={26'd0,bin_index};if(pwrite&&pwdata>63)value_error=1;end
-      16'h11c:begin prdata=hist_cache[bin_index];if(!pwrite&&!hist_locked)value_error=1;end
+      16'h11c:begin prdata=hist_locked ? {16'd0,hist_cache_q} : 32'd0;if(!pwrite&&!hist_locked)value_error=1;end
       16'h120:prdata=hist_meta[10];
       16'h124:prdata=hist_seq;
       16'h128:begin ext_writable=1;prdata={28'd0,meta_index};if(pwrite&&pwdata>13)value_error=1;end
@@ -173,7 +180,6 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
       display_stats_seq<=0;display_stats_value<=0;scalar<=0;stats_seq<=0;raw_frames<=0;ticks<=0;stats_time<=0;
       hist_req<=0;hist_busy<=0;hist_locked<=0;hist_fault<=0;hist_seq<=0;expected_word<=0;bin_index<=0;meta_index<=0;
       faults_meta<=0;faults_sync<=0;csi_meta<=0;csi_sync<=0;reset_meta<=0;reset_sync<=0;fault_sticky<=0;
-      for(i=0;i<64;i=i+1) hist_cache[i]<=0;
       for(i=0;i<14;i=i+1) hist_meta[i]<=0;
     end else begin
       ticks<=ticks+1'b1;if(raw_event)raw_frames<=raw_frames+1'b1;
@@ -190,7 +196,6 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
         if(!hist_busy||incoming_word!=expected_word) begin hist_fault<=1;hist_busy<=0;end
         else begin
           if(incoming_word<14) hist_meta[incoming_word]<=stream_received[31:0];
-          else hist_cache[incoming_word-14]<=stream_received[31:0];
           expected_word<=expected_word+1'b1;
           if(incoming_word==77) begin
             hist_busy<=0;hist_locked<=1;hist_seq<=hist_seq+1'b1;
