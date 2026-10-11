@@ -1,0 +1,17 @@
+[dumpfile] "C:\Users\Goodmann\AppData\Local\Temp\tmpp2j9_dwh\la0tmp_waveform.vcd"
+[dumpfile_mtime] "Mon Oct 05 08:23:04 2026"
+[dumpfile_size] 30858
+[savefile] "C:\Users\Goodmann\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_sc431hai2hdmi_v7\white_phase_raw.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*0.000000 d 0 512 1024 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[signals_width] 126
+[sst_expanded] 1
+@22
+top.ch0_g[7:0]
+top.ch0_b[7:0]
+top.ch0_de
+top.cal_done
+top.ch0_vs
+top.raw_row_odd

@@ -1,0 +1,224 @@
+{
+    "debug_cores": [
+        {
+            "name": "vio0",
+            "type": "vio",
+            "uuid": "2fa1141e3d7c4d6ea129b74761f046cf",
+            "probes": [
+                {
+                    "name": "r_gain",
+                    "width": 16,
+                    "init": "0x168"
+                },
+                {
+                    "name": "g_gain",
+                    "width": 16,
+                    "init": "0x100"
+                },
+                {
+                    "name": "b_gain",
+                    "width": 16,
+                    "init": "0x1a9"
+                },
+                {
+                    "name": "gamma_sel",
+                    "width": 1,
+                    "init": "0x0"
+                },
+                {
+                    "name": "ae_enable",
+                    "width": 1,
+                    "init": "0x1"
+                },
+                {
+                    "name": "ae_target",
+                    "width": 8,
+                    "init": "0x60"
+                },
+                {
+                    "name": "tone_enable",
+                    "width": 1,
+                    "init": "0x1"
+                },
+                {
+                    "name": "high_green_strength",
+                    "width": 8,
+                    "init": "0x20"
+                },
+                {
+                    "name": "dark_red_strength",
+                    "width": 8,
+                    "init": "0x20"
+                },
+                {
+                    "name": "ae_ready",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "ae_fault",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "ae_at_limit",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "ae_highlights",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "ae_vts",
+                    "width": 16,
+                    "init": null
+                },
+                {
+                    "name": "ae_exposure",
+                    "width": 16,
+                    "init": null
+                },
+                {
+                    "name": "ae_mean",
+                    "width": 8,
+                    "init": null
+                },
+                {
+                    "name": "ae_at_min",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "ae_at_max",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "ae_high_protect",
+                    "width": 1,
+                    "init": "0x1"
+                },
+                {
+                    "name": "ae_high_threshold",
+                    "width": 8,
+                    "init": "0xe8"
+                },
+                {
+                    "name": "ae_high_limit",
+                    "width": 8,
+                    "init": "0xa"
+                },
+                {
+                    "name": "lift_enable",
+                    "width": 1,
+                    "init": "0x1"
+                },
+                {
+                    "name": "lift_strength",
+                    "width": 8,
+                    "init": "0x20"
+                },
+                {
+                    "name": "ae_high_permille",
+                    "width": 10,
+                    "init": null
+                },
+                {
+                    "name": "ae_highlight_limited",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "lift_auto_enable",
+                    "width": 1,
+                    "init": "0x1"
+                },
+                {
+                    "name": "lift_auto_max",
+                    "width": 8,
+                    "init": "0x80"
+                },
+                {
+                    "name": "ae_display_mean",
+                    "width": 8,
+                    "init": null
+                },
+                {
+                    "name": "lift_actual_strength",
+                    "width": 8,
+                    "init": null
+                },
+                {
+                    "name": "lift_at_max",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "style_sel",
+                    "width": 1,
+                    "init": "0x0"
+                },
+                {
+                    "name": "style_busy",
+                    "width": 1,
+                    "init": null
+                },
+                {
+                    "name": "style_done",
+                    "width": 1,
+                    "init": null
+                }
+            ]
+        },
+        {
+            "name": "la0",
+            "type": "la",
+            "uuid": "8b991dc2d6a84fb98d48d5d60bf7bec8",
+            "probes": [
+                {
+                    "name": "ch0_g",
+                    "width": 8,
+                    "probe_type": 1
+                },
+                {
+                    "name": "ch0_b",
+                    "width": 8,
+                    "probe_type": 1
+                },
+                {
+                    "name": "ch0_de",
+                    "width": 1,
+                    "probe_type": 1
+                },
+                {
+                    "name": "cal_done",
+                    "width": 1,
+                    "probe_type": 1
+                },
+                {
+                    "name": "ch0_vs",
+                    "width": 1,
+                    "probe_type": 1
+                },
+                {
+                    "name": "raw_row_odd",
+                    "width": 1,
+                    "probe_type": 1
+                }
+            ],
+            "data_depth": 1024,
+            "trigin_en": false,
+            "trigout_en": false,
+            "capture_control": false,
+            "input_pipeline": 1,
+            "auto_inserted": false
+        }
+    ],
+    "session": {
+        "debug_widget": [],
+        "wizard": {}
+    },
+    "jtag_user": "USER1"
+}

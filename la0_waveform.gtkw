@@ -1,0 +1,34 @@
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*0.000000 c 1024 3072 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[signals_width] 126
+[sst_expanded] 1
+@22
+top.w_mipi_rx_hs
+top.w_mipi_rx_vs
+top.w_mipi_rx_de
+top.w_mipi_rx_data[63:0]
+top.inst_efx_csi2_rx/u_efx_csi2_rx/dphy_rx_inst/Rx_HS_D_0[7:0]
+top.inst_efx_csi2_rx/u_efx_csi2_rx/dphy_rx_inst/Rx_HS_D_3[7:0]
+top.inst_efx_csi2_rx/u_efx_csi2_rx/dphy_rx_inst/Rx_HS_D_2[7:0]
+top.inst_efx_csi2_rx/u_efx_csi2_rx/dphy_rx_inst/Rx_HS_D_1[7:0]
+top.inst_efx_csi2_rx/u_efx_csi2_rx/dphy_rx_inst/RxDataHS_1[7:0]
+top.inst_efx_csi2_rx/u_efx_csi2_rx/dphy_rx_inst/RxDataHS_0[7:0]
+top.inst_efx_csi2_rx/u_efx_csi2_rx/dphy_rx_inst/RxDataHS_3[7:0]
+top.inst_efx_csi2_rx/u_efx_csi2_rx/dphy_rx_inst/RxDataHS_2[7:0]
+top.inst_efx_csi2_rx/u_efx_csi2_rx/dphy_rx_inst/RxSyncHS[3:0]
+top.inst_efx_csi2_rx/u_efx_csi2_rx/dphy_rx_inst/RxValidHS[3:0]
+top.mdebug_ecc_2bit_error
+top.mdebug_pixel_fifo_full
+top.mdebug_ecc_1bit_error
+top.mdebug_crc_error
+top.mdebug_receive_error
+top.mdebug_line_vc0_error
+top.mdebug_frame_vc0_error
+top.mdebug_undersize_pkt_error
+top.mdebug_pixel_fifo_empty
+top.cam_d0_LP_N_IN
+top.cam_d0_LP_P_IN
+top.cam_d1_HS_ENA
+top.cam_d0_HS_TERM
