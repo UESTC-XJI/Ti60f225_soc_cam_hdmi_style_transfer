@@ -3,9 +3,9 @@
 /work_syn/
 /work_pnr/
 /work_dbg/
-/outflow/
+# /outflow/
 /outflow_*/
-/netlist/
+# /netlist/
 
 # Regression reports, intermediate release copies and hardware-debug captures.
 # Keep notes, release checksums and the exact build input XML.

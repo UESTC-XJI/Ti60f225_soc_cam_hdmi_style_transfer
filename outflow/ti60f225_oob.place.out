@@ -1,0 +1,578 @@
+           
+           Efinix FPGA Placement and Routing.
+           Version: 2026.1.132 
+           Compiled: May 29 2026.
+           
+           Copyright (C) 2013 - 2026 Efinix, Inc. All rights reserved.
+
+           
+           The Tool Is Based on VPR of University of Toronto,
+           a free open source code under MIT license.
+           
+WARNING  : Found 25 warnings in the post-synthesis netlist.
+INFO     : Reading core interface constraints file "outflow\ti60f225_oob.interface.csv" [DBMsg::CoreInterfaceConstraintsFileReading]
+INFO     : Successfully read core interface constraints file "outflow\ti60f225_oob.interface.csv" [DBMsg::CoreInterfaceConstraintsFileLoadSuccess]
+INFO     : Creating interface clock pin CLK_27M [DBMsg::NetlistInterfaceClockPinCreated]
+INFO     : Creating interface clock pin clk_100m [DBMsg::NetlistInterfaceClockPinCreated]
+INFO     : Creating interface clock pin fb [DBMsg::NetlistInterfaceClockPinCreated]
+INFO     : Creating interface clock pin hdmi_tx_fast_clk [DBMsg::NetlistInterfaceClockPinCreated]
+INFO     : Creating interface clock pin i_mipi_txc_sclk [DBMsg::NetlistInterfaceClockPinCreated]
+INFO     : Creating interface clock pin i_mipi_txd_sclk [DBMsg::NetlistInterfaceClockPinCreated]
+WARNING  : logical_block LUT__149721 #31483 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block LUT__149722 #31484 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block LUT__149723 #31485 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block LUT__149724 #31486 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block LUT__149725 #31487 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block soc_video_inst/u_soc/u_EfxSapphireSoc/system_cores_0_logic_cpu/IBusCachedPlugin_cache/lineLoader_address[0]~FF #57920 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block soc_video_inst/u_soc/u_EfxSapphireSoc/system_cores_0_logic_cpu/IBusCachedPlugin_cache/lineLoader_address[1]~FF #57921 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block soc_video_inst/u_soc/u_EfxSapphireSoc/system_cores_0_logic_cpu/IBusCachedPlugin_cache/lineLoader_address[2]~FF #57922 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block soc_video_inst/u_soc/u_EfxSapphireSoc/system_cores_0_logic_cpu/IBusCachedPlugin_cache/lineLoader_address[3]~FF #57923 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block soc_video_inst/u_soc/u_EfxSapphireSoc/system_cores_0_logic_cpu/IBusCachedPlugin_cache/lineLoader_address[4]~FF #57924 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block soc_video_inst/u_soc/u_EfxSapphireSoc/system_cores_0_logic_cpu/IBusCachedPlugin_cache/lineLoader_address[5]~FF #57925 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block LUT__149721 #31483 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block LUT__149722 #31484 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block LUT__149723 #31485 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block LUT__149724 #31486 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block LUT__149725 #31487 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block soc_video_inst/u_soc/u_EfxSapphireSoc/system_cores_0_logic_cpu/IBusCachedPlugin_cache/lineLoader_address[0]~FF #57920 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block soc_video_inst/u_soc/u_EfxSapphireSoc/system_cores_0_logic_cpu/IBusCachedPlugin_cache/lineLoader_address[1]~FF #57921 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block soc_video_inst/u_soc/u_EfxSapphireSoc/system_cores_0_logic_cpu/IBusCachedPlugin_cache/lineLoader_address[2]~FF #57922 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block soc_video_inst/u_soc/u_EfxSapphireSoc/system_cores_0_logic_cpu/IBusCachedPlugin_cache/lineLoader_address[3]~FF #57923 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block soc_video_inst/u_soc/u_EfxSapphireSoc/system_cores_0_logic_cpu/IBusCachedPlugin_cache/lineLoader_address[4]~FF #57924 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+WARNING  : logical_block soc_video_inst/u_soc/u_EfxSapphireSoc/system_cores_0_logic_cpu/IBusCachedPlugin_cache/lineLoader_address[5]~FF #57925 has no fanout [DBMsg::NetlistLogicalBlockNoFanout]
+INFO     : Reading core interface constraints file "outflow\ti60f225_oob.interface.csv" [DBMsg::CoreInterfaceConstraintsFileReading]
+INFO     : Successfully read core interface constraints file "outflow\ti60f225_oob.interface.csv" [DBMsg::CoreInterfaceConstraintsFileLoadSuccess]
+WARNING  : IO cell "pll_inst4_RSTN" has no assigned placement; it will be placed randomly
+INFO     : 1 IO cells will have random placement
+WARNING  : Clock source "jtag_inst1_TCK" does not use a dedicated clock pad, extra clock insertion delay will been added
+WARNING  : Clock source "jtag_inst2_autodbg_TCK__" does not use a dedicated clock pad, extra clock insertion delay will been added
+INFO     : Counting 2 clocks that are not assigned to clock resources as global clocks.
+INFO     : XLR count after merging: 54976
+INFO     : Netlist has 32451 luts, 28341 ffs and 4207 adders [PackerMsg::NetlistStatistics]
+INFO     : Packed into 54976 clusters with 2.538253(1.0320321) inputs(outputs) per cluster for a total of 139543(56737) inputs(outputs) [PackerMsg::ClusterPackingStatistics]
+INFO     : Packed into 54976 xlrs with 2.538253(1.0320321) inputs(outputs) per xlr for a total of 139543(56737) inputs(outputs) [PackerMsg::XLRPackingStatistics]
+INFO     : Packed 2 fracturable DSPs into 2 clusters [PackerMsg::DSPPackingStatistics]
+INFO     : Packing took 3.4654631 seconds [FlowMsg::StageDuration]
+INFO     :     Packing took 8.390625 seconds (approximately) in total CPU time [FlowMsg::StageDuration::CPUTime]
+INFO     : Packing virtual memory usage: begin = 59.692 MB, end = 429.292 MB, delta = 369.6 MB [FlowMsg::VMUsage]
+INFO     :     Packing peak virtual memory usage = 429.292 MB [FlowMsg::VMUsage::Peak]
+INFO     : Packing resident set memory usage: begin = 64.688 MB, end = 438.892 MB, delta = 374.204 MB [FlowMsg::RSSUsage]
+INFO     :     Packing peak resident set memory usage = 438.892 MB [FlowMsg::RSSUsage::Peak]
+WARNING  : No ports matched 'CLK_5M'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:20] No valid pin(s) found for clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:20] Unable to run 'create_clock' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:25] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:25] set_clock_groups: No valid clock(s) found for -group 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:25] set_clock_groups: Cannot set clock group when only one non-empty group remains
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:25] Unable to run 'set_clock_groups' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:26] No clocks matched 'CLK_5M'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:26] set_clock_groups: No valid clock(s) found for -group 'CLK_5M'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:41] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:41] set_output_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:41] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:42] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:42] set_output_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:42] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:43] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:43] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:43] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:44] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:44] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:44] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_RESET'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:45] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:45] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:45] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_RESET'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:46] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:46] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:46] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:47] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:47] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:47] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:48] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:48] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:48] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_UPDATE'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:49] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:49] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:49] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_UPDATE'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:50] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:50] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:50] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:51] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:51] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:51] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:52] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:52] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:52] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_DRCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:53] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:53] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:53] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_DRCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:54] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:54] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:54] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:62] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:62] set_output_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:62] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:63] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:63] set_output_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:63] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:64] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:64] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:64] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:65] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:65] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:65] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:66] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:66] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:66] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:67] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:67] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:67] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:68] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:68] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:68] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:69] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:69] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:69] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:70] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:70] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:70] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:71] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:71] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:71] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:72] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:72] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:72] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:73] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:73] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:73] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst2_autodbg_DRCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:74] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:74] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:74] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst2_autodbg_DRCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:75] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:75] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:75] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'ddr_addr[14]'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:115] set_output_delay: No valid output port(s) found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:115] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : No ports matched 'ddr_addr[14]'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:116] set_output_delay: No valid output port(s) found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:116] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : No ports matched 'ddr_addr[15]'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:117] set_output_delay: No valid output port(s) found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:117] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : No ports matched 'ddr_addr[15]'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:118] set_output_delay: No valid output port(s) found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:118] Unable to run 'set_output_delay' constraint due to warnings found
+INFO     : SDC file 'ti60f225_oob.sdc' parsed successfully.
+INFO     : Reading core interface constraints file "outflow\ti60f225_oob.interface.csv" [DBMsg::CoreInterfaceConstraintsFileReading]
+INFO     : Successfully read core interface constraints file "outflow\ti60f225_oob.interface.csv" [DBMsg::CoreInterfaceConstraintsFileLoadSuccess]
+INFO     : Counting 2 clocks that are not assigned to clock resources as global clocks.
+WARNING  : Synchronizer chain starting at cell checker0/u_ddr_buffer/ddr_rd_buffer_inst/u_rd_fifo/RdClkRstGen[1]~FF is driven by a non-sequential source LUT__137757:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_cc_fifo/io_output_rsp_queue/system_ddr_ddrLogic_cc_fifo_toplevel_ddrCd_logic_outputReset_asyncAssertSyncDeassert_buffercc/buffers_0~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_hardJtag_debug_logic_jtagBridge/system_rsp_payload_data[1]~FF is driven by a non-sequential source LUT__125966:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/u_phy_top/u_ddr_phy_if/dq_check_en_r3~FF is driven by a non-sequential source u_ddr3_top/u_phy_top/u_ddr_phy_if/i364_2:Q [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_output_r_queue/popToPushGray_buffercc/buffers_0[2]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/u_phy_top/u_ddr_phy_if/i189_2 is driven by a non-sequential source LUT__118350:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell cvo_axi_inst/u_rd_fifo/RdClkRstGen[1]~FF is driven by a non-sequential source LUT__142349:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell osd_apb/reset_meta[3]~FF is driven by a non-sequential source capture_reset/dff_4/i1_2:Q [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_output_b_queue/popToPushGray_buffercc/buffers_0[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell checker0/u_ddr_buffer/u_ddr_wr_buffer/u_wr_fifo/RdClkRstGen[0]~FF is driven by a non-sequential source LUT__138073:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_aw_queue/pushToPopGray_buffercc/buffers_0[4]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_ar_queue/pushToPopGray_buffercc/buffers_0[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_w_queue/pushToPopGray_buffercc/buffers_0[2]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell checker0/u_rd_fifo/RdClkRstGen[0]~FF is driven by a non-sequential source LUT__138481:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell frame_diagnostics/resize_reset[0]~FF is driven by a non-sequential source VCC:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_uart_0_io_logic/uartCtrl_1/rx/io_rxd_buffercc/buffers_0~FF is driven by a non-sequential source system_uart_0_io_rxd:inpad [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/u_phy_top/u_ddr_phy_if/ddr_rden_r3~FF is driven by a non-sequential source u_ddr3_top/u_phy_top/u_ddr_phy_if/i538_2:Q [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell checker0/u_o_clk_rst_pip/dff_4/i1_2 is driven by a non-sequential source LUT__121380:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell inst_efx_csi2_rx/u_efx_csi2_rx/csi2_rx_top_inst/genblk2.lane_aligner_inst/genblk1[3].u1_inst/genblk2.efx_resetsync_a_rst/active_high.efx_resetsync_active_high/async_reg[0][0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/u_phy_top/u_ddr_phy_if/u2_ctl_fifo/u_efx_fifo_top/genblk2.rd_rst[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell frame_diagnostics/core_reset[0]~FF is driven by a non-sequential source VCC:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell osd_apb/csi_meta[4]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/lb2_axi_clk.u_lb2_axi_clk/u1_cmd_fifo/u_efx_fifo_top/genblk2.rd_rst[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_hardJtag_debug_logic_jtagBridge/system_rsp_payload_data[0]~FF is driven by a non-sequential source LUT__126009:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell checker0/u_ddr_buffer/u_ddr_wr_buffer/u_wr_fifo/WrClkRstGen[1]~FF is driven by a non-sequential source LUT__138051:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell frame_diagnostics/raw_reset[0]~FF is driven by a non-sequential source VCC:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell osd_apb/reset_meta[0]~FF is driven by a non-sequential source LUT__117711:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_aw_queue/pushToPopGray_buffercc/buffers_0[1]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell capture_fault_sync[0]~FF is driven by a non-sequential source LUT__117702:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_hardJtag_debug_logic_jtagBridge/system_rsp_payload_data[4]~FF is driven by a non-sequential source LUT__126011:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell hdmi_output_reset/dff_4/i1_2 is driven by a non-sequential source LUT__117696:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_output_r_queue/popToPushGray_buffercc/buffers_0[4]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_ar_queue/system_ddr_ddrLogic_userAdapters_0_bridge_toplevel_io_ddrMasters_0_reset_asyncAssertSyncDeassert_buffercc/buffers_0~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell camera_replay/queue/wg_s[9]~FF_rt_0 is driven by a non-sequential source LUT__124180:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_output_b_queue/popToPushGray_buffercc/buffers_0[2]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell inst_efx_csi2_rx/u_efx_csi2_rx/csi2_rx_top_inst/genblk3.byte2pixel_inst/u1_inst/xefx_fifo_ctl/async_clk.waddr_cntr_gry_sync[9]~FF_rt_19 is driven by a non-sequential source LUT__130520:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell osd_apb/csi_meta[1]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_ar_queue/pushToPopGray_buffercc/buffers_0[2]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_w_queue/pushToPopGray_buffercc/buffers_0[4]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell checker0/u_ddr_buffer/ddr_rd_buffer_inst/u_rd_fifo/RdClkRstGen[0]~FF is driven by a non-sequential source LUT__137790:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell capture_reset/dff_4/i1_2 is driven by a non-sequential source LUT__121380:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/u_phy_top/u_ddr_phy_if/ddr_wren_r3~FF is driven by a non-sequential source u_ddr3_top/u_phy_top/u_ddr_phy_if/i189_2:Q [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/u_phy_top/u_ddr_phy_if/u2_ctl_fifo/u_efx_fifo_top/genblk2.wr_rst[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell checker0/u_rd_fifo/WrClkRstGen[1]~FF is driven by a non-sequential source LUT__138455:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/lb2_axi_clk.u_lb2_axi_clk/u3_dout_fifo/u_efx_fifo_top/genblk2.rd_rst[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/lb2_axi_clk.u_lb2_axi_clk/u1_cmd_fifo/u_efx_fifo_top/genblk2.wr_rst[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell osd_apb/csi_meta[6]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_output_r_queue/popToPushGray_buffercc/buffers_0[1]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell cvo_axi_inst/u_rd_fifo/RdClkRstGen[0]~FF is driven by a non-sequential source LUT__142432:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/lb2_axi_clk.u_lb2_axi_clk/u2_din_fifo/u_efx_fifo_top/genblk2.rd_rst[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_aw_queue/pushToPopGray_buffercc/buffers_0[3]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell checker0/u_ddr_buffer/ddr_rd_buffer_inst/u_rd_fifo/WrClkRstGen[1]~FF is driven by a non-sequential source LUT__137756:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/u_phy_top/u_ddr_phy_if/u1_cmd_fifo/u_efx_fifo_top/genblk2.rd_rst[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell inst_efx_csi2_rx/u_efx_csi2_rx/csi2_rx_top_inst/genblk2.lane_aligner_inst/genblk1[0].u1_inst/genblk2.efx_resetsync_a_rst/active_high.efx_resetsync_active_high/async_reg[0][0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell inst_efx_csi2_rx/u_efx_csi2_rx/csi2_rx_top_inst/genblk3.byte2pixel_inst/u1_inst/genblk2.genblk1.efx_resetsync_wr_rst/active_high.efx_resetsync_active_high/async_reg[0][0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_w_queue/pushToPopGray_buffercc/buffers_0[1]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell camera_replay/queue/wg_s[9]~FF_rt_2 is driven by a non-sequential source LUT__124182:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_output_b_queue/popToPushGray_buffercc/buffers_0[4]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/u_phy_top/u_ddr_phy_if/u4_din_fifo/u_efx_fifo_top/genblk2.rd_rst[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell checker0/u_i_clk_rst_pip/dff_4/i1_2 is driven by a non-sequential source LUT__121380:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/u_phy_top/u_ddr_phy_if/u3_dout_fifo/u_efx_fifo_top/genblk2.rd_rst[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell cvo_axi_inst/u_rd_fifo/WrClkRstGen[1]~FF is driven by a non-sequential source LUT__142348:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell osd_apb/csi_meta[3]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_cores_0_debugReset_asyncAssertSyncDeassert_buffercc/buffers_0~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_i2c_0_io_logic/i2cCtrl/io_i2c_scl_read_buffercc/buffers_0~FF is driven by a non-sequential source io_cam_scl_IN:inpad [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_ar_queue/pushToPopGray_buffercc/buffers_0[4]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_hardJtag_debug_logic_jtagBridge/system_rsp_valid~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell checker0/u_ddr_buffer/u_ddr_wr_buffer/u_wr_fifo/WrClkRstGen[0]~FF is driven by a non-sequential source LUT__138050:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell display_reset/dff_4/i1_2 is driven by a non-sequential source LUT__121380:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_aw_queue/pushToPopGray_buffercc/buffers_0[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/io_asyncReset_asyncAssertSyncDeassert_buffercc/buffers_0~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/lb2_axi_clk.u_lb2_axi_clk/u3_dout_fifo/u_efx_fifo_top/genblk2.wr_rst[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_hardJtag_debug_logic_jtagBridge/system_rsp_payload_data[3]~FF is driven by a non-sequential source LUT__126010:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell csi_reset/dff_4/i1_2 is driven by a non-sequential source LUT__121380:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell osd_apb/faults_meta[0]~FF is driven by a non-sequential source LUT__117702:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/debugCd_logic_outputReset_asyncAssertSyncDeassert_buffercc/buffers_0~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_output_r_queue/popToPushGray_buffercc/buffers_0[3]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_output_b_queue/popToPushGray_buffercc/buffers_0[1]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/lb2_axi_clk.u_lb2_axi_clk/u2_din_fifo/u_efx_fifo_top/genblk2.wr_rst[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell checker0/u_ddr_buffer/u_ddr_wr_buffer/u_wr_fifo/RdClkRstGen[1]~FF is driven by a non-sequential source LUT__138052:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell inst_efx_csi2_rx/u_efx_csi2_rx/csi2_rx_top_inst/genblk3.byte2pixel_inst/u1_inst/xefx_fifo_ctl/async_clk.waddr_cntr_gry_sync[9]~FF_rt_14 is driven by a non-sequential source LUT__130519:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell osd_apb/reset_meta[4]~FF is driven by a non-sequential source display_reset/dff_4/i1_2:Q [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell inst_efx_csi2_rx/u_efx_csi2_rx/csi2_rx_top_inst/genblk3.byte2pixel_inst/u1_inst/xefx_fifo_ctl/async_clk.raddr_cntr_gry_sync[9]~FF_rt_30 is driven by a non-sequential source LUT__130509:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell osd_apb/csi_meta[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell inst_efx_csi2_rx/u_efx_csi2_rx/csi2_rx_top_inst/genblk2.lane_aligner_inst/genblk1[1].u1_inst/genblk2.efx_resetsync_a_rst/active_high.efx_resetsync_active_high/async_reg[0][0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_ar_queue/pushToPopGray_buffercc/buffers_0[1]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_cc_fifo/io_input_cmd_queue/system_ddr_ddrLogic_cc_fifo_toplevel_systemCd_logic_outputReset_asyncAssertSyncDeassert_buffercc/buffers_0~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_w_queue/pushToPopGray_buffercc/buffers_0[3]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/u_phy_top/u_ddr_phy_if/u1_cmd_fifo/u_efx_fifo_top/genblk2.wr_rst[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell checker0/u_rd_fifo/RdClkRstGen[1]~FF is driven by a non-sequential source LUT__138456:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell checker0/u_rd_fifo/WrClkRstGen[0]~FF is driven by a non-sequential source LUT__138454:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/ddrCd_logic_outputReset_asyncAssertSyncDeassert_buffercc/buffers_0~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_hardJtag_debug_logic_jtagBridge/system_rsp_payload_data[2]~FF is driven by a non-sequential source LUT__125963:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/u_phy_top/u_ddr_phy_if/u3_dout_fifo/u_efx_fifo_top/genblk2.wr_rst[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/u_phy_top/u_ddr_phy_if/u4_din_fifo/u_efx_fifo_top/genblk2.wr_rst[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell osd_apb/csi_meta[5]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_output_r_queue/popToPushGray_buffercc/buffers_0[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_i2c_0_io_logic/i2cCtrl/io_i2c_sda_read_buffercc/buffers_0~FF is driven by a non-sequential source io_cam_sda_IN:inpad [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell osd_apb/reset_meta[1]~FF is driven by a non-sequential source pll_locked:inpad [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_aw_queue/pushToPopGray_buffercc/buffers_0[2]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell startup_select/ready_meta~FF is driven by a non-sequential source LUT__144820:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell checker0/u_ddr_buffer/ddr_rd_buffer_inst/u_rd_fifo/WrClkRstGen[0]~FF is driven by a non-sequential source LUT__137755:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell frame_diagnostics/display_reset[0]~FF is driven by a non-sequential source VCC:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_w_queue/pushToPopGray_buffercc/buffers_0[0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell u_ddr3_top/u_phy_top/u_ddr_phy_if/i538_2 is driven by a non-sequential source LUT__118422:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell inst_efx_csi2_rx/u_efx_csi2_rx/csi2_rx_top_inst/genblk3.byte2pixel_inst/u1_inst/genblk2.genblk1.efx_resetsync_rd_rst/active_high.efx_resetsync_active_high/async_reg[0][0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell camera_replay/queue/wg_s[9]~FF_rt_1 is driven by a non-sequential source LUT__124181:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_output_b_queue/popToPushGray_buffercc/buffers_0[3]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell checker0/u_axi_rst_pip/dff_4/i1_2 is driven by a non-sequential source LUT__121380:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell inst_efx_csi2_rx/u_efx_csi2_rx/csi2_rx_top_inst/genblk2.lane_aligner_inst/genblk1[2].u1_inst/genblk2.efx_resetsync_a_rst/active_high.efx_resetsync_active_high/async_reg[0][0]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell osd_apb/csi_meta[2]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell cvo_axi_inst/u_rd_fifo/WrClkRstGen[0]~FF is driven by a non-sequential source LUT__142347:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_ddr_ddrLogic_userAdapters_0_bridge/io_input_ar_queue/pushToPopGray_buffercc/buffers_0[3]~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/system_hardJtag_debug_logic_jtagBridge/system_rsp_payload_error~FF is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+WARNING  : Synchronizer chain starting at cell soc_video_inst/u_soc/u_EfxSapphireSoc/userInterruptA_buffercc/i7_2 is driven by a non-sequential source GND:O [FlowMsg::SyncHeadDrivenByNonSeq]
+INFO     : Starting Global Placer with 16 threads ...
+            ----------     -------  --------------     -------
+             Iteration       WHPWL Worst Slack (ps) Convergence
+            ----------     -------  --------------     -------
+INFO     :           1    21826900             346         1.5%
+INFO     :           2    16753114             281         2.4%
+INFO     :           3    11975775             352         3.8%
+INFO     :           4     9612266             313         5.3%
+INFO     :           5     6015728             296        11.0%
+INFO     :           6     4217392             166        22.8%
+INFO     :           7     3282630             221        38.6%
+INFO     :           8     2901439             182        47.8%
+INFO     :           9     2752193             235        52.1%
+INFO     :          10     2670998             202        54.6%
+INFO     :          11     2632906              46        56.8%
+INFO     :          12     2593826              79        58.4%
+INFO     :          13     2563594            -107        59.8%
+INFO     :          14     2535872              29        61.3%
+INFO     :          15     2515090             -27        62.4%
+INFO     :          16     2526149             130        63.1%
+INFO     :          17     2499099             -29        65.2%
+INFO     :          18     2487406             215        66.0%
+INFO     :          19     2472198             126        66.9%
+INFO     :          20     2465316             164        67.7%
+INFO     :          21     2461290             -86        68.8%
+INFO     :          22     2458607             -30        69.8%
+INFO     :          23     2454860             -86        70.8%
+INFO     :          24     2454088              79        72.1%
+INFO     :          25     2460013              71        73.0%
+INFO     :          26     2469618              10        73.9%
+INFO     :          27     2470106               0        75.2%
+INFO     :          28     2446277              25        78.9%
+INFO     :          29     2420204               7        80.0%
+INFO     :          30     2419734             -16        80.2%
+INFO     :          31     2402229             140        81.3%
+INFO     :          32     2390702             -51        82.7%
+INFO     :          33     2403625              66        83.0%
+INFO     :          34     2393575               5        84.7%
+INFO     :          35     2399261             109        85.6%
+INFO     :          36     2400908             103        87.2%
+INFO     :          37     2406341             -12        87.9%
+INFO     :          38     2413994              22        88.4%
+INFO     :          39     2419699              58        89.0%
+INFO     :          40     2427228            -101        89.8%
+INFO     :          41     2433902             -13        90.3%
+INFO     :          42     2442816             -97        91.1%
+INFO     :          43     2450425            -126        91.7%
+INFO     :          44     2461672            -102        92.3%
+INFO     :          45     2400029             -92        92.3%
+INFO     :          46     2426851            -214        92.8%
+INFO     :          47     2439708            -127        94.4%
+INFO     :          48     2456667            -184        95.3%
+INFO     :          49     2452011            -262        96.5%
+INFO     :          50     2460324            -142        96.5%
+INFO     :          51     2468824            -248        96.5%
+INFO     : GP: best_placement: wpd: 1162.11
+INFO     : Starting Annealer
+            ----------     -------  --------------     -------
+             Iteration       WHPWL  Delay Max (ps)     R Limit
+            ----------     -------  --------------     -------
+INFO     :           0     1540933            2410        30.0
+INFO     :           1     2362156            2616        90.0
+INFO     :           2     2137094            2644        90.0
+INFO     :           3     1963324            2525        24.0
+INFO     :           4     1835962            2474        21.9
+INFO     :           5     1735747            1990        20.0
+INFO     :           6     1664642            2057        18.1
+INFO     :           7     1606232            2025        16.3
+INFO     :           8     1564189            2025        14.8
+INFO     :           9     1528364            2025        13.3
+INFO     :          10     1500181            2025        12.0
+INFO     :          11     1473311            2025        10.8
+INFO     :          12     1454424            1916         9.7
+INFO     :          13     1435127            1957         8.7
+INFO     :          14     1419183            1985         7.8
+INFO     :          15     1402922            1892         7.0
+INFO     :          16     1389045            1898         6.3
+INFO     :          17     1375043            1909         5.7
+INFO     :          18     1363904            2000         5.1
+INFO     :          19     1357078            2000         4.6
+INFO     :          20     1349454            2000         4.1
+INFO     :          21     1340322            2000         3.7
+INFO     :          22     1333434            2000         3.3
+INFO     :          23     1328147            2000         2.9
+INFO     :          24     1324699            2000         2.6
+INFO     : DP: best_placement: wpd: 5.64898
+INFO     : Starting incremental timing annealer
+INFO     : Starting incremental timing quench 1 with temperature 0.1 and 0.2 moves per pass
+            ----------     -------  --------------     -------
+             Iteration       WHPWL  Delay Max (ps)     R Limit
+            ----------     -------  --------------     -------
+INFO     :           0     1324699            2000        30.0
+INFO     :           1     1330281            1891        26.8
+INFO     :           2     1332316            1888        24.0
+INFO     :           3     1330881            1866        21.5
+INFO     :           4     1330180            1852        19.2
+INFO     :           5     1330543            1852        17.2
+INFO     :           6     1330168            1852        15.4
+INFO     :           7     1329537            1852        13.7
+INFO     :           8     1327952            1852        12.3
+INFO     :           9     1326009            1852        10.9
+INFO     : DP: best_placement: wpd: -1
+INFO     : Placement successful: 55142 cells are placed
+INFO     : Peak congestion smeared over 4x4 of the chip is 1.65531 at 26,22
+INFO     : Peak congestion smeared over 1/16 of the chip is 1.30726 at 87,90
+INFO     : Peak congestion smeared over 1/4 of the chip is 0.861298 at 74,318
+INFO     : Congestion-weighted HPWL per net: 32.3237
+INFO     : Post-placement cluster-level checks is successful
+INFO     : Post-placement primitive-level checks is successful
+INFO     : Placement took 71.7329395 seconds [FlowMsg::StageDuration]
+INFO     :     Placement took 499.59375 seconds (approximately) in total CPU time [FlowMsg::StageDuration::CPUTime]
+INFO     : Placement virtual memory usage: begin = 115.604 MB, end = 327.088 MB, delta = 211.484 MB [FlowMsg::VMUsage]
+INFO     :     Placement peak virtual memory usage = 669.944 MB [FlowMsg::VMUsage::Peak]
+INFO     : Placement resident set memory usage: begin = 131.812 MB, end = 347.584 MB, delta = 215.772 MB [FlowMsg::RSSUsage]
+INFO     :     Placement peak resident set memory usage = 690.868 MB [FlowMsg::RSSUsage::Peak]
+WARNING  : No ports matched 'CLK_5M'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:20] No valid pin(s) found for clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:20] Unable to run 'create_clock' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:25] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:25] set_clock_groups: No valid clock(s) found for -group 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:25] set_clock_groups: Cannot set clock group when only one non-empty group remains
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:25] Unable to run 'set_clock_groups' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:26] No clocks matched 'CLK_5M'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:26] set_clock_groups: No valid clock(s) found for -group 'CLK_5M'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:41] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:41] set_output_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:41] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:42] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:42] set_output_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:42] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:43] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:43] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:43] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:44] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:44] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:44] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_RESET'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:45] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:45] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:45] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_RESET'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:46] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:46] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:46] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:47] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:47] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:47] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:48] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:48] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:48] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_UPDATE'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:49] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:49] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:49] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_UPDATE'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:50] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:50] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:50] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:51] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:51] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:51] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:52] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:52] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:52] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_DRCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:53] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:53] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:53] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_DRCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:54] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:54] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:54] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:62] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:62] set_output_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:62] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:63] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:63] set_output_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:63] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:64] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:64] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:64] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:65] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:65] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:65] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:66] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:66] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:66] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:67] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:67] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:67] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:68] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:68] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:68] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:69] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:69] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:69] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:70] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:70] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:70] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:71] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:71] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:71] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:72] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:72] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:72] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:73] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:73] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:73] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst2_autodbg_DRCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:74] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:74] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:74] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst2_autodbg_DRCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:75] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:75] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:75] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'ddr_addr[14]'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:115] set_output_delay: No valid output port(s) found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:115] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : No ports matched 'ddr_addr[14]'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:116] set_output_delay: No valid output port(s) found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:116] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : No ports matched 'ddr_addr[15]'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:117] set_output_delay: No valid output port(s) found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:117] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : No ports matched 'ddr_addr[15]'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:118] set_output_delay: No valid output port(s) found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:118] Unable to run 'set_output_delay' constraint due to warnings found
+INFO     : SDC file 'ti60f225_oob.sdc' parsed successfully.
+Maximum possible analyzed clocks frequency
+   Clock Name     Period (ns)  Frequency (MHz)     Edge
+tx_cal_clk_90edge    2.017        495.786         (R-R)
+sdram_clk            1.978        505.561         (R-R)
+rx_cal_clk           2.126        470.367         (R-R)
+tx_cal_clk           1.981        504.796         (R-R)
+vid_clk_dvi2         4.918        203.335         (R-R)
+hdmi_tx_slow_clk     5.513        181.389         (R-R)
+core_clk             5.774        173.190         (R-R)
+i_mipi_rx_pclk       4.112        243.191         (R-R)
+i_cam_ck_CLKOUT      4.762        209.996         (R-R)
+
+Geomean max period: 3.338
+
+Setup (Max) Clock Relationship
+  Launch Clock      Capture Clock   Constraint (ns)     Slack (ns)          Edge
+tx_cal_clk_90edge tx_cal_clk_90edge       2.500            0.483           (R-R)
+tx_cal_clk_90edge tx_cal_clk              2.500            1.165           (R-R)
+tx_cal_clk_90edge core_clk                2.500            2.079           (R-R)
+sdram_clk         tx_cal_clk_90edge       2.500            0.653           (R-R)
+sdram_clk         sdram_clk               2.500            0.522           (R-R)
+rx_cal_clk        rx_cal_clk              2.500            0.374           (R-R)
+tx_cal_clk        tx_cal_clk              2.500            0.519           (R-R)
+vid_clk_dvi2      vid_clk_dvi2            6.734            1.816           (R-R)
+vid_clk_dvi2      hdmi_tx_slow_clk        6.734            4.008           (R-R)
+hdmi_tx_slow_clk  vid_clk_dvi2            6.734            1.864           (R-R)
+hdmi_tx_slow_clk  hdmi_tx_slow_clk       13.468            7.955           (R-R)
+core_clk          tx_cal_clk_90edge       2.500            1.298           (R-R)
+core_clk          core_clk               10.000            4.226           (R-R)
+core_clk          i_cam_ck_CLKOUT        10.000            8.943           (R-R)
+i_mipi_rx_pclk    i_mipi_rx_pclk         20.000           15.888           (R-R)
+i_mipi_rx_pclk    i_cam_ck_CLKOUT        10.000            8.440           (R-R)
+i_cam_ck_CLKOUT   i_mipi_rx_pclk         10.000            8.861           (R-R)
+i_cam_ck_CLKOUT   i_cam_ck_CLKOUT        10.000            5.238           (R-R)
+
+Hold (Min) Clock Relationship
+  Launch Clock      Capture Clock   Constraint (ns)     Slack (ns)          Edge
+tx_cal_clk_90edge tx_cal_clk_90edge      0.000            0.098            (R-R)
+tx_cal_clk_90edge tx_cal_clk             0.000            0.949            (R-R)
+tx_cal_clk_90edge core_clk               0.000            0.149            (R-R)
+sdram_clk         tx_cal_clk_90edge      0.000            0.835            (R-R)
+sdram_clk         sdram_clk              0.000            0.085            (R-R)
+rx_cal_clk        rx_cal_clk             0.000            0.097            (R-R)
+tx_cal_clk        tx_cal_clk             0.000            0.180            (R-R)
+vid_clk_dvi2      vid_clk_dvi2           0.000            0.098            (R-R)
+vid_clk_dvi2      hdmi_tx_slow_clk       0.000            0.195            (R-R)
+hdmi_tx_slow_clk  vid_clk_dvi2           0.000            0.195            (R-R)
+hdmi_tx_slow_clk  hdmi_tx_slow_clk       0.000            0.098            (R-R)
+core_clk          tx_cal_clk_90edge      0.000            0.149            (R-R)
+core_clk          core_clk               0.000            0.098            (R-R)
+core_clk          i_cam_ck_CLKOUT        0.000            0.195            (R-R)
+i_mipi_rx_pclk    i_mipi_rx_pclk         0.000            0.179            (R-R)
+i_mipi_rx_pclk    i_cam_ck_CLKOUT        0.000            0.195            (R-R)
+i_cam_ck_CLKOUT   i_mipi_rx_pclk         0.000            0.195            (R-R)
+i_cam_ck_CLKOUT   i_cam_ck_CLKOUT        0.000            0.161            (R-R)
+
+INFO     : Write Timing Report to "outflow/ti60f225_oob.place.timing.rpt" ...

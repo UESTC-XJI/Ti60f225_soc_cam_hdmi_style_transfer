@@ -88,12 +88,6 @@
         <efxpt:comp_gpio name="CLK_27M" gpio_def="GPIOL_P_10" mode="input" bus_name="" io_standard="1.8 V LVCMOS">
             <efxpt:input_config name="CLK_27M" name_ddio_lo="" conn_type="gclk" is_register="false" clock_name="" is_clock_inverted="false" pull_option="none" is_schmitt_trigger="false" ddio_type="none" is_bus_hold="false" delay="0" is_serial="false" is_dyn_delay="false" fastclk_name="" pullup_ena_name="CLK_27M_PULL_UP_ENA" dyn_delay_en_name="CLK_27M_DLY_ENA" dyn_delay_reset_name="CLK_27M_DLY_RST" dyn_delay_ctrl_name="CLK_27M_DLY_CTRL" clkmux_buf_name=""/>
         </efxpt:comp_gpio>
-        <efxpt:comp_gpio name="LCD_POWER" gpio_def="GPIOL_06" mode="output" bus_name="" io_standard="3.3 V LVCMOS">
-            <efxpt:output_config name="LCD_POWER" name_ddio_lo="" register_option="none" clock_name="" is_clock_inverted="false" is_slew_rate="false" tied_option="none" ddio_type="none" delay="0" is_serial="false" drive_strength="4" fastclk_name=""/>
-        </efxpt:comp_gpio>
-        <efxpt:comp_gpio name="LCD_RST_P" gpio_def="GPIOL_04" mode="output" bus_name="" io_standard="3.3 V LVCMOS">
-            <efxpt:output_config name="LCD_RST_P" name_ddio_lo="" register_option="none" clock_name="" is_clock_inverted="false" is_slew_rate="false" tied_option="none" ddio_type="none" delay="0" is_serial="false" drive_strength="2" fastclk_name=""/>
-        </efxpt:comp_gpio>
         <efxpt:comp_gpio name="ddr_addr[0]" gpio_def="GPIOR_N_05" mode="output" bus_name="ddr_addr" io_standard="1.5 V SSTL">
             <efxpt:output_config name="ddr_addr[0]" name_ddio_lo="" register_option="register" clock_name="sdram_clk" is_clock_inverted="false" is_slew_rate="false" tied_option="none" ddio_type="none" delay="0" is_serial="false" drive_strength="8" fastclk_name=""/>
         </efxpt:comp_gpio>
@@ -389,9 +383,6 @@
                 <efxpt:pin name="" type_name="DESKEWED" is_bus="false"/>
             </efxpt:gen_pin>
             <efxpt:comp_output_clock name="core_clk" number="0" out_divider="20" is_dyn_phase="false" phase_setting="0" is_inverted="false" conn_type="gclk"/>
-            <efxpt:comp_output_clock name="i_mipi_txc_sclk" number="1" out_divider="4" is_dyn_phase="false" phase_setting="4" is_inverted="false" conn_type="gclk"/>
-            <efxpt:comp_output_clock name="i_mipi_txd_sclk" number="2" out_divider="4" is_dyn_phase="false" phase_setting="2" is_inverted="false" conn_type="gclk"/>
-            <efxpt:comp_output_clock name="i_mipi_tx_pclk" number="3" out_divider="16" is_dyn_phase="false" phase_setting="0" is_inverted="false" conn_type="gclk"/>
             <efxpt:comp_prop/>
         </efxpt:pll>
         <efxpt:pll name="pll_inst4" pll_def="PLL_BR0" ref_clock_name="CLK_25M" ref_clock_freq="25.0000" multiplier="2" pre_divider="1" post_divider="8" reset_name="" locked_name="" is_ipfrz="false" is_bypass_lock="true">
@@ -403,7 +394,6 @@
                 <efxpt:pin name="" type_name="DESKEWED" is_bus="false"/>
             </efxpt:gen_pin>
             <efxpt:comp_output_clock name="i_mipi_rx_pclk" number="0" out_divider="12" is_dyn_phase="false" phase_setting="0" is_inverted="false" conn_type="gclk"/>
-            <efxpt:comp_output_clock name="CLK_5M" number="1" out_divider="120" is_dyn_phase="false" phase_setting="0" is_inverted="false" conn_type="gclk"/>
             <efxpt:comp_prop/>
         </efxpt:pll>
     </efxpt:pll_info>
@@ -472,6 +462,7 @@
         </efxpt:jtag>
     </efxpt:jtag_info>
     <efxpt:mipi_dphy_info>
+        <!-- MIPI DSI TX resources removed: this build outputs video through HDMI.
         <efxpt:mipi_dphy name="mipi_dp_clk" block_def="GPIOT_PN_01" ops_type="tx">
             <efxpt:tx_info mode="clock lane" is_reversible="false" delay="10">
                 <efxpt:gen_pin>
@@ -557,6 +548,7 @@
                 </efxpt:gen_pin>
             </efxpt:tx_info>
         </efxpt:mipi_dphy>
+        -->
         <efxpt:mipi_dphy name="cam_ck" block_def="GPIOT_PN_09" ops_type="rx">
             <efxpt:rx_info mode="clock lane" is_reversible="false" delay="0" delay_mode="static" is_fifo="false" conn_type="gclk" clkmux_buf_name="" dly_clock_name="">
                 <efxpt:gen_pin>

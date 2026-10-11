@@ -13,24 +13,18 @@ create_clock -period 13.468 -name hdmi_tx_slow_clk [get_ports {hdmi_tx_slow_clk}
 create_clock -period 18.519 -name fb [get_ports {fb}]
 create_clock -waveform {0.337 1.684} -period 2.694 -name hdmi_tx_fast_clk [get_ports {hdmi_tx_fast_clk}]
 create_clock -period 10.000 -name core_clk [get_ports {core_clk}]
-create_clock -waveform {1.000 2.000} -period 2.000 -name i_mipi_txc_sclk [get_ports {i_mipi_txc_sclk}]
-create_clock -waveform {0.500 1.500} -period 2.000 -name i_mipi_txd_sclk [get_ports {i_mipi_txd_sclk}]
-create_clock -period 8.000 -name i_mipi_tx_pclk [get_ports {i_mipi_tx_pclk}]
 create_clock -period 20.000 -name i_mipi_rx_pclk [get_ports {i_mipi_rx_pclk}]
-create_clock -period 200.000 -name CLK_5M [get_ports {CLK_5M}]
 
 
 create_clock -period 10.000 -name i_cam_ck_CLKOUT [get_ports {i_cam_ck_CLKOUT}]
 
 set_clock_groups -exclusive  -group {i_mipi_rx_pclk} -group {jtag_inst1_TCK}
-set_clock_groups -exclusive -group {core_clk} -group {tx_cal_clk} -group {i_mipi_tx_pclk} -group {vid_clk_dvi2 hdmi_tx_slow_clk hdmi_tx_fast_clk fb} -group {CLK_5M} -group {i_mipi_rx_pclk} -group {sdram_clk} -group {rx_cal_clk}
-set_clock_groups -exclusive -group {i_mipi_tx_pclk}    -group {i_mipi_rx_pclk}
+set_clock_groups -exclusive -group {core_clk} -group {tx_cal_clk} -group {vid_clk_dvi2 hdmi_tx_slow_clk hdmi_tx_fast_clk fb} -group {i_mipi_rx_pclk} -group {sdram_clk} -group {rx_cal_clk}
 
 #set_clock_groups -exclusive -group {i_sysclk} -group {jtag_inst1_TCK}                       2.500           -0.197           (R-R)
 
 #set_clock_groups -exclusive -group {i_sysclk_div_2} -group {jtag_inst1_TCK}
 
-#set_clock_groups -exclusive -group {jtag_inst1_TCK} -group {i_hbramClk_fb i_hbramClk_cal i_hbramClk_cal i_hbramClk90} -group {io_systemClk} -group {i_mipi_rx_pclk} -group {i_mipi_tx_pclk i_mipi_clk i_mipi_txc_sclk i_mipi_txd_sclk}
 
 # GPIO Constraints
 ####################
@@ -317,28 +311,3 @@ set_input_delay -clock i_cam_ck_CLKOUT -reference_pin [get_ports {i_cam_ck_CLKOU
 set_input_delay -clock i_cam_ck_CLKOUT -reference_pin [get_ports {i_cam_ck_CLKOUT~CLKOUT~141~322}] -min 0.420 [get_ports {cam_d3_FIFO_EMPTY}]
 set_input_delay -clock i_cam_ck_CLKOUT -reference_pin [get_ports {i_cam_ck_CLKOUT~CLKOUT~141~322}] -max 0.560 [get_ports {cam_d3_HS_IN[*]}]
 set_input_delay -clock i_cam_ck_CLKOUT -reference_pin [get_ports {i_cam_ck_CLKOUT~CLKOUT~141~322}] -min 0.325 [get_ports {cam_d3_HS_IN[*]}]
-
-# MIPI TX Lane Constraints
-############################
-set_output_delay -clock i_mipi_txd_sclk -reference_pin [get_ports {i_mipi_txd_sclk~CLKOUT~39~322}] -max 0.435 [get_ports {mipi_dp_clk_HS_OUT[*]}]
-set_output_delay -clock i_mipi_txd_sclk -reference_pin [get_ports {i_mipi_txd_sclk~CLKOUT~39~322}] -min -0.140 [get_ports {mipi_dp_clk_HS_OUT[*]}]
-set_output_delay -clock i_mipi_txd_sclk -reference_pin [get_ports {i_mipi_txd_sclk~CLKOUT~39~322}] -max 0.362 [get_ports {mipi_dp_clk_RST}]
-set_output_delay -clock i_mipi_txd_sclk -reference_pin [get_ports {i_mipi_txd_sclk~CLKOUT~39~322}] -min -0.140 [get_ports {mipi_dp_clk_RST}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~63~322}] -max 0.435 [get_ports {mipi_dp_data0_HS_OUT[*]}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~63~322}] -min -0.140 [get_ports {mipi_dp_data0_HS_OUT[*]}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~63~322}] -max 0.362 [get_ports {mipi_dp_data0_RST}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~63~322}] -min -0.140 [get_ports {mipi_dp_data0_RST}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~71~322}] -max 0.435 [get_ports {mipi_dp_data1_HS_OUT[*]}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~71~322}] -min -0.140 [get_ports {mipi_dp_data1_HS_OUT[*]}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~71~322}] -max 0.362 [get_ports {mipi_dp_data1_RST}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~71~322}] -min -0.140 [get_ports {mipi_dp_data1_RST}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~55~322}] -max 0.435 [get_ports {mipi_dp_data2_HS_OUT[*]}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~55~322}] -min -0.140 [get_ports {mipi_dp_data2_HS_OUT[*]}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~55~322}] -max 0.362 [get_ports {mipi_dp_data2_RST}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~55~322}] -min -0.140 [get_ports {mipi_dp_data2_RST}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~31~322}] -max 0.435 [get_ports {mipi_dp_data3_HS_OUT[*]}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~31~322}] -min -0.140 [get_ports {mipi_dp_data3_HS_OUT[*]}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~31~322}] -max 0.362 [get_ports {mipi_dp_data3_RST}]
-set_output_delay -clock i_mipi_tx_pclk -reference_pin [get_ports {i_mipi_tx_pclk~CLKOUT~31~322}] -min -0.140 [get_ports {mipi_dp_data3_RST}]
-
-

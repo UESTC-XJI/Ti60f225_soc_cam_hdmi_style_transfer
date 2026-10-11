@@ -85,13 +85,10 @@ module ti60f225_oob_top #(
     input	wire	i_mipi_rx_pclk,
     input wire  vid_clk_dvi2,
     input wire hdmi_tx_slow_clk,
-    input wire CLK_5M,
     input  wire CLK_25M,
 	output  wire    pll_inst1_RSTN,
 	input	wire	i_pll_locked,
 	input 	wire  	pll_locked,
-	output  wire    pll_inst4_RSTN,
-	input   wire    pll_inst4_LOCKED,
 	output  wire  	USER_PLL_RSTN,
     output 	wire 	DDR3_PLL_RSTN,
 	input 	wire  	user_pll_locked,
@@ -190,6 +187,7 @@ module ti60f225_oob_top #(
        //LED
        output [`CFG_BITS_8-1:0] led,
 
+       /* MIPI DSI and LCD ports are intentionally removed from this HDMI-only build.
        // MIPI DSI
        input	wire	                     i_mipi_tx_pclk		,
        output	wire	                     mipi_dp_clk_LP_P_OUT		,
@@ -233,6 +231,7 @@ module ti60f225_oob_top #(
        input  wire	                     mipi_dp_data0_LP_N_IN	,
        output	wire	                     LCD_RST_P			,
        output wire                        LCD_POWER			,
+       */
 
        // hdmi interface
 
@@ -375,7 +374,6 @@ wire	[`CFG_BITS_64-1:0]			w_mipi_rx_data	;
 assign w_arstn  		       = i_pll_locked & pll_locked & user_pll_locked;
 assign pll_inst1_RSTN  		= i_arstn;
 assign USER_PLL_RSTN      		= i_arstn;
-assign mipi_dsi_tx_pll_RSTN 	= i_arstn;
 assign DDR3_PLL_RSTN 		= i_arstn;
 reset_ctrl
 #(
@@ -940,18 +938,6 @@ assign led[1] = capture_fault;
 assign led[2] = resize_fault;
 assign led[3] = underflow_seen;
 assign led[7:4] = resize_completed_frames[3:0];
-//==============================================================================
-// MIPI DSI
-//==============================================================================
-// signal
-
-assign  LCD_POWER 			= i_arstn;
-assign	LCD_RST_P	      = ~w_arstn;// LCD复位先释放，然后再释放MIPI 的复位
-assign	mipi_dp_clk_RST		= ~i_arstn;
-assign	mipi_dp_data0_RST	= ~i_arstn;
-assign	mipi_dp_data1_RST	= ~i_arstn;
-assign	mipi_dp_data2_RST	= ~i_arstn;
-assign	mipi_dp_data3_RST	= ~i_arstn;
 reg [`CFG_BITS_27-1:0] dly_cnt = 'd0;
 
 always @( posedge vid_clk_dvi2 or negedge w_arstn )

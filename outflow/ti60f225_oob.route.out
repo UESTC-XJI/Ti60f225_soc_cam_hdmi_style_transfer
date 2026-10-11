@@ -1,0 +1,255 @@
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Router Setup
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : High utilization design detected; tuning for routability.
+INFO     : [Setup Parallel Routing Scheduler]
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Route Circuit with 16 threads
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Overridding delay budgets for 740 synchronizer-related pins
+INFO     : Iter  1: overlap=168009  heapops=21058051   (0%) cpd=1898  frr=1.00  msec=4476
+INFO     : [Setup Delay Budgets | 677.6 ms]
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Hold Fixing
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Total min wire delay:  18099831
+INFO     : Hold fix wire delay:          0
+INFO     : Hold fix delay ratio:     0.00%
+INFO     : Pins requiring hold fix:  0.00%
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Iter  2: overlap=83221   heapops=16649280   (19%) cpd=1911  frr=1.01  msec=2704
+INFO     : Iter  3: overlap=63599   heapops=16292556   (27%) cpd=1898  frr=1.00  msec=2614
+INFO     : Iter  4: overlap=51316   heapops=16195095   (33%) cpd=1931  frr=1.02  msec=2620
+INFO     : Iter  5: overlap=40830   heapops=15889517   (38%) cpd=1931  frr=1.02  msec=2659
+INFO     : Iter  6: overlap=32099   heapops=15127841   (47%) cpd=1931  frr=1.02  msec=2528
+INFO     : Iter  7: overlap=24534   heapops=14590221   (49%) cpd=1931  frr=1.02  msec=2552
+INFO     : Iter  8: overlap=17433   heapops=13088791   (57%) cpd=1931  frr=1.02  msec=2342
+INFO     : Iter  9: overlap=12349   heapops=11082223   (68%) cpd=1931  frr=1.02  msec=2070
+INFO     : [Rebuild Parallel Routing Scheduler]
+INFO     : Iter 10: overlap=8043    heapops=9284173    (75%) cpd=1931  frr=1.02  msec=1976
+INFO     : Iter 11: overlap=4854    heapops=7572969    (79%) cpd=1948  frr=1.03  msec=1956
+INFO     : Iter 12: overlap=2749    heapops=5255994    (82%) cpd=1977  frr=1.04  msec=1531
+INFO     : [Rebuild Parallel Routing Scheduler]
+INFO     : Iter 13: overlap=1441    heapops=3508394    (87%) cpd=1977  frr=1.04  msec=1321
+INFO     : Iter 14: overlap=749     heapops=2309676    (90%) cpd=1977  frr=1.04  msec=935
+INFO     : Iter 15: overlap=357     heapops=1866231    (90%) cpd=1977  frr=1.04  msec=843
+INFO     : [Rebuild Parallel Routing Scheduler]
+INFO     : Iter 16: overlap=184     heapops=1300583    (91%) cpd=1977  frr=1.04  msec=825
+INFO     : Iter 17: overlap=84      heapops=604031     (91%) cpd=1977  frr=1.04  msec=478
+INFO     : Iter 18: overlap=36      heapops=461574     (92%) cpd=1977  frr=1.04  msec=432
+INFO     : Iter 19: overlap=12      heapops=281569     (92%) cpd=1977  frr=1.04  msec=377
+INFO     : Iter 20: overlap=7       heapops=212390     (92%) cpd=1977  frr=1.04  msec=361
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Iter 21: overlap=0       heapops=168802     (92%) cpd=1977  frr=1.04  msec=349
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Routing Result
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Routing Succeeded in 38.16 seconds taking 21 iterations! 
+INFO     : 
+INFO     : First iteration critical path delay = 1.898 ns 
+INFO     : Last iteration critical path delay  = 1.977 ns (ratio = 1.04)
+INFO     : Max Routing Heap Size = 100,001
+INFO     : Routing trace written to file 'outflow\ti60f225_oob.troutingtraces' 
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Routing took 48.6547297 seconds [FlowMsg::StageDuration]
+INFO     :     Routing took 135.328125 seconds (approximately) in total CPU time [FlowMsg::StageDuration::CPUTime]
+INFO     : Routing virtual memory usage: begin = 180.728 MB, end = 571.444 MB, delta = 390.716 MB [FlowMsg::VMUsage]
+INFO     :     Routing peak virtual memory usage = 669.944 MB [FlowMsg::VMUsage::Peak]
+INFO     : Routing resident set memory usage: begin = 202.732 MB, end = 575.348 MB, delta = 372.616 MB [FlowMsg::RSSUsage]
+INFO     :     Routing peak resident set memory usage = 690.868 MB [FlowMsg::RSSUsage::Peak]
+           ***** Beginning stage final timing analysis ... *****
+WARNING  : No ports matched 'CLK_5M'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:20] No valid pin(s) found for clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:20] Unable to run 'create_clock' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:25] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:25] set_clock_groups: No valid clock(s) found for -group 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:25] set_clock_groups: Cannot set clock group when only one non-empty group remains
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:25] Unable to run 'set_clock_groups' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:26] No clocks matched 'CLK_5M'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:26] set_clock_groups: No valid clock(s) found for -group 'CLK_5M'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:41] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:41] set_output_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:41] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:42] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:42] set_output_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:42] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:43] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:43] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:43] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:44] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:44] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:44] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_RESET'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:45] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:45] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:45] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_RESET'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:46] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:46] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:46] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:47] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:47] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:47] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:48] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:48] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:48] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_UPDATE'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:49] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:49] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:49] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_UPDATE'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:50] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:50] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:50] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:51] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:51] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:51] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:52] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:52] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:52] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_DRCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:53] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:53] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:53] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst1_DRCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:54] No clocks matched 'jtag_inst1_TCK'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:54] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:54] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:62] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:62] set_output_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:62] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:63] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:63] set_output_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:63] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:64] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:64] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:64] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:65] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:65] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:65] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:66] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:66] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:66] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:67] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:67] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:67] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:68] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:68] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:68] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:69] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:69] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:69] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:70] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:70] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:70] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:71] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:71] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:71] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:72] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:72] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:72] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:73] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:73] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:73] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst2_autodbg_DRCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:74] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:74] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:74] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'jtag_inst2_autodbg_DRCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:75] No clocks matched 'jtag_inst2_autodbg_TCK__'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:75] set_input_delay: No valid clock found for -clock
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:75] Unable to run 'set_input_delay' constraint due to warnings found
+WARNING  : No ports matched 'ddr_addr[14]'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:115] set_output_delay: No valid output port(s) found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:115] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : No ports matched 'ddr_addr[14]'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:116] set_output_delay: No valid output port(s) found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:116] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : No ports matched 'ddr_addr[15]'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:117] set_output_delay: No valid output port(s) found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:117] Unable to run 'set_output_delay' constraint due to warnings found
+WARNING  : No ports matched 'ddr_addr[15]'
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:118] set_output_delay: No valid output port(s) found
+WARNING  : [SDC C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_soc_sim/ti60f225_oob.sdc:118] Unable to run 'set_output_delay' constraint due to warnings found
+INFO     : SDC file 'ti60f225_oob.sdc' parsed successfully.
+Maximum possible analyzed clocks frequency
+   Clock Name     Period (ns)  Frequency (MHz)     Edge
+tx_cal_clk_90edge    1.977        505.817         (R-R)
+sdram_clk            2.074        482.160         (R-R)
+rx_cal_clk           1.944        514.403         (R-R)
+tx_cal_clk           2.103        475.511         (R-R)
+vid_clk_dvi2         5.197        192.419         (R-R)
+hdmi_tx_slow_clk     7.888        126.775         (R-R)
+core_clk             6.679        149.723         (R-R)
+i_mipi_rx_pclk       6.454        154.943         (R-R)
+i_cam_ck_CLKOUT      5.583        179.115         (R-R)
+
+Geomean max period: 3.800
+
+Setup (Max) Clock Relationship
+  Launch Clock      Capture Clock   Constraint (ns)     Slack (ns)          Edge
+tx_cal_clk_90edge tx_cal_clk_90edge       2.500            0.523           (R-R)
+tx_cal_clk_90edge tx_cal_clk              2.500            1.253           (R-R)
+tx_cal_clk_90edge core_clk                2.500            1.691           (R-R)
+sdram_clk         tx_cal_clk_90edge       2.500            0.750           (R-R)
+sdram_clk         sdram_clk               2.500            0.426           (R-R)
+rx_cal_clk        rx_cal_clk              2.500            0.556           (R-R)
+tx_cal_clk        tx_cal_clk              2.500            0.397           (R-R)
+vid_clk_dvi2      vid_clk_dvi2            6.734            1.537           (R-R)
+vid_clk_dvi2      hdmi_tx_slow_clk        6.734            3.355           (R-R)
+hdmi_tx_slow_clk  vid_clk_dvi2            6.734            1.704           (R-R)
+hdmi_tx_slow_clk  hdmi_tx_slow_clk       13.468            5.580           (R-R)
+core_clk          tx_cal_clk_90edge       2.500            1.087           (R-R)
+core_clk          core_clk               10.000            3.321           (R-R)
+core_clk          i_cam_ck_CLKOUT        10.000            8.791           (R-R)
+i_mipi_rx_pclk    i_mipi_rx_pclk         20.000           13.546           (R-R)
+i_mipi_rx_pclk    i_cam_ck_CLKOUT        10.000            8.075           (R-R)
+i_cam_ck_CLKOUT   i_mipi_rx_pclk         10.000            8.617           (R-R)
+i_cam_ck_CLKOUT   i_cam_ck_CLKOUT        10.000            4.417           (R-R)
+
+Hold (Min) Clock Relationship
+  Launch Clock      Capture Clock   Constraint (ns)     Slack (ns)          Edge
+tx_cal_clk_90edge tx_cal_clk_90edge      0.000            0.072            (R-R)
+tx_cal_clk_90edge tx_cal_clk             0.000            0.505            (R-R)
+tx_cal_clk_90edge core_clk               0.000            0.138            (R-R)
+sdram_clk         tx_cal_clk_90edge      0.000            0.731            (R-R)
+sdram_clk         sdram_clk              0.000            0.036            (R-R)
+rx_cal_clk        rx_cal_clk             0.000            0.030            (R-R)
+tx_cal_clk        tx_cal_clk             0.000            0.094            (R-R)
+vid_clk_dvi2      vid_clk_dvi2           0.000            0.026            (R-R)
+vid_clk_dvi2      hdmi_tx_slow_clk       0.000            0.125            (R-R)
+hdmi_tx_slow_clk  vid_clk_dvi2           0.000            0.134            (R-R)
+hdmi_tx_slow_clk  hdmi_tx_slow_clk       0.000            0.028            (R-R)
+core_clk          tx_cal_clk_90edge      0.000            0.191            (R-R)
+core_clk          core_clk               0.000            0.028            (R-R)
+core_clk          i_cam_ck_CLKOUT        0.000            0.142            (R-R)
+i_mipi_rx_pclk    i_mipi_rx_pclk         0.000            0.091            (R-R)
+i_mipi_rx_pclk    i_cam_ck_CLKOUT        0.000            0.147            (R-R)
+i_cam_ck_CLKOUT   i_mipi_rx_pclk         0.000            0.071            (R-R)
+i_cam_ck_CLKOUT   i_cam_ck_CLKOUT        0.000            0.027            (R-R)
+
+INFO     : Write Timing Report to "outflow\ti60f225_oob.timing.rpt" ...
+INFO     : final timing analysis took 10.5060736 seconds [FlowMsg::StageDuration]
+INFO     :     final timing analysis took 12.03125 seconds (approximately) in total CPU time [FlowMsg::StageDuration::CPUTime]
+INFO     : final timing analysis virtual memory usage: begin = 485.252 MB, end = 659.676 MB, delta = 174.424 MB [FlowMsg::VMUsage]
+INFO     :     final timing analysis peak virtual memory usage = 669.944 MB [FlowMsg::VMUsage::Peak]
+INFO     : final timing analysis resident set memory usage: begin = 485.012 MB, end = 661.608 MB, delta = 176.596 MB [FlowMsg::RSSUsage]
+INFO     :     final timing analysis peak resident set memory usage = 690.868 MB [FlowMsg::RSSUsage::Peak]
+           ***** Ending stage final timing analysis *****
+           
+           ***** Beginning stage bitstream generation ... *****
+INFO     : Reading core interface constraints file "outflow\ti60f225_oob.interface.csv" [DBMsg::CoreInterfaceConstraintsFileReading]
+INFO     : Successfully read core interface constraints file "outflow\ti60f225_oob.interface.csv" [DBMsg::CoreInterfaceConstraintsFileLoadSuccess]
+INFO     : Finished writing bitstream file work_pnr\ti60f225_oob.lbf.
+INFO     : Bitstream generation took 1.8196907 seconds [FlowMsg::StageDuration]
+INFO     :     Bitstream generation took 1.640625 seconds (approximately) in total CPU time [FlowMsg::StageDuration::CPUTime]
+INFO     : Bitstream generation virtual memory usage: begin = 425.364 MB, end = 620.82 MB, delta = 195.456 MB [FlowMsg::VMUsage]
+INFO     :     Bitstream generation peak virtual memory usage = 669.944 MB [FlowMsg::VMUsage::Peak]
+INFO     : Bitstream generation resident set memory usage: begin = 429.552 MB, end = 626.672 MB, delta = 197.12 MB [FlowMsg::RSSUsage]
+INFO     :     Bitstream generation peak resident set memory usage = 690.868 MB [FlowMsg::RSSUsage::Peak]
+INFO     : The entire flow of EFX_PNR took 147.1256751 seconds [FlowMsg::StageDuration]
+INFO     :     The entire flow of EFX_PNR took 668.390625 seconds (approximately) in total CPU time [FlowMsg::StageDuration::CPUTime]
+INFO     : The entire flow of EFX_PNR virtual memory usage: begin = 20.204 MB, end = 620.82 MB, delta = 600.616 MB [FlowMsg::VMUsage]
+INFO     :     The entire flow of EFX_PNR peak virtual memory usage = 669.944 MB [FlowMsg::VMUsage::Peak]
+INFO     : The entire flow of EFX_PNR resident set memory usage: begin = 23.368 MB, end = 626.716 MB, delta = 603.348 MB [FlowMsg::RSSUsage]
+INFO     :     The entire flow of EFX_PNR peak resident set memory usage = 690.868 MB [FlowMsg::RSSUsage::Peak]
