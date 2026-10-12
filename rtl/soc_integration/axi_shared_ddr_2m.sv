@@ -4,7 +4,11 @@
 // retained through B/R. DDR_ID_W-1 is the owner bit.
 module axi_shared_ddr_2m #(
   parameter integer ADDR_W=32, DATA_W=128, STRB_W=DATA_W/8,
-  parameter integer ID_W=8, DDR_ID_W=4
+  parameter integer ID_W=8, DDR_ID_W=4,
+  // A display reader has a hard per-line deadline.  The isolated style
+  // bridge enables this only for its inner CNN/display arbitration; the
+  // outer CPU/video bridge keeps the fair round-robin default.
+  parameter bit VIDEO_READ_PRIORITY=1'b0
 )(
   input logic clk, rst_n, allow_access,
   input logic [ID_W-1:0] cpu_awid, input logic [ADDR_W-1:0] cpu_awaddr, input logic [7:0] cpu_awlen, input logic [2:0] cpu_awsize, input logic [1:0] cpu_awburst, input logic cpu_awvalid, output logic cpu_awready,
@@ -31,7 +35,8 @@ module axi_shared_ddr_2m #(
   logic [ID_W-1:0] rd_id; logic [ADDR_W-1:0] rd_addr; logic [7:0] rd_len; logic [2:0] rd_size; logic [1:0] rd_burst;
   logic rd_turn; logic [3:0] video_write_streak;
   wire choose_vid_w = cpu_awvalid && vid_awvalid ? (video_write_streak < 4'd8) : vid_awvalid;
-  wire choose_vid_r = cpu_arvalid && vid_arvalid ? rd_turn : vid_arvalid;
+  wire choose_vid_r = cpu_arvalid && vid_arvalid ?
+    (VIDEO_READ_PRIORITY ? 1'b1 : rd_turn) : vid_arvalid;
   // Count B/R protocol or ownership errors once per response beat.  These
   // are wires so simultaneous B and R errors are accumulated together rather
   // than losing one increment to two nonblocking assignments.
