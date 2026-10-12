@@ -1,0 +1,2 @@
+PASS 720p60 display: 3 full frames, paired slots 2/4, exact RGB, starvation black/recovery, good=1833600 underflow=9600 bursts=14400
+tests/style_display_tb.sv:60: $finish called at 49999984670 (1ps)

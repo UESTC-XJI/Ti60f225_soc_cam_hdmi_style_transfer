@@ -116,6 +116,7 @@ int main(void) {
         }
         if(app_3a.enabled||app_3a.status)camera_3a_log(&app_3a);
         style_update_metrics();
+        style_log_ddr();
         ++app_metrics_updates;
         last_update = clint_getTime(BSP_CLINT);
     }

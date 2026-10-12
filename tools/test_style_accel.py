@@ -50,6 +50,13 @@ text=text.replace('rst_n=1;start=1;@(negedge clk);start=0;', '''rst_n=1;
 text=text.replace('if(error)$fatal(1,"accelerator error");','''if(error)$fatal(1,"accelerator error");
     @(posedge clk);@(negedge clk);
     if(!irq||dut.source_cfg!=32'h05000000)$fatal(1,"IRQ or rejected write changed config");
+    if(dut.read_cycles_snapshot>cycles||dut.compute_cycles_snapshot>cycles)$fatal(1,"phase snapshot outside job");
+    if(!error&&(dut.read_cycles_snapshot==0||dut.compute_cycles_snapshot==0))$fatal(1,"missing phase snapshot");
+    @(negedge clk);psel=1;penable=1;pwrite=0;paddr=8'ha8;
+    @(posedge clk);#1;if(prdata!==dut.read_cycles_snapshot)$fatal(1,"APB read phase decode");
+    @(negedge clk);paddr=8'hac;
+    @(posedge clk);#1;if(prdata!==dut.compute_cycles_snapshot)$fatal(1,"APB compute phase decode");
+    @(negedge clk);psel=0;penable=0;
     write_apb(8'h08,2,0);if(irq)$fatal(1,"IRQ W1C");''')
 text=text.replace('dut.state,dut.dma.rs,dut.dma.ws','dut.network.state,dut.network.dma.rs,dut.network.dma.ws')
 text=text.replace('PASS style_network','PASS style_accel all 6144 APB coefficients+CDC+IRQ')

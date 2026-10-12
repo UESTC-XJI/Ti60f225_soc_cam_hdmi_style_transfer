@@ -20,7 +20,9 @@ module style_accel(
   wire coef_write=psel&&penable&&pwrite&&paddr==8'h2c&&!pending;
   wire [44:0] coef_input={coefficient_index[15:8],coefficient_index[4:0],pwdata};
   wire coeff_input_ready;
-  style_async_fifo #(.WIDTH(45)) coeff_fifo(.reset_n(rst_n),.wclk(clk),.rclk(cnn_clk),
+  // APB is backpressured when full; four entries cover CDC latency without
+  // spending sixteen words of registers on the initialization-only queue.
+  style_async_fifo #(.WIDTH(45),.LOG_DEPTH(2)) coeff_fifo(.reset_n(rst_n),.wclk(clk),.rclk(cnn_clk),
     .in_valid(coef_write),.in_ready(coeff_input_ready),.in_data(coef_input),
     .out_valid(coef_valid),.out_ready(coef_ready),.out_data(coef_packet));
   reg [15:0] committed,committed_gray;
@@ -44,6 +46,8 @@ module style_accel(
     (paddr==4&&pwdata[0]&&(!auto_ready||!config_ok))||(paddr==8'h28&&pwdata[4:0]>23));
   assign irq=irq_enable&&(done_sticky||error_sticky);
   reg done_toggle,core_error_snapshot;reg [31:0] core_cycles_snapshot;
+  reg [31:0] read_cycles_snapshot,compute_cycles_snapshot;
+  wire [31:0] stat_read_cycles,stat_compute_cycles;
   (* async_reg="true" *) reg done1,done2;reg done_seen;
   assign job_done=done2!=done_seen;assign job_error=core_error_snapshot;
   assign last_cycles=core_cycles_snapshot;
@@ -80,6 +84,7 @@ module style_accel(
       8'h0c:prdata={31'b0,irq_enable};8'h10:prdata=source_cfg;8'h14:prdata=result_cfg;8'h18:prdata=geometry;
       8'h1c:prdata=last_cycles;8'h28:prdata={16'b0,coefficient_index};8'h30:prdata={acknowledged,issued};
       8'h34:prdata=32'd148500000;
+      8'ha8:prdata=read_cycles_snapshot;8'hac:prdata=compute_cycles_snapshot;
     endcase
   end
   (* async_reg="true" *) reg [1:0] core_reset,start_sync;reg start_seen;
@@ -88,11 +93,11 @@ module style_accel(
   wire core_busy,core_done,core_error;wire [4:0] core_layer;wire [31:0] core_cycles;
   assign coef_ready=core_reset[1]&&!core_busy;
   always @(posedge cnn_clk or negedge rst_n) begin
-    if(!rst_n)begin start_sync<=0;start_seen<=0;committed<=0;committed_gray<=0;done_toggle<=0;core_error_snapshot<=0;core_cycles_snapshot<=0;end
+    if(!rst_n)begin start_sync<=0;start_seen<=0;committed<=0;committed_gray<=0;done_toggle<=0;core_error_snapshot<=0;core_cycles_snapshot<=0;read_cycles_snapshot<=0;compute_cycles_snapshot<=0;end
     else if(core_reset[1])begin
       start_sync<={start_sync[0],start_toggle};start_seen<=start_sync[1];
       if(coef_valid&&coef_ready)begin committed<=committed+1'b1;committed_gray<=((committed+1'b1)>>1)^(committed+1'b1);end
-      if(core_done)begin done_toggle<=!done_toggle;core_error_snapshot<=core_error;core_cycles_snapshot<=core_cycles;end
+      if(core_done)begin done_toggle<=!done_toggle;core_error_snapshot<=core_error;core_cycles_snapshot<=core_cycles;read_cycles_snapshot<=stat_read_cycles;compute_cycles_snapshot<=stat_compute_cycles;end
     end
   end
   wire [31:0] c_araddr,c_awaddr;wire [7:0] c_arlen,c_awlen;wire c_arvalid,c_arready,c_awvalid,c_awready;
@@ -101,6 +106,7 @@ module style_accel(
     .frame_width(mail_geometry[9:0]),.frame_height(mail_geometry[25:16]),
     .coef_we(coef_valid&&coef_ready),.coef_addr(coef_packet[44:37]),.coef_word(coef_packet[36:32]),.coef_data(coef_packet[31:0]),
     .busy(core_busy),.done(core_done),.error(core_error),.layer_index(core_layer),.cycles(core_cycles),
+    .stat_read_cycles(stat_read_cycles),.stat_compute_cycles(stat_compute_cycles),
     .araddr(c_araddr),.arlen(c_arlen),.arvalid(c_arvalid),.arready(c_arready),.rdata(c_rdata),.rresp(c_rresp),.rlast(c_rlast),.rvalid(c_rvalid),.rready(c_rready),
     .awaddr(c_awaddr),.awlen(c_awlen),.awvalid(c_awvalid),.awready(c_awready),.wdata(c_wdata),.wstrb(c_wstrb),.wlast(c_wlast),.wvalid(c_wvalid),.wready(c_wready),.bresp(c_bresp),.bvalid(c_bvalid),.bready(c_bready));
   style_axi_cdc cdc(.*,.reset_n(rst_n),.axi_clk(clk));

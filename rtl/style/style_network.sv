@@ -8,6 +8,7 @@ module style_network #(
   input wire [9:0] frame_width,frame_height,
   input wire coef_we,input wire [7:0] coef_addr,input wire [4:0] coef_word,input wire [31:0] coef_data,
   output reg busy,done,error,output reg [4:0] layer_index,output reg [31:0] cycles,
+  output reg [31:0] stat_read_cycles,stat_compute_cycles,
   output wire [31:0] araddr,output wire [7:0] arlen,output wire arvalid,input wire arready,
   input wire [127:0] rdata,input wire [1:0] rresp,input wire rlast,rvalid,output wire rready,
   output wire [31:0] awaddr,output wire [7:0] awlen,output wire awvalid,input wire awready,
@@ -52,17 +53,20 @@ module style_network #(
   always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
       state<=IDLE;busy<=0;done<=0;error<=0;layer_index<=0;cycles<=0;descriptor<=0;
+      stat_read_cycles<=0;stat_compute_cycles<=0;
       rd_start<=0;wr_start<=0;core_start<=0;load_skip<=0;core_finished<=0;write_finished<=0;
       y<=0;ky<=0;next_bank<=0;load_bank<=0;load_x<=0;miss_y<=0;row_select<=0;row_present<=0;cache_valid<=0;
       rd_address<=0;wr_address<=0;rd_pixels<=0;wr_pixels<=0;rd_channels<=0;wr_channels<=0;
     end else begin
       done<=0;rd_start<=0;wr_start<=0;core_start<=0;
       if(busy) cycles<=cycles+1'b1;
+      if(busy&&(state==READWAIT||state==SKIPWAIT))stat_read_cycles<=stat_read_cycles+1'b1;
+      if(busy&&core_busy)stat_compute_cycles<=stat_compute_cycles+1'b1;
       if(rd_valid) load_x<=load_x+1'b1;
       if(core_done) core_finished<=1;
       if(wr_done) write_finished<=1;
       case(state)
-        IDLE:if(start) begin busy<=1;error<=0;cycles<=0;layer_index<=0;state<=DESC;end
+        IDLE:if(start) begin busy<=1;error<=0;cycles<=0;stat_read_cycles<=0;stat_compute_cycles<=0;layer_index<=0;state<=DESC;end
         DESC:begin descriptor<=descriptor_word(layer_index);state<=SETUP;end
         SETUP:begin y<=0;ky<=0;next_bank<=0;cache_valid<=0;row_present<=0;row_select<=0;state<=MAP;end
         MAP:begin

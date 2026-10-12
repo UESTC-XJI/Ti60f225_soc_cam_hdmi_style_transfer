@@ -2,7 +2,8 @@
 module style_async_fifo #(parameter WIDTH=40,LOG_DEPTH=4)(
   input wire reset_n,wclk,rclk,
   input wire in_valid,output wire in_ready,input wire [WIDTH-1:0] in_data,
-  output reg out_valid,input wire out_ready,output reg [WIDTH-1:0] out_data
+  output reg out_valid,input wire out_ready,output reg [WIDTH-1:0] out_data,
+  output wire [LOG_DEPTH:0] write_level
 );
   reg [LOG_DEPTH:0] wp,rp,wg,rg;
   (* async_reg="true" *) reg [LOG_DEPTH:0] rg1,rg2,wg1,wg2;
@@ -14,7 +15,16 @@ module style_async_fifo #(parameter WIDTH=40,LOG_DEPTH=4)(
   assign in_ready=wrst[1]&&!full;
   wire [LOG_DEPTH:0] wn=wp+1'b1,rn=rp+1'b1;
   wire [WIDTH-1:0] read_word;
-  generate if(LOG_DEPTH==4 && WIDTH<=45)begin:small_storage
+  reg [LOG_DEPTH:0] read_binary;integer level_bit;
+  always @*begin
+    read_binary[LOG_DEPTH]=rg2[LOG_DEPTH];
+    for(level_bit=LOG_DEPTH-1;level_bit>=0;level_bit=level_bit-1)
+      read_binary[level_bit]=read_binary[level_bit+1]^rg2[level_bit];
+  end
+  // Synchronized read pointer gives a conservative write-domain occupancy;
+  // it excludes the read-side elastic word and can lag consumption by 2 clocks.
+  assign write_level=wp-read_binary;
+  generate if(LOG_DEPTH<=4 && WIDTH<=45)begin:small_storage
     wire [(1<<LOG_DEPTH)*WIDTH-1:0] flat;
     genvar entry;
     for(entry=0;entry<(1<<LOG_DEPTH);entry=entry+1)begin:words

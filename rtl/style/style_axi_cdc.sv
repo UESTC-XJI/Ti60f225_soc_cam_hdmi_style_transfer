@@ -10,9 +10,11 @@ module style_axi_cdc(
   output wire [127:0] wdata,output wire [15:0] wstrb,output wire wlast,wvalid,input wire wready,
   input wire [127:0] rdata,input wire [1:0] rresp,bresp,input wire rlast,rvalid,bvalid,output wire rready,bready
 );
-  style_async_fifo #(.WIDTH(40)) ar(.reset_n(reset_n),.wclk(cnn_clk),.rclk(axi_clk),
+  // The row DMA has one transaction in flight per direction. Shallow control
+  // queues suffice; data channel capacity remains independent of this choice.
+  style_async_fifo #(.WIDTH(40),.LOG_DEPTH(2)) ar(.reset_n(reset_n),.wclk(cnn_clk),.rclk(axi_clk),
     .in_valid(c_arvalid),.in_ready(c_arready),.in_data({c_arlen,c_araddr}),.out_valid(arvalid),.out_ready(arready),.out_data({arlen,araddr}));
-  style_async_fifo #(.WIDTH(40)) aw(.reset_n(reset_n),.wclk(cnn_clk),.rclk(axi_clk),
+  style_async_fifo #(.WIDTH(40),.LOG_DEPTH(2)) aw(.reset_n(reset_n),.wclk(cnn_clk),.rclk(axi_clk),
     .in_valid(c_awvalid),.in_ready(c_awready),.in_data({c_awlen,c_awaddr}),.out_valid(awvalid),.out_ready(awready),.out_data({awlen,awaddr}));
   style_async_fifo #(.WIDTH(145)) w(.reset_n(reset_n),.wclk(cnn_clk),.rclk(axi_clk),
     .in_valid(c_wvalid),.in_ready(c_wready),.in_data({c_wlast,c_wstrb,c_wdata}),.out_valid(wvalid),.out_ready(wready),.out_data({wlast,wstrb,wdata}));

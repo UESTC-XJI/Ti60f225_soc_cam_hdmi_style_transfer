@@ -8,11 +8,13 @@
 static volatile uint32_t *const regs=(volatile uint32_t *)STYLE_BASE;
 volatile uint32_t app_style_irqs,app_style_errors,app_style_last_status,app_style_selftest_errors;
 volatile uint32_t app_style_captured,app_style_dropped,app_style_inferred,app_style_cycles;
+volatile uint32_t app_style_ddr_delta[12],app_style_read_cycles,app_style_compute_cycles;
 static void sync_ddr(void) { __asm__ volatile("fence rw,rw\n.word 0x0000500f" ::: "memory"); }
 void style_irq_service(void) {
     uint32_t status=regs[2];app_style_last_status=status;
     // The completion toggle guarantees the CNN snapshot has settled in APB.
     app_style_cycles=regs[7];
+    app_style_read_cycles=regs[0xa8/4];app_style_compute_cycles=regs[0xac/4];
     if(status&4u)++app_style_errors;
     regs[2]=status&6u;
     __asm__ volatile("fence iorw,iorw" ::: "memory");
@@ -67,6 +69,27 @@ static char *put_decimal(char *p,uint32_t v) {
     char reversed[10];uint32_t n=0;
     do {reversed[n++]=(char)('0'+v%10u);v/=10u;}while(v);
     while(n)*p++=reversed[--n];return p;
+}
+void style_log_ddr(void) {
+    static uint32_t previous[12];uint32_t snapshot[12];
+    regs[0x54/4]=1;__asm__ volatile("fence iorw,iorw" ::: "memory");
+    for(uint32_t i=0;i<12;++i)snapshot[i]=regs[0x58/4+i];
+    regs[0x54/4]=0;__asm__ volatile("fence iorw,iorw" ::: "memory");
+    for(uint32_t i=0;i<12;++i){app_style_ddr_delta[i]=snapshot[i]-previous[i];previous[i]=snapshot[i];}
+    static const char *const labels[9]={" AR "," DOWN "," RGAP "," RBP "," DBP "," AW "," W "," B "," IDLE "};
+    // Also fit ten-digit fields after an unusually long debugger pause or
+    // a counter reset between snapshots; these intervals are not valid rates.
+    char line[224],*p=put_text(line,"DDR100M T ");p=put_decimal(p,app_style_ddr_delta[0]);
+    // Percentages overlap and use the same coherent 100 MHz interval.
+    for(uint32_t i=1;i<=9;++i){
+        p=put_text(p,labels[i-1]);
+        p=put_decimal(p,app_style_ddr_delta[0] ? (uint64_t)app_style_ddr_delta[i]*100u/app_style_ddr_delta[0]:0);
+    }
+    p=put_text(p," RB ");p=put_decimal(p,app_style_ddr_delta[10]);
+    p=put_text(p," DRB ");p=put_decimal(p,app_style_ddr_delta[11]);
+    p=put_text(p," RPMS ");p=put_decimal(p,app_style_read_cycles/148500u);
+    p=put_text(p," CPMS ");p=put_decimal(p,app_style_compute_cycles/148500u);*p=0;
+    uart_writeStr(BSP_UART_TERMINAL,line);uart_writeStr(BSP_UART_TERMINAL,"\r\n");
 }
 int style_submit_metrics(uint64_t now) {
     static uint64_t previous_time;static uint32_t previous_cap,previous_nn;

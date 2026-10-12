@@ -1,5 +1,7 @@
 # 莫奈实时风格 Demo 实现与验收
 
+DDR 等待诊断、显示突发缓冲与按需仲裁的后续版本见 [DDR_READ_OPTIMIZATION.md](DDR_READ_OPTIMIZATION.md)。本页的 `outflow_style_final`、资源和周期表保留原发布版本结果；新版本使用独立的 `outflow_style_ddr_opt` 与 `reports/style_demo/release_ddr_opt`。
+
 独立分支：`codex/monet-style-demo`。独立工作区：`C:/OneDrive/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_style_demo`，可打开根目录 `MonetStyleDemo.code-workspace`。基线提交 `85439b8` 保存已有 P1/P2/P3；原工程、原数据集不修改。
 
 已完成训练、INT8 导出、共享 RTL 引擎、APB/中断驱动与相机视频链路集成。配置文件已生成。无开发板连接，本记录不把仿真或时序报告称作实板测量。

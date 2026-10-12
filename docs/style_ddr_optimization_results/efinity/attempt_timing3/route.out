@@ -1,0 +1,102 @@
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Router Setup
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : High utilization design detected; tuning for routability.
+INFO     : [Setup Parallel Routing Scheduler]
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Route Circuit with 10 threads
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Overridding delay budgets for 782 synchronizer-related pins
+INFO     : Iter  1: overlap=225115  heapops=22056301   (0%) cpd=1987  frr=1.00  msec=5636
+INFO     : [Setup Delay Budgets | 788.0 ms]
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Hold Fixing
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Total min wire delay:  23016384
+INFO     : Hold fix wire delay:          0
+INFO     : Hold fix delay ratio:     0.00%
+INFO     : Pins requiring hold fix:  0.00%
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Iter  2: overlap=127619  heapops=19002216   (14%) cpd=1999  frr=1.01  msec=3781
+INFO     : Iter  3: overlap=103061  heapops=19966483   (18%) cpd=1987  frr=1.00  msec=3790
+INFO     : Iter  4: overlap=86753   heapops=21117700   (23%) cpd=2014  frr=1.01  msec=4009
+INFO     : Iter  5: overlap=73835   heapops=22443748   (26%) cpd=2030  frr=1.02  msec=4291
+INFO     : Iter  6: overlap=62525   heapops=23583892   (31%) cpd=2027  frr=1.02  msec=4608
+INFO     : Iter  7: overlap=53196   heapops=24979705   (36%) cpd=2032  frr=1.02  msec=4985
+INFO     : Iter  8: overlap=45458   heapops=26516836   (41%) cpd=2071  frr=1.04  msec=5203
+INFO     : Iter  9: overlap=38086   heapops=27858926   (46%) cpd=2068  frr=1.04  msec=5546
+INFO     : Iter 10: overlap=31954   heapops=29135574   (48%) cpd=2068  frr=1.04  msec=6218
+INFO     : Iter 11: overlap=26891   heapops=30440222   (54%) cpd=2068  frr=1.04  msec=6662
+INFO     : Iter 12: overlap=22789   heapops=32493382   (56%) cpd=2068  frr=1.04  msec=7162
+INFO     : Iter 13: overlap=18869   heapops=33203863   (63%) cpd=2068  frr=1.04  msec=7397
+INFO     : Iter 14: overlap=15995   heapops=35258452   (67%) cpd=2068  frr=1.04  msec=8542
+INFO     : Iter 15: overlap=14232   heapops=35825686   (69%) cpd=2068  frr=1.04  msec=8908
+INFO     : Iter 16: overlap=12343   heapops=39095278   (71%) cpd=2068  frr=1.04  msec=10261
+INFO     : Iter 17: overlap=10783   heapops=40979317   (73%) cpd=2068  frr=1.04  msec=10998
+INFO     : [Rebuild Parallel Routing Scheduler]
+INFO     : Iter 18: overlap=9191    heapops=41235311   (76%) cpd=2068  frr=1.04  msec=11639
+INFO     : Iter 19: overlap=7476    heapops=51211266   (78%) cpd=2068  frr=1.04  msec=17586
+INFO     : Iter 20: overlap=6022    heapops=51216263   (80%) cpd=2068  frr=1.04  msec=17935
+INFO     : Iter 21: overlap=5131    heapops=54535520   (81%) cpd=2068  frr=1.04  msec=19119
+INFO     : Iter 22: overlap=4202    heapops=56242152   (82%) cpd=2068  frr=1.04  msec=20401
+INFO     : Iter 23: overlap=3414    heapops=52778228   (83%) cpd=2068  frr=1.04  msec=21803
+INFO     : Iter 24: overlap=2835    heapops=51191124   (84%) cpd=2068  frr=1.04  msec=23208
+INFO     : Iter 25: overlap=2382    heapops=49187398   (86%) cpd=2068  frr=1.04  msec=22548
+INFO     : [Rebuild Parallel Routing Scheduler]
+INFO     : Iter 26: overlap=1987    heapops=47213396   (86%) cpd=2068  frr=1.04  msec=22312
+INFO     : Iter 27: overlap=1490    heapops=55894167   (87%) cpd=2068  frr=1.04  msec=29688
+INFO     : Iter 28: overlap=1185    heapops=44553285   (87%) cpd=2069  frr=1.04  msec=22301
+INFO     : Iter 29: overlap=1026    heapops=42332167   (88%) cpd=2069  frr=1.04  msec=20896
+INFO     : Iter 30: overlap=1003    heapops=38791233   (87%) cpd=2166  frr=1.09  msec=19636
+INFO     : Iter 31: overlap=862     heapops=36109565   (88%) cpd=2340  frr=1.18  msec=17882
+INFO     : Iter 32: overlap=736     heapops=32164730   (88%) cpd=2166  frr=1.09  msec=15759
+INFO     : Iter 33: overlap=638     heapops=31820265   (89%) cpd=2082  frr=1.05  msec=15685
+INFO     : Iter 34: overlap=616     heapops=29823129   (88%) cpd=2263  frr=1.14  msec=14707
+INFO     : Iter 35: overlap=583     heapops=31619841   (88%) cpd=2263  frr=1.14  msec=15049
+INFO     : Iter 36: overlap=479     heapops=26609767   (89%) cpd=6879  frr=3.46  msec=12411
+INFO     : Iter 37: overlap=427     heapops=25803184   (88%) cpd=2524  frr=1.27  msec=11857
+INFO     : Iter 38: overlap=364     heapops=25547056   (89%) cpd=2748  frr=1.38  msec=11867
+INFO     : Iter 39: overlap=327     heapops=23250596   (89%) cpd=6813  frr=3.43  msec=11043
+INFO     : Iter 40: overlap=292     heapops=22932576   (89%) cpd=2493  frr=1.25  msec=11196
+INFO     : Iter 41: overlap=274     heapops=19104476   (89%) cpd=3012  frr=1.52  msec=8983
+INFO     : Iter 42: overlap=204     heapops=20445064   (89%) cpd=2594  frr=1.31  msec=9921
+INFO     : [Rebuild Parallel Routing Scheduler]
+INFO     : Iter 43: overlap=199     heapops=16993509   (89%) cpd=6980  frr=3.51  msec=8199
+INFO     : Iter 44: overlap=166     heapops=20928653   (89%) cpd=3467  frr=1.74  msec=9804
+INFO     : Iter 45: overlap=123     heapops=16281842   (89%) cpd=7909  frr=3.98  msec=7822
+INFO     : Iter 46: overlap=101     heapops=15070596   (89%) cpd=4156  frr=2.09  msec=7230
+INFO     : Iter 47: overlap=93      heapops=12988371   (89%) cpd=7228  frr=3.64  msec=6497
+INFO     : Iter 48: overlap=80      heapops=12065963   (89%) cpd=7601  frr=3.83  msec=5628
+INFO     : Iter 49: overlap=69      heapops=12038793   (89%) cpd=4081  frr=2.05  msec=5960
+INFO     : Iter 50: overlap=62      heapops=12565556   (89%) cpd=5624  frr=2.83  msec=6236
+INFO     : Iter 51: overlap=59      heapops=13798715   (89%) cpd=6066  frr=3.05  msec=6787
+INFO     : Iter 52: overlap=57      heapops=13928664   (89%) cpd=8120  frr=4.09  msec=7374
+INFO     : Iter 53: overlap=42      heapops=11441204   (89%) cpd=7844  frr=3.95  msec=5721
+INFO     : Iter 54: overlap=54      heapops=9951040    (89%) cpd=5839  frr=2.94  msec=4675
+INFO     : Iter 55: overlap=41      heapops=11722759   (89%) cpd=16135 frr=8.12  msec=6278
+INFO     : Iter 56: overlap=34      heapops=8452250    (89%) cpd=8316  frr=4.19  msec=4003
+INFO     : Iter 57: overlap=26      heapops=8600236    (89%) cpd=12156 frr=6.12  msec=4067
+INFO     : Iter 58: overlap=16      heapops=8477930    (89%) cpd=11092 frr=5.58  msec=3936
+INFO     : Iter 59: overlap=14      heapops=7719148    (89%) cpd=8316  frr=4.19  msec=3633
+INFO     : Iter 60: overlap=11      heapops=8191832    (89%) cpd=11092 frr=5.58  msec=3553
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Routing Result
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ERROR    : Routing FAILED; could not resolve congestion.
+
+INFO     : ------------------------------------------------------------------------------------------------------
+Your design has some routing congestion and advanced settings may help. To get the best results, try the following methods one at a time:
+   1. Use a different seed during place and route. You set the --seed option in the Project Editor > Place and Route tab.
+   2. Try a different setting for --optimization-level, specifically the congestion choices. You specify the setting in the Project Editor > Place and Route tab.
+   3. If methods 1 and 2 do not work, you may need to change your design to minimize the congested areas.
+For more information, refer to "Place and Route Options" in the Timing Closure User Guide.
+------------------------------------------------------------------------------------------------------
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Routing took 652.7601487 seconds [FlowMsg::StageDuration]
+INFO     :     Routing took 880.6875 seconds (approximately) in total CPU time [FlowMsg::StageDuration::CPUTime]
+INFO     : Routing virtual memory usage: begin = 190.404 MB, end = 561.972 MB, delta = 371.568 MB [FlowMsg::VMUsage]
+INFO     :     Routing peak virtual memory usage = 757.164 MB [FlowMsg::VMUsage::Peak]
+INFO     : Routing resident set memory usage: begin = 211.14 MB, end = 559.088 MB, delta = 347.948 MB [FlowMsg::RSSUsage]
+INFO     :     Routing peak resident set memory usage = 737.8 MB [FlowMsg::RSSUsage::Peak]
+ERROR    : The Efinity software has encountered an error during the routing stage
+ERROR    : Efinity Place and Route flow has failed

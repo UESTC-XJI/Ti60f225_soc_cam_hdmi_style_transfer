@@ -5,6 +5,7 @@ module style_network_tb;
   reg [31:0] source_address=32'h05000000,result_address=32'h05800000;
   reg [9:0] frame_width=32,frame_height=24;
   wire busy,done,error;wire [4:0] layer_index;wire [31:0] cycles;
+  wire [31:0] stat_read_cycles,stat_compute_cycles;
   wire [31:0] araddr,awaddr;wire [7:0] arlen,awlen;wire arvalid,awvalid,rready,wlast,wvalid,bready;
   wire [127:0] wdata;wire [15:0] wstrb;
   reg read_active=0,write_active=0,rhold=0,bvalid=0;

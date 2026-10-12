@@ -1,6 +1,7 @@
 `timescale 1ns/1ps
 module axi_shared_ddr_2m_tb;
   logic clk=0,rst_n=0,allow_access=0; always #5 clk=~clk;
+  wire video_read_urgent=1'b0;
   logic [7:0] cpu_awid=8'hA5,vid_awid=8'h5A,cpu_arid=8'hC3,vid_arid=8'h3C; logic [31:0] cpu_awaddr=32'h01000000,vid_awaddr=32'h10000000,cpu_araddr=32'h01000000,vid_araddr=32'h10000000; logic [7:0] cpu_awlen=3,vid_awlen=3,cpu_arlen=3,vid_arlen=3; logic [2:0] cpu_awsize=4,vid_awsize=4,cpu_arsize=4,vid_arsize=4; logic [1:0] cpu_awburst=1,vid_awburst=1,cpu_arburst=1,vid_arburst=1;
   logic cpu_awvalid=0,vid_awvalid=0,cpu_wlast=0,vid_wlast=0,cpu_wvalid=0,vid_wvalid=0,cpu_bready=1,vid_bready=1,cpu_arvalid=0,vid_arvalid=0,cpu_rready=1,vid_rready=1;
   logic [127:0] cpu_wdata=1,vid_wdata=2; logic [15:0] cpu_wstrb='1,vid_wstrb='1;

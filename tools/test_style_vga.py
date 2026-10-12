@@ -9,6 +9,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'ml/style_transfer'))
 from integer import IntegerNetwork
 p=argparse.ArgumentParser();p.add_argument('--height',type=int,default=480)
+p.add_argument('--fixtures-only',action='store_true',help='Generate integer input/oracle without running RTL')
 a=p.parse_args();width=640;height=a.height;assert height%4==0
 out=ROOT/f'reports/style_demo/vga_{height}';out.mkdir(parents=True,exist_ok=True)
 rgb=np.random.default_rng(742).integers(0,256,(height,width,3),dtype=np.uint8)
@@ -17,6 +18,9 @@ def beats(x):
     z=np.zeros((*x.shape[:2],4),np.uint8);z[:,:,:3]=x;raw=z.tobytes()
     return ''.join(f'{int.from_bytes(raw[i:i+16],"little"):032x}\n' for i in range(0,len(raw),16))
 (out/'input.hex').write_text(beats(rgb));(out/'expected.hex').write_text(beats(y))
+if a.fixtures_only:
+    print(f'PASS integer fixtures {width}x{height}')
+    sys.exit(0)
 # Use the APB/CDC test's real accelerator instantiation and task setup.
 if not (ROOT/'reports/style_demo/accel/tb.sv').exists():
     subprocess.run([sys.executable,'tools/test_style_accel.py'],cwd=ROOT,check=True)

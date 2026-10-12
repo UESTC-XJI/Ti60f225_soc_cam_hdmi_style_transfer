@@ -1,6 +1,6 @@
 // Replaces the baseline resize/framebuffer/CVO path in the isolated demo branch.
 // The nested bridge saves full local IDs before the outer CPU/video bridge.
-module style_video_system(
+module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1)(
   input wire clk,cnn_clk,pix_clk,rst_n,
   input wire rgb_vs,rgb_de,input wire [47:0] rgb_data,
   input wire psel,penable,pwrite,input wire [7:0] paddr,input wire [31:0] pwdata,
@@ -35,6 +35,7 @@ module style_video_system(
     .out_valid(cap_valid),.out_ready(cap_ready),.out_data(cap_packet));
   wire nn_start,nn_ready,nn_done,nn_error;wire [31:0] nn_source,nn_result,nn_cycles;
   wire [2:0] display_slot;wire display_valid,display_frame_event,display_safe;
+  wire display_read_urgent;
   wire [31:0] captured,dropped,inferred,infer_errors,display_frame_id,display_dma_errors;
   wire [31:0] v_awaddr,v_araddr;wire [7:0] v_awlen,v_arlen;
   wire v_awvalid,v_awready,v_wlast,v_wvalid,v_wready,v_bvalid,v_bready,v_arvalid,v_arready,v_rvalid,v_rready,v_rlast;
@@ -45,8 +46,9 @@ module style_video_system(
     .display_frame_event(display_frame_event),.display_safe(display_safe),.display_slot(display_slot),.display_valid(display_valid),
     .captured(captured),.dropped(dropped),.inferred(inferred),.infer_errors(infer_errors),.display_frame_id(display_frame_id),
     .awaddr(v_awaddr),.awlen(v_awlen),.awvalid(v_awvalid),.awready(v_awready),.wdata(v_wdata),.wstrb(v_wstrb),.wlast(v_wlast),.wvalid(v_wvalid),.wready(v_wready),.bresp(v_bresp),.bvalid(v_bvalid),.bready(v_bready));
-  style_display display(.clk(clk),.pix_clk(pix_clk),.rst_n(rst_n),.display_slot(display_slot),.display_valid(display_valid),
+  style_display #(.BUFFERED(DISPLAY_BUFFER)) display(.clk(clk),.pix_clk(pix_clk),.rst_n(rst_n),.display_slot(display_slot),.display_valid(display_valid),
     .display_frame_event(display_frame_event),.display_safe(display_safe),.pixel(pixel),.hs(hs),.vs(vs),.de(de),.underflow(underflow),.dma_errors(display_dma_errors),
+    .read_urgent(display_read_urgent),
     .araddr(v_araddr),.arlen(v_arlen),.arvalid(v_arvalid),.arready(v_arready),.rdata(v_rdata),.rresp(v_rresp),.rlast(v_rlast),.rvalid(v_rvalid),.rready(v_rready));
   wire [31:0] c_awaddr,c_araddr;wire [7:0] c_awlen,c_arlen;
   wire c_awvalid,c_awready,c_wlast,c_wvalid,c_wready,c_bvalid,c_bready,c_arvalid,c_arready,c_rvalid,c_rready,c_rlast;
@@ -58,9 +60,22 @@ module style_video_system(
     .araddr(c_araddr),.arlen(c_arlen),.arvalid(c_arvalid),.arready(c_arready),.rdata(c_rdata),.rresp(c_rresp),.rlast(c_rlast),.rvalid(c_rvalid),.rready(c_rready),
     .awaddr(c_awaddr),.awlen(c_awlen),.awvalid(c_awvalid),.awready(c_awready),.wdata(c_wdata),.wstrb(c_wstrb),.wlast(c_wlast),.wvalid(c_wvalid),.wready(c_wready),.bresp(c_bresp),.bvalid(c_bvalid),.bready(c_bready));
   wire [31:0] bridge_errors;
-  // The display has a fixed 720p row deadline.  Prioritize its reads over
-  // CNN reads in this inner bridge so a long inference cannot blacken rows.
-  axi_shared_ddr_2m #(.DDR_ID_W(6),.VIDEO_READ_PRIORITY(1'b1)) bridge(.clk(clk),.rst_n(rst_n),.allow_access(1'b1),
+  reg profile_freeze;
+  wire profile_write=psel&&penable&&pwrite&&pready&&!pslverr&&paddr==8'h54;
+  wire [31:0] profile_value;
+  wire [3:0] profile_index=(paddr-8'h58)>>2;
+  always @(posedge clk or negedge rst_n)begin
+    if(!rst_n)profile_freeze<=0;
+    else if(profile_write)profile_freeze<=pwdata[0];
+  end
+  style_ddr_profiler profiler(.clk(clk),.rst_n(rst_n),.enable(stream_enable),.freeze(profile_freeze),
+    .clear(profile_write&&pwdata[1]),.network_idle(nn_ready),.index(profile_index),.value(profile_value),
+    .c_arvalid(c_arvalid),.c_arready(c_arready),.c_rvalid(c_rvalid),.c_rready(c_rready),.c_rlast(c_rlast),
+    .c_awvalid(c_awvalid),.c_awready(c_awready),.c_wvalid(c_wvalid),.c_wready(c_wready),.c_wlast(c_wlast),.c_bvalid(c_bvalid),.c_bready(c_bready),
+    .arvalid(arvalid),.arready(arready),.v_rvalid(v_rvalid),.v_rready(v_rready));
+  // Urgent display bursts win, but a continuously pending CNN request can
+  // be bypassed by at most three new display bursts. Outer bridge stays fair.
+  axi_shared_ddr_2m #(.DDR_ID_W(6),.VIDEO_READ_PRIORITY(!ADAPTIVE_READ),.DYNAMIC_VIDEO_READ(ADAPTIVE_READ)) bridge(.clk(clk),.rst_n(rst_n),.allow_access(1'b1),.video_read_urgent(display_read_urgent),
     .cpu_awid(8'h03),.cpu_awaddr(c_awaddr),.cpu_awlen(c_awlen),.cpu_awsize(3'd4),.cpu_awburst(2'b01),.cpu_awvalid(c_awvalid),.cpu_awready(c_awready),
     .cpu_wdata(c_wdata),.cpu_wstrb(c_wstrb),.cpu_wlast(c_wlast),.cpu_wvalid(c_wvalid),.cpu_wready(c_wready),.cpu_bid(c_bid),.cpu_bresp(c_bresp),.cpu_bvalid(c_bvalid),.cpu_bready(c_bready),
     .cpu_arid(8'h03),.cpu_araddr(c_araddr),.cpu_arlen(c_arlen),.cpu_arsize(3'd4),.cpu_arburst(2'b01),.cpu_arvalid(c_arvalid),.cpu_arready(c_arready),.cpu_rid(c_rid),.cpu_rdata(c_rdata),.cpu_rresp(c_rresp),.cpu_rlast(c_rlast),.cpu_rvalid(c_rvalid),.cpu_rready(c_rready),
@@ -72,5 +87,6 @@ module style_video_system(
     .ddr_arid(arid),.ddr_araddr(araddr),.ddr_arlen(arlen),.ddr_arsize(arsize),.ddr_arburst(arburst),.ddr_arvalid(arvalid),.ddr_arready(arready),.ddr_rid(rid),.ddr_rdata(rdata),.ddr_rresp(rresp),.ddr_rlast(rlast),.ddr_rvalid(rvalid),.ddr_rready(rready),.axi_error_count(bridge_errors));
   assign prdata=paddr==8'h38 ? captured:paddr==8'h3c ? dropped:paddr==8'h40 ? inferred:
     paddr==8'h44 ? infer_errors:paddr==8'h48 ? display_frame_id:paddr==8'h4c ? display_dma_errors:
-    paddr==8'h50 ? bridge_errors:accel_prdata;
+    paddr==8'h50 ? bridge_errors:paddr==8'h54 ? {31'b0,profile_freeze}:
+    (paddr>=8'h58&&paddr<=8'h84) ? profile_value:accel_prdata;
 endmodule

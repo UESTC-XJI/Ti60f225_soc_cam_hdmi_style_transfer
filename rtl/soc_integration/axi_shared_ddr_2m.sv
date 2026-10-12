@@ -8,9 +8,12 @@ module axi_shared_ddr_2m #(
   // A display reader has a hard per-line deadline.  The isolated style
   // bridge enables this only for its inner CNN/display arbitration; the
   // outer CPU/video bridge keeps the fair round-robin default.
-  parameter bit VIDEO_READ_PRIORITY=1'b0
+  parameter bit VIDEO_READ_PRIORITY=1'b0,
+  parameter bit DYNAMIC_VIDEO_READ=1'b0,
+  parameter integer MAX_VIDEO_BURSTS=3
 )(
   input logic clk, rst_n, allow_access,
+  input logic video_read_urgent,
   input logic [ID_W-1:0] cpu_awid, input logic [ADDR_W-1:0] cpu_awaddr, input logic [7:0] cpu_awlen, input logic [2:0] cpu_awsize, input logic [1:0] cpu_awburst, input logic cpu_awvalid, output logic cpu_awready,
   input logic [DATA_W-1:0] cpu_wdata, input logic [STRB_W-1:0] cpu_wstrb, input logic cpu_wlast, input logic cpu_wvalid, output logic cpu_wready,
   output logic [ID_W-1:0] cpu_bid, output logic [1:0] cpu_bresp, output logic cpu_bvalid, input logic cpu_bready,
@@ -34,9 +37,13 @@ module axi_shared_ddr_2m #(
   logic rd_busy, rd_ar_sent, rd_owner;
   logic [ID_W-1:0] rd_id; logic [ADDR_W-1:0] rd_addr; logic [7:0] rd_len; logic [2:0] rd_size; logic [1:0] rd_burst;
   logic rd_turn; logic [3:0] video_write_streak;
+  localparam integer STREAK_W=$clog2(MAX_VIDEO_BURSTS+1);
+  logic [STREAK_W-1:0] video_read_streak;
   wire choose_vid_w = cpu_awvalid && vid_awvalid ? (video_write_streak < 4'd8) : vid_awvalid;
   wire choose_vid_r = cpu_arvalid && vid_arvalid ?
-    (VIDEO_READ_PRIORITY ? 1'b1 : rd_turn) : vid_arvalid;
+    (VIDEO_READ_PRIORITY ? 1'b1 :
+      DYNAMIC_VIDEO_READ && video_read_urgent && video_read_streak<MAX_VIDEO_BURSTS ? 1'b1:
+      DYNAMIC_VIDEO_READ && video_read_streak>=MAX_VIDEO_BURSTS ? 1'b0:rd_turn) : vid_arvalid;
   // Count B/R protocol or ownership errors once per response beat.  These
   // are wires so simultaneous B and R errors are accumulated together rather
   // than losing one increment to two nonblocking assignments.
@@ -65,7 +72,7 @@ module axi_shared_ddr_2m #(
   always_ff @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
       wr_busy<=0; wr_aw_sent<=0; wr_owner<=0; wr_w_seen<=0; wr_id<='0; wr_addr<='0; wr_len<='0; wr_size<='0; wr_burst<='0;
-      rd_busy<=0; rd_ar_sent<=0; rd_owner<=0; rd_id<='0; rd_addr<='0; rd_len<='0; rd_size<='0; rd_burst<='0; rd_turn<=0; video_write_streak<=0; axi_error_count<=0;
+      rd_busy<=0; rd_ar_sent<=0; rd_owner<=0; rd_id<='0; rd_addr<='0; rd_len<='0; rd_size<='0; rd_burst<='0; rd_turn<=0; video_write_streak<=0;video_read_streak<=0; axi_error_count<=0;
     end else begin
       if(cpu_awready||vid_awready) begin
         wr_busy<=1; wr_aw_sent<=0; wr_w_seen<=0; wr_owner<=choose_vid_w; wr_id<=choose_vid_w?vid_awid:cpu_awid; wr_addr<=choose_vid_w?vid_awaddr:cpu_awaddr; wr_len<=choose_vid_w?vid_awlen:cpu_awlen; wr_size<=choose_vid_w?vid_awsize:cpu_awsize; wr_burst<=choose_vid_w?vid_awburst:cpu_awburst;
@@ -76,6 +83,10 @@ module axi_shared_ddr_2m #(
       if(ddr_bvalid&&ddr_bready) begin wr_busy<=0; wr_aw_sent<=0; wr_w_seen<=0; end
       if(cpu_arready||vid_arready) begin
         rd_busy<=1; rd_ar_sent<=0; rd_owner<=choose_vid_r; rd_id<=choose_vid_r?vid_arid:cpu_arid; rd_addr<=choose_vid_r?vid_araddr:cpu_araddr; rd_len<=choose_vid_r?vid_arlen:cpu_arlen; rd_size<=choose_vid_r?vid_arsize:cpu_arsize; rd_burst<=choose_vid_r?vid_arburst:cpu_arburst; rd_turn<=~choose_vid_r;
+      end
+      if(DYNAMIC_VIDEO_READ)begin
+        if(!cpu_arvalid||cpu_arready)video_read_streak<=0;
+        else if(vid_arready&&video_read_streak<MAX_VIDEO_BURSTS)video_read_streak<=video_read_streak+1'b1;
       end
       if(ddr_arvalid&&ddr_arready) rd_ar_sent<=1;
       if(ddr_rvalid&&ddr_rready) begin

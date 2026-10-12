@@ -3,6 +3,7 @@ module style_display_tb;
  reg clk=0,pix_clk=0;always #5 clk=~clk;always #6.734 pix_clk=~pix_clk;
  reg rst_n=0;reg [2:0] display_slot=2;reg display_valid=1;
  wire display_frame_event,display_safe;wire [31:0] pixel,dma_errors;wire hs,vs,de,underflow;
+ wire read_urgent;
  wire [31:0] araddr;wire [7:0] arlen;wire arvalid,rready;
  reg read_active=0,rhold=0;reg [31:0] address=32'h05000000;reg [7:0] beat=0,len=0;
  reg [31:0] rng=32'h871429f3;integer block_cycles=0;
