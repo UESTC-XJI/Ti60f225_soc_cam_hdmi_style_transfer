@@ -1,0 +1,396 @@
+{
+  "resources": {
+    "XLR": {
+      "used": 57870,
+      "capacity": 60800
+    },
+    "RAM": {
+      "used": 256,
+      "capacity": 256
+    },
+    "DSP": {
+      "used": 140,
+      "capacity": 160
+    }
+  },
+  "setup_slack_ns": {
+    "tx_cal_clk_90edge->tx_cal_clk_90edge": 0.281,
+    "tx_cal_clk_90edge->tx_cal_clk": 1.177,
+    "tx_cal_clk_90edge->core_clk": 1.781,
+    "sdram_clk->tx_cal_clk_90edge": 0.687,
+    "sdram_clk->sdram_clk": 0.264,
+    "rx_cal_clk->rx_cal_clk": 0.557,
+    "tx_cal_clk->tx_cal_clk": 0.471,
+    "vid_clk_dvi2->vid_clk_dvi2": 0.611,
+    "vid_clk_dvi2->hdmi_tx_slow_clk": 2.158,
+    "hdmi_tx_slow_clk->vid_clk_dvi2": 2.06,
+    "hdmi_tx_slow_clk->hdmi_tx_slow_clk": 7.08,
+    "core_clk->tx_cal_clk_90edge": 0.884,
+    "core_clk->core_clk": 2.283,
+    "core_clk->i_cam_ck_CLKOUT": 8.556,
+    "i_mipi_rx_pclk->i_mipi_rx_pclk": 13.084,
+    "i_mipi_rx_pclk->i_cam_ck_CLKOUT": 8.129,
+    "i_cam_ck_CLKOUT->i_mipi_rx_pclk": 8.643,
+    "i_cam_ck_CLKOUT->i_cam_ck_CLKOUT": 4.461
+  },
+  "minimum_hold_slack_ns": 0.026,
+  "simulation": {
+    "variant": "adaptive",
+    "tag": "reserve",
+    "rtl_sha256": {
+      "rtl/style/style_accel.sv": "1bf3d0a231877acfb3290e902da492c3c95c53de70fc53e23cc95a848f305fa8",
+      "rtl/style/style_async_fifo.sv": "056efa5b9399dfe9cbba941c023d442481f13c42476e4c853a5c5be2a44a074e",
+      "rtl/style/style_axi_cdc.sv": "a64535a5329dc4e555b62283b3779422e080cefc95016325a03b5ff04451124c",
+      "rtl/style/style_axi_rows.sv": "20c82e252bc3c32e443e6a27801aacc4a1446854ab6914e8692b009c5da4dc04",
+      "rtl/style/style_ddr_profiler.sv": "7e33135e3c55cf0be0817a332537c262dc5d29e993fed648aadd072ab890cccd",
+      "rtl/style/style_display.sv": "54ca961a3cdbf6251a753f0730a960e7ebdbf72aa34d38f225af00ad2c18358f",
+      "rtl/style/style_display_beats.sv": "6dc104e2db73f408ff888719e48e9829d31009bb980f5c185e7f826f444bdd8a",
+      "rtl/style/style_frame_store.sv": "36a506f2583fcaf29279bf584ee5bb3fe0c9fd6ed7965ea105a2f717c24e0f55",
+      "rtl/style/style_mac8x12.sv": "6e92662440a6b21da7e47296688f0c45f0eab4938504dd6a05971fb759006400",
+      "rtl/style/style_network.sv": "ad57e689e9b701f3cf680002c6b96b9672fb001a74ea5d4934780e9200da6ba6",
+      "rtl/style/style_row_core.sv": "00926d6e61672cf0990876ced48c399d40706efe4eca27b0732a50ebc41df9bf",
+      "rtl/style/style_vga_crop.sv": "bfb9cd0c9d31c50329bdcbb8f5d3e202ab4f7e259a89a6e20b68584b3bd34941",
+      "rtl/style/style_video_system.sv": "294a9f28a03a7541b2a164e64601190571a301024254b9f5d3c70c2aa62a1ea4",
+      "rtl/soc_integration/axi_shared_ddr_2m.sv": "7c68732ac2a1019a079fd29b81f7c804dd1826868ea4812f5eda667bcc446790"
+    },
+    "width": 640,
+    "height": 48,
+    "cycles": 1662139,
+    "milliseconds": 11.192855218855218,
+    "display_pixels": 480245,
+    "capture_beats": 76800,
+    "captured_frame_exact_pixels": 307200,
+    "underflows": 0,
+    "counters_100mhz": {
+      "ticks": 1119299,
+      "cnn_ar_wait": 499044,
+      "downstream_ar_wait": 7095,
+      "cnn_return_gap": 161570,
+      "cnn_r_backpressure": 0,
+      "display_r_backpressure": 0,
+      "cnn_aw_wait": 25671,
+      "cnn_w_wait": 67528,
+      "cnn_b_wait": 0,
+      "network_idle": 2,
+      "cnn_read_beats": 103680,
+      "display_read_beats": 120192
+    },
+    "phase_148_5mhz": {
+      "read_cycles": 1171727,
+      "compute_cycles": 480236
+    },
+    "profile": "real integrated RTL; prepared display slot0, 640x48 job slot1, one dense 1080p camera frame into slot2; randomized DDR stalls; no external CPU or DDR PHY model",
+    "wall_seconds": 512.0430748000217
+  },
+  "contention": {
+    "0": {
+      "good": 896,
+      "underflow": 613504,
+      "bursts": 5847
+    },
+    "1": {
+      "good": 896,
+      "underflow": 613504,
+      "bursts": 5847
+    },
+    "2": {
+      "good": 614400,
+      "underflow": 0,
+      "bursts": 6778
+    }
+  },
+  "hardware_programmed": true,
+  "files": {
+    "rtl/style/style_accel.sv": {
+      "bytes": 7425,
+      "sha256": "1bf3d0a231877acfb3290e902da492c3c95c53de70fc53e23cc95a848f305fa8"
+    },
+    "rtl/style/style_async_fifo.sv": {
+      "bytes": 2674,
+      "sha256": "056efa5b9399dfe9cbba941c023d442481f13c42476e4c853a5c5be2a44a074e"
+    },
+    "rtl/style/style_axi_cdc.sv": {
+      "bytes": 2175,
+      "sha256": "a64535a5329dc4e555b62283b3779422e080cefc95016325a03b5ff04451124c"
+    },
+    "rtl/style/style_axi_rows.sv": {
+      "bytes": 5346,
+      "sha256": "20c82e252bc3c32e443e6a27801aacc4a1446854ab6914e8692b009c5da4dc04"
+    },
+    "rtl/style/style_ddr_profiler.sv": {
+      "bytes": 1485,
+      "sha256": "7e33135e3c55cf0be0817a332537c262dc5d29e993fed648aadd072ab890cccd"
+    },
+    "rtl/style/style_display.sv": {
+      "bytes": 6748,
+      "sha256": "54ca961a3cdbf6251a753f0730a960e7ebdbf72aa34d38f225af00ad2c18358f"
+    },
+    "rtl/style/style_display_beats.sv": {
+      "bytes": 1361,
+      "sha256": "6dc104e2db73f408ff888719e48e9829d31009bb980f5c185e7f826f444bdd8a"
+    },
+    "rtl/style/style_frame_store.sv": {
+      "bytes": 6785,
+      "sha256": "36a506f2583fcaf29279bf584ee5bb3fe0c9fd6ed7965ea105a2f717c24e0f55"
+    },
+    "rtl/style/style_mac8x12.sv": {
+      "bytes": 3843,
+      "sha256": "6e92662440a6b21da7e47296688f0c45f0eab4938504dd6a05971fb759006400"
+    },
+    "rtl/style/style_network.sv": {
+      "bytes": 6808,
+      "sha256": "ad57e689e9b701f3cf680002c6b96b9672fb001a74ea5d4934780e9200da6ba6"
+    },
+    "rtl/style/style_row_core.sv": {
+      "bytes": 10126,
+      "sha256": "00926d6e61672cf0990876ced48c399d40706efe4eca27b0732a50ebc41df9bf"
+    },
+    "rtl/style/style_vga_crop.sv": {
+      "bytes": 1965,
+      "sha256": "bfb9cd0c9d31c50329bdcbb8f5d3e202ab4f7e259a89a6e20b68584b3bd34941"
+    },
+    "rtl/style/style_video_system.sv": {
+      "bytes": 8673,
+      "sha256": "294a9f28a03a7541b2a164e64601190571a301024254b9f5d3c70c2aa62a1ea4"
+    },
+    "rtl/soc_integration/axi_shared_ddr_2m.sv": {
+      "bytes": 8871,
+      "sha256": "7c68732ac2a1019a079fd29b81f7c804dd1826868ea4812f5eda667bcc446790"
+    },
+    "ti60f225_cam_hdmi.xml": {
+      "bytes": 15714,
+      "sha256": "b40b9fbd052dfa5c23961e8b298b538c19bd140d756117b88a2438b8b63cfe19"
+    },
+    "ti60f225_oob.sdc": {
+      "bytes": 38017,
+      "sha256": "4f3e62ce7d244472c0ed2b6c4ecacf9176450347ed054654c355910fe2a680a9"
+    },
+    "docs/DISPLAY_DEADLINE_FIX.md": {
+      "bytes": 3431,
+      "sha256": "bed5f2092ee99af1e7687f577ce0df06ccd8035ebb23dcf6a7afeebc5e6776b7"
+    },
+    "outflow_style_deadline_reserve/ti60f225_oob.timing.rpt": {
+      "bytes": 1853229,
+      "sha256": "3b6579e0c0191cea41bd39b6e3031ed6627b2963631d3b4c0c8961d3c7aa4e0d"
+    },
+    "outflow_style_deadline_reserve/ti60f225_oob.place.rpt": {
+      "bytes": 2090,
+      "sha256": "b79e243243f0fcc19d10ce939556491decd29f20354f8a7135c56a3cd1397291"
+    },
+    "outflow_style_deadline_reserve/ti60f225_oob.cdc.rpt": {
+      "bytes": 296,
+      "sha256": "4de7506dbf2b0d0ae971914d76163e11492591100a78a8f03395f4a678988b28"
+    },
+    "outflow_style_deadline_reserve/ti60f225_oob.route.rpt": {
+      "bytes": 1321,
+      "sha256": "22bded6da07782eba92f4527d7b117dcc4e479ccd19b52a9e7ebcb63e54a91b4"
+    },
+    "outflow_style_deadline_reserve/ti60f225_oob.pgm.out": {
+      "bytes": 2302,
+      "sha256": "2b94e195d7581a1ac582e403b55692b46fb439dfa43212349cfff37cf2c4449c"
+    },
+    "reports/style_demo/release_display_deadline/ti60f225_oob.bit": {
+      "bytes": 3225987,
+      "sha256": "254448d2feeaa30aeac726fdd933c8c03d84d8b9b5661ca2c20d9c4975e6b308"
+    },
+    "reports/style_demo/release_display_deadline/soc_video_app.elf": {
+      "bytes": 188752,
+      "sha256": "3f8325dec3710cc9714be51a62c61220d3f6f840c5107f4d45adcd9dab3800f2"
+    },
+    "reports/style_demo/release_display_deadline/README.md": {
+      "bytes": 787,
+      "sha256": "80b9fdad10655e4ebde3b98e8697ef531f129bd4a660ba15b1eeecc4d450cc1f"
+    },
+    "reports/style_demo/release_display_deadline/hardware/analyze_uart.py": {
+      "bytes": 2746,
+      "sha256": "4591805cc6bc0bda5af81dec8d9c21eb5ba165aa90c0763200ef1ef9f5eda316"
+    },
+    "reports/style_demo/release_display_deadline/hardware/capture_uart.py": {
+      "bytes": 1304,
+      "sha256": "ceccb913eebafe49816e16701d73d9e3f497a2dedcaf0eab74f4a195fd8c07d8"
+    },
+    "reports/style_demo/release_display_deadline/hardware/load.gdb": {
+      "bytes": 379,
+      "sha256": "b44b735859300580b3194cd58903ac98278c1869088807dc8dcd7d2f03687f03"
+    },
+    "reports/style_demo/release_display_deadline/hardware/load.log": {
+      "bytes": 1015,
+      "sha256": "2ce749cd794e2c1c787ec10a9369a3a93302023b9edd3e8da98610b047032254"
+    },
+    "reports/style_demo/release_display_deadline/hardware/openocd.log": {
+      "bytes": 1156,
+      "sha256": "8eb57f588679e8f9b3f698cd9da0d75f470f4b7db9635d82de900109d4601be5"
+    },
+    "reports/style_demo/release_display_deadline/hardware/programmer.log": {
+      "bytes": 282,
+      "sha256": "40a4aeea46419731e49c2ed84d5bdd309c944ecea57522f8c0211ad2dbbbcd77"
+    },
+    "reports/style_demo/release_display_deadline/hardware/README.md": {
+      "bytes": 3883,
+      "sha256": "fb904cb42510a451ce719280aebac413f871b4499bd02d06cbb89536ed6904c0"
+    },
+    "reports/style_demo/release_display_deadline/hardware/snapshot.gdb": {
+      "bytes": 918,
+      "sha256": "900ee4ca6a991006b2d953d8a3315575c6e9db195cc639db552327b79d0de629"
+    },
+    "reports/style_demo/release_display_deadline/hardware/snapshot_1.log": {
+      "bytes": 1012,
+      "sha256": "ca2cc882a1b52ba7c6bd446e656b69f1ff021a3f53efd7a9980e74c10594efeb"
+    },
+    "reports/style_demo/release_display_deadline/hardware/snapshot_final.log": {
+      "bytes": 1079,
+      "sha256": "ff508f0e3bb0639ff1854e9270d99c8cea41bac3a0c70930c670d7e1c9d8eaad"
+    },
+    "reports/style_demo/release_display_deadline/hardware/uart_COM4.log": {
+      "bytes": 32062,
+      "sha256": "fda0d9e2858c194665c0214613f1e4d185bd8eefb720ffb6cdfbb6a1a51729cb"
+    },
+    "reports/style_demo/release_display_deadline/hardware/uart_summary.json": {
+      "bytes": 2845,
+      "sha256": "0b07d89260a9debc8f2d673b5644d27884c4656317d593a29ac74b7b660e1dc7"
+    },
+    "reports/style_demo/release_display_deadline/hardware/uart_summary_print.json": {
+      "bytes": 2845,
+      "sha256": "0b07d89260a9debc8f2d673b5644d27884c4656317d593a29ac74b7b660e1dc7"
+    },
+    "reports/style_demo/release_display_deadline/hardware/uart_timestamped.jsonl": {
+      "bytes": 59832,
+      "sha256": "01f1c68c160aca14767e5de276c5730a2f8c87c450535b13b5813b6c43c2c4c5"
+    },
+    "docs/style_display_deadline_results/README.md": {
+      "bytes": 828,
+      "sha256": "d9c2aa3625e1f87fb40b5d570c7905313062961382062ae766eddca599a5559e"
+    },
+    "docs/style_display_deadline_results/build_inputs/ti60f225_cam_hdmi.xml": {
+      "bytes": 15714,
+      "sha256": "b40b9fbd052dfa5c23961e8b298b538c19bd140d756117b88a2438b8b63cfe19"
+    },
+    "docs/style_display_deadline_results/build_inputs/ti60f225_oob.sdc": {
+      "bytes": 38017,
+      "sha256": "4f3e62ce7d244472c0ed2b6c4ecacf9176450347ed054654c355910fe2a680a9"
+    },
+    "docs/style_display_deadline_results/efinity/ti60f225_oob.cdc.rpt": {
+      "bytes": 296,
+      "sha256": "4de7506dbf2b0d0ae971914d76163e11492591100a78a8f03395f4a678988b28"
+    },
+    "docs/style_display_deadline_results/efinity/ti60f225_oob.pgm.out": {
+      "bytes": 2302,
+      "sha256": "2b94e195d7581a1ac582e403b55692b46fb439dfa43212349cfff37cf2c4449c"
+    },
+    "docs/style_display_deadline_results/efinity/ti60f225_oob.place.rpt": {
+      "bytes": 2090,
+      "sha256": "b79e243243f0fcc19d10ce939556491decd29f20354f8a7135c56a3cd1397291"
+    },
+    "docs/style_display_deadline_results/efinity/ti60f225_oob.route.rpt": {
+      "bytes": 1321,
+      "sha256": "22bded6da07782eba92f4527d7b117dcc4e479ccd19b52a9e7ebcb63e54a91b4"
+    },
+    "docs/style_display_deadline_results/efinity/ti60f225_oob.timing.rpt": {
+      "bytes": 1853229,
+      "sha256": "3b6579e0c0191cea41bd39b6e3031ed6627b2963631d3b4c0c8961d3c7aa4e0d"
+    },
+    "docs/style_display_deadline_results/build_inputs/tools/test_style_ddr_firmware.py": {
+      "bytes": 3315,
+      "sha256": "7ae5aed52d7e93a5e1dce2c9ff7436cfb5ea22abadf1d7d566b18144e4d6ad28"
+    },
+    "docs/style_display_deadline_results/build_inputs/software/firmware/style_driver.c": {
+      "bytes": 6992,
+      "sha256": "be31d0a00281b76c1de49bad51aec3b17ca741ffdbac8fc4b2f6ead95fef6d5e"
+    },
+    "docs/style_display_deadline_results/build_inputs/rtl/soc_integration/axi_shared_ddr_2m.sv": {
+      "bytes": 8871,
+      "sha256": "7c68732ac2a1019a079fd29b81f7c804dd1826868ea4812f5eda667bcc446790"
+    },
+    "docs/style_display_deadline_results/build_inputs/rtl/style/style_accel.sv": {
+      "bytes": 7425,
+      "sha256": "1bf3d0a231877acfb3290e902da492c3c95c53de70fc53e23cc95a848f305fa8"
+    },
+    "docs/style_display_deadline_results/build_inputs/rtl/style/style_async_fifo.sv": {
+      "bytes": 2674,
+      "sha256": "056efa5b9399dfe9cbba941c023d442481f13c42476e4c853a5c5be2a44a074e"
+    },
+    "docs/style_display_deadline_results/build_inputs/rtl/style/style_axi_cdc.sv": {
+      "bytes": 2175,
+      "sha256": "a64535a5329dc4e555b62283b3779422e080cefc95016325a03b5ff04451124c"
+    },
+    "docs/style_display_deadline_results/build_inputs/rtl/style/style_axi_rows.sv": {
+      "bytes": 5346,
+      "sha256": "20c82e252bc3c32e443e6a27801aacc4a1446854ab6914e8692b009c5da4dc04"
+    },
+    "docs/style_display_deadline_results/build_inputs/rtl/style/style_ddr_profiler.sv": {
+      "bytes": 1485,
+      "sha256": "7e33135e3c55cf0be0817a332537c262dc5d29e993fed648aadd072ab890cccd"
+    },
+    "docs/style_display_deadline_results/build_inputs/rtl/style/style_display.sv": {
+      "bytes": 6748,
+      "sha256": "54ca961a3cdbf6251a753f0730a960e7ebdbf72aa34d38f225af00ad2c18358f"
+    },
+    "docs/style_display_deadline_results/build_inputs/rtl/style/style_display_beats.sv": {
+      "bytes": 1361,
+      "sha256": "6dc104e2db73f408ff888719e48e9829d31009bb980f5c185e7f826f444bdd8a"
+    },
+    "docs/style_display_deadline_results/build_inputs/rtl/style/style_frame_store.sv": {
+      "bytes": 6785,
+      "sha256": "36a506f2583fcaf29279bf584ee5bb3fe0c9fd6ed7965ea105a2f717c24e0f55"
+    },
+    "docs/style_display_deadline_results/build_inputs/rtl/style/style_mac8x12.sv": {
+      "bytes": 3843,
+      "sha256": "6e92662440a6b21da7e47296688f0c45f0eab4938504dd6a05971fb759006400"
+    },
+    "docs/style_display_deadline_results/build_inputs/rtl/style/style_network.sv": {
+      "bytes": 6808,
+      "sha256": "ad57e689e9b701f3cf680002c6b96b9672fb001a74ea5d4934780e9200da6ba6"
+    },
+    "docs/style_display_deadline_results/build_inputs/rtl/style/style_row_core.sv": {
+      "bytes": 10126,
+      "sha256": "00926d6e61672cf0990876ced48c399d40706efe4eca27b0732a50ebc41df9bf"
+    },
+    "docs/style_display_deadline_results/build_inputs/rtl/style/style_vga_crop.sv": {
+      "bytes": 1965,
+      "sha256": "bfb9cd0c9d31c50329bdcbb8f5d3e202ab4f7e259a89a6e20b68584b3bd34941"
+    },
+    "docs/style_display_deadline_results/build_inputs/rtl/style/style_video_system.sv": {
+      "bytes": 8673,
+      "sha256": "294a9f28a03a7541b2a164e64601190571a301024254b9f5d3c70c2aa62a1ea4"
+    }
+  },
+  "hardware_result": {
+    "user_visual_confirmation": "已不再闪烁",
+    "elapsed_s": 92.688,
+    "underflow_events": 16,
+    "underflow_events_per_s": 0.173,
+    "nn_fps_range": [
+      9,
+      10
+    ],
+    "display_hz": 60,
+    "csi_dma_inference_axi_errors": 0,
+    "cpu_resumed": true,
+    "debug_connections_released": true
+  },
+  "published_build_evidence": {
+    "rtl/style/style_accel.sv": "docs/style_display_deadline_results/build_inputs/rtl/style/style_accel.sv",
+    "rtl/style/style_async_fifo.sv": "docs/style_display_deadline_results/build_inputs/rtl/style/style_async_fifo.sv",
+    "rtl/style/style_axi_cdc.sv": "docs/style_display_deadline_results/build_inputs/rtl/style/style_axi_cdc.sv",
+    "rtl/style/style_axi_rows.sv": "docs/style_display_deadline_results/build_inputs/rtl/style/style_axi_rows.sv",
+    "rtl/style/style_ddr_profiler.sv": "docs/style_display_deadline_results/build_inputs/rtl/style/style_ddr_profiler.sv",
+    "rtl/style/style_display.sv": "docs/style_display_deadline_results/build_inputs/rtl/style/style_display.sv",
+    "rtl/style/style_display_beats.sv": "docs/style_display_deadline_results/build_inputs/rtl/style/style_display_beats.sv",
+    "rtl/style/style_frame_store.sv": "docs/style_display_deadline_results/build_inputs/rtl/style/style_frame_store.sv",
+    "rtl/style/style_mac8x12.sv": "docs/style_display_deadline_results/build_inputs/rtl/style/style_mac8x12.sv",
+    "rtl/style/style_network.sv": "docs/style_display_deadline_results/build_inputs/rtl/style/style_network.sv",
+    "rtl/style/style_row_core.sv": "docs/style_display_deadline_results/build_inputs/rtl/style/style_row_core.sv",
+    "rtl/style/style_vga_crop.sv": "docs/style_display_deadline_results/build_inputs/rtl/style/style_vga_crop.sv",
+    "rtl/style/style_video_system.sv": "docs/style_display_deadline_results/build_inputs/rtl/style/style_video_system.sv",
+    "rtl/soc_integration/axi_shared_ddr_2m.sv": "docs/style_display_deadline_results/build_inputs/rtl/soc_integration/axi_shared_ddr_2m.sv",
+    "ti60f225_cam_hdmi.xml": "docs/style_display_deadline_results/build_inputs/ti60f225_cam_hdmi.xml",
+    "ti60f225_oob.sdc": "docs/style_display_deadline_results/build_inputs/ti60f225_oob.sdc",
+    "outflow_style_deadline_reserve/ti60f225_oob.timing.rpt": "docs/style_display_deadline_results/efinity/ti60f225_oob.timing.rpt",
+    "outflow_style_deadline_reserve/ti60f225_oob.place.rpt": "docs/style_display_deadline_results/efinity/ti60f225_oob.place.rpt",
+    "outflow_style_deadline_reserve/ti60f225_oob.cdc.rpt": "docs/style_display_deadline_results/efinity/ti60f225_oob.cdc.rpt",
+    "outflow_style_deadline_reserve/ti60f225_oob.route.rpt": "docs/style_display_deadline_results/efinity/ti60f225_oob.route.rpt",
+    "outflow_style_deadline_reserve/ti60f225_oob.pgm.out": "docs/style_display_deadline_results/efinity/ti60f225_oob.pgm.out",
+    "software/firmware/style_driver.c": "docs/style_display_deadline_results/build_inputs/software/firmware/style_driver.c",
+    "tools/test_style_ddr_firmware.py": "docs/style_display_deadline_results/build_inputs/tools/test_style_ddr_firmware.py"
+  }
+}

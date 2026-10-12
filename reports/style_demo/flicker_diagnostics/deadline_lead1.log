@@ -1,0 +1,2 @@
+PASS 720p60 display: 1 stress frame, paired slots 2/4, exact RGB, starvation black/recovery, good=604800 underflow=9600 bursts=4800
+C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\reports\style_demo\flicker_diagnostics\deadline_tb.sv:60: $finish called at 16666684670 (1ps)

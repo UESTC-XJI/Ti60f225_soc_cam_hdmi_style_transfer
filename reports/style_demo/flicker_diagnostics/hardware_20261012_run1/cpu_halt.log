@@ -1,0 +1,11 @@
+The target architecture is set to "riscv:rv32".
+main () at C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\software\firmware\main.c:86
+86	        uint64_t now = clint_getTime(BSP_CLINT);
+HALT_CPU_ONLY_FPGA_STREAM_CONTINUES
+pc             0x1400	0x1400 <main+440>
+0xf8100140:	0x00000004	0x00000000	0x00000000	0x00068286
+0xf8100150:	0x000014a5	0x000014a5	0x000032a0	0x00000000
+0xf8100160:	0x0000001f
+0xf8100238:	1875	1829	1871	0
+0xf8100248:	1870	0	0
+0xf8100204:	0x00000010

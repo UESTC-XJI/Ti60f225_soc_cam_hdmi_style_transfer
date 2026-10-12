@@ -1,0 +1,158 @@
+{
+  "baseline": {
+    "video_samples": 92,
+    "video": {
+      "UF": {
+        "min": 0,
+        "max": 16,
+        "mean": 8.207
+      },
+      "DUF": {
+        "min": 0,
+        "max": 3,
+        "mean": 0.174
+      },
+      "DDROP": {
+        "min": 19,
+        "max": 21,
+        "mean": 19.685
+      },
+      "FAULT": {
+        "min": 0,
+        "max": 4,
+        "mean": 3.826
+      },
+      "CSI": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "DME": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "IERR": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "AXI": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      }
+    },
+    "monet": {
+      "CAP": {
+        "min": 9,
+        "max": 11,
+        "mean": 9.859
+      },
+      "NN": {
+        "min": 9,
+        "max": 10,
+        "mean": 9.859
+      },
+      "DISP": {
+        "min": 60,
+        "max": 60,
+        "mean": 60
+      },
+      "DROP": {
+        "min": 70,
+        "max": 1861,
+        "mean": 965.467
+      },
+      "MS": {
+        "min": 89,
+        "max": 98,
+        "mean": 93.261
+      },
+      "ERR": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      }
+    },
+    "ddr": {
+      "T": {
+        "min": 101766399,
+        "max": 101969485,
+        "mean": 101801518.772
+      },
+      "AR": {
+        "min": 35,
+        "max": 37,
+        "mean": 35.913
+      },
+      "DOWN": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "RGAP": {
+        "min": 13,
+        "max": 13,
+        "mean": 13
+      },
+      "RBP": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "DBP": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "AW": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "W": {
+        "min": 1,
+        "max": 2,
+        "mean": 1.38
+      },
+      "B": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "IDLE": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "RB": {
+        "min": 11052512,
+        "max": 11394272,
+        "mean": 11253564.87
+      },
+      "DRB": {
+        "min": 9369600,
+        "max": 9413280,
+        "mean": 9382478.837
+      },
+      "RPMS": {
+        "min": 56,
+        "max": 65,
+        "mean": 60.804
+      },
+      "CPMS": {
+        "min": 31,
+        "max": 31,
+        "mean": 31
+      }
+    },
+    "start": "2026-10-12T21:22:53.358+08:00",
+    "end": "2026-10-12T21:24:26.039+08:00",
+    "elapsed_s": 92.688,
+    "underflow_increment": 16,
+    "underflow_events_per_s": 0.173,
+    "display_read_MBps": 147.462,
+    "cnn_read_MBps": 176.899
+  }
+}

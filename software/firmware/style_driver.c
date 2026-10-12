@@ -72,6 +72,7 @@ static char *put_decimal(char *p,uint32_t v) {
 }
 void style_log_ddr(void) {
     static uint32_t previous[12];uint32_t snapshot[12];
+    static uint32_t previous_underflow,previous_drop;
     regs[0x54/4]=1;__asm__ volatile("fence iorw,iorw" ::: "memory");
     for(uint32_t i=0;i<12;++i)snapshot[i]=regs[0x58/4+i];
     regs[0x54/4]=0;__asm__ volatile("fence iorw,iorw" ::: "memory");
@@ -89,6 +90,20 @@ void style_log_ddr(void) {
     p=put_text(p," DRB ");p=put_decimal(p,app_style_ddr_delta[11]);
     p=put_text(p," RPMS ");p=put_decimal(p,app_style_read_cycles/148500u);
     p=put_text(p," CPMS ");p=put_decimal(p,app_style_compute_cycles/148500u);*p=0;
+    uart_writeStr(BSP_UART_TERMINAL,line);uart_writeStr(BSP_UART_TERMINAL,"\r\n");
+    // Display starvation is independent of style queue drops and AXI errors.
+    // Read the existing status counters; no new FPGA storage is required.
+    volatile uint32_t *const video_regs=(volatile uint32_t *)0xf8100000u;
+    uint32_t underflows=video_regs[0x14c/4],drops=regs[0x3c/4];
+    p=put_text(line,"VIDEO UF ");p=put_decimal(p,underflows);
+    p=put_text(p," DUF ");p=put_decimal(p,underflows-previous_underflow);
+    p=put_text(p," DDROP ");p=put_decimal(p,drops-previous_drop);
+    p=put_text(p," FAULT ");p=put_decimal(p,video_regs[0x140/4]);
+    p=put_text(p," CSI ");p=put_decimal(p,video_regs[0x15c/4]);
+    p=put_text(p," DME ");p=put_decimal(p,regs[0x4c/4]);
+    p=put_text(p," IERR ");p=put_decimal(p,regs[0x44/4]);
+    p=put_text(p," AXI ");p=put_decimal(p,video_regs[0x148/4]);*p=0;
+    previous_underflow=underflows;previous_drop=drops;
     uart_writeStr(BSP_UART_TERMINAL,line);uart_writeStr(BSP_UART_TERMINAL,"\r\n");
 }
 int style_submit_metrics(uint64_t now) {

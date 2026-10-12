@@ -1,0 +1,12 @@
+[
+  {
+    "lead_lines": 1,
+    "result": "PASS 720p60 display: 1 stress frame, paired slots 2/4, exact RGB, starvation black/recovery, good=604800 underflow=9600 bursts=4800\nC:\\OneDrive\\comp\\Ti60F225_DemoBoard_v4\\soc_hdmi_test\\Ti60f225_soc_cam_hdmi_style_demo\\reports\\style_demo\\flicker_diagnostics\\deadline_tb.sv:60: $finish called at 16666684670 (1ps)\n",
+    "source_sha256": "10b04f5cc1c813a3bcb43b7a917a3243960603416eaf0d4c077ca472ee6d422d"
+  },
+  {
+    "lead_lines": 4,
+    "result": "PASS 720p60 display: 1 stress frame, paired slots 2/4, exact RGB, starvation black/recovery, good=604800 underflow=9600 bursts=4800\nC:\\OneDrive\\comp\\Ti60F225_DemoBoard_v4\\soc_hdmi_test\\Ti60f225_soc_cam_hdmi_style_demo\\reports\\style_demo\\flicker_diagnostics\\deadline_tb.sv:60: $finish called at 16666684670 (1ps)\n",
+    "source_sha256": "8c6ca2362a1ad87e5377f765893b4962223ec631d365a2bbaabd1255af33ad4d"
+  }
+]

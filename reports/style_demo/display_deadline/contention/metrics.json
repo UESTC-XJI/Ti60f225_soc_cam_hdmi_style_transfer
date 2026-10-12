@@ -1,0 +1,17 @@
+{
+  "0": {
+    "good": 896,
+    "underflow": 613504,
+    "bursts": 5847
+  },
+  "1": {
+    "good": 896,
+    "underflow": 613504,
+    "bursts": 5847
+  },
+  "2": {
+    "good": 614400,
+    "underflow": 0,
+    "bursts": 6778
+  }
+}

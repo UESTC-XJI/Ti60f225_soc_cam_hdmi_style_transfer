@@ -1,0 +1,12 @@
+The target architecture is set to "riscv:rv32".
+0x00001404 in main () at C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\software\firmware\main.c:87
+87	        if(now-last_service>=BSP_CLINT_HZ/1000u) {
+DISABLE_CAPTURE_AND_NEW_NN_KEEP_DISPLAY
+0xf8100204:	0x00000010
+0xf8100204:	0x00000000
+0xf8100238:	1388	1352	1383	0
+0xf8100248:	1382	0	0
+0xf8100140:	0x00000004	0x00000000	0x00000000	0x0004cd36
+0xf8100150:	0x00000ab4	0x00000ab3	0x00001ebe	0x00000000
+0xf8100160:	0x0000001f
+[Inferior 1 (Remote target) detached]

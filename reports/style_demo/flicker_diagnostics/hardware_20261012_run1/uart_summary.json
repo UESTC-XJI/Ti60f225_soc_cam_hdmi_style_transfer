@@ -1,0 +1,470 @@
+{
+  "baseline": {
+    "video_samples": 86,
+    "video": {
+      "UF": {
+        "min": 13657,
+        "max": 313058,
+        "mean": 162625.372
+      },
+      "DUF": {
+        "min": 1847,
+        "max": 5022,
+        "mean": 3529.86
+      },
+      "DDROP": {
+        "min": 14,
+        "max": 16,
+        "mean": 15.116
+      },
+      "FAULT": {
+        "min": 4,
+        "max": 4,
+        "mean": 4
+      },
+      "CSI": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "DME": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "IERR": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "AXI": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      }
+    },
+    "monet": {
+      "CAP": {
+        "min": 14,
+        "max": 15,
+        "mean": 14.43
+      },
+      "NN": {
+        "min": 14,
+        "max": 15,
+        "mean": 14.43
+      },
+      "DISP": {
+        "min": 60,
+        "max": 60,
+        "mean": 60
+      },
+      "DROP": {
+        "min": 52,
+        "max": 1338,
+        "mean": 695.314
+      },
+      "MS": {
+        "min": 65,
+        "max": 66,
+        "mean": 65.628
+      },
+      "ERR": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      }
+    },
+    "ddr": {
+      "T": {
+        "min": 101809671,
+        "max": 101879632,
+        "mean": 101844506.919
+      },
+      "AR": {
+        "min": 9,
+        "max": 9,
+        "mean": 9
+      },
+      "DOWN": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "RGAP": {
+        "min": 19,
+        "max": 19,
+        "mean": 19
+      },
+      "RBP": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "DBP": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "AW": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "W": {
+        "min": 3,
+        "max": 4,
+        "mean": 3.721
+      },
+      "B": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "IDLE": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "RB": {
+        "min": 15854576,
+        "max": 16129344,
+        "mean": 15998206.86
+      },
+      "DRB": {
+        "min": 9328000,
+        "max": 9399744,
+        "mean": 9366794.791
+      },
+      "RPMS": {
+        "min": 32,
+        "max": 34,
+        "mean": 32.895
+      },
+      "CPMS": {
+        "min": 31,
+        "max": 31,
+        "mean": 31
+      }
+    },
+    "start": "2026-10-12T20:38:25.716+08:00",
+    "end": "2026-10-12T20:39:52.301+08:00",
+    "elapsed_s": 86.579,
+    "underflow_increment": 299401,
+    "underflow_events_per_s": 3458.125,
+    "display_read_MBps": 147.154,
+    "cnn_read_MBps": 251.31
+  },
+  "display_only": {
+    "video_samples": 50,
+    "video": {
+      "UF": {
+        "min": 314678,
+        "max": 314678,
+        "mean": 314678
+      },
+      "DUF": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "DDROP": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "FAULT": {
+        "min": 4,
+        "max": 4,
+        "mean": 4
+      },
+      "CSI": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "DME": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "IERR": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "AXI": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      }
+    },
+    "monet": {
+      "CAP": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "NN": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "DISP": {
+        "min": 60,
+        "max": 60,
+        "mean": 60
+      },
+      "DROP": {
+        "min": 1352,
+        "max": 1352,
+        "mean": 1352
+      },
+      "MS": {
+        "min": 66,
+        "max": 66,
+        "mean": 66
+      },
+      "ERR": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      }
+    },
+    "ddr": {
+      "T": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "AR": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "DOWN": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "RGAP": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "RBP": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "DBP": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "AW": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "W": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "B": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "IDLE": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "RB": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "DRB": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "RPMS": {
+        "min": 33,
+        "max": 33,
+        "mean": 33
+      },
+      "CPMS": {
+        "min": 31,
+        "max": 31,
+        "mean": 31
+      }
+    },
+    "start": "2026-10-12T20:39:55.344+08:00",
+    "end": "2026-10-12T20:40:45.067+08:00",
+    "elapsed_s": 49.719,
+    "underflow_increment": 0,
+    "underflow_events_per_s": 0.0,
+    "display_read_MBps": null,
+    "cnn_read_MBps": null
+  },
+  "restored": {
+    "video_samples": 30,
+    "video": {
+      "UF": {
+        "min": 323284,
+        "max": 425798,
+        "mean": 374085.067
+      },
+      "DUF": {
+        "min": 1959,
+        "max": 4961,
+        "mean": 3559.7
+      },
+      "DDROP": {
+        "min": 14,
+        "max": 16,
+        "mean": 15.1
+      },
+      "FAULT": {
+        "min": 4,
+        "max": 4,
+        "mean": 4
+      },
+      "CSI": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "DME": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "IERR": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "AXI": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      }
+    },
+    "monet": {
+      "CAP": {
+        "min": 14,
+        "max": 15,
+        "mean": 14.433
+      },
+      "NN": {
+        "min": 14,
+        "max": 15,
+        "mean": 14.433
+      },
+      "DISP": {
+        "min": 60,
+        "max": 60,
+        "mean": 60
+      },
+      "DROP": {
+        "min": 1385,
+        "max": 1824,
+        "mean": 1604.8
+      },
+      "MS": {
+        "min": 65,
+        "max": 66,
+        "mean": 65.667
+      },
+      "ERR": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      }
+    },
+    "ddr": {
+      "T": {
+        "min": 101852262,
+        "max": 101856212,
+        "mean": 101854087.467
+      },
+      "AR": {
+        "min": 9,
+        "max": 9,
+        "mean": 9
+      },
+      "DOWN": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "RGAP": {
+        "min": 19,
+        "max": 19,
+        "mean": 19
+      },
+      "RBP": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "DBP": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "AW": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "W": {
+        "min": 3,
+        "max": 4,
+        "mean": 3.7
+      },
+      "B": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "IDLE": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "RB": {
+        "min": 15866384,
+        "max": 16115872,
+        "mean": 16001019.667
+      },
+      "DRB": {
+        "min": 9328640,
+        "max": 9399328,
+        "mean": 9367767.9
+      },
+      "RPMS": {
+        "min": 32,
+        "max": 34,
+        "mean": 32.967
+      },
+      "CPMS": {
+        "min": 31,
+        "max": 31,
+        "mean": 31
+      }
+    },
+    "start": "2026-10-12T20:40:48.106+08:00",
+    "end": "2026-10-12T20:41:17.675+08:00",
+    "elapsed_s": 29.563,
+    "underflow_increment": 102514,
+    "underflow_events_per_s": 3467.645,
+    "display_read_MBps": 147.159,
+    "cnn_read_MBps": 251.294
+  }
+}

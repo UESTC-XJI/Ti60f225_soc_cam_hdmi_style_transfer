@@ -73,9 +73,9 @@ module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1
     .c_arvalid(c_arvalid),.c_arready(c_arready),.c_rvalid(c_rvalid),.c_rready(c_rready),.c_rlast(c_rlast),
     .c_awvalid(c_awvalid),.c_awready(c_awready),.c_wvalid(c_wvalid),.c_wready(c_wready),.c_wlast(c_wlast),.c_bvalid(c_bvalid),.c_bready(c_bready),
     .arvalid(arvalid),.arready(arready),.v_rvalid(v_rvalid),.v_rready(v_rready));
-  // Urgent display bursts win, but a continuously pending CNN request can
-  // be bypassed by at most three new display bursts. Outer bridge stays fair.
-  axi_shared_ddr_2m #(.DDR_ID_W(6),.VIDEO_READ_PRIORITY(!ADAPTIVE_READ),.DYNAMIC_VIDEO_READ(ADAPTIVE_READ)) bridge(.clk(clk),.rst_n(rst_n),.allow_access(1'b1),.video_read_urgent(display_read_urgent),
+  // Hard display deadlines override the CNN bypass limit. CNN reads remain
+  // fair when display urgency clears; the outer CPU/video policy is unchanged.
+  axi_shared_ddr_2m #(.DDR_ID_W(6),.VIDEO_READ_PRIORITY(!ADAPTIVE_READ),.DYNAMIC_VIDEO_READ(ADAPTIVE_READ),.URGENT_OVERRIDES_FAIRNESS(1'b1),.RESERVE_URGENT_READ(ADAPTIVE_READ)) bridge(.clk(clk),.rst_n(rst_n),.allow_access(1'b1),.video_read_urgent(display_read_urgent),
     .cpu_awid(8'h03),.cpu_awaddr(c_awaddr),.cpu_awlen(c_awlen),.cpu_awsize(3'd4),.cpu_awburst(2'b01),.cpu_awvalid(c_awvalid),.cpu_awready(c_awready),
     .cpu_wdata(c_wdata),.cpu_wstrb(c_wstrb),.cpu_wlast(c_wlast),.cpu_wvalid(c_wvalid),.cpu_wready(c_wready),.cpu_bid(c_bid),.cpu_bresp(c_bresp),.cpu_bvalid(c_bvalid),.cpu_bready(c_bready),
     .cpu_arid(8'h03),.cpu_araddr(c_araddr),.cpu_arlen(c_arlen),.cpu_arsize(3'd4),.cpu_arburst(2'b01),.cpu_arvalid(c_arvalid),.cpu_arready(c_arready),.cpu_rid(c_rid),.cpu_rdata(c_rdata),.cpu_rresp(c_rresp),.cpu_rlast(c_rlast),.cpu_rvalid(c_rvalid),.cpu_rready(c_rready),

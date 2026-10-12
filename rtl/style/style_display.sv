@@ -37,9 +37,10 @@ module style_display #(parameter bit BUFFERED=1'b1)(
   reg [11:0] row_age;
   localparam integer PIXEL_LOG=BUFFERED ? 9:10;
   wire [PIXEL_LOG:0] pixel_level;
-  // Request leads the visible row by ~25.7 us. Give a delayed row priority
-  // before that deadline, or whenever less than 256 pixels are buffered.
-  assign read_urgent=display_valid&&(pixel_level<256||row_age>=1600||req_valid);
+  // Reserve inter-burst gaps only while a display row is pending. Otherwise
+  // the empty FIFO in vertical blanking would permanently block CNN reads.
+  // 384 buffered pixels give ~5.2 us at the 74.25 MHz pixel clock.
+  assign read_urgent=display_valid&&(state!=IDLE||req_valid)&&(pixel_level<384||row_age>=1600||req_valid);
   wire rd_busy,rd_done,rd_error,rd_valid,rd_ready;wire [191:0] rd_pixel;
   wire unused_busy,unused_done,unused_error,unused_ready;wire [31:0] unused_addr;wire [7:0] unused_len;
   wire unused_awvalid,unused_wlast,unused_wvalid,unused_bready;wire [127:0] unused_wdata;wire [15:0] unused_strb;

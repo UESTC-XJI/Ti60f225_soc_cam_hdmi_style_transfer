@@ -1,0 +1,204 @@
+SOC VIDEO boot
+DDR scratch PASS
+STYLE INT8 RGB self-test PASS; MONET VGA
+Camera CD6B initialized
+MONET VGA
+Software AE/AWB enabled; RAW8 stats, fixed VTS, manual lift
+MONET CAP 0 NN 0 DISP 60 DROP 13 MS 122 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 297 B 348 AE 1 AWB 5 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 35 MS 123 ERR 0
+3A state 3 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 278 B 316 AE 1 AWB 12 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 57 MS 122 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 278 B 314 AE 1 AWB 14 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 80 MS 122 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 102 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 124 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 146 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 169 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 191 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 213 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 235 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 258 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 281 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 303 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 325 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 347 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 370 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 392 MS 122 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 277 B 314 AE 1 AWB 15 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 414 MS 122 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 276 B 314 AE 1 AWB 16 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 436 MS 123 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 276 B 314 AE 1 AWB 16 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 459 MS 122 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 276 B 314 AE 1 AWB 16 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 481 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 24 hot 0 goal 96 hold 1 R 275 B 314 AE 1 AWB 17 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 503 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 275 B 314 AE 1 AWB 17 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 525 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 275 B 314 AE 1 AWB 17 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 548 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 274 B 314 AE 1 AWB 18 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 571 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 273 B 314 AE 1 AWB 19 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 593 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 273 B 314 AE 1 AWB 19 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 615 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 26 hot 0 goal 96 hold 1 R 272 B 314 AE 1 AWB 20 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 637 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 26 hot 0 goal 96 hold 1 R 271 B 314 AE 1 AWB 21 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 660 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 26 hot 0 goal 96 hold 1 R 270 B 315 AE 1 AWB 23 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 682 MS 130 ERR 0
+3A state 3 exp 2989 vts 1500 mean 27 hot 0 goal 96 hold 1 R 269 B 316 AE 1 AWB 25 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 704 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 27 hot 0 goal 96 hold 1 R 268 B 316 AE 1 AWB 26 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 726 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 27 hot 0 goal 96 hold 1 R 267 B 317 AE 1 AWB 28 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 749 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 28 hot 0 goal 96 hold 1 R 263 B 316 AE 1 AWB 33 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 771 MS 123 ERR 0
+3A state 1 exp 2989 vts 1500 mean 28 hot 0 goal 96 hold 1 R 263 B 316 AE 1 AWB 33 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 793 MS 123 ERR 0
+3A state 1 exp 2989 vts 1500 mean 28 hot 0 goal 96 hold 1 R 263 B 316 AE 1 AWB 33 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 816 MS 122 ERR 0
+3A state 1 exp 2989 vts 1500 mean 28 hot 0 goal 96 hold 1 R 263 B 316 AE 1 AWB 33 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 839 MS 123 ERR 0
+3A state 1 exp 2989 vts 1500 mean 28 hot 0 goal 96 hold 1 R 263 B 316 AE 1 AWB 33 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 861 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 28 hot 0 goal 96 hold 1 R 263 B 316 AE 1 AWB 33 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 883 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 27 hot 0 goal 96 hold 1 R 263 B 316 AE 1 AWB 33 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 905 MS 132 ERR 0
+3A state 1 exp 2989 vts 1500 mean 28 hot 0 goal 96 hold 1 R 263 B 316 AE 1 AWB 33 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 928 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 28 hot 0 goal 96 hold 1 R 263 B 316 AE 1 AWB 33 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 950 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 26 hot 0 goal 96 hold 1 R 263 B 313 AE 1 AWB 36 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 972 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 26 hot 0 goal 96 hold 1 R 264 B 316 AE 1 AWB 40 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 994 MS 131 ERR 0
+3A state 3 exp 2989 vts 1500 mean 26 hot 0 goal 96 hold 1 R 264 B 316 AE 1 AWB 40 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 1017 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 26 hot 0 goal 96 hold 1 R 265 B 316 AE 1 AWB 41 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 1039 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 26 hot 0 goal 96 hold 1 R 266 B 316 AE 1 AWB 42 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1061 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 266 B 316 AE 1 AWB 42 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1083 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 267 B 316 AE 1 AWB 43 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 1106 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 267 B 316 AE 1 AWB 43 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1129 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 267 B 316 AE 1 AWB 43 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 1151 MS 122 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 267 B 316 AE 1 AWB 43 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1173 MS 122 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 267 B 316 AE 1 AWB 43 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 1195 MS 123 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 267 B 316 AE 1 AWB 43 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1218 MS 122 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 267 B 316 AE 1 AWB 43 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 1240 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 267 B 316 AE 1 AWB 43 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1262 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 268 B 316 AE 1 AWB 44 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1284 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 268 B 316 AE 1 AWB 44 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 1307 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 268 B 316 AE 1 AWB 44 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 1329 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 268 B 316 AE 1 AWB 44 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1351 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 25 hot 0 goal 96 hold 1 R 268 B 316 AE 1 AWB 44 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1374 MS 131 ERR 0
+3A state 3 exp 2989 vts 1500 mean 23 hot 0 goal 96 hold 1 R 260 B 299 AE 1 AWB 48 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 1396 MS 131 ERR 0
+3A state 1 exp 2989 vts 1500 mean 27 hot 0 goal 96 hold 1 R 260 B 303 AE 1 AWB 53 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 1419 MS 130 ERR 0
+3A state 3 exp 2989 vts 1500 mean 37 hot 0 goal 96 hold 1 R 260 B 339 AE 1 AWB 60 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1441 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 36 hot 0 goal 96 hold 1 R 259 B 332 AE 1 AWB 66 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1463 MS 130 ERR 0
+3A state 1 exp 2989 vts 1500 mean 37 hot 0 goal 96 hold 1 R 258 B 331 AE 1 AWB 68 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 1485 MS 129 ERR 0
+3A state 1 exp 2989 vts 1500 mean 39 hot 0 goal 96 hold 1 R 257 B 343 AE 1 AWB 73 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 1508 MS 122 ERR 0
+3A state 3 exp 2989 vts 1500 mean 44 hot 0 goal 96 hold 1 R 255 B 344 AE 1 AWB 75 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1530 MS 123 ERR 0
+3A state 3 exp 2989 vts 1500 mean 43 hot 0 goal 96 hold 1 R 255 B 352 AE 1 AWB 81 code 0 req 0 rb 2989 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1552 MS 123 ERR 0
+3A state 1 exp 2989 vts 1500 mean 42 hot 0 goal 96 hold 1 R 254 B 341 AE 1 AWB 88 code 0 req 0 rb 2989 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 1575 MS 122 ERR 0
+3A state 2 exp 965 vts 1500 mean 68 hot 11 goal 96 hold 0 R 246 B 344 AE 4 AWB 91 code 0 req 1362 rb 965 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1597 MS 123 ERR 0
+3A state 3 exp 627 vts 1500 mean 101 hot 5 goal 96 hold 0 R 248 B 399 AE 9 AWB 95 code 0 req 0 rb 627 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 1619 MS 131 ERR 0
+3A state 3 exp 743 vts 1500 mean 93 hot 37 goal 90 hold 1 R 248 B 410 AE 11 AWB 101 code 0 req 0 rb 743 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1642 MS 131 ERR 0
+3A state 2 exp 724 vts 1500 mean 96 hot 31 goal 91 hold 0 R 248 B 412 AE 12 AWB 104 code 0 req 715 rb 724 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 1664 MS 131 ERR 0
+3A state 2 exp 715 vts 1500 mean 69 hot 14 goal 95 hold 0 R 248 B 410 AE 13 AWB 107 code 0 req 0 rb 715 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1687 MS 131 ERR 0
+3A state 2 exp 2716 vts 1500 mean 60 hot 6 goal 96 hold 0 R 239 B 398 AE 17 AWB 111 code 0 req 2989 rb 2716 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 1709 MS 131 ERR 0
+3A state 2 exp 1034 vts 1500 mean 148 hot 84 goal 78 hold 0 R 235 B 386 AE 22 AWB 115 code 0 req 544 rb 1034 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1731 MS 131 ERR 0
+3A state 1 exp 582 vts 1500 mean 86 hot 0 goal 96 hold 1 R 248 B 408 AE 24 AWB 121 code 0 req 0 rb 582 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 1753 MS 131 ERR 0
+3A state 1 exp 551 vts 1500 mean 109 hot 0 goal 96 hold 0 R 248 B 410 AE 29 AWB 124 code 0 req 0 rb 551 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1776 MS 131 ERR 0
+3A state 2 exp 465 vts 1500 mean 102 hot 0 goal 96 hold 0 R 248 B 414 AE 33 AWB 126 code 0 req 458 rb 465 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 1798 MS 130 ERR 0
+3A state 1 exp 458 vts 1500 mean 95 hot 0 goal 96 hold 1 R 248 B 412 AE 34 AWB 128 code 0 req 0 rb 458 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1820 MS 130 ERR 0
+3A state 1 exp 458 vts 1500 mean 93 hot 0 goal 96 hold 1 R 248 B 412 AE 34 AWB 128 code 0 req 0 rb 458 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1842 MS 130 ERR 0
+3A state 1 exp 637 vts 1500 mean 93 hot 0 goal 96 hold 1 R 248 B 412 AE 36 AWB 130 code 0 req 0 rb 637 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 1865 MS 130 ERR 0
+3A state 1 exp 637 vts 1500 mean 102 hot 0 goal 96 hold 1 R 249 B 413 AE 36 AWB 131 code 0 req 0 rb 637 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 1887 MS 123 ERR 0
+3A state 2 exp 222 vts 1500 mean 89 hot 191 goal 72 hold 0 R 263 B 401 AE 39 AWB 135 code 0 req 201 rb 222 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1910 MS 123 ERR 0
+3A state 3 exp 134 vts 1500 mean 68 hot 144 goal 72 hold 1 R 277 B 376 AE 44 AWB 139 code 0 req 0 rb 134 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1932 MS 122 ERR 0
+3A state 2 exp 377 vts 1500 mean 106 hot 213 goal 72 hold 0 R 290 B 360 AE 46 AWB 144 code 0 req 256 rb 377 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 1954 MS 123 ERR 0
+3A state 2 exp 150 vts 1500 mean 82 hot 196 goal 72 hold 0 R 291 B 361 AE 51 AWB 146 code 0 req 146 rb 150 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 1977 MS 122 ERR 0
+3A state 3 exp 132 vts 1500 mean 81 hot 194 goal 72 hold 0 R 295 B 361 AE 56 AWB 150 code 0 req 0 rb 132 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 1999 MS 131 ERR 0
+3A state 2 exp 706 vts 1500 mean 76 hot 2 goal 96 hold 0 R 275 B 381 AE 61 AWB 153 code 0 req 798 rb 706 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 2021 MS 131 ERR 0
+3A state 3 exp 942 vts 1500 mean 80 hot 57 goal 85 hold 1 R 243 B 386 AE 64 AWB 158 code 0 req 0 rb 942 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 2043 MS 131 ERR 0
+3A state 2 exp 824 vts 1500 mean 101 hot 19 goal 94 hold 0 R 241 B 402 AE 66 AWB 164 code 0 req 810 rb 824 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 2066 MS 131 ERR 0
+3A state 1 exp 776 vts 1500 mean 101 hot 0 goal 96 hold 1 R 247 B 412 AE 70 AWB 169 code 0 req 0 rb 776 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 2088 MS 131 ERR 0
+3A state 1 exp 718 vts 1500 mean 94 hot 0 goal 96 hold 1 R 257 B 416 AE 72 AWB 173 code 0 req 0 rb 718 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 2110 MS 131 ERR 0
+3A state 1 exp 718 vts 1500 mean 95 hot 0 goal 96 hold 1 R 252 B 414 AE 72 AWB 179 code 0 req 0 rb 718 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 2132 MS 131 ERR 0
+3A state 1 exp 718 vts 1500 mean 95 hot 0 goal 96 hold 1 R 251 B 414 AE 72 AWB 180 code 0 req 0 rb 718 err 0
+MONET CAP 6 NN 7 DISP 60 DROP 2155 MS 131 ERR 0
+3A state 1 exp 718 vts 1500 mean 95 hot 0 goal 96 hold 1 R 251 B 414 AE 72 AWB 180 code 0 req 0 rb 718 err 0
+MONET CAP 7 NN 6 DISP 60 DROP 2178 MS 130 ERR 0
+3A state 1 exp 718 vts 1500 mean 95 hot 0 goal 96 hold 1 R 251 B 411 AE 72 AWB 183 code 0 req 0 rb 718 err 0
+MONET CAP 7 NN 7 DISP 60 DROP 2200 MS 130 ERR 0
+3A state 1 exp 718 vts 1500 mean 89 hot 0 goal 96 hold 1 R 250 B 411 AE 72 AWB 184 code 0 req 0 rb 718 err 0

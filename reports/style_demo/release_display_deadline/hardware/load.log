@@ -1,0 +1,20 @@
+The target architecture is set to "riscv:rv32".
+0x00000008 in ?? ()
+RESET_STATUS_BEFORE_LOAD
+0xf8100160:	0x0000001f
+JTAG tap: fpga_spinal.bridge tap/device found: 0x10660a79 (mfg: 0x53c (Efinix Inc), part: 0x0660, ver: 0x1)
+Loading section .init, size 0x88 lma 0x1000
+Loading section .text, size 0x2d94 lma 0x1088
+Loading section .rodata, size 0x8030 lma 0x3e1c
+Loading section .data, size 0x4 lma 0xbe4c
+Start address 0x00001000, load size 44624
+Transfer rate: 19 KB/sec, 7437 bytes/write.
+Temporary breakpoint 1 at 0x1248: file C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\software\firmware\main.c, line 44.
+
+Program stopped.
+main () at C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\software\firmware\main.c:44
+44	    osd_set_video_ready(0);  /* Also return to bars after a debugger reload. */
+REACHED_MAIN
+pc             0x1248	0x1248 <main>
+sp             0x20000	0x20000
+[Inferior 1 (Remote target) detached]

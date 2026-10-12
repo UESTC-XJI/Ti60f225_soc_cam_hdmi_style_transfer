@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-12",
+  "base_commit": "4fdc3c86994a1ab04e30f8192c64ff4af0ba2d54",
+  "scope": "Firmware diagnostics only; FPGA RTL unchanged; not programmed on board",
+  "firmware_size": {
+    "text": 44620,
+    "data": 4,
+    "bss": 688
+  },
+  "checks": {
+    "actual_rv32_ddr_video_logger": "PASS",
+    "actual_rv32_style_telemetry": "PASS",
+    "full_firmware_runtime_9_scenarios_and_trap": "PASS",
+    "display_deadline_experiment": "both lead1 and lead4: 604800 correct pixels, 9600 underflow pixels; candidate rejected"
+  },
+  "sha256": {
+    "software/firmware/style_driver.c": "be31d0a00281b76c1de49bad51aec3b17ca741ffdbac8fc4b2f6ead95fef6d5e",
+    "tools/test_style_ddr_firmware.py": "7ae5aed52d7e93a5e1dce2c9ff7436cfb5ea22abadf1d7d566b18144e4d6ad28",
+    "docs/DISPLAY_FLICKER_DIAGNOSTICS.md": "8551b44d6fa6e75607a0b0c403b95a36f4800579d800877c94b0246a5915cbec",
+    "reports/style_demo/release_ddr_opt/ti60f225_oob.bit": "9f3749f6c54e969e71ca34e63fb922fb1f696e140c234121d434402c28e5a955",
+    "reports/style_demo/flicker_diagnostics/soc_video_app.elf": "3f8325dec3710cc9714be51a62c61220d3f6f840c5107f4d45adcd9dab3800f2",
+    "reports/style_demo/flicker_diagnostics/soc_video_app.bin": "da10c166d5787454f57ae919ad67ddc987f50bb518f69eb813f0618c05bdd713"
+  }
+}

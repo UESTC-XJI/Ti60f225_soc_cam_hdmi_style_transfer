@@ -10,6 +10,12 @@ module axi_shared_ddr_2m #(
   // outer CPU/video bridge keeps the fair round-robin default.
   parameter bit VIDEO_READ_PRIORITY=1'b0,
   parameter bit DYNAMIC_VIDEO_READ=1'b0,
+  // A hard display deadline may override the best-effort bypass limit.
+  // When urgency clears, the existing round-robin policy resumes.
+  parameter bit URGENT_OVERRIDES_FAIRNESS=1'b0,
+  // Preserve the gap between display bursts while its FIFO needs data.
+  // An already outstanding transaction is never cancelled or preempted.
+  parameter bit RESERVE_URGENT_READ=1'b0,
   parameter integer MAX_VIDEO_BURSTS=3
 )(
   input logic clk, rst_n, allow_access,
@@ -42,7 +48,7 @@ module axi_shared_ddr_2m #(
   wire choose_vid_w = cpu_awvalid && vid_awvalid ? (video_write_streak < 4'd8) : vid_awvalid;
   wire choose_vid_r = cpu_arvalid && vid_arvalid ?
     (VIDEO_READ_PRIORITY ? 1'b1 :
-      DYNAMIC_VIDEO_READ && video_read_urgent && video_read_streak<MAX_VIDEO_BURSTS ? 1'b1:
+      DYNAMIC_VIDEO_READ && video_read_urgent && (URGENT_OVERRIDES_FAIRNESS || video_read_streak<MAX_VIDEO_BURSTS) ? 1'b1:
       DYNAMIC_VIDEO_READ && video_read_streak>=MAX_VIDEO_BURSTS ? 1'b0:rd_turn) : vid_arvalid;
   // Count B/R protocol or ownership errors once per response beat.  These
   // are wires so simultaneous B and R errors are accumulated together rather
@@ -63,7 +69,7 @@ module axi_shared_ddr_2m #(
     cpu_wready=wr_busy&&wr_aw_sent&&!wr_w_seen&&!wr_owner&&ddr_wready; vid_wready=wr_busy&&wr_aw_sent&&!wr_w_seen&&wr_owner&&ddr_wready;
     cpu_bvalid=wr_busy&&wr_w_seen&&!wr_owner&&ddr_bvalid; vid_bvalid=wr_busy&&wr_w_seen&&wr_owner&&ddr_bvalid;
     cpu_bid=wr_id; vid_bid=wr_id; cpu_bresp=ddr_bresp; vid_bresp=ddr_bresp; ddr_bready=wr_busy&&wr_w_seen&&(wr_owner?vid_bready:cpu_bready);
-    cpu_arready=allow_access&&!rd_busy&&cpu_arvalid&&!choose_vid_r; vid_arready=allow_access&&!rd_busy&&vid_arvalid&&choose_vid_r;
+    cpu_arready=allow_access&&!rd_busy&&cpu_arvalid&&!choose_vid_r&&!(RESERVE_URGENT_READ&&video_read_urgent); vid_arready=allow_access&&!rd_busy&&vid_arvalid&&choose_vid_r;
     ddr_arvalid=rd_busy&&!rd_ar_sent; ddr_arid={rd_owner,rd_id[SRC_ID_W-1:0]}; ddr_araddr=rd_addr; ddr_arlen=rd_len; ddr_arsize=rd_size; ddr_arburst=rd_burst;
     cpu_rvalid=rd_busy&&!rd_owner&&ddr_rvalid; vid_rvalid=rd_busy&&rd_owner&&ddr_rvalid; cpu_rid=rd_id; vid_rid=rd_id; cpu_rdata=ddr_rdata; vid_rdata=ddr_rdata; cpu_rresp=ddr_rresp; vid_rresp=ddr_rresp; cpu_rlast=ddr_rlast; vid_rlast=ddr_rlast;
     ddr_rready=rd_busy&&(rd_owner?vid_rready:cpu_rready);

@@ -1,0 +1,42 @@
+rtl/soc_integration/axi_shared_ddr_2m.sv:63: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
+rtl/soc_integration/axi_shared_ddr_2m.sv:63: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
+NETWORK layer=0 total_cycles=0
+NETWORK layer=1 total_cycles=80601
+NETWORK layer=2 total_cycles=104489
+NETWORK layer=3 total_cycles=118246
+NETWORK layer=4 total_cycles=141415
+NETWORK layer=5 total_cycles=167343
+NETWORK layer=6 total_cycles=190494
+NETWORK layer=7 total_cycles=228454
+NETWORK layer=8 total_cycles=251587
+NETWORK layer=9 total_cycles=277684
+NETWORK layer=10 total_cycles=301115
+NETWORK layer=11 total_cycles=339074
+NETWORK layer=12 total_cycles=362095
+NETWORK layer=13 total_cycles=388041
+NETWORK layer=14 total_cycles=411234
+NETWORK layer=15 total_cycles=506881
+NETWORK layer=16 total_cycles=582830
+NETWORK layer=17 total_cycles=661590
+NETWORK layer=18 total_cycles=734875
+NETWORK layer=19 total_cycles=853397
+NETWORK layer=20 total_cycles=953026
+NETWORK layer=21 total_cycles=1189847
+NETWORK layer=22 total_cycles=1346796
+NETWORK layer=0 total_cycles=0
+PROFILE 0 1119299
+PROFILE 1 499044
+PROFILE 2 7095
+PROFILE 3 161570
+PROFILE 4 0
+PROFILE 5 0
+PROFILE 6 25671
+PROFILE 7 67528
+PROFILE 8 0
+PROFILE 9 2
+PROFILE 10 103680
+PROFILE 11 120192
+PHASE read_cycles=1171727 compute_cycles=480236
+SYSTEM display_pixels=480245 capture_beats=76800 underflows=0
+PASS style_accel all 6144 APB coefficients+CDC+IRQ integrated 640x48 exact RGB + active 720p display + camera capture, AXI random stalls cycles=1662139 reads=7128 writes=5388
+C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\reports\style_demo\ddr_optimization\adaptive_reserve\tb.sv:120: $finish called at 11562390000 (1ps)
