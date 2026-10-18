@@ -1,0 +1,11 @@
+{
+  "width": 32,
+  "height": 24,
+  "seed": 741,
+  "cycles": 21338,
+  "overlap_pixels": 1091,
+  "ms_at_148_5mhz": 0.1436902356902357,
+  "behavioral_task_fps": 6959.415127940763,
+  "wall_seconds": 3.899906060003559,
+  "physical_ddr": false
+}

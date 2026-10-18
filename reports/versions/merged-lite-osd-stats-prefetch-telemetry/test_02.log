@@ -1,0 +1,4 @@
+PASS cleanup: Active top/project: obsolete instances removed; direct HDMI histogram controls, dynamic text, display meter and startup retained
+PASS cleanup: PASS equivalence: active-top I2C pads and all 256 manual-lift strengths match original modules
+PASS cleanup: PASS OSD: async two-page COMMIT/ACK, active-page protection, frame-boundary enable/disable without COMMIT, disabled commit and RGB passthrough
+PASS cleanup: OSD negative regression: missing en2 synchronizer reproduces text-disable failure

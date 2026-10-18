@@ -1,0 +1,4 @@
+TELEMETRY starts=1 completions=1 overlap_pixels=8
+OVERLAP 8
+PASS style_network 32x24 prefetch fault drained, AXI random stalls cycles=3068 reads=38 writes=19
+/home/goodmann/Downloads/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_style_demo_merged/reports/prefetch/candidate_32x24_741_prefetch_read/tb.sv:45: $finish called at 30730000 (1ps)

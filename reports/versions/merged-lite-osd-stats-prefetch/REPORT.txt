@@ -1,0 +1,69 @@
+合并工程验证报告
+
+工程：Ti60f225_soc_cam_hdmi_style_demo_merged
+基线：Ti60f225_soc_cam_hdmi_style_demo_lite。
+合入：Ti60f225_soc_cam_hdmi_style_demo_osd_stats_opt、Ti60f225_soc_cam_hdmi_style_demo_prefetch。
+状态：源码合并、完整离线FPGA构建、定向回归和短帧并发集成仿真通过；未上板或烧录。
+
+合并方法
+三个目录没有有效Git仓库，本次按不可变baseline manifest验证共同祖先，再对祖先逐文件求差异，合入Lite副本，不直接整目录覆盖。
+OSD/stats与prefetch功能源码无重叠冲突。Lite的soc.v、settings及包装层保留；字库、统计、CNN网络分别与来源分支逐字一致。
+导入OSD/stats的字库生成器、差分测试和portable runner；导入prefetch的预取/网络/加速器测试及native runner。
+保留差分测试用原始字库、统计器和串行CNN网络；旧分支编译产物不当作合并版产物。
+Lite生成与检查脚本依赖的work_lite_generator及原Lite版本证据另行保留，保证继承检查入口可运行。旧设计说明仍是历史说明，当前结论以此报告为准。
+三个输入工程选定源码/配置清单在结束时重新哈希：Lite857项、OSD/stats696项、prefetch855项均未变化。
+
+主要功能
+1. Lite统一DDR系统时钟，原SoC DDR CDC消失；保留M扩展、完整CSR、cache、外设和JTAG。
+2. OSD紧凑字库保留全部95个可打印ASCII，非打印和未知字符空白；不改变字符页及同步延迟。
+3. 采集统计内部位宽按边界收窄，对外32位字段、配置版本、冻结META和CDC语义保留。
+4. CNN安全预取读算重叠，保留不支持层的串行路径；读写错误排空与运行中复位受测试覆盖。
+
+完整编译
+Efinity2026.1.132，Ti60F225 I3。map/interface/pnr/pgm全部PASS。
+pgm为bit文件生成，不是硬件下载。原JTAG/DDR接口缺项、libstdc++兼容性及IV提示仍存在。
+
+最终资源
+XLR：55504/60800，91.29%，剩余5296。
+RAM：237/256，92.58%，剩余19。
+DSP：140/160，87.50%，剩余20。
+对Lite基线56305 XLR/239 RAM/140 DSP，净减少801 XLR、2 RAM，DSP不变。
+不能简单相加三个独立工程的收益；上述是合并版实际布局结果。
+
+最终时序
+CNN148.5MHz setup +0.545ns。
+core100MHz setup +2.868ns。
+HDMI74.25MHz setup +7.084ns。
+最小已报告setup +0.215ns，hold +0.026ns。
+只覆盖当前约束实际分析的路径，不能当作板级全接口验收。
+
+已重新执行的14项定向回归（regression.json及test_00～13.log）
+1. 全部256字符×16行×8位字形与原始oracle一致，未知字符空白。
+2. 完整1920×1080统计差分，7359692周期、7次标量握手、322词直方图握手；内部位宽预算通过。
+3. 顶层清理兼容、I2C、手动lift、异步文字页COMMIT/ACK及缺失同步器负例。
+4. 真实Debayer/统一APB统计测试。
+5. 32×24完整CNN逐字对拍，有1091个读算重叠像素事件，21374周期。
+6～7. 预取读错误、写错误排空；退出无活动读写/计算。
+8. 运行中复位后重跑全网络对拍。
+9. 6144词权重APB加载、跨域确认、IRQ及RGB对拍。
+10. 显示紧急读期限仲裁。
+11. 两级共享DDR数据与ID回归。
+12. RISC-V工具链真实重编译固件。
+13. 实际RV32 ELF启动/错误/计时回绕/风格自检及trap模型回归。
+14. 软件AE/AWB、曝光延迟读回、噪声、高光、上下限、故障恢复及冻结直方图模型回归。
+
+额外并发集成仿真
+reports/style_demo/ddr_optimization/adaptive_merged/。
+实际CNN/抓帧/显示集成RTL，CNN任务640×48，摄像头完整VGA抓帧，720p持续显示，DDR随机停顿。
+网络1456793周期，103680 CNN读beat，76800抓帧beat，400640显示像素，underflow=0；所有任务输出与整数参考一致。
+不是完整640×480持续推理，不是物理DDR模型，不包含新CPU RTL/cache的物理时序证明；不可外推成实板FPS或稳定15fps达标。
+
+交付
+工程入口：ti60f225_cam_hdmi.xml。
+配套bit/ELF、最终资源/时序和测试记录保存在本版本目录。
+复现定向回归：python tools/test_merged.py（依赖本机scratch Python/Icarus工具，长期使用需独立安装依赖）。
+原始构建：outflow_merged；最新报告入口reports/latest。
+
+尚待验证
+新Lite CPU与真实共享DDR、MIPI、HDMI、AE/AWB的实板启动和长时并发；完整VGA推理性能、DROP与UF、端到端延迟、画质。
+没有修改三个来源工程，没有烧录或访问JTAG。

@@ -1,0 +1,4 @@
+OVERLAP 1091
+PASS style_network 32x24 full graph exact RGB, AXI random stalls cycles=21338 reads=254 writes=211
+/home/goodmann/Downloads/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_style_demo_merged/reports/prefetch/candidate_32x24_741_reset/tb.sv:43: $finish called at 243710000 (1ps)
+

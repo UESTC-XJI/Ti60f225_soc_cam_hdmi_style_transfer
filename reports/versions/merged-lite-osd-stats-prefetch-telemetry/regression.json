@@ -1,0 +1,127 @@
+[
+  {
+    "command": [
+      "tools/test_compact_font.py"
+    ],
+    "returncode": 0,
+    "seconds": 0.04908669499855023,
+    "log": "test_00.log"
+  },
+  {
+    "command": [
+      "tools/test_capture_widths.py",
+      "--full"
+    ],
+    "returncode": 0,
+    "seconds": 188.27932193300512,
+    "log": "test_01.log"
+  },
+  {
+    "command": [
+      "tools/run_native.py",
+      "tools/test_soc_cleanup.py"
+    ],
+    "returncode": 0,
+    "seconds": 0.19304982800531434,
+    "log": "test_02.log"
+  },
+  {
+    "command": [
+      "tools/run_native.py",
+      "tools/test_video_3a.py"
+    ],
+    "returncode": 0,
+    "seconds": 2.076578571999562,
+    "log": "test_03.log"
+  },
+  {
+    "command": [
+      "tools/test_style_prefetch.py",
+      "--require-overlap"
+    ],
+    "returncode": 0,
+    "seconds": 3.633433206996415,
+    "log": "test_04.log"
+  },
+  {
+    "command": [
+      "tools/test_style_prefetch.py",
+      "--fault",
+      "prefetch_read"
+    ],
+    "returncode": 0,
+    "seconds": 0.5864633570017759,
+    "log": "test_05.log"
+  },
+  {
+    "command": [
+      "tools/test_style_prefetch.py",
+      "--fault",
+      "prefetch_write"
+    ],
+    "returncode": 0,
+    "seconds": 0.5889196269999957,
+    "log": "test_06.log"
+  },
+  {
+    "command": [
+      "tools/test_style_prefetch.py",
+      "--fault",
+      "reset"
+    ],
+    "returncode": 0,
+    "seconds": 4.027540039998712,
+    "log": "test_07.log"
+  },
+  {
+    "command": [
+      "tools/run_native.py",
+      "tools/test_style_accel.py"
+    ],
+    "returncode": 0,
+    "seconds": 5.552802771002462,
+    "log": "test_08.log"
+  },
+  {
+    "command": [
+      "tools/run_native.py",
+      "tools/test_style_display_deadline.py"
+    ],
+    "returncode": 0,
+    "seconds": 0.06511586999840802,
+    "log": "test_09.log"
+  },
+  {
+    "command": [
+      "tools/run_native.py",
+      "tools/test_style_shared.py"
+    ],
+    "returncode": 0,
+    "seconds": 0.10172646099817939,
+    "log": "test_10.log"
+  },
+  {
+    "command": [
+      "tools/build_firmware.py"
+    ],
+    "returncode": 0,
+    "seconds": 0.4877032540025539,
+    "log": "test_11.log"
+  },
+  {
+    "command": [
+      "tools/test_firmware_runtime.py"
+    ],
+    "returncode": 0,
+    "seconds": 3.850762220994511,
+    "log": "test_12.log"
+  },
+  {
+    "command": [
+      "tools/test_camera_3a_runtime.py"
+    ],
+    "returncode": 0,
+    "seconds": 1.5051966099999845,
+    "log": "test_13.log"
+  }
+]

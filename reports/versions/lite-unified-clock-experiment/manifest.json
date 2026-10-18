@@ -1,0 +1,86 @@
+{
+  "status": "offline_build_pass_board_unverified",
+  "resources": {
+    "XLR": 56305,
+    "RAM": 239,
+    "DSP": 140
+  },
+  "files": {
+    "REPORT.txt": {
+      "bytes": 4890,
+      "sha256": "fa538ed183dbaf351febed85d5ae2e6b440f9fd2ca380e00f9a59ed8ca0291bc"
+    },
+    "baseline_manifest.json": {
+      "bytes": 106325,
+      "sha256": "e8148d88f4bd87f8f163dfdf528bfd09e318a61304058d3433e7d35732fed9d6"
+    },
+    "generation.log": {
+      "bytes": 819,
+      "sha256": "c2c1275c6d293bd39ca0b150f89299ebb3ddac0b6c20c024e5b3cf26a2315934"
+    },
+    "generation_command.json": {
+      "bytes": 1721,
+      "sha256": "73a499c21c624d3e2daff5fd924d56a28bdcc558140db03e07809a2a5143ce0a"
+    },
+    "soc_config_lite": {
+      "bytes": 1061,
+      "sha256": "887c4464b39129ba4ebc7f5e9ab59015651ea5cd07539d55c4dffb06537aae05"
+    },
+    "firmware_runtime.log": {
+      "bytes": 747,
+      "sha256": "62fb5f8124dc1ed4bf439a5fd817c45ee38b0592f6ceb804899d617314da029f"
+    },
+    "evidence/ti60f225_oob.cdc.rpt": {
+      "bytes": 291,
+      "sha256": "394642e8f9a0b15c964840a08630a09938073254b4bc12fb56412fefbf582529"
+    },
+    "evidence/ti60f225_oob.place.rpt": {
+      "bytes": 2038,
+      "sha256": "7258994cab140e41694a7de56eef8b02c370799eddebf4975ee5bc1e356ccf4d"
+    },
+    "evidence/ti60f225_oob.route.rpt": {
+      "bytes": 1283,
+      "sha256": "c1185c658dd5d639341323b51a56499dba1a52d013dc8043015e2e6a450f8df4"
+    },
+    "evidence/ti60f225_oob.timing.rpt": {
+      "bytes": 1700888,
+      "sha256": "3dcedb7138c2d60b738b62ede57d66df5a42143b11783bc97d69d625006bf900"
+    },
+    "evidence/ti60f225_oob.pgm.out": {
+      "bytes": 2137,
+      "sha256": "a2f16ae50855eca68bbf21f721cbcfcfa6a0031bf3581721d57df9967a1c393c"
+    },
+    "evidence/ti60f225_oob.hier_util.rpt": {
+      "bytes": 128487,
+      "sha256": "8a8636d545e4e211cc821f565a0dfaeeaa5f338f5dd856bc73c45c67dd925875"
+    },
+    "artifacts/soc_video_app.bin": {
+      "bytes": 44624,
+      "sha256": "6f57a982636b0ac5bbd4f8b17e5506fea30f9cc272859b54951c8797a27ef784"
+    },
+    "artifacts/ti60f225_oob.bit": {
+      "bytes": 3181773,
+      "sha256": "74d8f67a6b737c6928329847a5923a5b3e2439552f91db0836bb07dd1d7314af"
+    },
+    "artifacts/soc_video_app.elf": {
+      "bytes": 179608,
+      "sha256": "1f88b0b253901167439ee2da62f49f44814f42838aeaca08e9c819cba901cbc2"
+    },
+    "inputs/tools/check_lite_soc.py": {
+      "bytes": 1662,
+      "sha256": "34451242ea67c16215ab99bd887ba259e2e13065ff61b581bc5e5f633e9e01a3"
+    },
+    "inputs/tools/generate_lite_soc.py": {
+      "bytes": 2939,
+      "sha256": "b08e79c07a5db8941f58d7c12f7ddf2e2fd920532b869176f7a8c44188c45dca"
+    },
+    "inputs/work_lite_generator/bsp/efinix/EfxSapphireSoc/include/soc.h": {
+      "bytes": 3177,
+      "sha256": "3ac17c8813fd79f149cc792d5731ce3dbb9b629b41ea8dc518dd7eaed8a86363"
+    },
+    "inputs/soc/efx_sapphire_soc/soc/settings.json": {
+      "bytes": 4821,
+      "sha256": "bdc7c88c30d6ac68a49599317c8121810059cde51c11d87d31c354a54976596e"
+    }
+  }
+}

@@ -1,0 +1,3 @@
+PASS display deadline: >=80 urgent bursts, inter-burst reservation, nonurgent round-robin, 180 reads, full IDs
+/home/goodmann/Downloads/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_style_demo_merged/reports/style_demo/display_deadline/units/tb.sv:69: $finish called at 18230000 (1ps)
+

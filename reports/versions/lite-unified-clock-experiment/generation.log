@@ -1,0 +1,11 @@
+[Runtime] SpinalHDL dev    git head : a69f4b9a329be784802c37cd8038b7dc9aec3094
+[Runtime] JVM max memory : 7980.0MiB
+[Runtime] Current date : 2026.10.18 00:24:38
+[Progress] at 0.000 : Elaborate components
+[Info] No CounterService was found. Generating legacy counters and timer
+[Progress] at 1.769 : Checks and transforms
+[Progress] at 2.209 : Generate Verilog to hardware/netlist
+[Warning] toplevel/system_ddr_ddrLogic_arbiterAxi4Write/cmdRouteFork_translated_fifo/fifo/logic_ram : Mem[4*1 bits].readAsync can only be write first into Verilog
+[Warning] toplevel/system_ddr_ddrLogic_ddrAToAxi4_patchAw_translated_fifo/fifo/logic_ram : Mem[4*8 bits].readAsync can only be write first into Verilog
+[Warning] 557 signals were pruned. You can call printPruned on the backend report to get more informations.
+[Done] at 2.532

@@ -1,0 +1,48 @@
+{
+  "variant": "adaptive",
+  "tag": "merged",
+  "rtl_sha256": {
+    "rtl/style/style_async_fifo.sv": "056efa5b9399dfe9cbba941c023d442481f13c42476e4c853a5c5be2a44a074e",
+    "rtl/style/style_axi_rows.sv": "20c82e252bc3c32e443e6a27801aacc4a1446854ab6914e8692b009c5da4dc04",
+    "rtl/style/style_mac8x12.sv": "6e92662440a6b21da7e47296688f0c45f0eab4938504dd6a05971fb759006400",
+    "rtl/style/style_display_beats.sv": "6dc104e2db73f408ff888719e48e9829d31009bb980f5c185e7f826f444bdd8a",
+    "rtl/style/style_axi_cdc.sv": "a64535a5329dc4e555b62283b3779422e080cefc95016325a03b5ff04451124c",
+    "rtl/style/style_frame_store.sv": "36a506f2583fcaf29279bf584ee5bb3fe0c9fd6ed7965ea105a2f717c24e0f55",
+    "rtl/style/style_network.sv": "3f4af5d4dafff1eed8c067a453e866de844af33237abf2bf7576c2edb72e6066",
+    "rtl/style/style_display.sv": "54ca961a3cdbf6251a753f0730a960e7ebdbf72aa34d38f225af00ad2c18358f",
+    "rtl/style/style_video_system.sv": "294a9f28a03a7541b2a164e64601190571a301024254b9f5d3c70c2aa62a1ea4",
+    "rtl/style/style_vga_crop.sv": "bfb9cd0c9d31c50329bdcbb8f5d3e202ab4f7e259a89a6e20b68584b3bd34941",
+    "rtl/style/style_accel.sv": "1bf3d0a231877acfb3290e902da492c3c95c53de70fc53e23cc95a848f305fa8",
+    "rtl/style/style_ddr_profiler.sv": "7e33135e3c55cf0be0817a332537c262dc5d29e993fed648aadd072ab890cccd",
+    "rtl/style/style_row_core.sv": "00926d6e61672cf0990876ced48c399d40706efe4eca27b0732a50ebc41df9bf",
+    "rtl/soc_integration/axi_shared_ddr_2m.sv": "7c68732ac2a1019a079fd29b81f7c804dd1826868ea4812f5eda667bcc446790"
+  },
+  "width": 640,
+  "height": 48,
+  "cycles": 1456793,
+  "milliseconds": 9.810053872053873,
+  "display_pixels": 400640,
+  "capture_beats": 76800,
+  "captured_frame_exact_pixels": 307200,
+  "underflows": 0,
+  "counters_100mhz": {
+    "ticks": 981019,
+    "cnn_ar_wait": 450167,
+    "downstream_ar_wait": 6544,
+    "cnn_return_gap": 161832,
+    "cnn_r_backpressure": 0,
+    "display_r_backpressure": 0,
+    "cnn_aw_wait": 27554,
+    "cnn_w_wait": 68904,
+    "cnn_b_wait": 0,
+    "network_idle": 2,
+    "cnn_read_beats": 103680,
+    "display_read_beats": 100320
+  },
+  "phase_148_5mhz": {
+    "read_cycles": 541359,
+    "compute_cycles": 480413
+  },
+  "profile": "real integrated RTL; prepared display slot0, 640x48 job slot1, one dense 1080p camera frame into slot2; randomized DDR stalls; no external CPU or DDR PHY model",
+  "wall_seconds": 204.67192628300108
+}

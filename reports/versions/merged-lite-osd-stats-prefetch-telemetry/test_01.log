@@ -1,0 +1,6 @@
+PASS capture baseline differential W=1920 H=1080 cycles=7359692 packets=7 histwords=322
+tests/capture_equivalence_tb.sv:65: $finish called at 49560219800 (1ps)
+
+PASS range budget: R/B22 G/Y23 AE15 AWB14 correction25 ratio41
+/home/goodmann/Downloads/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_style_demo_merged/work/validation/width_budget_tb.sv:5: $finish called at 0 (1s)
+
