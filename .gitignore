@@ -16,17 +16,17 @@
 # Regression reports, intermediate release copies and hardware-debug captures.
 # Keep notes, release checksums and the exact build input XML.
 # Re-include directories so the file exceptions also work in future releases.
-/reports/**/*
-!/reports/**/
-!/reports/**/*.md
-!/reports/**/manifest.json
-!/reports/**/build_project.xml
-# Baseline source snapshots and simulation work products stay wholly local.
-/reports/baseline/
-/reports/simulation/
-# Superseded split; the selected data_v2 manifest is versioned explicitly.
-/reports/style_demo/data/
-!/reports/style_demo/data_v2/*.json
+# # /reports/**/*
+# !/reports/**/
+# !/reports/**/*.md
+# !/reports/**/manifest.json
+# !/reports/**/build_project.xml
+# # Baseline source snapshots and simulation work products stay wholly local.
+# /reports/baseline/
+# /reports/simulation/
+# # Superseded split; the selected data_v2 manifest is versioned explicitly.
+# /reports/style_demo/data/
+# !/reports/style_demo/data_v2/*.json
 
 # Local project lock held by the FPGA tool while the project is open.
 /.lock
