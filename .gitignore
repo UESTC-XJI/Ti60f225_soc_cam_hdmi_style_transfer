@@ -8,10 +8,28 @@
 /work_style_deadline/
 /work_style_deadline_reserve/
 /work_pnr/
+# The style/ink builds added dated PnR work roots (work_pnr_v14, work_pnr_v15,
+# work_pnr_nosplit, ...).  Cover the family, not just the bare name.
+/work_pnr_*/
 /work_dbg/
 # /outflow/
 /outflow_*/
 # /netlist/
+
+# External reference material and local tooling caches.  None of these are
+# project deliverables: _data holds datasets (re-downloadable from the upstream
+# ukiyoe2photo release), _wheels holds offline pip wheels, .cache holds torch
+# weights, and the two -main/ trees are third-party reference checkouts.
+/_data/
+/_wheels/
+/.cache/
+/CIPGAN-main/
+/pytorch-CycleGAN-and-pix2pix-master/
+
+# Local scratch: root-level _*.py helpers and the iverilog temp dir.  These are
+# throwaway probes; durable analysis lives in tools/analysis/.
+/_*.py
+/.tmp/
 
 # Regression reports, intermediate release copies and hardware-debug captures.
 # Keep notes, release checksums and the exact build input XML.
@@ -63,9 +81,49 @@ modelsim.ini
 !/reports/**/*.bit
 !/reports/**/*.elf
 
+# Verified hardware releases under reports/<project>/releases/<tag>/.
+# reports/README.md keeps bit, ELF, Markdown, manifest.json and build_project.xml
+# for a version directory.  The style/ink projects additionally archive
+#   * .hex   the SPI image that ftdi_program.py actually consumes, and
+#   * _fw.bin the firmware loaded into DDR over OpenOCD.
+# Both are needed because this project has no RISC-V toolchain and therefore no
+# .elf; the raw .bin is the only carrier of the firmware (see the raw_resize and
+# startup_colorbar directories, which version a .bin for the same reason).
+!/reports/**/releases/**
+!/reports/**/releases/**/*.bin
+!/reports/**/releases/**/*.hex
+
+# Per-run training artifacts are regenerable intermediate products: keep the
+# Markdown and the dataset manifests, drop the checkpoints, previews and logs.
+# (reports/README.md: "忽略日志及其他中间产出".)
+/reports/**/*.pt
+/reports/**/validation_*.png
+/reports/**/*_console.log
+/reports/**/*.log
+
+# tools/analysis/ holds two kinds of file.  The trackable ones are the scripts
+# that the Markdown reports actually cite, so a reader can reproduce the numbers;
+# the rest are throwaway one-off probes written while investigating (all named
+# with a leading underscore).  Ignore the directory, then re-include the cited
+# set explicitly.  Re-including is done with a whitelist rather than a
+# "!_*" pattern because the cited scripts share that prefix.
+/tools/analysis/*
+!/tools/analysis/_train_v2.py
+!/tools/analysis/_train_local.py
+!/tools/analysis/_run_ink.py
+!/tools/analysis/_int_vs_fp.py
+!/tools/analysis/_darkhf_calib.py
+!/tools/analysis/_darkhf_check.py
+!/tools/analysis/_build_neutral.py
+!/tools/analysis/_test_128refs.py
+!/tools/analysis/official_ref.py
+
 # IDE workspace state; keep project configuration and launch definitions.
+# (.idea is the JetBrains equivalent of the .vs and .metadata dirs below and has
+# never been tracked in this repository.)
 .metadata/
 .vs/
+.idea/
 *.code-workspace
 !/MonetStyleDemo.code-workspace
 

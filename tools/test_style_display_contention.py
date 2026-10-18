@@ -11,6 +11,12 @@ original=(ROOT/'tests/style_display_tb.sv').read_text()
 results={}
 for hard in (0,1,2):
     text=original.replace('module style_display_tb;', 'module style_contention_tb;')
+    # This variant monitors a SHARED read channel, so ar_count also includes CPU
+    # traffic and an address may be the CPU model's.  Setting bridge_present=1
+    # switches off the display-only address and burst assertions, which hold only
+    # in the plain bench.
+    text=text.replace("localparam bit bridge_present = 1'b0;",
+                      "localparam bit bridge_present = 1'b1;  // shared channel: display-only checks off")
     text=text.replace('wire arready=!read_active&&rng[0];wire rvalid=read_active&&rhold&&block_cycles==0;', 'wire arready,rvalid; wire mrready; wire marvalid; wire [31:0] maraddr; wire [7:0] marlen; wire [3:0] marid; reg [3:0] saved_id; integer return_delay=0; wire mrvalid=read_active&&rhold&&return_delay==0;')
     text=text.replace('wire rlast=beat==len;wire [1:0] rresp=0;', 'wire rlast;wire [1:0] rresp;')
     text=text.replace('wire [127:0] rdata=data_at(address);', 'wire [127:0] rdata;')
@@ -32,10 +38,13 @@ for hard in (0,1,2):
     text=text.replace('if(rvalid&&rready)begin','if(mrvalid&&mrready)begin')
     text=text.replace('   if(block_cycles>0)block_cycles<=block_cycles-1;', '   if(return_delay>0)return_delay<=return_delay-1;')
     text=text.replace('   if(frames==1&&dut.v==310&&!stalled)begin block_cycles<=5000;stalled<=1;end','')
-    text=text.replace('       if(frames!=1)$fatal(1,"unexpected starvation frame=%0d row=%0d x=%0d",frames,oldv-145,oldh-260);','')
+    # The testbench line offsets changed when the display moved to single-panel
+    # mode (x is now measured from IMG_X0=580 instead of 260), so these three
+    # replacements target the CURRENT text.
+    text=text.replace('       if(frames!=1)$fatal(1,"unexpected starvation frame=%0d row=%0d x=%0d",frames,oldv-145,oldh-IMG_X0);','')
     text=text.replace('if(frames==3)begin','if(frames==1)begin')
     text=text.replace('       if(bad_pixels==0||dma_errors!=0)$fatal(1,"error recovery");','       if(dma_errors!=0)$fatal(1,"DMA errors");')
-    text=text.replace('PASS 720p60 display: 3 full frames, paired slots 2/4, exact RGB, starvation black/recovery,','PASS sustained contention:')
+    text=text.replace('PASS 720p60 display (single panel): 3 full frames, one result burst per row, centred image, letterbox black, starvation black/recovery,','PASS sustained contention:')
     tb=OUT/f'mode{hard}.sv';tb.write_text(text);sim=OUT/f'mode{hard}.vvp'
     modules=['rtl/style/'+m+'.sv' for m in ('style_display','style_display_beats','style_async_fifo','style_axi_rows')]+['rtl/soc_integration/axi_shared_ddr_2m.sv']
     c=subprocess.run(['C:/iverilog/bin/iverilog.exe','-g2012','-s','style_contention_tb','-o',str(sim),str(tb),*modules],cwd=ROOT,capture_output=True,text=True)

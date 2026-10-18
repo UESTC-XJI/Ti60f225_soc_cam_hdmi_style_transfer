@@ -7,10 +7,10 @@
   "activation": "signed INT8; ReLU [0,127]",
   "accumulator": "signed INT32",
   "affine": "signed64(acc*M16+B32) then round shift",
-  "checkpoint_sha256": "320aa954ef74893f5f8c314010dde797866378591fb5b849d7fda5a427c19b70",
-  "payload_sha256": "321b9e798d576d03c67882225748763d7f0d1288c8e8342e2241b605a20fd5dc",
+  "checkpoint_sha256": "f9820d4ec74ed362807099458982ce9afe26c3b3e5240204d83390b74c1654b9",
+  "payload_sha256": "0d3af7dba86b9e2cf1540962e308c74935babf17d581003628ea130965ed0139",
   "payload_bytes": 11056,
-  "maximum_affine_abs_bound": 13335729260,
+  "maximum_affine_abs_bound": 14667840673,
   "qat_checkpoint": true,
   "layers": [
     {

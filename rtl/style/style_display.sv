@@ -1,5 +1,13 @@
 // Fixed 720p60 timing. Missing pixels become black without stopping sync.
 // DDR only supplies the two VGA rectangles; the 120-line bars are generated.
+//
+// SINGLE-PANEL MODE (this build): the display shows ONLY the stylised result,
+// centred 1:1 at 640x480.  The previous A/B mode read the raw camera row and
+// then the result row every line (2 x 640 = 1280 px/row), which doubled the DDR
+// read traffic for the display path and competed with the CNN's own reads.  A
+// single read halves that traffic.  `active` (de) is deliberately unchanged so
+// the 720p60 sync timing stays identical; the area outside the image is black,
+// which is valid video.
 module style_display #(parameter bit BUFFERED=1'b1)(
   input wire clk,pix_clk,rst_n,
   input wire [2:0] display_slot,input wire display_valid,
@@ -12,9 +20,13 @@ module style_display #(parameter bit BUFFERED=1'b1)(
 );
   reg [10:0] h;reg [9:0] v;reg [7:0] epoch,epoch_gray;
   (* async_reg="true" *)reg [2:0] slot1,slot2;reg dv1,dv2;
-  wire image=v>=145&&v<625&&h>=260&&h<1540;
+  // Centred 640-wide image inside the 1280-wide ACTIVE region (h 260..1540):
+  // 260 + (1280-640)/2 = 580.  (Centring on H total instead would give 505,
+  // which is wrong - it must be centred in the active area, not the line.)
+  localparam integer IMG_X0 = 580;
+  wire image=v>=145&&v<625&&h>=IMG_X0&&h<IMG_X0+640;
   wire active=v>=25&&v<745&&h>=260&&h<1540;
-  wire [8:0] expect_row=v-145;wire [10:0] expect_x=h-260;
+  wire [8:0] expect_row=v-145;wire [10:0] expect_x=h-IMG_X0;
   wire request=h==0&&v>=144&&v<624&&dv2;
   wire request_ready,req_valid,req_ready;wire [19:0] req;
   wire [8:0] request_row=v-144;
@@ -32,7 +44,7 @@ module style_display #(parameter bit BUFFERED=1'b1)(
   end
   assign display_frame_event=current_epoch!=seen_epoch;
   reg [1:0] state;localparam IDLE=0,START=1,WAIT=2;
-  reg [7:0] row_epoch;reg [2:0] row_slot;reg [8:0] row_number;reg [10:0] x;reg right_side;
+  reg [7:0] row_epoch;reg [2:0] row_slot;reg [8:0] row_number;reg [10:0] x;
   reg rd_start;reg [31:0] rd_address;
   reg [11:0] row_age;
   localparam integer PIXEL_LOG=BUFFERED ? 9:10;
@@ -74,7 +86,7 @@ module style_display #(parameter bit BUFFERED=1'b1)(
     .out_valid(pixel_valid),.out_ready(pixel_ready),.out_data(packet),.write_level(pixel_level));
   wire match=pixel_valid&&packet[59:52]==epoch&&packet[51:43]==expect_row&&packet[42:32]==expect_x;
   wire obsolete=pixel_valid&&(packet[59:52]!=epoch || v>=625 ||
-    (v>=145 && (packet[51:43]<expect_row || (packet[51:43]==expect_row && h>=260 && packet[42:32]<expect_x))));
+    (v>=145 && (packet[51:43]<expect_row || (packet[51:43]==expect_row && h>=IMG_X0 && packet[42:32]<expect_x))));
   assign pixel_ready=obsolete||(image&&match);
   always @(posedge pix_clk or negedge rst_n)begin
     if(!rst_n)begin h<=0;v<=0;epoch<=0;epoch_gray<=0;slot1<=0;slot2<=0;dv1<=0;dv2<=0;pixel<=0;hs<=0;vs<=0;de<=0;underflow<=0;end
@@ -87,7 +99,7 @@ module style_display #(parameter bit BUFFERED=1'b1)(
     end
   end
   always @(posedge clk or negedge rst_n)begin
-    if(!rst_n)begin state<=IDLE;rd_start<=0;rd_address<=0;row_epoch<=0;row_slot<=0;row_number<=0;x<=0;right_side<=0;dma_errors<=0;row_age<=0;end
+    if(!rst_n)begin state<=IDLE;rd_start<=0;rd_address<=0;row_epoch<=0;row_slot<=0;row_number<=0;x<=0;dma_errors<=0;row_age<=0;end
     else begin
       rd_start<=0;
       if(state==IDLE)row_age<=0;
@@ -95,14 +107,17 @@ module style_display #(parameter bit BUFFERED=1'b1)(
       if(rd_valid&&rd_ready)x<=x+1'b1;
       case(state)
         IDLE:if(req_valid&&req_ready&&req[19:12]==current_epoch)begin
-          row_epoch<=req[19:12];row_slot<=req[11:9];row_number<=req[8:0];x<=0;right_side<=0;
-          rd_address<=raw_base(req[11:9])+req[8:0]*2560;state<=START;
+          row_epoch<=req[19:12];row_slot<=req[11:9];row_number<=req[8:0];x<=0;
+          // SINGLE READ: fetch the STYLISED row only, from the +0x00800000
+          // result region.  The previous version ALSO fetched the raw row,
+          // which doubled the display's DDR read traffic and competed with the
+          // CNN.  640 pixels/row, one burst per row.
+          rd_address<=raw_base(req[11:9])+32'h00800000+req[8:0]*2560;state<=START;
         end
         START:begin rd_start<=1;state<=WAIT;end
         WAIT:if(rd_done)begin
           if(rd_error)dma_errors<=dma_errors+1'b1;
-          if(!right_side)begin right_side<=1;rd_address<=raw_base(row_slot)+32'h00800000+row_number*2560;state<=START;end
-          else state<=IDLE;
+          state<=IDLE;
         end
       endcase
     end

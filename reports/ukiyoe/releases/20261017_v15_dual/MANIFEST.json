@@ -1,0 +1,31 @@
+{
+  "tag": "20261017_v15_dual",
+  "archived": "2026-10-17T22:30:27+0800",
+  "note": "v15 coefficients + A/B dual-panel display (left raw / right stylised)",
+  "verification": {
+    "on_hardware": true,
+    "uart_evidence": "MONET CAP 11 NN 10 DISP 60 DROP 8114 MS 90 ERR 0; CSI 0 AXI 0 IERR 0"
+  },
+  "artifacts": {
+    "bitstream": {
+      "file": "20261017_v15_dual.bit",
+      "sha256": "07fc9df185b62c524fcaf8817faf3a05cf6e5f7c5a09b8402a0ae96489f4adf2",
+      "bytes": 3220827
+    },
+    "spi_image": {
+      "file": "20261017_v15_dual.hex",
+      "sha256": "63a74f83723e154e0f0b344e25a5791eba2e4d93bfd4c46f9ecfa1c4f72b9379",
+      "bytes": 3220887
+    },
+    "firmware": {
+      "file": "20261017_v15_dual_fw.bin",
+      "sha256": "8f86d026b67b9e0a3a59776349fdf5a3fd89c23a24fd9072a15dfc7d399da3c9",
+      "bytes": 44624
+    }
+  },
+  "git": {
+    "revision": "2c97c917c3ec8441c3457015b599cb39b4dd46ed",
+    "working_tree_dirty": true
+  },
+  "how_to_flash": "python tools/flash_release.py --tag 20261017_v15_dual"
+}

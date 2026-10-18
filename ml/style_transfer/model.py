@@ -34,10 +34,35 @@ class Layer(nn.Module):
 
 
 class Student(nn.Module):
-    def __init__(self, channels=24, blocks=4):
+    """Deployment topology.
+
+    head=0 (default): the original graph, 23 layers, unchanged.
+    head=1..n: prepend a full-resolution colour head.  The RTL constrains this:
+    style_row_core.sv:117 wires the non-depthwise 3x3 input to exactly three
+    channels (rgb_terms = 3 taps x 9 positions), so a full-resolution 3x3 can
+    only be Conv3x3(3 -> co).  Any deeper 3x3 must be depthwise.  The head is
+    therefore  Conv3x3(3->8)  followed by  n  MobileNet blocks
+    [DWConv3x3 + Conv1x1].  Each block adds 2 to the receptive field:
+        n=1 -> RF 5,  n=2 -> RF 7 (matches the official 7x7 head).
+    """
+    def __init__(self, channels=24, blocks=4, head=0, head_channels=8):
         super().__init__()
-        self.channels, self.blocks = channels, blocks
-        self.enc = nn.ModuleList([Layer(3,8,3,2), Layer(8,8,3,2,True), Layer(8,channels)])
+        self.channels, self.blocks, self.head = channels, blocks, head
+        self.head_channels = head_channels
+        # full-resolution head: 3 -> head_channels, then n MobileNet blocks
+        self.pre = nn.ModuleList()
+        if head > 0:
+            self.pre.append(Layer(3, head_channels, 3, 1))       # Conv3x3 3->hc
+            self.pre[0].in_scale = 1/128
+            for _ in range(head):
+                self.pre.append(Layer(head_channels, head_channels, 3, 1, dw=True))
+                self.pre.append(Layer(head_channels, head_channels, 1, 1))
+        enc_in = head_channels if head > 0 else 3
+        # RTL constraint (style_row_core.sv:117): a NON-depthwise 3x3 is wired to
+        # exactly three input channels, so ci=8 forces depthwise here.
+        self.enc = nn.ModuleList([Layer(enc_in, 8, 3, 2, dw=(head > 0)),
+                                  Layer(8, 8, 3, 2, True),
+                                  Layer(8, channels)])
         self.enc[0].in_scale = 1/128
         self.res = nn.ModuleList([nn.ModuleList([Layer(channels,channels,3,dw=True),
             Layer(channels,channels), Layer(channels,channels,3,dw=True),
@@ -47,12 +72,19 @@ class Student(nn.Module):
         self.qat = False
         self.residual_scale=1/16
 
+    def all_layers(self):
+        return list(self.pre) + list(self.enc) \
+            + [m for b in self.res for m in b] + list(self.dec)
+
     def set_scales(self,scales):
-        layers=list(self.enc)+[m for b in self.res for m in b]+list(self.dec)
+        layers=self.all_layers()
         previous=1/128
         for layer,scale in zip(layers,scales):
             layer.in_scale=previous;layer.out_scale=scale;previous=scale
-        self.residual_scale=scales[2]
+        # residual_scale must follow enc.2, i.e. shift by the number of
+        # full-resolution head layers (2 per block plus the first conv).
+        head_layers = 1 + 2 * self.head if self.head > 0 else 0
+        self.residual_scale=scales[head_layers + 2]
 
     def set_qat(self, enabled):
         self.qat = enabled
@@ -61,6 +93,7 @@ class Student(nn.Module):
 
     def forward(self, x):
         x = (x * 255 - 128)/128
+        for layer in self.pre: x = layer(x)
         for layer in self.enc: x = layer(x)
         for block in self.res:
             skip = x

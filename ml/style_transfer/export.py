@@ -13,12 +13,18 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('--checkpoint',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True);a=p.parse_args();a.out.mkdir(parents=True,exist_ok=True)
     ck=torch.load(a.checkpoint,map_location='cpu',weights_only=False)
-    model=Student();model.load_state_dict(ck['model']);model.eval()
-    scales=ck.get('config',{}).get('activation_scales')
+    cfg=ck.get('config',{})
+    model=Student(channels=cfg.get('channels',24),blocks=cfg.get('blocks',4),
+                  head=cfg.get('head',0),head_channels=cfg.get('head_channels',8))
+    model.load_state_dict(ck['model']);model.eval()
+    scales=cfg.get('activation_scales')
     if scales:model.set_scales(scales)
     layers=[]; params={}; packed=bytearray(); max_bound=0
     coeff=[0]*256;weight_cursor=0;norm_cursor=128
-    jobs=[(f'enc.{i}',m,1,-1) for i,m in enumerate(model.enc)]
+    # full-resolution head layers run before the encoder; all are stride 1
+    jobs=[(f'head.{i}',m,1,-1) for i,m in enumerate(model.pre)]
+    base=len(jobs)
+    jobs.extend((f'enc.{i}',m,1,-1) for i,m in enumerate(model.enc))
     for block in range(model.blocks):
         skip=len(jobs)
         jobs.extend((f'res.{block}.{j}',m,1,skip if j==3 else -1) for j,m in enumerate(model.res[block]))
@@ -67,7 +73,15 @@ def main():
             relu=m.relu,upsample=up,residual=res,input_scale=m.in_scale,output_scale=m.out_scale,
             payload_offset=start,payload_bytes=len(packed)-start,weight_base=weight_cursor,norm_base=norm_cursor))
         weight_cursor+=groups*rg;norm_cursor+=groups
-    assert weight_cursor<=128 and norm_cursor<=256
+    # The hardware ceiling is 256 words per bank, shared by weights and norms.
+    # The historical norm_cursor=128 split is only a convention: raising it is
+    # safe as long as neither region overruns 256.  See STEP3_HEAD_FEASIBILITY.md.
+    assert weight_cursor<=256, f'weight region overflows 256 (used {weight_cursor})'
+    assert norm_cursor<=256, f'norm region overflows 256 (used {norm_cursor})'
+    if weight_cursor>128:
+        raise ValueError(f'weights reached {weight_cursor} > 128; the norm region '
+                         'starts at 128 and would collide. Re-run with a higher '
+                         'norm_cursor or compact the weight layout.')
     (a.out/'coeff.hex').write_text(''.join(f'{v:0192x}\n' for v in coeff))
     (a.out/'coeff.bin').write_bytes(b''.join(v.to_bytes(96,'little') for v in coeff))
     np.savez(a.out/'parameters.npz',**params);(a.out/'model.bin').write_bytes(packed)

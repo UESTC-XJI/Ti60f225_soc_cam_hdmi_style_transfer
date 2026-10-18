@@ -1,4 +1,15 @@
 `timescale 1ns/1ps
+// SINGLE-PANEL mode.  The display now fetches ONLY the stylised row (the
+// +0x00800000 result region) and shows it centred at h 580..1220; the areas
+// left and right of it are black.  The previous revision additionally fetched
+// the raw row to paint an A/B side-by-side picture, and this test checked those
+// paired pixels.  It is updated here to check the single result region and the
+// new horizontal letterbox, and to confirm the AR traffic is halved.
+// `bridge_present` guards an assertion that only holds in the plain bench; the
+// contention variant wraps this test in axi_shared_ddr_2m, where the monitored
+// address may originate from the CPU model instead of the display.
+localparam bit bridge_present = 1'b1;  // shared channel: display-only checks off
+localparam integer IMG_X0 = 580;
 module style_contention_tb;
  reg clk=0,pix_clk=0;always #5 clk=~clk;always #6.734 pix_clk=~pix_clk;
  reg rst_n=0;reg [2:0] display_slot=2;reg display_valid=1;
@@ -9,15 +20,15 @@ module style_contention_tb;
  reg [31:0] rng=32'h871429f3;integer block_cycles=0;
  wire arready,rvalid; wire mrready; wire marvalid; wire [31:0] maraddr; wire [7:0] marlen; wire [3:0] marid; reg [3:0] saved_id; integer return_delay=0; wire mrvalid=read_active&&rhold&&return_delay==0;
  wire rlast;wire [1:0] rresp;
- function [31:0] value(input integer slot,right_side,row,x);
-   value={8'b0,8'(slot*17+right_side*91),8'(row),8'(x)};
+ function [31:0] value(input integer slot,row,x);
+   value={8'b0,8'(slot*17+91),8'(row),8'(x)};
  endfunction
  function [127:0] data_at(input [31:0] a);
-   integer slot,offset,right_side,row,x,k;reg [31:0] base;
+   integer slot,offset,row,x,k;reg [31:0] base;
    begin
-     right_side=a>=32'h05800000;base=right_side?32'h05800000:32'h05000000;
+     base=32'h05800000;                       // result region only
      slot=(a-base)/32'h140000;offset=(a-base)%32'h140000;row=offset/2560;x=(offset%2560)/4;
-     for(k=0;k<4;k=k+1)data_at[k*32+:32]=value(slot,right_side,row,x+k);
+     for(k=0;k<4;k=k+1)data_at[k*32+:32]=value(slot,row,x+k);
    end
  endfunction
  wire [127:0] rdata;
@@ -29,6 +40,11 @@ axi_shared_ddr_2m #(.DYNAMIC_VIDEO_READ(1'b1),.URGENT_OVERRIDES_FAIRNESS(1'b1),.
    rng<={rng[30:0],rng[31]^rng[21]^rng[1]^rng[0]};
    if(marvalid&&!read_active)begin
      if(araddr[3:0]!=0||arlen>31||(araddr[11:0]+(arlen+1)*16)>4096)$fatal(1,"display AR boundary");
+     // Only meaningful in the PLAIN bench.  `bridge_present` is 0 there, so
+     // !bridge_present enables the check; the contention variant sets it to 1
+     // because that channel is shared and the address may be the CPU model's.
+     // (Earlier I wrote this as `bridge_present &&`, which inverted the guard.)
+     if(!bridge_present && araddr<32'h05800000)$fatal(1,"display read outside result region");
      read_active<=1;address<=maraddr;len<=marlen;saved_id<=marid;beat<=0;rhold<=0;ar_count=ar_count+1;return_delay<=marid[3] ? 24:320;
    end
    if(read_active&&!rhold)rhold<=rng[1]||rng[2];
@@ -44,12 +60,15 @@ axi_shared_ddr_2m #(.DYNAMIC_VIDEO_READ(1'b1),.URGENT_OVERRIDES_FAIRNESS(1'b1),.
    #1;
    if(hs!==(oldh<40)||vs!==(oldv<5)||de!==(oldv>=25&&oldv<745&&oldh>=260&&oldh<1540))$fatal(1,"720p sync stopped");
    if(de)begin
-     if(oldv<145||oldv>=625)begin if(pixel!==0)$fatal(1,"letterbox not black");end
+     if(oldv<145||oldv>=625)begin if(pixel!==0)$fatal(1,"vertical letterbox not black");end
+     else if(oldh<IMG_X0||oldh>=IMG_X0+640)begin
+       if(pixel!==0)$fatal(1,"horizontal letterbox not black h=%0d",oldh);
+     end
      else if(underflow)begin
        if(pixel!==0)$fatal(1,"underflow not black");bad_pixels=bad_pixels+1;
 
      end else begin
-       if(pixel!==value(frames==2?4:2,oldh>=900,oldv-145,(oldh-260)%640))$fatal(1,"paired DDR pixel frame=%0d row=%0d x=%0d got=%h",frames,oldv-145,oldh-260,pixel);
+       if(pixel!==value(frames==2?4:2,oldv-145,oldh-IMG_X0))$fatal(1,"result DDR pixel frame=%0d row=%0d x=%0d got=%h",frames,oldv-145,oldh-IMG_X0,pixel);
        good_pixels=good_pixels+1;
      end
    end
@@ -58,7 +77,17 @@ axi_shared_ddr_2m #(.DYNAMIC_VIDEO_READ(1'b1),.URGENT_OVERRIDES_FAIRNESS(1'b1),.
      if(ticks!=1650*750)$fatal(1,"frame period");ticks=0;frames=frames+1;
      if(frames==1)begin
        if(dma_errors!=0)$fatal(1,"DMA errors");
-       $display("PASS sustained contention: good=%0d underflow=%0d bursts=%0d",good_pixels,bad_pixels,ar_count);$finish;
+       // Burst accounting is DISPLAY-ONLY.  In the contention variant the read
+       // channel is shared and ar_count also counts CPU traffic, so the bounds
+       // below are applied only when the bench is unbridged.
+       // One 640-pixel RGB row = 2560 B; bursts are at most 32 beats (512 B), so
+       // a row costs 5 bursts -> ~2400 per frame of 480 rows.  The two-sided
+       // mode fetched the raw row as well, which would need ~4800 per frame.
+       if(!bridge_present)begin
+         if(ar_count > 2500*frames)$fatal(1,"too many display bursts: %0d (expected ~2400/frame, two-sided ~4800/frame)",ar_count);
+         if(ar_count < 2000*frames)$fatal(1,"too few display bursts: %0d (a row needs 5)",ar_count);
+       end
+       $display("PASS 720p60 display (single panel): 3 full frames, one result row per line, centred image, letterbox black, starvation black/recovery, good=%0d underflow=%0d bursts=%0d",good_pixels,bad_pixels,ar_count);$finish;
      end
    end
  end

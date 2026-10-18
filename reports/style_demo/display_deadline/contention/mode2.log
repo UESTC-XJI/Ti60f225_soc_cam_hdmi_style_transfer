@@ -1,4 +1,4 @@
 rtl/soc_integration/axi_shared_ddr_2m.sv:63: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
 rtl/soc_integration/axi_shared_ddr_2m.sv:63: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
-PASS sustained contention: good=614400 underflow=0 bursts=6778
-C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\reports\style_demo\display_deadline\contention\mode2.sv:61: $finish called at 16666684670 (1ps)
+PASS 720p60 display (single panel): 3 full frames, one result row per line, centred image, letterbox black, starvation black/recovery, good=307200 underflow=0 bursts=4858
+C:\Users\36040\Downloads\Ti60F225_DemoBoard_v4\demo\reports\style_demo\display_deadline\contention\mode2.sv:90: $finish called at 16666684670 (1ps)

@@ -19,11 +19,15 @@ module style_network #(
   `include "model/program.vh"
   wire [4:0] ci=descriptor[4:0],co=descriptor[9:5];
   wire kernel3=descriptor[10],dw=descriptor[11],stride2=descriptor[12],up2=descriptor[13],residual=descriptor[14],relu=descriptor[15];
+  // bit 132 is the is_last flag, emitted by program.py in previously unused
+  // descriptor bits so that no existing field shifts.  Using it instead of the
+  // literal layer_index==22 lets a head or any other layer count be appended.
+  wire is_last=descriptor[132];
   wire [9:0] iw=frame_width>>descriptor[17:16],ih=frame_height>>descriptor[17:16];
   wire [9:0] ow=frame_width>>descriptor[19:18],oh=frame_height>>descriptor[19:18];
   wire [7:0] weight_base=descriptor[27:20],norm_base=descriptor[35:28];
   wire [31:0] src=layer_index==0 ? source_address:descriptor[67:36];
-  wire [31:0] dst=layer_index==22 ? result_address:descriptor[99:68];
+  wire [31:0] dst=is_last ? result_address:descriptor[99:68];
   wire [31:0] skipaddr=descriptor[131:100];
   wire [15:0] input_pitch=iw*(ci==3 ? 4:ci),output_pitch=ow*(co==3 ? 4:co);
   reg [3:0] state;localparam IDLE=0,DESC=1,SETUP=2,MAP=3,READWAIT=4,SKIP=5,SKIPWAIT=6,RUN=7,WAITROW=8,NEXTROW=9;
@@ -104,7 +108,7 @@ module style_network #(
           else state<=NEXTROW;
         end
         NEXTROW:if(y==oh-1) begin
-          if(layer_index==22) begin busy<=0;done<=1;state<=IDLE;end
+          if(is_last) begin busy<=0;done<=1;state<=IDLE;end
           else begin layer_index<=layer_index+1'b1;state<=DESC;end
         end else begin y<=y+1'b1;ky<=0;state<=MAP;end
       endcase

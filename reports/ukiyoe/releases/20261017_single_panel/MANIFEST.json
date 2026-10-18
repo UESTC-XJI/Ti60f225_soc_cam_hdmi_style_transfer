@@ -1,0 +1,31 @@
+{
+  "tag": "20261017_single_panel",
+  "archived": "2026-10-17T22:41:06+0800",
+  "note": "single-panel display: one DDR read per row instead of two (raw+result); NN 10->12 fps, UF 59->0",
+  "verification": {
+    "on_hardware": true,
+    "uart_evidence": "MONET CAP 12 NN 12 DISP 60 DROP 2540 MS 79 ERR 0; VIDEO UF 0 FAULT 0 CSI 0 AXI 0"
+  },
+  "artifacts": {
+    "bitstream": {
+      "file": "20261017_single_panel.bit",
+      "sha256": "fade8a75a193d3eec26cb4dc80c63eb0ed25f90f051993900a690542ea2a28e0",
+      "bytes": 3235275
+    },
+    "spi_image": {
+      "file": "20261017_single_panel.hex",
+      "sha256": "6d880a1c6861966ed9d4b74821eae2c0a623fd4d158c74b8ae84680e90915f44",
+      "bytes": 3235335
+    },
+    "firmware": {
+      "file": "20261017_single_panel_fw.bin",
+      "sha256": "8f86d026b67b9e0a3a59776349fdf5a3fd89c23a24fd9072a15dfc7d399da3c9",
+      "bytes": 44624
+    }
+  },
+  "git": {
+    "revision": "2c97c917c3ec8441c3457015b599cb39b4dd46ed",
+    "working_tree_dirty": true
+  },
+  "how_to_flash": "python tools/flash_release.py --tag 20261017_single_panel"
+}
