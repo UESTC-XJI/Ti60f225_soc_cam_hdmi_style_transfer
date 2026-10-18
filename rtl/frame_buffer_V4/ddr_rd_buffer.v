@@ -98,8 +98,8 @@ always @( posedge axi_clk or negedge axi_clk_rst_n )
 begin
 	if( !axi_clk_rst_n ) begin
 			// cfg_alen_r   <= cfg_alen;
-			burst_len_r<= burst_len;
-			start_addr_r <= start_addr;
+			burst_len_r <= 25'd0;
+			start_addr_r <= 'd0;
 	end else begin
 			burst_len_r  <= pos_start ? burst_len   : burst_len_r ;
 			// cfg_alen_r   <= pos_start ? cfg_alen    :cfg_alen_r;
@@ -184,12 +184,12 @@ end
 //address process
 always @(posedge axi_clk or negedge axi_clk_rst_n) 
 begin
-	if (!axi_clk_rst_n) 									ddr_addr <= start_addr_r;
+	if (!axi_clk_rst_n) ddr_addr <= 'd0;
 	else if( sync_r2 )						                ddr_addr <= start_addr_r;
 	else if (rd_addr_en) 						            ddr_addr <= nx_ddr_addr;
     
 end 
-assign nx_ddr_addr =  ddr_addr + {(ddr_arlen+1),{ADDR_SHIFT_BITS{1'b0}} };  
+assign nx_ddr_addr = ddr_addr + {({1'b0,ddr_arlen}+9'd1),{ADDR_SHIFT_BITS{1'b0}}};
 
 
 //=====================================================================================

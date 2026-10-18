@@ -27,7 +27,10 @@ module hdmi_info_overlay #(
   // At falling VS the histogram also sees the newly latched controls.
   wire frame_start=vs_d && !i_vs;
   wire [`CFG_BITS_2-1:0] selected_mode=frame_start ? i_hist_mode : mode;
-  wire [`CFG_BITS_12-1:0] local_x=x-MARGIN-1;
+  // Synchronous height RAM: prefetch the bin for the counter's next value.
+  // This preserves the two-clock compositor latency and exact bin borders.
+  wire [11:0] next_x=i_de ? x+12'd1 : 12'd0;
+  wire [`CFG_BITS_12-1:0] local_x=next_x-MARGIN-1;
   wire [`CFG_BITS_6-1:0] bin_index=local_x/BIN_WIDTH;
   wire [`CFG_BITS_8-1:0] height;
   hdmi_frame_histogram #(.FRAME_WIDTH(`CFG_ISP_HDMI_INFO_OVERLAY_V_INST_HISTOGRAM_FRAME_WIDTH),.FRAME_HEIGHT(`CFG_ISP_HDMI_INFO_OVERLAY_V_INST_HISTOGRAM_FRAME_HEIGHT),.PLOT_HEIGHT(`CFG_ISP_HDMI_INFO_OVERLAY_V_INST_HISTOGRAM_PLOT_HEIGHT)) histogram(

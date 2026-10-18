@@ -72,7 +72,9 @@
   {
     "file": "rtl/csi_rx_controller.sv",
     "config_expressions": 282,
-    "fixed_ranges": 88
+    "fixed_ranges": 88,
+    "expanded_token_sha256": "41293f25f719a172dacabd60eb60fd7690848abf723a27ae515306eb2c64aafe",
+    "intentional_change": "2026-10-12 P1 synchronous RAM / P3 RAW10-only; see RESOURCE_OPTIMIZATION_PLAN.md and reports/resource_optimization"
   },
   {
     "file": "rtl/ddr3_controller/axi4_bus_ctl/axi4_bus_ctl.v",
@@ -185,6 +187,16 @@
     "fixed_ranges": 0
   },
   {
+    "file": "rtl/dvi_tx/DC_FIFO.v",
+    "config_expressions": 60,
+    "fixed_ranges": 2
+  },
+  {
+    "file": "rtl/dvi_tx/Sc_Fifo_Slr8.v",
+    "config_expressions": 39,
+    "fixed_ranges": 1
+  },
+  {
     "file": "rtl/dvi_tx/audio_clock_regeneration_packet.sv",
     "config_expressions": 2,
     "fixed_ranges": 10
@@ -203,11 +215,6 @@
     "file": "rtl/dvi_tx/auxiliary_video_information_info_frame.sv",
     "config_expressions": 18,
     "fixed_ranges": 26
-  },
-  {
-    "file": "rtl/dvi_tx/DC_FIFO.v",
-    "config_expressions": 60,
-    "fixed_ranges": 2
   },
   {
     "file": "rtl/dvi_tx/dvi_encoder.v_encrypted.v",
@@ -240,9 +247,9 @@
     "fixed_ranges": 23
   },
   {
-    "file": "rtl/dvi_tx/Sc_Fifo_Slr8.v",
-    "config_expressions": 39,
-    "fixed_ranges": 1
+    "file": "rtl/dvi_tx/simple_dual_port_ram.v",
+    "config_expressions": 13,
+    "fixed_ranges": 0
   },
   {
     "file": "rtl/dvi_tx/simple_dual_port_ram/simple_dual_port_ram.v",
@@ -255,11 +262,6 @@
     "fixed_ranges": 0
   },
   {
-    "file": "rtl/dvi_tx/simple_dual_port_ram.v",
-    "config_expressions": 13,
-    "fixed_ranges": 0
-  },
-  {
     "file": "rtl/dvi_tx/tx_aux.v_encrypted.v",
     "config_expressions": 0,
     "fixed_ranges": 11
@@ -268,6 +270,12 @@
     "file": "rtl/efx_dsi_tx.sv",
     "config_expressions": 489,
     "fixed_ranges": 162
+  },
+  {
+    "file": "rtl/frame_buffer_V4/DC_FIFO.v",
+    "config_expressions": 59,
+    "fixed_ranges": 2,
+    "expanded_token_sha256": "4ea6dbcb56aae8906fd2ad1084601d04526a9282a5fe5fe6851a925f365ed295"
   },
   {
     "file": "rtl/frame_buffer_V4/axi_ram.v",
@@ -295,11 +303,6 @@
     "fixed_ranges": 12
   },
   {
-    "file": "rtl/frame_buffer_V4/DC_FIFO.v",
-    "config_expressions": 60,
-    "fixed_ranges": 2
-  },
-  {
     "file": "rtl/frame_buffer_V4/ddr_buffer.v",
     "config_expressions": 36,
     "fixed_ranges": 20
@@ -307,12 +310,14 @@
   {
     "file": "rtl/frame_buffer_V4/ddr_rd_buffer.v",
     "config_expressions": 25,
-    "fixed_ranges": 17
+    "fixed_ranges": 17,
+    "expanded_token_sha256": "48a311a37b4dbbb5f5e39fef731a5f1581b78c9fd17eec9d4fec59501302283f"
   },
   {
     "file": "rtl/frame_buffer_V4/ddr_wr_buffer.v",
     "config_expressions": 27,
-    "fixed_ranges": 19
+    "fixed_ranges": 19,
+    "expanded_token_sha256": "0660fd2c0eebc3398d009018229e0787222d1daa013c4923a4b2667e22a5b3d3"
   },
   {
     "file": "rtl/frame_buffer_V4/ddr_wr_buffer_v1.v",
@@ -321,13 +326,15 @@
   },
   {
     "file": "rtl/frame_buffer_V4/frame_buffer.v",
-    "config_expressions": 46,
-    "fixed_ranges": 23
+    "config_expressions": 49,
+    "fixed_ranges": 23,
+    "expanded_token_sha256": "ab4780707b0be6a50a1f193645a6c24a504567021bb170bd0f7f8383199f81f7"
   },
   {
     "file": "rtl/frame_buffer_V4/frame_info_det.v",
     "config_expressions": 7,
-    "fixed_ranges": 10
+    "fixed_ranges": 10,
+    "expanded_token_sha256": "456f0269c564c52dbb568a3e1d362ecd39369e10457bf359e0eff4e7a5f698cb"
   },
   {
     "file": "rtl/frame_buffer_V4/lpddr4_mixer_tb.v",
@@ -357,17 +364,18 @@
   {
     "file": "rtl/frame_buffer_V4/ser2par_v1.v",
     "config_expressions": 21,
-    "fixed_ranges": 3
-  },
-  {
-    "file": "rtl/frame_buffer_V4/user_cvo_axi_v1/cvo_axi_v1.v",
-    "config_expressions": 26,
-    "fixed_ranges": 14
+    "fixed_ranges": 3,
+    "expanded_token_sha256": "5bdafd77c8ed870c333bb8b45fe8b0ed97ba73f314431b64f6dc984866695af1"
   },
   {
     "file": "rtl/frame_buffer_V4/user_cvo_axi_v1/DC_FIFO.v",
     "config_expressions": 60,
     "fixed_ranges": 2
+  },
+  {
+    "file": "rtl/frame_buffer_V4/user_cvo_axi_v1/cvo_axi_v1.v",
+    "config_expressions": 26,
+    "fixed_ranges": 14
   },
   {
     "file": "rtl/frame_buffer_V4/vid_check.v",
@@ -397,12 +405,16 @@
   {
     "file": "rtl/isp/hdmi_frame_histogram.v",
     "config_expressions": 7,
-    "fixed_ranges": 21
+    "fixed_ranges": 21,
+    "expanded_token_sha256": "b873f2a09922a132399b839eb33267ebaae58132f75252cd7af21f1cc0a9efd2",
+    "intentional_change": "2026-10-12 P1 synchronous RAM / P3 RAW10-only; see RESOURCE_OPTIMIZATION_PLAN.md and reports/resource_optimization"
   },
   {
     "file": "rtl/isp/hdmi_info_overlay.v",
     "config_expressions": 12,
-    "fixed_ranges": 15
+    "fixed_ranges": 15,
+    "expanded_token_sha256": "cceb26d493ba55d24dbc448c4316f9f718f6d698e288937a4b2250576e02c361",
+    "intentional_change": "2026-10-12 P1 synchronous RAM / P3 RAW10-only; see RESOURCE_OPTIMIZATION_PLAN.md and reports/resource_optimization"
   },
   {
     "file": "rtl/isp/hdmi_info_overlay_apb.v",
@@ -450,6 +462,18 @@
     "fixed_ranges": 0
   },
   {
+    "file": "rtl/resize/camera_raw_gearbox.v",
+    "config_expressions": 21,
+    "fixed_ranges": 8,
+    "expanded_token_sha256": "b2c8c1da38d532136d34cf1c3cd79c875b24db36085cf9fa72bea443f5a54eb1"
+  },
+  {
+    "file": "rtl/resize/rgb_area_resize_3to2.v",
+    "config_expressions": 9,
+    "fixed_ranges": 40,
+    "expanded_token_sha256": "ef3a921fbc6a74a11e4234af242b3db0e289d16ca79b72ee545a44f720aae837"
+  },
+  {
     "file": "rtl/simple_dual_port_ram.v",
     "config_expressions": 14,
     "fixed_ranges": 0
@@ -491,8 +515,9 @@
   },
   {
     "file": "rtl/ti60f225_oob_top.v",
-    "config_expressions": 105,
-    "fixed_ranges": 94
+    "config_expressions": 113,
+    "fixed_ranges": 96,
+    "expanded_token_sha256": "6a3cb62e95a1f4fc67a38cbf5ea14a9540a17849607efc6c204bd8dac3e395f9"
   },
   {
     "file": "rtl/true_dual_port_ram.v",
@@ -500,14 +525,14 @@
     "fixed_ranges": 0
   },
   {
-    "file": "rtl/user_cvo_axi_v2/cvo_axi_v2.v",
-    "config_expressions": 26,
-    "fixed_ranges": 22
-  },
-  {
     "file": "rtl/user_cvo_axi_v2/DC_FIFO.v",
     "config_expressions": 60,
     "fixed_ranges": 2
+  },
+  {
+    "file": "rtl/user_cvo_axi_v2/cvo_axi_v2.v",
+    "config_expressions": 26,
+    "fixed_ranges": 22
   },
   {
     "file": "rtl/user_dual_port_ram.v",

@@ -776,26 +776,18 @@ module GrayDecode
 
  	//Define  Parameter
   /////////////////////////////////////////////////////////
-	parameter		TCo_C   		= `CFG_FRAME_BUFFER_V4_DC_FIFO_V_PARAMETER_TCO_C;
+    parameter		TCo_C   		= `CFG_FRAME_BUFFER_V4_DC_FIFO_V_PARAMETER_TCO_C;
 		
 	localparam DW_C = `CFG_FRAME_BUFFER_V4_DC_FIFO_V_LOCALPARAM_DW_C;
 	
   /////////////////////////////////////////////////////////
-  reg [`CFG_FRAME_BUFFER_V4_DC_FIFO_V_RANGE_37] Hex;
-
-  integer i;
-
-  always @ (GrayIn)
-  begin        
-    Hex[DW_C-1]=GrayIn[DW_C-1];        
-    for(i=DW_C-2;i>=0;i=i-1)   Hex[i]=Hex[i+1]^GrayIn[i];
-  end
-  	
-  assign HexOut = Hex;
+  // Continuous equations also evaluate a pointer held at zero after reset.
+  assign HexOut[DW_C-1] = GrayIn[DW_C-1];
+  genvar bit_index;
+  generate for(bit_index=0;bit_index<DW_C-1;bit_index=bit_index+1) begin: decode_bits
+    assign HexOut[bit_index] = HexOut[bit_index+1] ^ GrayIn[bit_index];
+  end endgenerate
 
   /////////////////////////////////////////////////////////
 
-endmodule 
-	
-		
-		
+endmodule
