@@ -350,6 +350,31 @@ def main():
     p.add_argument('--sat-mode', type=str, default='mean',
                    choices=['mean', 'dark', 'light'],
                    help='mean = whole image; dark/light restrict to that region')
+    # DARK SHARE: fraction of the canvas that is ink-dark.  Exists because the
+    # tone term pins the mean to the input photo (0.343) while ink is 0.709, so
+    # the output stays dark; the quantile term fixed the middle of the histogram
+    # but not this tail.  SOFT sigmoid mask, never a hard one - a hard mask was
+    # the v2 death (gradient dies when coverage reaches zero).
+    p.add_argument('--dark-share-weight', type=float, default=0.0)
+    p.add_argument('--dark-share-target', type=float, default=0.066)
+    p.add_argument('--dark-share-threshold', type=float, default=90.0)
+    p.add_argument('--dark-share-temp', type=float, default=0.04)
+    # PATCH TEXTURE FLOOR: mean |high-pass| per 64x64 tile must not fall below
+    # the floor.  One-sided hinge, so it only opposes collapse.  Needed because
+    # a whole-image hf std is satisfied by flat areas + a few edges (v5).
+    p.add_argument('--patch-tex-weight', type=float, default=0.0)
+    p.add_argument('--patch-tex-floor', type=float, default=0.010)
+    p.add_argument('--patch-tex-size', type=int, default=64)
+    # HIGHLIGHT GUARD: penalise the share of pixels clipped at the top end.
+    # Measured: the +0.25 cast lifts the bright end into clipping (blown 15-17%
+    # against ink's 3.06%), and the sweep showed it is NOT caused by quantile
+    # (q0 already shows 16.96%).  One-sided hinge above a threshold, so it only
+    # opposes clipping and leaves legitimate paper white alone.
+    p.add_argument('--hl-weight', type=float, default=0.0)
+    p.add_argument('--hl-threshold', type=float, default=0.98,
+                   help='luminance above which pixels count as clipped')
+    p.add_argument('--hl-target', type=float, default=0.031,
+                   help='allowed clipped share; ink measured 0.031')
     # Conditional sky constraint: in the official output the sky (bright, low
     # saturation, blue-dominant) becomes WARM beige (R-B = +37 on the paper
     # tile).  A global mean cannot do this because the sky is only ~25% of the
@@ -430,6 +455,25 @@ def main():
     # train and test scale).  512 gives 128x128, a 1.25x mismatch.
     p.add_argument('--size', type=int, default=256)
     p.add_argument('--validate-every', type=int, default=250)
+    # How many validation images the in-loop check uses.  The reported numbers
+    # are MEANS over these images, so more images = a less noisy curve; the cost
+    # is one forward pass per image (0.012 s, under @torch.no_grad()) every
+    # --validate-every steps.  Was hardcoded to 8.
+    p.add_argument('--val-count', type=int, default=8)
+    # AMP toggle.  v3 froze because a GradScaler death spiral drove the scale to
+    # 1.5e-36, at which point fp16 gradients underflow to zero and the weights
+    # stop changing while the optimiser counter keeps rising.
+    #
+    # Modes:
+    #   amp=1 fp16  fast but NARROW range (exponent 5 bits, max 65504); needs a
+    #               GradScaler that can spiral, as v3 showed.
+    #   amp=2 bf16  same exponent range as fp32 (8 bits, max 3.39e38), so the
+    #               under/overflow that drives the spiral cannot occur and no
+    #               GradScaler is required.  7 mantissa bits is ample for image
+    #               regression.
+    #   amp=0 fp32  slowest, zero risk.
+    p.add_argument('--amp', type=int, default=1,
+                   help='1 = fp16+GradScaler, 2 = bf16 (no scaler), 0 = fp32')
     a = p.parse_args()
 
     torch.set_num_threads(8)
@@ -451,7 +495,71 @@ def main():
              if r['domain'] == 'B' and r['split'] == 'train']
     val = [r['path'] for r in manifest['records']
            if r['domain'] == 'B' and r['split'] == 'validation']
-    val = [val[i * (len(val) - 1) // 7] for i in range(8)]
+    # The 8 validation images used to be picked by a fixed stride:
+    #   val[i * (len(val) - 1) // 7] for i in range(8)
+    # That is content-blind, and on the 黑白ink set it selected 5 sky-dominated
+    # frames (photo_01847 is almost entirely blue sky with one bird), whose mean
+    # high-frequency energy is 0.0356 - the lowest of any candidate set.  The
+    # validation curve therefore measured brushwork on the one kind of image that
+    # has no brushwork to measure.
+    #
+    # Selection order is now:
+    #   1. eval_photos.json next to the manifest (content-ranked, sky-free)
+    #   2. a content filter over B/validation, colour-agnostic
+    #   3. the old stride, so other datasets keep working unchanged
+    # The count comes from --val-count (default 8, was hardcoded).  The reported
+    # metrics are means over the selected images, so raising it tightens the
+    # curve; cost is a no_grad forward per image per validation.
+    NVAL = max(int(a.val_count), 1)
+    val_pick = []
+    ref = a.manifest.parent / 'eval_photos.json'
+    if ref.exists():
+        cand = json.loads(ref.read_text())
+        cand = [c for c in cand if c in
+                {r['path'] for r in manifest['records']
+                 if r['domain'] == 'B' and r['split'] == 'validation'}]
+        if len(cand) >= NVAL:
+            # an evenly spaced subset keeps the set representative when the
+            # requested count is smaller than the file, and uses the whole file
+            # when it is larger
+            stride = max(len(cand) // NVAL, 1)
+            val_pick = [cand[i * stride] for i in range(min(NVAL, len(cand)))]
+        else:
+            val_pick = cand
+        if val_pick:
+            print('validation images: %d from eval_photos.json (%d available)'
+                  % (len(val_pick), len(cand)))
+    if not val_pick and val:
+        import torch as _t
+        import torch.nn.functional as _F
+
+        def _content_ok(path):
+            """Sky/heavy-smoothness test: location + flatness, colour-agnostic.
+            Keying on low chroma would miss coloured skies (blue, sunset), which
+            is exactly how the bad selection went unnoticed."""
+            try:
+                x = image_tensor(root / path, 256)[None]
+            except Exception:
+                return True
+            L = 0.299 * x[:, 0:1] + 0.587 * x[:, 1:2] + 0.114 * x[:, 2:3]
+            hi = (L - _F.interpolate(_F.avg_pool2d(L, 4), size=L.shape[-2:],
+                                     mode='nearest')).abs()
+            h = L.shape[-2]
+            top = int(h * 0.4)
+            mt = float(hi[0, 0].mean())
+            smooth_top = float((hi[0, 0, :top] < mt * 0.5).float().mean())
+            td, bd = float(hi[0, 0, :top].mean()), float(hi[0, 0, top:].mean())
+            return not (smooth_top > 0.62 and bd > td * 1.8)
+
+        good = [p for p in val if _content_ok(p)]
+        pool = good if len(good) >= NVAL else val
+        if good and len(good) >= NVAL:
+            step = max(len(pool) // NVAL, 1)
+            val_pick = [pool[i * step] for i in range(min(NVAL, len(pool)))]
+            print('validation images: %d content-selected from %d candidates'
+                  % (len(val_pick), len(good)))
+    val = val_pick if val_pick else [val[i * (len(val) - 1) // max(NVAL - 1, 1)]
+                                     for i in range(min(NVAL, len(val)))]
     # domain A = the real ukiyo-e paintings.  These are the correct input for
     # the identity loss (CycleGAN qa.md:96-106): G_A must leave a painting
     # unchanged.  My earlier implementation used a synthetic proxy built from
@@ -567,7 +675,30 @@ def main():
 
     evaluate(model, features, target, root, val, a.out, 0, teacher,
              style_mean, style_std)
-    scaler = torch.amp.GradScaler('cuda')
+    # GradScaler.  The 黑白v3 run FROZE because of a scaler death spiral, measured
+    # as follows: its scale fell 128 -> 0.0625 -> 9.3e-10 -> 6.6e-24 -> 1.5e-36,
+    # i.e. ~126 halvings = ~126 backward passes that reported inf.  Default
+    # growth_interval is 2000, so with an inf every ~11 steps the scale can only
+    # fall and never recovers.  At 1.5e-36 the fp16 gradients UNDERFLOW to zero:
+    # scaler.step() sees finite (all-zero) gradients and does not skip, so the
+    # optimizer step counter keeps rising while every weight stays byte-identical
+    # (verified: hash unchanged from step 1500 to 2500, optimizer step 1454->2365).
+    #
+    # Fixes, all cheap:
+    #   * lower init_scale so the first infs do not cost so many halvings
+    #   * short growth_interval so the scale can RECOVER between inf events
+    #   * a floor plus an explicit abort, so a collapse is reported instead of
+    #     silently training nothing for thousands of steps
+    # An inf every ~11 steps at growth_interval 200 is still net-negative, so the
+    # floor/abort is what guarantees the failure is loud rather than silent.
+    # GradScaler is only needed for fp16.  bf16 shares fp32's exponent range, so
+    # gradients neither underflow nor overflow and a scaler would be a no-op that
+    # could still spiral; fp32 needs none at all.
+    scaler_used = (a.amp == 1)
+    scaler = torch.amp.GradScaler('cuda', enabled=scaler_used,
+                                  init_scale=256.0, growth_interval=200)
+    MIN_SCALE = 1e-2
+    scale_collapse_step = None
 
     for step in range(1, a.steps + 1):
         model.train()
@@ -585,7 +716,13 @@ def main():
             iterator = iter(loader)
             x = next(iterator).cuda(non_blocking=True)
 
-        with torch.autocast('cuda', dtype=torch.float16):
+        if a.amp == 2:
+            _ac = torch.autocast('cuda', enabled=True, dtype=torch.bfloat16)
+        elif a.amp == 1:
+            _ac = torch.autocast('cuda', enabled=True, dtype=torch.float16)
+        else:
+            _ac = torch.autocast('cuda', enabled=False)
+        with _ac:
             with torch.no_grad():
                 xf = features(x)
                 t = teacher(x) if teacher else None
@@ -761,7 +898,13 @@ def main():
             if a.sat_weight > 0:
                 mx = y.max(dim=1).values                  # (B,H,W)
                 mn = y.min(dim=1).values
-                sat_map = (mx - mn) / mx.clamp_min(1e-6)
+                # clamp_min 1e-2, not 1e-6: the gradient of (mx-mn)/mx is
+                # -mn/mx**2, which for mx=1e-6 reaches 1e6..1e12 and can
+                # overflow fp16 (max 65504).  Tested: the real data never
+                # produced an inf from this term, but 1e-2 costs nothing and
+                # removes the theoretical path.  A pure black pixel is safe
+                # either way (mx=mn=0 gives derivative 0).
+                sat_map = (mx - mn) / mx.clamp_min(1e-2)
                 if a.sat_mode in ('dark', 'light'):
                     L = 0.299 * y[:, 0:1] + 0.587 * y[:, 1:2] + 0.114 * y[:, 2:3]
                     sel = ((L < 90 / 255) if a.sat_mode == 'dark'
@@ -772,6 +915,61 @@ def main():
                 else:
                     sat_val = sat_map.mean()
                 sat_loss = (sat_val - a.sat_target) ** 2
+            # DARK SHARE: how much of the canvas is ink-dark.  Ink paintings are
+            # paper-dominant (dark 6.6%, light 70.6%), while the output held dark
+            # at 15-20% because the tone term pins the mean to the INPUT photo
+            # (photos 0.343 vs ink 0.709).  Measured: raising the quantile weight
+            # fixed the middle but not the dark tail, and pin density did not
+            # help (5 pins was best of 4 layouts), so the tail needs its own term.
+            #
+            # SOFT mask on purpose.  A hard mask was the v2 failure: when
+            # coverage hits zero the gradient dies exactly when it is needed
+            # (INK_V2_FAILURE.md).  A sigmoid keeps the gradient alive, and the
+            # mask here is NOT detached because the term must be able to move
+            # pixels across the threshold.
+            dark_share = y.new_zeros(())
+            dark_share_val = None
+            if a.dark_share_weight > 0:
+                L = 0.299 * y[:, 0:1] + 0.587 * y[:, 1:2] + 0.114 * y[:, 2:3]
+                soft = torch.sigmoid((a.dark_share_threshold / 255.0 - L)
+                                     / max(a.dark_share_temp, 1e-3))
+                dark_share_val = soft.mean()
+                dark_share = (dark_share_val - a.dark_share_target) ** 2
+            # PATCH TEXTURE FLOOR.  Added because v5 proved the grain term can be
+            # satisfied while the image collapses: v5's grain loss read 1e-4
+            # ("satisfied", hf_std 0.031 vs ink 0.047) yet its patch-level
+            # texture was destroyed -
+            #     hf_mean 0.0364 -> 0.0146, edge 0.0277 -> 0.0091
+            #     flat%     2.0  -> 42.8
+            # A whole-image std is satisfied by large flat areas plus a few sharp
+            # edges, so it does not protect local texture.  This term instead
+            # floors the MEAN high-frequency energy of each 64x64 tile, which is
+            # what posterization actually destroys.
+            #
+            # hf_floor_weight scales a hinge: tiles already above the floor cost
+            # nothing, so this only opposes collapse and does not fight the
+            # legitimate flatness of paper (ink itself is flat% 21.5).
+            patch_tex = y.new_zeros(())
+            patch_tex_val = None
+            if a.patch_tex_weight > 0:
+                Lp = 0.299 * y[:, 0:1] + 0.587 * y[:, 1:2] + 0.114 * y[:, 2:3]
+                hip = (Lp - F.interpolate(F.avg_pool2d(Lp, 4),
+                                          size=Lp.shape[-2:], mode='nearest')).abs()
+                unfold = F.unfold(hip, a.patch_tex_size, stride=a.patch_tex_size)
+                pmean = unfold.mean(dim=1)                     # (B, n_patch)
+                # one-sided hinge: penalise only tiles BELOW the floor
+                patch_tex_val = pmean.mean()
+                patch_tex = F.relu(a.patch_tex_floor - pmean).mean()
+            # HIGHLIGHT GUARD: the +0.25 cast pushes the bright end into
+            # clipping (measured blown 15-17% vs ink 3.06%, and NOT caused by
+            # quantile).  One-sided above the threshold so paper white is safe.
+            hl_guard = y.new_zeros(())
+            hl_val = None
+            if a.hl_weight > 0:
+                Lh = 0.299 * y[:, 0:1] + 0.587 * y[:, 1:2] + 0.114 * y[:, 2:3]
+                clipped = (Lh > a.hl_threshold).float().mean()
+                hl_val = clipped
+                hl_guard = F.relu(clipped - a.hl_target)
             # GRAIN: match the high-frequency level of the official output.
             # Measured at 512 (4x-blur high-pass std):
             #   input 0.0420 | official 0.0484 | v6 0.0383 | prints 0.0552
@@ -865,6 +1063,9 @@ def main():
                     + a.grain_weight * grain
                     + a.dark_hf_weight * dark_hf
                     + a.sat_weight * sat_loss
+                    + a.dark_share_weight * dark_share
+                    + a.patch_tex_weight * patch_tex
+                    + a.hl_weight * hl_guard
                     + a.stroke_weight * stroke
                     + a.stroke_coarse_weight * stroke_coarse)
 
@@ -876,12 +1077,21 @@ def main():
         nn.utils.clip_grad_norm_(model.parameters(), 10)
         scaler.step(opt)
         scaler.update()
+        # Detect the death spiral LOUDLY.  Without this the run trains nothing
+        # for thousands of steps while looking healthy in the log.
+        _sc = float(scaler.state_dict().get('scale', 1.0))
+        if _sc < MIN_SCALE and scale_collapse_step is None:
+            scale_collapse_step = step
+            print('WARNING scaler collapse at step %d: scale=%.3e. '
+                  'fp16 gradients now underflow; weights have stopped changing. '
+                  'Check for repeated inf gradients.' % (step, _sc), flush=True)
         lr = a.lr * (.1 + .9 * (1 - step / a.steps))
         for group in opt.param_groups:
             group['lr'] = lr
 
         if step % 25 == 0 or step == 1:
             row = {'step': step, 'loss': float(loss.detach()),
+                   'scale': _sc,          # AMP scaler; a collapse is the freeze
                    'content': float(content.detach()), 'style': float(style.detach()),
                    'tone': float(tone.detach()), 'distill': float(distill.detach()),
                    'identity': float(identity.detach()),
@@ -890,6 +1100,15 @@ def main():
                    'sat_loss': float(sat_loss.detach()),
                    'sat_val': (float(sat_val.detach()) if sat_val is not None
                                else -1.0),
+                   'dark_share': float(dark_share.detach()),
+                   'dark_share_val': (float(dark_share_val.detach())
+                                      if dark_share_val is not None else -1.0),
+                   'patch_tex': float(patch_tex.detach()),
+                   'patch_tex_val': (float(patch_tex_val.detach())
+                                     if patch_tex_val is not None else -1.0),
+                   'hl_guard': float(hl_guard.detach()),
+                   'hl_val': (float(hl_val.detach())
+                              if hl_val is not None else -1.0),
                    'grain': float(grain.detach()),
                    'dark_hf': float(dark_hf.detach()),
                    'stroke': float(stroke.detach()),
