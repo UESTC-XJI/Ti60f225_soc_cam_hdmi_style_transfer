@@ -2,7 +2,7 @@
 // Fixed feature allocation is generated with the same graph as the integer oracle.
 module style_network #(
   parameter COEFF_FILE="rtl/style/model/coeff.hex", PROGRAM_FILE="rtl/style/model/program.hex",
-  parameter integer BURST_MAX=240,
+  parameter integer BURST_MAX=32,
   parameter integer PAD_PITCH=0
 )(
   input wire clk,rst_n,start,

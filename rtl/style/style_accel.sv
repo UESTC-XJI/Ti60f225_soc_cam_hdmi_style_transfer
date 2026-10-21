@@ -1,6 +1,6 @@
 // APB control at 100MHz; computation at 148.5MHz. Stable mailbox payloads
 // are held until the completion toggle returns. Coefficient writes use a FIFO.
-module style_accel #(parameter integer BURST_MAX=240,
+module style_accel #(parameter integer BURST_MAX=32,
                      parameter integer PAD_PITCH=0)(
   input wire clk,cnn_clk,rst_n,
   input wire psel,penable,pwrite,input wire [7:0] paddr,input wire [31:0] pwdata,

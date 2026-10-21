@@ -186,6 +186,7 @@ module ti60f225_oob_top #(
 
        //LED
        output [`CFG_BITS_8-1:0] led,
+       input  wire panel_key,          // GPIOR_22, active-low board key: display A/B <-> single
 
        /* MIPI DSI and LCD ports are intentionally removed from this HDMI-only build.
        // MIPI DSI
@@ -603,8 +604,15 @@ assign soc_apb_pslverr=style_select ? style_pslverr:video_pslverr;
 // A/B knob for the CNN/display read arbiter.  Change the single literal below to
 // measure the alternative: 1'b1 = original (display urgent overrides round-robin)
 // 1'b0 = fair round-robin.  See reports/ink/ARBITER_EXPERIMENT.md for the sweep.
-localparam bit STYLE_UOF = 1'b0;
-style_video_system #(.URGENT_OVERRIDES_FAIRNESS(STYLE_UOF)) style_demo(
+localparam bit STYLE_UOF = 1'b1;
+// Explicit values, never inherited defaults: a stale default here silently
+// overrides the per-module setting and produced a 240-beat build by accident.
+localparam integer STYLE_BURST_MAX = 32;
+localparam integer STYLE_PAD_PITCH = 0;
+style_video_system #(.URGENT_OVERRIDES_FAIRNESS(STYLE_UOF),
+                     .BURST_MAX(STYLE_BURST_MAX),
+                     .PAD_PITCH(STYLE_PAD_PITCH)) style_demo(
+  .key_panel(panel_key),
   .clk(core_clk),.cnn_clk(vid_clk_dvi2),.pix_clk(hdmi_tx_slow_clk),.rst_n(status_reset_n&&!soc_system_reset),
   .rgb_vs(rgb_vs),.rgb_de(rgb_de),.rgb_data(rgb_datax2),
   .psel(soc_apb_psel&&style_select),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr[7:0]),.pwdata(soc_apb_pwdata),

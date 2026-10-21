@@ -3,6 +3,9 @@
 module style_display #(parameter bit BUFFERED=1'b1)(
   input wire clk,pix_clk,rst_n,
   input wire [2:0] display_slot,input wire display_valid,
+  // single_panel=1 shows only the stylised result (halves display DDR read
+  // traffic); 0 shows the A/B pair.  Driven by a board key at run time.
+  input wire single_panel,
   output wire display_frame_event,display_safe,
   output reg [31:0] pixel,output reg hs,vs,de,underflow,
   output reg [31:0] dma_errors,
@@ -10,11 +13,34 @@ module style_display #(parameter bit BUFFERED=1'b1)(
   output wire [31:0] araddr,output wire [7:0] arlen,output wire arvalid,input wire arready,
   input wire [127:0] rdata,input wire [1:0] rresp,input wire rlast,rvalid,output wire rready
 );
+  // single_panel is produced in the clk (100 MHz) domain but consumed by the
+  // pix_clk (148.5 MHz) pixel pipeline, so it must cross through a 2-flop
+  // synchroniser.  Without this the path from the key toggle register into the
+  // pixel comparators is a CDC violation and pushes sdram_clk negative.
+  (* async_reg = "true" *) reg sp_meta, sp_sync;
+  always @(posedge pix_clk or negedge rst_n)
+    if (!rst_n) begin sp_meta <= 1'b0; sp_sync <= 1'b0; end
+    else        begin sp_meta <= single_panel; sp_sync <= sp_meta; end
+  wire single_panel_pix = sp_sync;
+
   reg [10:0] h;reg [9:0] v;reg [7:0] epoch,epoch_gray;
   (* async_reg="true" *)reg [2:0] slot1,slot2;reg dv1,dv2;
-  wire image=v>=145&&v<625&&h>=260&&h<1540;
-  wire active=v>=25&&v<745&&h>=260&&h<1540;
-  wire [8:0] expect_row=v-145;wire [10:0] expect_x=h-260;
+  // In single-panel mode the 640-wide stylised image is centred inside the
+  // 1280-wide active region: 260 + (1280-640)/2 = 580.  The active region and
+  // therefore the 720p60 sync timing are unchanged in both modes.
+  // H is 11 bits; compare and subtract at that width.  Declaring IMG_X0 as
+  // `integer` (32-bit signed) forces each comparison to widen H to 32 bits,
+  // which costs about 1.4k extra LUTs on its own.
+  localparam [10:0] IMG_X0 = 11'd580;
+  wire [10:0] img_x1   = IMG_X0 + 11'd640;
+  wire        h_in_a   = h>=11'd260  && h<11'd1540;
+  wire        h_in_b   = h>=IMG_X0   && h<img_x1;
+  // h/v and the comparators below live in the pix_clk domain, so use the
+  // synchronised copy here; the clk-domain copy is only used in the read FSM.
+  wire image    = v>=10'd145 && v<10'd625 && (single_panel_pix ? h_in_b : h_in_a);
+  wire active   = v>=10'd25  && v<10'd745 && h_in_a;
+  wire [8:0]  expect_row = v - 10'd145;
+  wire [10:0] expect_x   = single_panel_pix ? (h - IMG_X0) : (h - 11'd260);
   wire request=h==0&&v>=144&&v<624&&dv2;
   wire request_ready,req_valid,req_ready;wire [19:0] req;
   wire [8:0] request_row=v-144;
@@ -74,7 +100,7 @@ module style_display #(parameter bit BUFFERED=1'b1)(
     .out_valid(pixel_valid),.out_ready(pixel_ready),.out_data(packet),.write_level(pixel_level));
   wire match=pixel_valid&&packet[59:52]==epoch&&packet[51:43]==expect_row&&packet[42:32]==expect_x;
   wire obsolete=pixel_valid&&(packet[59:52]!=epoch || v>=625 ||
-    (v>=145 && (packet[51:43]<expect_row || (packet[51:43]==expect_row && h>=260 && packet[42:32]<expect_x))));
+    (v>=145 && (packet[51:43]<expect_row || (packet[51:43]==expect_row && (single_panel_pix ? h>=IMG_X0 : h>=11'd260) && packet[42:32]<expect_x))));
   assign pixel_ready=obsolete||(image&&match);
   always @(posedge pix_clk or negedge rst_n)begin
     if(!rst_n)begin h<=0;v<=0;epoch<=0;epoch_gray<=0;slot1<=0;slot2<=0;dv1<=0;dv2<=0;pixel<=0;hs<=0;vs<=0;de<=0;underflow<=0;end
@@ -95,13 +121,22 @@ module style_display #(parameter bit BUFFERED=1'b1)(
       if(rd_valid&&rd_ready)x<=x+1'b1;
       case(state)
         IDLE:if(req_valid&&req_ready&&req[19:12]==current_epoch)begin
-          row_epoch<=req[19:12];row_slot<=req[11:9];row_number<=req[8:0];x<=0;right_side<=0;
-          rd_address<=raw_base(req[11:9])+req[8:0]*2560;state<=START;
+          row_epoch<=req[19:12];row_slot<=req[11:9];row_number<=req[8:0];x<=0;
+          if(single_panel)begin
+            // One read per row: the stylised result region only, so display DDR
+            // traffic is halved and the CNN gets more of the read bandwidth.
+            right_side<=1;
+            rd_address<=raw_base(req[11:9])+32'h00800000+req[8:0]*2560;state<=START;
+          end else begin
+            right_side<=0;
+            rd_address<=raw_base(req[11:9])+req[8:0]*2560;state<=START;
+          end
         end
         START:begin rd_start<=1;state<=WAIT;end
         WAIT:if(rd_done)begin
           if(rd_error)dma_errors<=dma_errors+1'b1;
-          if(!right_side)begin right_side<=1;rd_address<=raw_base(row_slot)+32'h00800000+row_number*2560;state<=START;end
+          if(single_panel)state<=IDLE;   // already fetched the result row
+          else if(!right_side)begin right_side<=1;rd_address<=raw_base(row_slot)+32'h00800000+row_number*2560;state<=START;end
           else state<=IDLE;
         end
       endcase

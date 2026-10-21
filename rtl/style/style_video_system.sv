@@ -8,9 +8,11 @@
 // flag is the A/B knob.  The default keeps the original behaviour bit-for-bit.
 module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1,
                             parameter bit URGENT_OVERRIDES_FAIRNESS=1'b1,
-                            parameter integer BURST_MAX=240,
+                            parameter integer BURST_MAX=32,
                             parameter integer PAD_PITCH=0)(
   input wire clk,cnn_clk,pix_clk,rst_n,
+  // Board key (active-low) toggles single-panel vs A/B display at run time.
+  input wire key_panel,
   input wire rgb_vs,rgb_de,input wire [47:0] rgb_data,
   input wire psel,penable,pwrite,input wire [7:0] paddr,input wire [31:0] pwdata,
   output wire [31:0] prdata,output wire pready,pslverr,irq,
@@ -55,7 +57,10 @@ module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1
     .display_frame_event(display_frame_event),.display_safe(display_safe),.display_slot(display_slot),.display_valid(display_valid),
     .captured(captured),.dropped(dropped),.inferred(inferred),.infer_errors(infer_errors),.display_frame_id(display_frame_id),
     .awaddr(v_awaddr),.awlen(v_awlen),.awvalid(v_awvalid),.awready(v_awready),.wdata(v_wdata),.wstrb(v_wstrb),.wlast(v_wlast),.wvalid(v_wvalid),.wready(v_wready),.bresp(v_bresp),.bvalid(v_bvalid),.bready(v_bready));
-  style_display #(.BUFFERED(DISPLAY_BUFFER)) display(.clk(clk),.pix_clk(pix_clk),.rst_n(rst_n),.display_slot(display_slot),.display_valid(display_valid),
+  // Debounced toggle selects single-panel (stylised only) or the A/B pair.
+  wire single_panel;
+  style_key_toggle key_panel_toggle(.clk(clk),.rst_n(rst_n),.key_in(key_panel),.toggle(single_panel));
+  style_display #(.BUFFERED(DISPLAY_BUFFER)) display(.clk(clk),.pix_clk(pix_clk),.rst_n(rst_n),.display_slot(display_slot),.display_valid(display_valid),.single_panel(single_panel),
     .display_frame_event(display_frame_event),.display_safe(display_safe),.pixel(pixel),.hs(hs),.vs(vs),.de(de),.underflow(underflow),.dma_errors(display_dma_errors),
     .read_urgent(display_read_urgent),
     .araddr(v_araddr),.arlen(v_arlen),.arvalid(v_arvalid),.arready(v_arready),.rdata(v_rdata),.rresp(v_rresp),.rlast(v_rlast),.rvalid(v_rvalid),.rready(v_rready));

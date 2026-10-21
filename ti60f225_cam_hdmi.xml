@@ -79,6 +79,7 @@
         <efx:design_file name="rtl/style/style_row_core.sv" version="default" library="default" />
         <efx:design_file name="rtl/style/style_vga_crop.sv" version="default" library="default" />
         <efx:design_file name="rtl/style/style_video_system.sv" version="default" library="default" />
+        <efx:design_file name="rtl/style/style_key_toggle.sv" version="default" library="default" />
         <efx:design_file name="rtl/style/style_ddr_profiler.sv" version="default" library="default" />
         <efx:design_file name="rtl/style/style_display_beats.sv" version="default" library="default" />
         <efx:top_vhdl_arch name="" />
