@@ -18,16 +18,18 @@ module style_frame_store # (parameter FRAME_PIXELS=307200,
   input wire [1:0] bresp,input wire bvalid,output wire bready
 );
   localparam FREE=0,CAPTURE=1,READY=2,INFER=3,COMPLETE=4,DISPLAY=5;
-  // One AXI write burst is 32 beats x 16 B = 512 B.  A row is FRAME_WIDTH*4 B.
+  // One AXI write burst is 32 beats x 16 B = 512 B; a row is FRAME_WIDTH*4 B.
+  // PAD_PITCH=1 strides rows up to a 4 KiB boundary so style_network can fetch a
+  // whole row in a single burst.  With PAD_PITCH=0 every expression below folds
+  // to a constant and the row counter is optimised away, preserving the original
+  // contiguous block layout.
   localparam integer ROW_BLOCKS = (FRAME_WIDTH*4 + 511) / 512;      // 5 for 640
   localparam integer RAW_PITCH  = FRAME_WIDTH*4;                    // 2560 for 640
   localparam integer PAD_STRIDE = PAD_PITCH ? ((RAW_PITCH + 4095) & ~4095) : RAW_PITCH;
-  // Step applied after each 512 B block: normally 512, but the last block of a
-  // row jumps to the next padded row start.
-  reg [15:0] blk_in_row;
-  wire row_last_block = (blk_in_row == ROW_BLOCKS-1);
-  wire [31:0] PAD_STEP = (PAD_PITCH && row_last_block)
-                       ? (PAD_STRIDE - (ROW_BLOCKS-1)*512) : 32'd512;
+  reg  [15:0] blk_in_row;
+  wire row_last_block = PAD_PITCH && (blk_in_row == ROW_BLOCKS-1);
+  wire [31:0] PAD_STEP  = row_last_block ? (PAD_STRIDE - (ROW_BLOCKS-1)*512) : 32'd512;
+  wire [15:0] blk_next  = row_last_block ? 16'd0 : blk_in_row + 16'd1;
   reg [2:0] ownership[0:5];reg [31:0] frame_ids[0:5];
   reg [2:0] cap_slot,infer_slot;reg cap_active,frame_bad,frame_final,infer_active,display_pending;
   reg [18:0] cap_pixels;reg [20:0] cap_offset;
@@ -135,7 +137,7 @@ module style_frame_store # (parameter FRAME_PIXELS=307200,
           // A captured row is FRAME_WIDTH*4 bytes = ROW_BLOCKS x 512 B.
           // With PAD_PITCH the row start advances to the next 4 KiB boundary.
           cap_offset<=cap_offset+PAD_STEP;
-          blk_in_row<=row_last_block ? 16'd0 : blk_in_row+16'd1;
+          blk_in_row<=blk_next;
           state<=COLLECT;
           if(frame_final)begin
             cap_active<=0;
