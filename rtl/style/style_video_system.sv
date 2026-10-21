@@ -7,7 +7,9 @@
 // with it off the share stays near 41-46%.  On-board AR wait is 35-46%, so this
 // flag is the A/B knob.  The default keeps the original behaviour bit-for-bit.
 module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1,
-                            parameter bit URGENT_OVERRIDES_FAIRNESS=1'b1)(
+                            parameter bit URGENT_OVERRIDES_FAIRNESS=1'b1,
+                            parameter integer BURST_MAX=240,
+                            parameter integer PAD_PITCH=0)(
   input wire clk,cnn_clk,pix_clk,rst_n,
   input wire rgb_vs,rgb_de,input wire [47:0] rgb_data,
   input wire psel,penable,pwrite,input wire [7:0] paddr,input wire [31:0] pwdata,
@@ -48,7 +50,7 @@ module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1
   wire v_awvalid,v_awready,v_wlast,v_wvalid,v_wready,v_bvalid,v_bready,v_arvalid,v_arready,v_rvalid,v_rready,v_rlast;
   wire [127:0] v_wdata,v_rdata;wire [15:0] v_wstrb;wire [1:0] v_bresp,v_rresp;
   wire [7:0] unused_bid,unused_rid;
-  style_frame_store store(.clk(clk),.rst_n(rst_n),.cap_valid(cap_valid),.cap_ready(cap_ready),.cap_packet(cap_packet),
+  style_frame_store #(.FRAME_WIDTH(640),.PAD_PITCH(PAD_PITCH)) store(.clk(clk),.rst_n(rst_n),.cap_valid(cap_valid),.cap_ready(cap_ready),.cap_packet(cap_packet),
     .stream_enable(stream_enable),.nn_ready(nn_ready),.nn_done(nn_done),.nn_error(nn_error),.nn_start(nn_start),.nn_source(nn_source),.nn_result(nn_result),
     .display_frame_event(display_frame_event),.display_safe(display_safe),.display_slot(display_slot),.display_valid(display_valid),
     .captured(captured),.dropped(dropped),.inferred(inferred),.infer_errors(infer_errors),.display_frame_id(display_frame_id),
@@ -61,7 +63,7 @@ module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1
   wire c_awvalid,c_awready,c_wlast,c_wvalid,c_wready,c_bvalid,c_bready,c_arvalid,c_arready,c_rvalid,c_rready,c_rlast;
   wire [127:0] c_wdata,c_rdata;wire [15:0] c_wstrb;wire [1:0] c_bresp,c_rresp;
   wire [7:0] c_bid,c_rid;wire [31:0] accel_prdata;
-  style_accel accelerator(.clk(clk),.cnn_clk(cnn_clk),.rst_n(rst_n),.psel(psel),.penable(penable),.pwrite(pwrite),.paddr(paddr),.pwdata(pwdata),
+  style_accel #(.BURST_MAX(BURST_MAX),.PAD_PITCH(PAD_PITCH)) accelerator(.clk(clk),.cnn_clk(cnn_clk),.rst_n(rst_n),.psel(psel),.penable(penable),.pwrite(pwrite),.paddr(paddr),.pwdata(pwdata),
     .prdata(accel_prdata),.pready(pready),.pslverr(pslverr),.irq(irq),.stream_enable(stream_enable),
     .auto_start(nn_start),.auto_source(nn_source),.auto_result(nn_result),.auto_ready(nn_ready),.job_done(nn_done),.job_error(nn_error),.last_cycles(nn_cycles),
     .araddr(c_araddr),.arlen(c_arlen),.arvalid(c_arvalid),.arready(c_arready),.rdata(c_rdata),.rresp(c_rresp),.rlast(c_rlast),.rvalid(c_rvalid),.rready(c_rready),

@@ -1,6 +1,7 @@
 // APB control at 100MHz; computation at 148.5MHz. Stable mailbox payloads
 // are held until the completion toggle returns. Coefficient writes use a FIFO.
-module style_accel(
+module style_accel #(parameter integer BURST_MAX=240,
+                     parameter integer PAD_PITCH=0)(
   input wire clk,cnn_clk,rst_n,
   input wire psel,penable,pwrite,input wire [7:0] paddr,input wire [31:0] pwdata,
   output reg [31:0] prdata,output wire pready,output wire pslverr,output wire irq,
@@ -105,7 +106,7 @@ module style_accel(
   end
   wire [31:0] c_araddr,c_awaddr;wire [7:0] c_arlen,c_awlen;wire c_arvalid,c_arready,c_awvalid,c_awready;
   wire [127:0] c_wdata,c_rdata;wire [15:0] c_wstrb;wire c_wlast,c_wvalid,c_wready,c_rlast,c_rvalid,c_rready,c_bvalid,c_bready;wire [1:0] c_rresp,c_bresp;
-  style_network network(.clk(cnn_clk),.rst_n(core_reset[1]),.start(core_start),.source_address(mail_source),.result_address(mail_result),
+  style_network #(.BURST_MAX(BURST_MAX),.PAD_PITCH(PAD_PITCH)) network(.clk(cnn_clk),.rst_n(core_reset[1]),.start(core_start),.source_address(mail_source),.result_address(mail_result),
     .frame_width(mail_geometry[9:0]),.frame_height(mail_geometry[25:16]),
     .coef_we(coef_valid&&coef_ready),.coef_addr(coef_packet[44:37]),.coef_word(coef_packet[36:32]),.coef_data(coef_packet[31:0]),
     .busy(core_busy),.done(core_done),.error(core_error),.layer_index(core_layer),.cycles(core_cycles),

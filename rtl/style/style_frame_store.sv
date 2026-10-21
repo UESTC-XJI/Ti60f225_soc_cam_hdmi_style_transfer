@@ -1,6 +1,11 @@
 // Six paired raw/result slots. A slot is immutable while NN or display owns it.
 // Finite queue exhaustion is counted; throughput below capture is never hidden.
-module style_frame_store # (parameter FRAME_PIXELS=307200)(
+// PAD_PITCH=1 strides each captured row up to a 4 KiB boundary so style_network
+// (with its matching PAD_PITCH) can read a whole row in a single AXI burst.
+// PAD_PITCH=0 keeps the compact contiguous layout (original behaviour).
+module style_frame_store # (parameter FRAME_PIXELS=307200,
+                            parameter FRAME_WIDTH=640,
+                            parameter PAD_PITCH=0)(
   input wire clk,rst_n,
   input wire cap_valid,output wire cap_ready,input wire [33:0] cap_packet,
   input wire stream_enable,nn_ready,nn_done,nn_error,
@@ -13,6 +18,16 @@ module style_frame_store # (parameter FRAME_PIXELS=307200)(
   input wire [1:0] bresp,input wire bvalid,output wire bready
 );
   localparam FREE=0,CAPTURE=1,READY=2,INFER=3,COMPLETE=4,DISPLAY=5;
+  // One AXI write burst is 32 beats x 16 B = 512 B.  A row is FRAME_WIDTH*4 B.
+  localparam integer ROW_BLOCKS = (FRAME_WIDTH*4 + 511) / 512;      // 5 for 640
+  localparam integer RAW_PITCH  = FRAME_WIDTH*4;                    // 2560 for 640
+  localparam integer PAD_STRIDE = PAD_PITCH ? ((RAW_PITCH + 4095) & ~4095) : RAW_PITCH;
+  // Step applied after each 512 B block: normally 512, but the last block of a
+  // row jumps to the next padded row start.
+  reg [15:0] blk_in_row;
+  wire row_last_block = (blk_in_row == ROW_BLOCKS-1);
+  wire [31:0] PAD_STEP = (PAD_PITCH && row_last_block)
+                       ? (PAD_STRIDE - (ROW_BLOCKS-1)*512) : 32'd512;
   reg [2:0] ownership[0:5];reg [31:0] frame_ids[0:5];
   reg [2:0] cap_slot,infer_slot;reg cap_active,frame_bad,frame_final,infer_active,display_pending;
   reg [18:0] cap_pixels;reg [20:0] cap_offset;
@@ -57,7 +72,7 @@ module style_frame_store # (parameter FRAME_PIXELS=307200)(
   always @(posedge clk or negedge rst_n)begin
     if(!rst_n)begin
       state<=COLLECT;cap_active<=0;cap_slot<=0;infer_slot<=0;infer_active<=0;frame_bad<=0;frame_final<=0;
-      cap_pixels<=0;cap_offset<=0;pack_index<=0;fill_index<=0;send_index<=0;pack<=0;awaddr<=0;
+      cap_pixels<=0;cap_offset<=0;blk_in_row<=0;pack_index<=0;fill_index<=0;send_index<=0;pack<=0;awaddr<=0;
       nn_start<=0;nn_source<=0;nn_result<=0;display_slot<=0;display_valid<=0;display_pending<=0;
       captured<=0;dropped<=0;inferred<=0;infer_errors<=0;display_frame_id<=0;
       ready_head<=0;ready_tail<=0;ready_count<=0;latest_slot<=0;latest_valid<=0;
@@ -96,7 +111,7 @@ module style_frame_store # (parameter FRAME_PIXELS=307200)(
         COLLECT:if(cap_valid&&cap_ready)begin
           if(cap_packet[33])begin
             if(cap_active)begin ownership[cap_slot]<=FREE;dropped<=dropped+1'b1;end
-            cap_active<=free_found;cap_slot<=free_slot;cap_pixels<=1;cap_offset<=0;pack_index<=1;fill_index<=0;
+            cap_active<=free_found;cap_slot<=free_slot;cap_pixels<=1;cap_offset<=0;blk_in_row<=0;pack_index<=1;fill_index<=0;
             pack[31:0]<=cap_packet[31:0];frame_bad<=0;frame_final<=0;
             if(free_found)ownership[free_slot]<=CAPTURE;
             else dropped<=dropped+1'b1;
@@ -117,7 +132,11 @@ module style_frame_store # (parameter FRAME_PIXELS=307200)(
         SEND:if(wvalid&&wready)begin if(wlast)state<=RESP;else send_index<=send_index+1'b1;end
         RESP:if(bvalid&&bready)begin
           if(bresp!=0)frame_bad<=1;
-          cap_offset<=cap_offset+512;state<=COLLECT;
+          // A captured row is FRAME_WIDTH*4 bytes = ROW_BLOCKS x 512 B.
+          // With PAD_PITCH the row start advances to the next 4 KiB boundary.
+          cap_offset<=cap_offset+PAD_STEP;
+          blk_in_row<=row_last_block ? 16'd0 : blk_in_row+16'd1;
+          state<=COLLECT;
           if(frame_final)begin
             cap_active<=0;
             if(frame_bad||bresp!=0)begin ownership[cap_slot]<=FREE;dropped<=dropped+1'b1;end
