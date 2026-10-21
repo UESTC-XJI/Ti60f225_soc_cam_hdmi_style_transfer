@@ -1,0 +1,175 @@
+三个分支改动与最终合并结果总结
+
+工程
+最终合并工程：/home/goodmann/Downloads/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_style_demo_merged
+合并基线：/home/goodmann/Downloads/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_style_demo_lite
+输入分支：
+1. Ti60f225_soc_cam_hdmi_style_demo_lite
+2. Ti60f225_soc_cam_hdmi_style_demo_osd_stats_opt
+3. Ti60f225_soc_cam_hdmi_style_demo_prefetch
+
+本报告总结三项独立改动以及合并后的实际构建结果。所有结果均为离线构建、仿真或模型验证；没有上板或烧录证据。
+
+一、Lite分支：Sapphire统一DDR时钟
+
+目标
+移除Sapphire SoC专用DDR时钟域和对应CDC结构，释放片上RAM，同时尽量保持CPU、缓存、外设和软件接口不变。
+
+实现
+1. Sapphire切换为Lite模式。
+2. DDR选择Unified System Clock，并使用--noDdrAClock生成参数。
+3. 保留RV32M乘除法、桶形移位器、完整CSR、4KiB指令缓存、4KiB数据缓存、UART、I2C、SPI、GPIO、JTAG和用户中断。
+4. 对生成SoC外层包装做接口适配，移除io_memoryClk/io_memoryReset专用端口；其他公共端口方向和位宽保持一致。
+5. 原工程保持不变，在独立lite工程中生成和验证。
+
+Lite独立构建结果
+XLR：56305/60800
+RAM：239/256
+DSP：140/160
+map/interface/pnr/pgm全部通过。
+相对Lite迁移前Standard候选，释放1565 XLR和17块RAM，DSP不变。
+
+Lite验证边界
+SoC生成、端口比较、BSP宏比较、RV32 ELF模型回归通过；没有进行Lite版本实板验证。因此Lite只作为最终合并的基线，不把其离线结果表述为硬件等价。
+
+二、OSD/stats分支：字库和采集统计资源优化
+
+目标
+在不改变显示文字功能、统计包对外接口和同帧语义的前提下，回收OSD字库RAM和capture_frame_stats中的逻辑资源。
+
+实现一：OSD字库压缩
+1. 字库由256字符×16行×8位压缩为128字符×16行×8位存储结构。
+2. 保留全部95个可打印ASCII字符，包括大小写、数字和标点。
+3. 非打印字符、高位字符和未知字符输出空白。
+4. 保留双页字符RAM、COMMIT/ACK、活动页保护、帧边界使能和三拍RGB/DE/HS/VS流水。
+
+实现二：采集统计位宽优化
+1. 按1080p最大采样边界收窄内部累加器和计数器。
+2. AE最大样本32400需15位；AWB最大单元16200需14位。
+3. R/B累加需22位，G累加需23位，Y累加需23位。
+4. 增益校正中间量保留足够范围，最大校正乘积使用25位，比例乘积使用41位。
+5. 对外384位统计包字段继续按32位输出并零扩展。
+6. 保留实时统计、完成帧、冻结META、帧号、配置版本和CDC发布副本，未删除有重叠生命周期的数据。
+7. AWB乘法器复用仅做评估，没有作为已实现改动，不宣称DSP释放。
+
+OSD/stats独立候选结果
+原Standard基线：57870 XLR、256 RAM、140 DSP。
+字库+统计组合候选：57278 XLR、254 RAM、140 DSP。
+独立候选净减少592 XLR和2块RAM；DSP不变。
+该独立候选不是最终合并版本，不能直接把其资源数字套用到Lite或Prefetch。
+
+验证
+256字符×16行逐字形对拍、52800个OSD像素对拍、双页COMMIT/ACK和统计完整1080p差分通过。统计差分覆盖7359692周期、7次统计握手和322词直方图握手。
+
+三、Prefetch分支：CNN安全读算重叠
+
+目标
+在不修改网络权重和整数输出算法的前提下，让可证明安全的DDR读请求与CNN计算重叠，减少等待周期。
+
+实现
+1. 在style_network中增加受约束的预取路径。
+2. 对存在残差、skip、特殊层描述的路径保守处理，不强行预取不满足条件的层。
+3. 预取写入前检查生命周期，避免覆盖仍在使用的行缓存。
+4. 保留串行路径作为安全回退。
+5. 增加预取读错误、写错误、运行中复位、重启和错误排空验证。
+6. 增加overlap统计，区分读算重叠和单纯重复显示帧。
+
+Prefetch行为模型结果
+32×24、seed741：
+  baseline 23877周期，overlap=0。
+  candidate 21374周期，overlap=1091。
+  行为模型周期减少2503，约10.48%。
+
+640×480、seed741：
+  baseline 7488001周期，行为模型约19.832 task fps。
+  candidate 6542056周期，行为模型约22.699 task fps。
+  行为模型约减少12.63%周期。
+
+这些是随机DDR停顿行为模型的CNN任务结果，不是物理DDR、完整CPU并发或实板FPS，不能直接宣称满足赛题15fps要求。
+
+四、最终合并方式
+
+1. 以Lite工程完整副本作为工作目录。
+2. 依据三个分支各自baseline manifest核对共同祖先。
+3. 只叠加OSD/stats和Prefetch相对共同祖先的实际源码/工具/测试改动。
+4. Lite生成SoC、settings、soc包装和Lite专用验证文件保持不变。
+5. 保留字库/统计差分测试和Prefetch测试所需的不可变baseline fixture。
+6. 三个输入工程的源文件清单在合并结束后重新哈希，确认未被修改。
+7. 不复制三个分支的旧outflow/work/reports作为最终结果；最终资源和时序只采用合并工程重新生成的报告。
+
+五、最终合并结果
+
+综合与实现
+Efinity 2026.1.132、Ti60F225、I3 timing model。
+map PASS。
+interface PASS。
+pnr PASS。
+pgm PASS，表示配置文件生成，不表示已经烧录。
+
+最终资源
+XLR：55504/60800，91.29%，剩余5296。
+RAM：237/256，92.58%，剩余19。
+DSP：140/160，87.50%，剩余20。
+GBUF：14/32，43.75%。
+RBUF：1/32，3.12%。
+
+相对Lite合并基线（56305 XLR、239 RAM、140 DSP）：
+XLR减少801。
+RAM减少2块。
+DSP不变。
+
+相对最初Standard风格候选（57870 XLR、256 RAM、140 DSP）：
+XLR减少2366。
+RAM减少19块。
+DSP不变。
+这两个差值来自不同阶段组合，不能把三个分支独立报告的节省量直接相加。
+
+最终时序
+CNN 148.5MHz setup：+0.545ns。
+core 100MHz setup：+2.868ns。
+HDMI 74.25MHz setup：+7.084ns。
+最小setup：+0.215ns。
+最小hold：+0.026ns。
+CDC报告无Synchronizer warning。
+仍存在既有JTAG和DDR接口约束缺项；正裕量只覆盖当前SDC实际分析路径。
+
+六、最终验证结果
+
+通过：
+1. 字库全部256字符×16行×8位对拍，未知字符为空白。
+2. 完整1920×1080采集统计差分和内部范围预算。
+3. OSD双页提交、ACK、活动页保护、帧边界开关和同步器负例。
+4. 32×24 CNN完整整数参考对拍，读算重叠1091事件。
+5. Prefetch读错误、写错误排空和运行中复位恢复。
+6. 6144词APB权重加载、CDC确认、IRQ和输出对拍。
+7. SoC清理、I2C、手动lift、视频3A和共享DDR相关回归。
+8. 真实RV32 ELF启动、故障注入、风格自检、AE/AWB和直方图软件模型回归。
+9. 合并版640×48 CNN、摄像头抓帧和720p显示并发RTL仿真：输出对拍正确、display_pixels=400640、capture_beats=76800、underflows=0。
+
+七、未完成事项
+
+1. 未上板，未烧录bit或ELF。
+2. 未验证Lite CPU在真实DDR校准、真实MIPI、HDMI和JTAG上的等价行为。
+3. 未验证合并版完整640×480或更高分辨率实板NN FPS。
+4. 未验证长期显示欠载、DROP、端到端延迟和画质。
+5. 行为模型的22.699 task fps不能替代实板15fps验收。
+6. 当前仍不支持多风格热切换的实板验收结论。
+
+八、交付文件
+
+最新报告：
+reports/latest/REPORT.txt
+
+版本目录：
+reports/versions/merged-lite-osd-stats-prefetch/
+
+配套bit：
+reports/latest/artifacts/ti60f225_oob.bit
+SHA256：5fb17868384603abe7abe5b8ccaf5358562246145ae976eba2e79535eaf25cd5
+
+配套ELF：
+reports/latest/artifacts/soc_video_app.elf
+SHA256：54e97d5663b59afe614accf58c2a839a2d1d91d155a6cceb0cb4cbe3f506bf87
+
+最终结论
+三个分支的改动已完成合并：Lite负责移除SoC DDR时钟CDC，OSD/stats负责字库和采集统计资源优化，Prefetch负责安全的CNN读算重叠。合并版已经通过完整Efinity离线流程、定向回归和短帧并发仿真，最终资源为55504 XLR、237 RAM、140 DSP。它是当前最完整的离线候选版本，但仍必须经过配套bit/ELF上板后，才能确认真实功能等价、显示稳定性和赛题15fps指标。

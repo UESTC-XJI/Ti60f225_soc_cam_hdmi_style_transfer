@@ -1,0 +1,58 @@
+Lite统一时钟迁移实验报告
+
+结论：PARTIAL，离线构建与资源回收已验证，实板功能等价和性能尚未验证。
+
+新工程：Ti60f225_soc_cam_hdmi_style_demo_lite
+基线：相邻Ti60f225_soc_cam_hdmi_style_demo，当前保色模型候选。
+原工程复制时记录864项文件哈希，实验结束重新核验，原工程这些文件均未改变。
+复制保留源码、模型、固件和设计说明；未复制原工程.git、旧reports及outflow/work/ooc等中间输出，避免Windows失效worktree和旧构建混用。
+
+实施方式
+使用本机Efinity2026.1自带Sapphire JAR生成器，以原source/soc_config命令行作为基线，增加--noDdrAClock、--lowArea 5。
+保留M扩展、桶形移位器和完整CSR：不传--noMulDiv、--noBarrelShifter、--reducedCsr。
+更新候选settings.json：SOC_MODE=1、DDRCLK_DOMAIN=1、DDR_OPT=0、MULDIV_EXT=1、BARREL_SHIFTER=1、REDUCED_CSR=0。
+说明：本次直接运行官方底层JAR并适配原IP包装层，不是完整GUI IP Manager一键重生成。settings中的Windows路径等历史元数据仍需在GUI再次生成前审查。
+生成代码保留原外部soc包装接口（专用memoryClk删除），原io_memoryReset输出作为io_systemReset别名；调用层移除专用memoryClk连接。厂商加密CPU文件原样附加，未修改加密内容。
+为Linux运行修改候选tools/build_firmware.py工具可执行文件后缀；固件C/汇编算法未改。
+
+资源结果（实际Efinity完整编译）
+项目               历史Standard基线      Lite候选        变化
+XLR                57870/60800           56305/60800     减少1565
+RAM                256/256              239/256         减少17
+DSP                140/160              140/160         不变
+Lite占用：XLR92.61%，RAM93.36%，DSP87.50%。
+剩余：4495 XLR、17 RAM、20 DSP。
+SoC层次RAM从43降至26，内部system_ddr_ddrLogic_cc_fifo消失。
+比较限制：Standard数字来自已有Windows2026.1.132构建，Lite是本机Linux2026.1.132新构建，未在本机重建Standard控制组。XLR变化包含重生成版本、Lite策略和布局打包影响，不能全部归因于CDC；RAM减少17与原CDC占用及SoC层次变化一致。
+style_demo源码与模型保持基线字节一致；其物理层次XLR可能因全局重新打包变化，不能将其当作源码变更。
+
+时序与编译
+map/interface/pnr/pgm均PASS，生成真实bit文件；pgm表示生成配置文件，不是烧录。
+CNN148.5MHz setup +0.534ns；core100MHz setup +2.561ns；HDMI74.25MHz setup +7.652ns。
+最小已报告setup +0.331ns；hold +0.026ns；CDC报告无Synchronizer警告。
+保留原JTAG未匹配接口、DDR地址端口等既有约束警告，正裕量仅针对受分析路径。
+工具另有libstdc++版本与cannot find correct IV value警告；最终四阶段通过，但不把警告隐藏或解释为硬件无风险。
+
+已执行验证
+1. 生成核心原165端口、新163端口，仅删除io_memoryClk/io_memoryReset，其他方向与位宽一致。
+2. 新生成soc.h宏与当前固件BSP完全一致，包括地址、IRQ、RV32IM、缓存与外设参数。
+3. 结构检查确认无专用DDR输入时钟及原CDC FIFO。
+4. 新固件由本机RISC-V工具链真实编译，text44620/data4/bss688字节。
+5. RV32 ELF指令模型通过normal、stale_ack、bus_recover、id_retry、no_ack、ddr_corrupt、timer_wrap、style_corrupt、style_reload及trap记录检查。
+该模型使用Unicorn和行为外设，不证明新Sapphire CPU、cache、PLIC RTL或真实DDR复位/背压等价。
+6. 原工程864项文件重新哈希一致。
+
+未完成及使用限制
+未连接或烧录开发板；未运行新CPU RTL指令仿真；系统PATH无Icarus，本次未重跑视频RTL回归。
+未证明新Lite板上NN帧率提升、无显示欠载或AE/AWB长期行为完全相同。
+新boot初始化来自本机官方bootloader_124K.hex，不能将此视为已完成Flash自启动验证。
+候选source目录可能保留继承的旧IP中间文件，活动工程只编译soc/soc.v；实际生成真源位于work_lite_generator，复现入口tools/generate_lite_soc.py。不要将继承source/soc_config或旧source_efinity文件误当成当前候选真源。
+后续先做新bit+配套ELF实板启动、DDR、JTAG、摄像头、自检、中断、AE/AWB和至少数分钟并发UART采样，再决定是否替换基线。
+
+入口
+工程：ti60f225_cam_hdmi.xml
+复现生成：python tools/generate_lite_soc.py
+结构/BSP/基线检查：python tools/check_lite_soc.py
+编译：/home/goodmann/efinity/2026.1/bin/efx_run ti60f225_cam_hdmi.xml --flow compile --output_dir outflow_lite --work_dir work_lite --timeout 1800
+固件：SOC_RISCV_TOOLCHAIN=/home/goodmann/efinity/efinity-riscv-ide-2026.1/toolchain/bin python tools/build_firmware.py
+原始构建证据：outflow_lite；归档副本及SHA256：本版本目录manifest.json。

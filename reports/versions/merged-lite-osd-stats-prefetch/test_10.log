@@ -1,0 +1,3 @@
+PASS nested AXI: CPU/CNN/video simultaneous traffic, 150 writes+150 reads, full IDs, no starvation
+/home/goodmann/Downloads/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_style_demo_merged/reports/style_demo/shared/tb.sv:161: $finish called at 19590000 (1ps)
+

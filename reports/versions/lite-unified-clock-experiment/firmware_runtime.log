@@ -1,0 +1,10 @@
+PASS RV32 ELF: normal entry, stack/gp/BSS, UART, DDR, camera, OSD/timer
+PASS RV32 ELF: stale_ack entry, stack/gp/BSS, UART, DDR, camera, OSD/timer
+PASS RV32 ELF: bus_recover entry, stack/gp/BSS, UART, DDR, camera, OSD/timer
+PASS RV32 ELF: id_retry entry, stack/gp/BSS, UART, DDR, camera, OSD/timer
+PASS RV32 ELF: no_ack entry, stack/gp/BSS, UART, DDR, camera, OSD/timer
+PASS RV32 ELF: ddr_corrupt entry, stack/gp/BSS, UART, DDR, camera, OSD/timer
+PASS RV32 ELF: timer_wrap entry, stack/gp/BSS, UART, DDR, camera, OSD/timer
+PASS RV32 ELF: style_corrupt entry, stack/gp/BSS, UART, DDR, camera, OSD/timer
+PASS RV32 ELF: style_reload entry, stack/gp/BSS, UART, DDR, camera, OSD/timer
+PASS RV32 trap handler: cause/PC/value captured for IDE inspection

@@ -1,0 +1,2 @@
+PASS capture baseline differential W=1920 H=1080 cycles=7359692 packets=7 histwords=322
+tests/capture_equivalence_tb.sv:65: $finish called at 49560219800 (1ps)

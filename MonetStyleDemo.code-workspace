@@ -1,0 +1,4 @@
+{
+  "folders": [{"path": "."}],
+  "settings": {"files.exclude": {"**/__pycache__": true}, "terminal.integrated.cwd": "${workspaceFolder}"}
+}
