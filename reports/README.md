@@ -1,5 +1,8 @@
 # 项目目录与产出管理
 
+> **想查报告结论请先看 [INDEX.md](INDEX.md)** —— 那里有当前结论（CUR_PERF / CUR_MODEL / CUR_BOARD）和按主题的导航。
+> 本文件只说明「哪些目录进 Git」。最近整理（2026-10-22）：54 个历史报告已归档到 `archive/`，见 [CLEANUP_PLAN.md](CLEANUP_PLAN.md)。
+
 | 目录 / 文件 | 用途 | Git 管理方式 |
 | --- | --- | --- |
 | `rtl/`、`ip/`、`soc/` | RTL、IP 设置、生成后参与编译的 SoC RTL 与 ROM 初始化数据 | 保留版本管理 |
