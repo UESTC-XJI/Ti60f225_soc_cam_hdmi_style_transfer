@@ -19,13 +19,23 @@ module capture_frame_stats #(
   output reg overrun
 );
   localparam integer COLS=(FRAME_WIDTH/2+7)/8;
+  // Bounds count every possible sparse position, including rejected/bad frames.
+  localparam integer AE_MAX=2*COLS*((FRAME_HEIGHT+7)/8);
+  localparam integer AWB_MAX=COLS*((FRAME_HEIGHT+6)/8);
+  localparam integer AE_COUNT_W=$clog2(AE_MAX+1)>0 ? $clog2(AE_MAX+1):1;
+  localparam integer AWB_COUNT_W=$clog2(AWB_MAX+1)>0 ? $clog2(AWB_MAX+1):1;
+  localparam integer RB_W=$clog2(255*AWB_MAX+1)>0 ? $clog2(255*AWB_MAX+1):1;
+  localparam integer G_W=$clog2(510*AWB_MAX+1)>0 ? $clog2(510*AWB_MAX+1):1;
+  localparam integer Y_W=$clog2(255*AE_MAX+1)>0 ? $clog2(255*AE_MAX+1):1;
   reg rvs,rde,cvs,cde,rstarted,cstarted,rbad,cbad,raw_done;
   reg [11:0] rx,ry,cx,cy;
   reg [31:0] rid,cid,rtag,ctag,raw_done_id,raw_done_tag;
-  reg [31:0] rs,gs,bs,cells,total;
-  reg [31:0] done_rs,done_gs,done_bs,done_cells,done_total;
+  reg [RB_W-1:0] rs,bs,done_rs,done_bs;
+  reg [G_W-1:0] gs,done_gs;
+  reg [AWB_COUNT_W-1:0] cells,total,done_cells,done_total;
   reg done_bad;
-  reg [31:0] ys,samples,hot;
+  reg [Y_W-1:0] ys;
+  reg [AE_COUNT_W-1:0] samples,hot;
   // A counter bank remains frozen until the complete stream is accepted.
   // Valid bits provide logical zero without resetting or clearing the RAM.
   reg [15:0] hist_mem[0:127];
@@ -75,8 +85,9 @@ module capture_frame_stats #(
   reg [3:0] awb_pipe_valid;
   reg [7:0] pr[0:3],pb[0:3];reg [8:0] pg[0:3];
   reg [3:0] range_ok;
-  reg [25:0] corr_r,corr_g,corr_b,color_max,color_min;
-  reg [41:0] neutral_lhs,neutral_rhs;
+  // 510*65535 < 2^25, including arbitrary full-range APB gains.
+  reg [24:0] corr_r,corr_g,corr_b,color_max,color_min;
+  reg [40:0] neutral_lhs,neutral_rhs;
   wire candidate=range_ok[3]&&(!neutral_enable||neutral_lhs<=neutral_rhs);
   wire [9:0] y0={2'd0,rgb_data[7:0]}+{1'b0,rgb_data[15:8],1'b0}+{2'd0,rgb_data[23:16]};
   wire [9:0] y1={2'd0,rgb_data[31:24]}+{1'b0,rgb_data[39:32],1'b0}+{2'd0,rgb_data[47:40]};
@@ -89,7 +100,10 @@ module capture_frame_stats #(
   wire [31:0] flags={27'd0,(done_cells!=0),overrun,resize_fault,capture_fault,1'b1};
   // word0 Y,1 count,2 hot,3 R,4 G(two samples),5 B,6 N,7 total,
   // 8 flags,9 frame,10 config,11 source (1).
-  wire [383:0] packet={32'd1,ctag,cid,flags,done_total,done_cells,done_bs,done_gs,done_rs,hot,samples,ys};
+  wire [383:0] packet={32'd1,ctag,cid,flags,
+    {{(32-AWB_COUNT_W){1'b0}},done_total},{{(32-AWB_COUNT_W){1'b0}},done_cells},
+    {{(32-RB_W){1'b0}},done_bs},{{(32-G_W){1'b0}},done_gs},{{(32-RB_W){1'b0}},done_rs},
+    {{(32-AE_COUNT_W){1'b0}},hot},{{(32-AE_COUNT_W){1'b0}},samples},{{(32-Y_W){1'b0}},ys}};
   assign hist_valid=streaming&&stream_loaded;
   assign hist_data={stream_index,stream_index<14 ? frozen_meta[stream_index] : {16'd0,(frozen_valid[stream_index[5:0]-6'd14] ? freeze_q : 16'd0)}};
   always @(posedge clk or negedge rst_n) begin

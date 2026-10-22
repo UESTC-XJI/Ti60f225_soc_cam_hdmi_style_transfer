@@ -454,6 +454,10 @@ def main():
     # internally, a 2.5x scale mismatch (docs/tips.md:39 recommends matching
     # train and test scale).  512 gives 128x128, a 1.25x mismatch.
     p.add_argument('--size', type=int, default=256)
+    # Mid-network channel count.  The RTL tile is sized for up to 32 output
+    # channels; lowering this reduces the MAC count quadratically in the 18
+    # middle layers, which dominate the inference time.
+    p.add_argument('--channels', type=int, default=24)
     p.add_argument('--validate-every', type=int, default=250)
     # How many validation images the in-loop check uses.  The reported numbers
     # are MEANS over these images, so more images = a less noisy curve; the cost
@@ -605,14 +609,14 @@ def main():
     print('style ref std  (RGB): %s' % np.round(style_std.cpu().numpy(), 4))
     print('layer weights: %s' % LAYER_WEIGHTS)
 
-    model = (Teacher() if a.kind == 'teacher' else Student()).cuda()
+    model = (Teacher() if a.kind == 'teacher' else Student(channels=a.channels)).cuda()
     teacher = None
     if a.teacher:
         teacher = Teacher().cuda().eval()
         teacher.load_state_dict(torch.load(a.teacher, weights_only=False)['model'])
         teacher.requires_grad_(False)
     if a.reference_student:
-        teacher = Student().cuda().eval()
+        teacher = Student(channels=a.channels).cuda().eval()
         teacher.load_state_dict(torch.load(a.reference_student,
                                            weights_only=False)['model'])
         teacher.requires_grad_(False)

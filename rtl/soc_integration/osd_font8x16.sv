@@ -1,7 +1,8 @@
-// Synthesizable 256x16x8 ASCII ROM; printable ASCII 0x20..0x7e is populated.
+// Compact 128-character ASCII ROM; printable ASCII 0x20..0x7e is unchanged.
+// Non-printable and unknown character codes produce a synchronous blank row.
 module osd_font8x16(input logic clk, input logic [7:0] ch, input logic [3:0] row, output logic [7:0] bits);
-  logic [7:0] rom [0:4095]; integer i;
-  initial begin for(i=0;i<4096;i=i+1) rom[i]=8'h00;
+  logic [7:0] rom [0:2047]; integer i;
+  initial begin for(i=0;i<2048;i=i+1) rom[i]=8'h00;
     rom[12'h200] = 8'h00;
     rom[12'h201] = 8'h00;
     rom[12'h202] = 8'h00;
@@ -1523,5 +1524,12 @@ module osd_font8x16(input logic clk, input logic [7:0] ch, input logic [3:0] row
     rom[12'h7ee] = 8'h00;
     rom[12'h7ef] = 8'h00;
   end
-  always_ff @(posedge clk) bits <= rom[{ch,row}];
+  // Keep the RAM read unconditional for synchronous block-ROM inference.
+  wire printable = ch >= 8'h20 && ch <= 8'h7e;
+  logic [6:0] safe_ch;
+  always_comb begin
+    safe_ch = 7'h20;
+    if(printable) safe_ch = ch[6:0];
+  end
+  always_ff @(posedge clk) bits <= rom[{safe_ch,row}];
 endmodule

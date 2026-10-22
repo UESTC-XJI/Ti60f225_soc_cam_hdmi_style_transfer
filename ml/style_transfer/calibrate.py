@@ -11,10 +11,18 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('--checkpoint',type=Path,required=True)
     p.add_argument('--manifest',type=Path,required=True);p.add_argument('--out',type=Path,required=True)
     a=p.parse_args();a.out.mkdir(parents=True,exist_ok=True);torch.set_num_threads(8)
-    ck=torch.load(a.checkpoint,weights_only=False);model=Student().cuda().eval();model.load_state_dict(ck['model'])
+    ck=torch.load(a.checkpoint,weights_only=False)
+    cfg=ck.get('config',{})
+    model=Student(channels=cfg.get('channels',24),blocks=cfg.get('blocks',4),
+                  head=cfg.get('head',0),head_channels=cfg.get('head_channels',8)).cuda().eval()
+    model.load_state_dict(ck['model'])
     data=json.loads(a.manifest.read_text());root=Path(data['dataset']);v=[r['path'] for r in data['records'] if r['domain']=='B' and r['split']=='validation']
     v=[v[i*(len(v)-1)//31] for i in range(32)]
     layers=[m for m in model.modules() if isinstance(m,Layer)];maxima=np.zeros(len(layers));outputs={}
+    # Index of the first residual block layer = head layers (2 per head block + 1)
+    # plus the three encoder layers.
+    head_layers = 1 + 2*model.head if model.head > 0 else 0
+    res_base = head_layers + 3
     handles=[]
     for i,m in enumerate(layers):
         def hook(module,input,output,i=i):
@@ -24,19 +32,28 @@ def main():
     with torch.no_grad():
         for name in v:
             model(image_tensor(root/name)[None].cuda())
-            for i in range(4):
-                prev=outputs[2] if i==0 else previous
-                previous=(outputs[6+i*4]+prev).relu()
-                residual_max=max(residual_max,previous.max().item())
+            # Residual blocks: each block's 4th layer output is added to the
+            # block input.  Indices must follow the actual topology rather than
+            # a hard-coded list, or a narrowed channel count shifts them.
+            res_out = res_base + 3
+            for i in range(model.blocks):
+                prev = outputs[res_base - 1] if i == 0 else previous
+                previous = (outputs[res_out + i*4] + prev).relu()
+                residual_max = max(residual_max, previous.max().item())
     for h in handles:h.remove()
     scales=[2**math.ceil(math.log2(max(m,1e-5)/127)) for m in maxima]
-    common=2**math.ceil(math.log2(max(residual_max,maxima[[2,6,10,14,18]].max())/127))
-    for i in (2,6,10,14,18):scales[i]=common
+    # Scale sharing: the encoder output and every residual block output use one
+    # common range so the residual adds stay in the same fixed-point domain.
+    shared = [res_base - 1] + [res_out + i*4 for i in range(model.blocks)]
+    common=2**math.ceil(math.log2(max(residual_max,maxima[shared].max())/127))
+    for i in shared:scales[i]=common
     scales[-1]=1/128
     report={'maxima':maxima.tolist(),'residual_max':residual_max,'scales':scales,'candidates':[]}
     sheet=Image.new('RGB',(6*256,4*280),'white');draw=ImageDraw.Draw(sheet)
-    candidates=[('FP32',None),('global_1_32',[1/32]*22+[1/128]),('global_1_16',[1/16]*22+[1/128]),
-                ('global_1_8',[1/8]*22+[1/128]),('global_1_4',[1/4]*22+[1/128]),('calibrated',scales)]
+    n_scales = len(layers) - 1
+    candidates=[('FP32',None)] + \
+        [('global_1_%d' % d, [1/d]*n_scales + [1/128]) for d in (32,16,8,4)] + \
+        [('calibrated',scales)]
     for col,(label,s) in enumerate(candidates):
         model.set_qat(False)
         errs=[]
