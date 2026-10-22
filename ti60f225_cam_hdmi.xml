@@ -73,6 +73,7 @@
         <efx:design_file name="rtl/style/style_axi_cdc.sv" version="default" library="default" />
         <efx:design_file name="rtl/style/style_axi_rows.sv" version="default" library="default" />
         <efx:design_file name="rtl/style/style_display.sv" version="default" library="default" />
+        <efx:design_file name="rtl/style/style_key_toggle.sv" version="default" library="default" />
         <efx:design_file name="rtl/style/style_frame_store.sv" version="default" library="default" />
         <efx:design_file name="rtl/style/style_mac8x12.sv" version="default" library="default" />
         <efx:design_file name="rtl/style/style_network.sv" version="default" library="default" />
@@ -153,7 +154,7 @@
         <efx:param name="work_dir" value="work_pnr" value_type="e_string" />
         <efx:param name="verbose" value="off" value_type="e_bool" />
         <efx:param name="optimization_level" value="TIMING_3" value_type="e_option" />
-        <efx:param name="seed" value="1" value_type="e_integer" />
+        <efx:param name="seed" value="7" value_type="e_integer" />
         <efx:param name="placer_effort_level" value="3" value_type="e_option" />
         <efx:param name="max_threads" value="-1" value_type="e_integer" />
         <efx:param name="beneficial_skew" value="off" value_type="e_option" />

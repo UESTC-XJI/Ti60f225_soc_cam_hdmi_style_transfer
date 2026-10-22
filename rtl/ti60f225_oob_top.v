@@ -186,6 +186,8 @@ module ti60f225_oob_top #(
 
        //LED
        output [`CFG_BITS_8-1:0] led,
+       // Board key (active-low, GPIOR_22): toggles side-by-side <-> full-screen.
+       input  wire panel_key,
 
        /* MIPI DSI and LCD ports are intentionally removed from this HDMI-only build.
        // MIPI DSI
@@ -630,6 +632,7 @@ assign soc_apb_pready=style_select ? style_pready:video_pready;
 assign soc_apb_pslverr=style_select ? style_pslverr:video_pslverr;
 style_video_system style_demo(
   .clk(core_clk),.cnn_clk(vid_clk_dvi2),.pix_clk(hdmi_tx_slow_clk),.rst_n(status_reset_n&&!soc_system_reset),
+  .key_panel(panel_key),
   .rgb_vs(rgb_vs),.rgb_de(rgb_de),.rgb_data(rgb_datax2),
   .psel(soc_apb_psel&&style_select),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr[7:0]),.pwdata(soc_apb_pwdata),
   .prdata(style_prdata),.pready(style_pready),.pslverr(style_pslverr),.irq(style_irq),

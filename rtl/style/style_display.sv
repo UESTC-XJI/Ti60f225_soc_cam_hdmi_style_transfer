@@ -7,14 +7,46 @@ module style_display #(parameter bit BUFFERED=1'b1)(
   output reg [31:0] pixel,output reg hs,vs,de,underflow,
   output reg [31:0] dma_errors,
   output wire read_urgent,
+  // single_panel=1 shows only the stylised result, at its native 640-pixel
+  // width, centred between black side bands, instead of the side-by-side
+  // original/stylised pair.  Two versions of it are resynchronised below: one
+  // for the pix_clk pixel path and one for the clk row-fetch state machine.
+  input wire single_panel,
   output wire [31:0] araddr,output wire [7:0] arlen,output wire arvalid,input wire arready,
   input wire [127:0] rdata,input wire [1:0] rresp,input wire rlast,rvalid,output wire rready
 );
+  (* async_reg="true" *)reg sp_meta,sp_sync;
+  always @(posedge pix_clk or negedge rst_n)begin
+    if(!rst_n)begin sp_meta<=1'b0;sp_sync<=1'b0;end
+    else begin sp_meta<=single_panel;sp_sync<=sp_meta;end
+  end
+  wire single_panel_pix=sp_sync;
+  // The row-fetch state machine below runs in the clk domain, so it needs its
+  // own synchroniser.  Feeding it the pix_clk-domain copy would be a CDC
+  // violation and left the reader addressing the wrong DDR row.
+  (* async_reg = "true" *) reg spc_meta,spc_sync;
+  always @(posedge clk or negedge rst_n)begin
+    if(!rst_n)begin spc_meta<=1'b0;spc_sync<=1'b0;end
+    else begin spc_meta<=single_panel;spc_sync<=spc_meta;end
+  end
+  wire single_panel_clk=spc_sync;
   reg [10:0] h;reg [9:0] v;reg [7:0] epoch,epoch_gray;
   (* async_reg="true" *)reg [2:0] slot1,slot2;reg dv1,dv2;
-  wire image=v>=145&&v<625&&h>=260&&h<1540;
+  // Horizontal extent of the picture content.  Two-panel mode draws the
+  // original and the result side by side across the full 1280 columns; single
+  // panel keeps the 640-wide result at its native size, centred, with black to
+  // either side (no stretching).  `active` is the DE window and stays full width
+  // in both modes, so the side bands are driven black rather than blanked.
+  wire [10:0] img_x0=single_panel_pix ? 11'd580 : 11'd260;
+  wire [10:0] img_x1=single_panel_pix ? 11'd1220 : 11'd1540;
+  wire image=v>=145&&v<625&&h>=img_x0&&h<img_x1;
   wire active=v>=25&&v<745&&h>=260&&h<1540;
-  wire [8:0] expect_row=v-145;wire [10:0] expect_x=h-260;
+  wire [8:0] expect_row=v-145;
+  // Column index within the picture.  Both modes map one column to one source
+  // pixel, they only differ in where the picture starts, so the FIFO is
+  // consumed at the same rate in both.  Clamped below img_x0 so the value
+  // cannot wrap negative while the beam is still in the left blanking band.
+  wire [10:0] expect_x=(h>=img_x0) ? (h-img_x0) : 11'd0;
   wire request=h==0&&v>=144&&v<624&&dv2;
   wire request_ready,req_valid,req_ready;wire [19:0] req;
   wire [8:0] request_row=v-144;
@@ -74,7 +106,7 @@ module style_display #(parameter bit BUFFERED=1'b1)(
     .out_valid(pixel_valid),.out_ready(pixel_ready),.out_data(packet),.write_level(pixel_level));
   wire match=pixel_valid&&packet[59:52]==epoch&&packet[51:43]==expect_row&&packet[42:32]==expect_x;
   wire obsolete=pixel_valid&&(packet[59:52]!=epoch || v>=625 ||
-    (v>=145 && (packet[51:43]<expect_row || (packet[51:43]==expect_row && h>=260 && packet[42:32]<expect_x))));
+    (v>=145 && (packet[51:43]<expect_row || (packet[51:43]==expect_row && h>=img_x0 && packet[42:32]<expect_x))));
   assign pixel_ready=obsolete||(image&&match);
   always @(posedge pix_clk or negedge rst_n)begin
     if(!rst_n)begin h<=0;v<=0;epoch<=0;epoch_gray<=0;slot1<=0;slot2<=0;dv1<=0;dv2<=0;pixel<=0;hs<=0;vs<=0;de<=0;underflow<=0;end
@@ -95,8 +127,15 @@ module style_display #(parameter bit BUFFERED=1'b1)(
       if(rd_valid&&rd_ready)x<=x+1'b1;
       case(state)
         IDLE:if(req_valid&&req_ready&&req[19:12]==current_epoch)begin
-          row_epoch<=req[19:12];row_slot<=req[11:9];row_number<=req[8:0];x<=0;right_side<=0;
-          rd_address<=raw_base(req[11:9])+req[8:0]*2560;state<=START;
+          row_epoch<=req[19:12];row_slot<=req[11:9];row_number<=req[8:0];x<=0;
+          // Single panel fetches the stylised buffer straight away and skips
+          // the second fetch, so a display row costs one DDR read instead of
+          // two.  Two-panel mode keeps its original order: original frame first,
+          // stylised frame second.
+          right_side<=single_panel_clk;
+          rd_address<=single_panel_clk ? (raw_base(req[11:9])+32'h00800000+req[8:0]*2560)
+                                       : (raw_base(req[11:9])+req[8:0]*2560);
+          state<=START;
         end
         START:begin rd_start<=1;state<=WAIT;end
         WAIT:if(rd_done)begin
