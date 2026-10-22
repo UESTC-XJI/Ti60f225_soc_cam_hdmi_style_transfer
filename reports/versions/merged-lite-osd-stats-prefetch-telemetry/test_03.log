@@ -1,0 +1,5 @@
+PASS unified APB + real gain/Debayer: coherent AE/AWB, RAW phase, frame tags, 64 bins/frozen META, faults, CDC apply, no aliases
+tests/video_3a_tb.sv:194: $finish called at 562370000 (1ps)
+rtl/soc_integration/osd_apb_regs.sv:37: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
+rtl/soc_integration/osd_apb_regs.sv:37: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
+rtl/soc_integration/osd_apb_regs.sv:37: sorry: constant selects in always_* processes are not currently supported (all bits will be included).

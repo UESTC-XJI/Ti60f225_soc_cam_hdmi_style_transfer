@@ -1,0 +1,2 @@
+PASS style_accel all 6144 APB coefficients+CDC+IRQ 32x24 full graph exact RGB, AXI random stalls cycles=30749 reads=223 writes=195
+C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\reports\style_demo\errors\reset.sv:76: $finish called at 580580000 (1ps)

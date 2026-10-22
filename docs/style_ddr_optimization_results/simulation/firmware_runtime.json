@@ -1,0 +1,157 @@
+[
+  {
+    "scenario": "normal",
+    "uart": "SOC VIDEO boot\r\nDDR scratch PASS\r\nSTYLE INT8 RGB self-test PASS; MONET VGA\r\nCamera CD6B initialized\r\nMONET VGA\r\nSoftware AE/AWB unavailable (CAPS/VTS/I2C); inspect app_3a\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\n",
+    "committed_pages": [
+      "MONET VGA                                                                       ",
+      "MONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0                                      ",
+      "MONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0                                      "
+    ],
+    "commit_ticks": [
+      14380000,
+      116060000,
+      216080000
+    ],
+    "video_ready_writes": [
+      0,
+      1,
+      1,
+      1
+    ],
+    "cache_operations_modeled": 5
+  },
+  {
+    "scenario": "stale_ack",
+    "uart": "SOC VIDEO boot\r\nDDR scratch PASS\r\nSTYLE INT8 RGB self-test PASS; MONET VGA\r\nCamera CD6B initialized\r\nMONET VGA\r\nSoftware AE/AWB unavailable (CAPS/VTS/I2C); inspect app_3a\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\n",
+    "committed_pages": [
+      "MONET VGA                                                                       ",
+      "MONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0                                      ",
+      "MONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0                                      "
+    ],
+    "commit_ticks": [
+      14380000,
+      116060000,
+      216080000
+    ],
+    "video_ready_writes": [
+      0,
+      1,
+      1,
+      1
+    ],
+    "cache_operations_modeled": 5
+  },
+  {
+    "scenario": "bus_recover",
+    "uart": "SOC VIDEO boot\r\nDDR scratch PASS\r\nSTYLE INT8 RGB self-test PASS; MONET VGA\r\nCamera CD6B initialized\r\nMONET VGA\r\nSoftware AE/AWB unavailable (CAPS/VTS/I2C); inspect app_3a\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\n",
+    "committed_pages": [
+      "MONET VGA                                                                       ",
+      "MONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0                                      ",
+      "MONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0                                      "
+    ],
+    "commit_ticks": [
+      14400000,
+      116080000,
+      216100000
+    ],
+    "video_ready_writes": [
+      0,
+      1,
+      1,
+      1
+    ],
+    "cache_operations_modeled": 5
+  },
+  {
+    "scenario": "id_retry",
+    "uart": "SOC VIDEO boot\r\nDDR scratch PASS\r\nSTYLE INT8 RGB self-test PASS; MONET VGA\r\nCamera ID/init FAIL; retry every second\r\nMONET VGA\r\nCamera recovered\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\n",
+    "committed_pages": [
+      "MONET VGA                                                                       ",
+      "MONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0                                      ",
+      "MONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0                                      "
+    ],
+    "commit_ticks": [
+      3840000,
+      116770000,
+      216790000
+    ],
+    "video_ready_writes": [
+      0,
+      1,
+      1
+    ],
+    "cache_operations_modeled": 5
+  },
+  {
+    "scenario": "no_ack",
+    "uart": "SOC VIDEO boot\r\nDDR scratch PASS\r\nSTYLE INT8 RGB self-test PASS; MONET VGA\r\nCamera CD6B initialized\r\nOSD initial COMMIT timeout\r\nSoftware AE/AWB unavailable (CAPS/VTS/I2C); inspect app_3a\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\n",
+    "committed_pages": [],
+    "commit_ticks": [],
+    "video_ready_writes": [
+      0
+    ],
+    "cache_operations_modeled": 5
+  },
+  {
+    "scenario": "ddr_corrupt",
+    "uart": "SOC VIDEO boot\r\nDDR scratch FAIL\r\n",
+    "committed_pages": [],
+    "commit_ticks": [],
+    "video_ready_writes": [
+      0
+    ],
+    "cache_operations_modeled": 3
+  },
+  {
+    "scenario": "timer_wrap",
+    "uart": "SOC VIDEO boot\r\nDDR scratch PASS\r\nSTYLE INT8 RGB self-test PASS; MONET VGA\r\nCamera CD6B initialized\r\nMONET VGA\r\nSoftware AE/AWB unavailable (CAPS/VTS/I2C); inspect app_3a\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\n",
+    "committed_pages": [
+      "MONET VGA                                                                       ",
+      "MONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0                                      ",
+      "MONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0                                      "
+    ],
+    "commit_ticks": [
+      4309281760,
+      4410961760,
+      4510981760
+    ],
+    "video_ready_writes": [
+      0,
+      1,
+      1,
+      1
+    ],
+    "cache_operations_modeled": 5
+  },
+  {
+    "scenario": "style_corrupt",
+    "uart": "SOC VIDEO boot\r\nDDR scratch PASS\r\nSTYLE weights/IRQ/RGB self-test FAIL",
+    "committed_pages": [],
+    "commit_ticks": [],
+    "video_ready_writes": [
+      0
+    ],
+    "cache_operations_modeled": 5
+  },
+  {
+    "scenario": "style_reload",
+    "uart": "SOC VIDEO boot\r\nDDR scratch PASS\r\nSTYLE INT8 RGB self-test PASS; MONET VGA\r\nCamera CD6B initialized\r\nMONET VGA\r\nSoftware AE/AWB unavailable (CAPS/VTS/I2C); inspect app_3a\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\nMONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0\r\nDDR100M T 0 AR 0 DOWN 0 RGAP 0 RBP 0 DBP 0 AW 0 W 0 B 0 IDLE 0 RB 0 DRB 0 RPMS 0 CPMS 0\r\n",
+    "committed_pages": [
+      "MONET VGA                                                                       ",
+      "MONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0                                      ",
+      "MONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0                                      "
+    ],
+    "commit_ticks": [
+      14380000,
+      116060000,
+      216080000
+    ],
+    "video_ready_writes": [
+      0,
+      1,
+      1,
+      1
+    ],
+    "cache_operations_modeled": 5
+  }
+]

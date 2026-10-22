@@ -1,0 +1,97 @@
+# Efinity synthesis, place-and-route, debug and output directories.
+# Root-anchored: do not hide similarly named source directories in IP/BSP.
+/work_syn/
+/work_style/
+/work_style_next/
+/work_style_final/
+/work_style_ddr_opt/
+/work_style_deadline/
+/work_style_deadline_reserve/
+/work_pnr/
+/work_dbg/
+# /outflow/
+/outflow_*/
+# /netlist/
+
+# Regression reports, intermediate release copies and hardware-debug captures.
+# Keep notes, release checksums and the exact build input XML.
+# Re-include directories so the file exceptions also work in future releases.
+# # /reports/**/*
+# !/reports/**/
+# !/reports/**/*.md
+# !/reports/**/manifest.json
+# !/reports/**/build_project.xml
+# # Baseline source snapshots and simulation work products stay wholly local.
+# /reports/baseline/
+# /reports/simulation/
+# # Superseded split; the selected data_v2 manifest is versioned explicitly.
+# /reports/style_demo/data/
+# !/reports/style_demo/data_v2/*.json
+
+# Local project lock held by the FPGA tool while the project is open.
+/.lock
+
+# Simulator work libraries and generated waveforms.
+*.gtkw
+*.vcd
+*.fst
+*.wlf
+*.vpd
+*.fsdb
+*.vvp
+vsim.wlf
+transcript
+modelsim.ini
+/work/
+/xsim.dir/
+/.Xil/
+
+# Embedded software build output (keep BSP, linker scripts and boot images).
+**/Debug/
+**/Release/
+**/build/
+*.o
+*.obj
+*.d
+*.elf
+*.axf
+*.map
+*.su
+
+# Versioned release artifacts (after *.elf so published firmware stays visible).
+!/reports/style_demo/release/
+!/reports/**/*.bit
+!/reports/**/*.elf
+
+# IDE workspace state; keep project configuration and launch definitions.
+.metadata/
+.vs/
+*.code-workspace
+!/MonetStyleDemo.code-workspace
+
+# Python caches for helper scripts.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Editor backups and operating-system clutter.
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Deliberately keep:
+# - rtl/ and ip/ (including generated/encrypted RTL required for compilation)
+# - *.xml, *.peri.xml, *.sdc and package_settings.xml
+# - debug_top.v, debug.json and debug_profile.wizard.json
+#   (the current project references the debug source/profile)
+# - *.mem, *.memh, *.hex, *.bin and *.mif outside output directories
+#   (ROM/firmware initialization assets required by RTL/IP)
+# - *.gtkw (reusable waveform viewing configuration)
+# - ooc/ (do not exclude future out-of-context input configurations wholesale)

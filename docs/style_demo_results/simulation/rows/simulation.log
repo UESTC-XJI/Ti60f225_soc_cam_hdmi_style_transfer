@@ -1,0 +1,4 @@
+WARNING: tests/style_row_tb.sv:17: $readmemh(C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\reports\style_demo\rows\inputs.hex): Not enough words in the file for the requested range [0:39999].
+WARNING: tests/style_row_tb.sv:17: $readmemh(C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\reports\style_demo\rows\expected.hex): Not enough words in the file for the requested range [0:9999].
+PASS style_row whole graph rows=192 pixels=2976 compute_cycles=14856 randomized stalls
+tests/style_row_tb.sv:36: $finish called at 264270000 (1ps)

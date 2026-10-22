@@ -1,0 +1,84 @@
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Router Setup
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : High utilization design detected; tuning for routability.
+INFO     : [Setup Parallel Routing Scheduler]
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Route Circuit with 10 threads
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Overridding delay budgets for 782 synchronizer-related pins
+INFO     : Iter  1: overlap=183214  heapops=23534616   (0%) cpd=2054  frr=1.00  msec=5999
+INFO     : [Setup Delay Budgets | 799.8 ms]
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Hold Fixing
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Total min wire delay:  22204598
+INFO     : Hold fix wire delay:          0
+INFO     : Hold fix delay ratio:     0.00%
+INFO     : Pins requiring hold fix:  0.00%
+INFO     : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INFO     : Iter  2: overlap=121919  heapops=22394641   (0%) cpd=2133  frr=1.04  msec=4840
+INFO     : Iter  3: overlap=82418   heapops=25195847   (0%) cpd=2119  frr=1.03  msec=5168
+INFO     : Iter  4: overlap=56286   heapops=29112327   (0%) cpd=2119  frr=1.03  msec=5818
+INFO     : Iter  5: overlap=39142   heapops=34207458   (0%) cpd=2129  frr=1.04  msec=6942
+INFO     : Iter  6: overlap=27542   heapops=39742170   (0%) cpd=2119  frr=1.03  msec=8347
+INFO     : Iter  7: overlap=20514   heapops=43719608   (0%) cpd=2120  frr=1.03  msec=9247
+INFO     : Iter  8: overlap=16571   heapops=45933189   (0%) cpd=2120  frr=1.03  msec=9523
+INFO     : Iter  9: overlap=13209   heapops=48980023   (0%) cpd=2191  frr=1.07  msec=10191
+INFO     : Iter 10: overlap=10717   heapops=53159515   (0%) cpd=2284  frr=1.11  msec=11722
+INFO     : [Rebuild Parallel Routing Scheduler]
+INFO     : Iter 11: overlap=8790    heapops=55587244   (0%) cpd=2191  frr=1.07  msec=12870
+INFO     : Iter 12: overlap=6987    heapops=60012455   (0%) cpd=2237  frr=1.09  msec=16392
+INFO     : Iter 13: overlap=5633    heapops=63788201   (0%) cpd=2237  frr=1.09  msec=18281
+INFO     : Iter 14: overlap=4384    heapops=63849743   (0%) cpd=2271  frr=1.11  msec=18952
+INFO     : Iter 15: overlap=3349    heapops=63932804   (0%) cpd=2307  frr=1.12  msec=18427
+INFO     : Iter 16: overlap=2579    heapops=68382693   (0%) cpd=2307  frr=1.12  msec=20265
+INFO     : [Rebuild Parallel Routing Scheduler]
+INFO     : Iter 17: overlap=1816    heapops=68420259   (0%) cpd=2307  frr=1.12  msec=20025
+INFO     : Iter 18: overlap=1216    heapops=70789935   (0%) cpd=2307  frr=1.12  msec=22963
+INFO     : Iter 19: overlap=871     heapops=68075374   (0%) cpd=2307  frr=1.12  msec=20688
+INFO     : Iter 20: overlap=674     heapops=66682701   (0%) cpd=2307  frr=1.12  msec=21876
+INFO     : Iter 21: overlap=555     heapops=65739711   (0%) cpd=2307  frr=1.12  msec=22191
+INFO     : Iter 22: overlap=385     heapops=65900819   (0%) cpd=2307  frr=1.12  msec=22486
+INFO     : Iter 23: overlap=283     heapops=61905038   (0%) cpd=2307  frr=1.12  msec=20768
+INFO     : Iter 24: overlap=228     heapops=62505901   (0%) cpd=2307  frr=1.12  msec=22531
+INFO     : [Rebuild Parallel Routing Scheduler]
+INFO     : Iter 25: overlap=184     heapops=64611537   (0%) cpd=6600  frr=3.21  msec=21878
+INFO     : Iter 26: overlap=151     heapops=63927055   (0%) cpd=2307  frr=1.12  msec=21364
+INFO     : Iter 27: overlap=121     heapops=60868453   (0%) cpd=2307  frr=1.12  msec=20104
+INFO     : Iter 28: overlap=84      heapops=58521297   (0%) cpd=2307  frr=1.12  msec=18562
+INFO     : Iter 29: overlap=60      heapops=56905127   (0%) cpd=6617  frr=3.22  msec=17853
+INFO     : Iter 30: overlap=67      heapops=58935553   (0%) cpd=7807  frr=3.80  msec=19160
+INFO     : Iter 31: overlap=46      heapops=59006197   (0%) cpd=6661  frr=3.24  msec=17553
+INFO     : Iter 32: overlap=49      heapops=58837775   (0%) cpd=6974  frr=3.40  msec=17329
+INFO     : Iter 33: overlap=31      heapops=58076915   (0%) cpd=6695  frr=3.26  msec=18633
+INFO     : Iter 34: overlap=26      heapops=58266867   (0%) cpd=6542  frr=3.19  msec=18341
+INFO     : Iter 35: overlap=16      heapops=58856487   (0%) cpd=6851  frr=3.34  msec=18708
+INFO     : Iter 36: overlap=14      heapops=56734623   (0%) cpd=6659  frr=3.24  msec=17612
+INFO     : Iter 37: overlap=17      heapops=57909254   (0%) cpd=6727  frr=3.28  msec=18326
+INFO     : Iter 38: overlap=12      heapops=57114724   (0%) cpd=7255  frr=3.53  msec=17929
+INFO     : Iter 39: overlap=6       heapops=57115721   (0%) cpd=7817  frr=3.81  msec=17737
+INFO     : Iter 40: overlap=12      heapops=58170747   (0%) cpd=8357  frr=4.07  msec=18557
+INFO     : Iter 41: overlap=19      heapops=57256970   (0%) cpd=7558  frr=3.68  msec=17744
+INFO     : Iter 42: overlap=16      heapops=57638387   (0%) cpd=8872  frr=4.32  msec=17494
+INFO     : Iter 43: overlap=8       heapops=58127439   (0%) cpd=7197  frr=3.50  msec=16619
+INFO     : Iter 44: overlap=10      heapops=58446023   (0%) cpd=7935  frr=3.86  msec=18795
+INFO     : Iter 45: overlap=6       heapops=58071304   (0%) cpd=7915  frr=3.85  msec=17824
+INFO     : Iter 46: overlap=11      heapops=60250368   (0%) cpd=8326  frr=4.05  msec=18511
+INFO     : Iter 47: overlap=13      heapops=58069148   (0%) cpd=7019  frr=3.42  msec=16831
+INFO     : Iter 48: overlap=7       heapops=59013014   (0%) cpd=7695  frr=3.75  msec=17195
+INFO     : Iter 49: overlap=9       heapops=57622767   (0%) cpd=7512  frr=3.66  msec=17446
+INFO     : Iter 50: overlap=8       heapops=59988768   (0%) cpd=6637  frr=3.23  msec=18641
+INFO     : Iter 51: overlap=12      heapops=57521455   (0%) cpd=8357  frr=4.07  msec=17480
+INFO     : Iter 52: overlap=8       heapops=57166110   (0%) cpd=11238 frr=5.47  msec=17239
+INFO     : Iter 53: overlap=12      heapops=58947941   (0%) cpd=7969  frr=3.88  msec=18065
+INFO     : Iter 54: overlap=15      heapops=58795507   (0%) cpd=7429  frr=3.62  msec=17924
+INFO     : Iter 55: overlap=9       heapops=58734358   (0%) cpd=7750  frr=3.77  msec=18168
+INFO     : Iter 56: overlap=8       heapops=57395614   (0%) cpd=7226  frr=3.52  msec=18630
+INFO     : Iter 57: overlap=7       heapops=58877885   (0%) cpd=7350  frr=3.58  msec=19389
+INFO     : Iter 58: overlap=16      heapops=58521811   (0%) cpd=7123  frr=3.47  msec=18645
+INFO     : Iter 59: overlap=8       heapops=60080971   (0%) cpd=6886  frr=3.35  msec=19519
+INFO     : Iter 60: overlap=10      heapops=59243472   (0%) cpd=9694  frr=4.72  msec=19163
+INFO     : Iter 61: overlap=9       heapops=60126783   (0%) cpd=9633  frr=4.69  msec=19902
+INFO     : Iter 62: overlap=9       heapops=78994018   (0%) cpd=7855  frr=3.82  msec=30789
+INFO     : Iter 63: overlap=10      heapops=59834158   (0%) cpd=8447  frr=4.11  msec=19411

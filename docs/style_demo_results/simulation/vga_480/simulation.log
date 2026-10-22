@@ -1,0 +1,25 @@
+LAYER 0 cycles 801799
+LAYER 1 cycles 237407
+LAYER 2 cycles 127431
+LAYER 3 cycles 222272
+LAYER 4 cycles 257094
+LAYER 5 cycles 222964
+LAYER 6 cycles 375502
+LAYER 7 cycles 222362
+LAYER 8 cycles 256769
+LAYER 9 cycles 222535
+LAYER 10 cycles 375095
+LAYER 11 cycles 221972
+LAYER 12 cycles 257579
+LAYER 13 cycles 222835
+LAYER 14 cycles 375242
+LAYER 15 cycles 222112
+LAYER 16 cycles 257186
+LAYER 17 cycles 222407
+LAYER 18 cycles 374825
+LAYER 19 cycles 527657
+LAYER 20 cycles 705118
+LAYER 21 cycles 1093270
+LAYER 22 cycles 1254623
+PASS style_accel APB+CDC+IRQ 640x480 full graph exact RGB, AXI random stalls cycles=9056056 reads=33720 writes=29880
+C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\reports\style_demo\vga_480\tb.sv:61: $finish called at 60983870000 (1ps)

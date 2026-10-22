@@ -1,0 +1,3 @@
+TELEMETRY starts=59 completions=59 overlap_pixels=987
+PASS style_accel all 6144 APB coefficients+CDC+IRQ 32x24 full graph exact RGB, AXI random stalls cycles=26879 reads=217 writes=193
+/home/goodmann/Downloads/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_style_demo_merged/reports/style_demo/accel/tb.sv:93: $finish called at 550270000 (1ps)

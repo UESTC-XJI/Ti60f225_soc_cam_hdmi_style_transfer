@@ -1,0 +1,10 @@
+{
+  "width": 640,
+  "height": 48,
+  "cycles": 905535,
+  "cnn_mhz": 148.5,
+  "milliseconds": 6.097878787878788,
+  "fps": 163.9914525667147,
+  "axi": "random-stall behavioral memory, no competing video/CPU",
+  "wall_seconds": 191.829000000027
+}

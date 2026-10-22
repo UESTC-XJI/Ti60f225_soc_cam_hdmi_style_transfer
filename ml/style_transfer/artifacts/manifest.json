@@ -1,0 +1,41 @@
+{
+  "files": {
+    "student_fp.pt": {
+      "bytes": 79523,
+      "sha256": "bf7296f2de837ed1f5d4158ac420c03393a73b648672a0fbafc31c26f208f5e9"
+    },
+    "student_qat.pt": {
+      "bytes": 79779,
+      "sha256": "445acb1079ae5f508ccf54eda6c059f08664e51f6d2331c0e5ba18e2328095f3"
+    },
+    "teacher.pt": {
+      "bytes": 5554417,
+      "sha256": "c129155b4a678401592381eed90bdd549aed95afbdcc272d07650328ca69523e"
+    },
+    "integer/coeff.bin": {
+      "bytes": 24576,
+      "sha256": "a36bc85d4405a973820a502e56fbbd2724531d5b7c48d9940b82fcb9acebdc1c"
+    },
+    "integer/coeff.hex": {
+      "bytes": 49664,
+      "sha256": "83c6dbb26115b0af29426c12f92787bb160d1aa11cd70888a71b614f7e5d13fc"
+    },
+    "integer/graph.json": {
+      "bytes": 10061,
+      "sha256": "79d4e05c74921350835fe99e997b729b611d88e0f21f0bc244f75d2587e77187"
+    },
+    "integer/model.bin": {
+      "bytes": 11056,
+      "sha256": "84eb94419f51a3e4c1eef7d689675a256a8448a22d1228148f12b30701aab2a3"
+    },
+    "integer/parameters.npz": {
+      "bytes": 32427,
+      "sha256": "8afb3ba93f26c5ac112d54fdeddd51103bbd373d1dbe5db16da0b15eb5050a7c"
+    }
+  },
+  "model": "quality optimized color-preserving C24/R4 candidate",
+  "student_fp": "quality candidate checkpoint",
+  "student_qat": "quality progressive-QAT candidate",
+  "teacher": "quality training-only teacher",
+  "integer": "deployment candidate; generated from the quality integer package"
+}

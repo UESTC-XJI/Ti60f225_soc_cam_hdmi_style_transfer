@@ -1,0 +1,32 @@
+{
+  "variant": "adaptive",
+  "width": 640,
+  "height": 480,
+  "cycles": 10242677,
+  "milliseconds": 68.9742558922559,
+  "display_pixels": 2457600,
+  "capture_beats": 76800,
+  "captured_frame_exact_pixels": 307200,
+  "underflows": 0,
+  "counters_100mhz": {
+    "ticks": 6897430,
+    "cnn_ar_wait": 765790,
+    "downstream_ar_wait": 52820,
+    "cnn_return_gap": 1618994,
+    "cnn_r_backpressure": 0,
+    "display_r_backpressure": 0,
+    "cnn_aw_wait": 32935,
+    "cnn_w_wait": 464025,
+    "cnn_b_wait": 0,
+    "network_idle": 2,
+    "cnn_read_beats": 1036800,
+    "display_read_beats": 614400
+  },
+  "phase_148_5mhz": {
+    "read_cycles": 5447882,
+    "compute_cycles": 4713227
+  },
+  "profile": "real integrated RTL; prepared display slot0, 640x480 job slot1, one dense 1080p camera frame into slot2; randomized DDR stalls; no external CPU or DDR PHY model",
+  "wall_seconds": 2503.125,
+  "behavioral_ddr_task_fps": 14.498162931428961
+}

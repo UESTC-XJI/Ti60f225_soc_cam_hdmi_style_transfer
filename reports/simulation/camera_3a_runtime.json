@@ -1,0 +1,34 @@
+{
+  "checks": [
+    "AE: frame-start Group Hold, preserved fields, verified writes, conservative N+2 guard",
+    "AE: delayed Group Hold readback for 3802 delays 0..3; confirmation/timeout/read failure preserve last verified exposure",
+    "AE: independent bright-to-target plant converges within deadband, exposure always in bounds",
+    "AE: delayed 30 FPS dark/bright steps settle within 45 frames (1.5 seconds)",
+    "AE: fixed-scene +/-7 noise and isolated +/-10 spikes cause zero writes; sustained drift escapes hold",
+    "AE: isolated clipped light at 0.8..1.4% and persistent 5% highlights converge without pumping or dark-scene collapse",
+    "AE/AWB: coupled gain-dependent brightness and clipped light converge, with no late AE writes",
+    "AE: unreachable target at minimum/maximum exposure holds without repeated writes",
+    "AWB: two-green factor, bounded smooth commits and absolute RAW gain convergence",
+    "coordination: pending gain/old CFG rejected; AWB waits for exposure settling",
+    "AWB: fixed/lock modes, zero-denominator and insufficient-candidate hold",
+    "I2C: real BSP NACK/timeout handling; failed exposure never confirmed; hold release always attempted",
+    "I2C recovery: stuck bus is bounded; RECOVER timeout/dropped/remaining SDA-low never reports initialized",
+    "invalid VTS/ID, missing ACK, no statistics, torn snapshots and capture faults stop new control",
+    "32-bit source/statistics wraparound retains valid seq=0 and settling guard",
+    "full _start/main: actual initialization, cooperative 3A service, UART state, OSD ACK and startup gate",
+    "histogram driver: nonblocking ACQUIRE/78-word read/RELEASE, four-word budget and bin-sum validation"
+  ],
+  "response": [
+    {
+      "initial": 200,
+      "settled_frame": 13,
+      "updates": 3
+    },
+    {
+      "initial": 7103,
+      "settled_frame": 27,
+      "updates": 5
+    }
+  ],
+  "elf": "/home/goodmann/Downloads/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_style_demo_merged/software/firmware/build/soc_video_app.elf"
+}

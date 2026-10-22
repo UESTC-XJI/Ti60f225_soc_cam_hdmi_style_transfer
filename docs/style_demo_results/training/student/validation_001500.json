@@ -1,0 +1,72 @@
+{
+  "step": 1500,
+  "content_feature_mse": 7.148616820573807,
+  "style_gram_mse": 0.00016135212240708796,
+  "original_style_mse": 0.0002912938358221595,
+  "items": [
+    {
+      "path": "trainB/2013-11-14 14_11_02.jpg",
+      "content_feature_mse": 16.61617660522461,
+      "style_gram_mse": 8.950508791372158e-05,
+      "original_style_mse": 0.0009948236537411503,
+      "pixel_mae_from_input": 0.10028193891048431,
+      "teacher_mae": 0.08823426812887192
+    },
+    {
+      "path": "trainB/2014-07-27 16_06_00.jpg",
+      "content_feature_mse": 4.043410301208496,
+      "style_gram_mse": 0.00022960806137461987,
+      "original_style_mse": 0.00024153240582336366,
+      "pixel_mae_from_input": 0.08073316514492035,
+      "teacher_mae": 0.17929768562316895
+    },
+    {
+      "path": "trainB/2015-05-28 15_19_14.jpg",
+      "content_feature_mse": 3.395124673843384,
+      "style_gram_mse": 0.00021842483609191277,
+      "original_style_mse": 0.0001678270047875685,
+      "pixel_mae_from_input": 0.06000746786594391,
+      "teacher_mae": 0.06180330365896225
+    },
+    {
+      "path": "trainB/2015-09-04 03_32_02.jpg",
+      "content_feature_mse": 8.360160827636719,
+      "style_gram_mse": 0.00012056625063650017,
+      "original_style_mse": 0.00024238016612798674,
+      "pixel_mae_from_input": 0.08801792562007904,
+      "teacher_mae": 0.059128135442733765
+    },
+    {
+      "path": "trainB/2015-12-25 03_22_09.jpg",
+      "content_feature_mse": 8.482953071594238,
+      "style_gram_mse": 0.00013462269032515906,
+      "original_style_mse": 0.0002557861180889631,
+      "pixel_mae_from_input": 0.07907828688621521,
+      "teacher_mae": 0.06560342013835907
+    },
+    {
+      "path": "trainB/2016-04-19 20_39_47.jpg",
+      "content_feature_mse": 4.9445343017578125,
+      "style_gram_mse": 0.00019060191108621893,
+      "original_style_mse": 0.0001573623931108159,
+      "pixel_mae_from_input": 0.10117083042860031,
+      "teacher_mae": 0.0709771141409874
+    },
+    {
+      "path": "trainB/2016-07-28 09_43_58.jpg",
+      "content_feature_mse": 7.927011966705322,
+      "style_gram_mse": 0.00011590394979066332,
+      "original_style_mse": 0.00015287848927414416,
+      "pixel_mae_from_input": 0.07440657913684845,
+      "teacher_mae": 0.12168808281421661
+    },
+    {
+      "path": "trainB/2017-01-02 22_42_51.jpg",
+      "content_feature_mse": 3.419562816619873,
+      "style_gram_mse": 0.000191584192037908,
+      "original_style_mse": 0.00011776045562328363,
+      "pixel_mae_from_input": 0.12625300884246826,
+      "teacher_mae": 0.062399595975875854
+    }
+  ]
+}

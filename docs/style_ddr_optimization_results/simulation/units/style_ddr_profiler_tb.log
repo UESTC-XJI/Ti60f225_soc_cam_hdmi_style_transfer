@@ -1,0 +1,2 @@
+PASS DDR profiler: exact event counts, coherent freeze, clear, disabled windows, uint32 wrap, invalid index
+tests/style_ddr_profiler_tb.sv:46: $finish called at 1021000 (1ps)

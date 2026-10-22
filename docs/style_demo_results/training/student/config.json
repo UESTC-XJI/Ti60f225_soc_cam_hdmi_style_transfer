@@ -1,0 +1,26 @@
+{
+  "manifest": "reports\\style_demo\\data_v2\\manifest.json",
+  "out": "reports\\style_demo\\student",
+  "kind": "student",
+  "teacher": "reports\\style_demo\\teacher_v2\\step_002500.pt",
+  "resume": null,
+  "steps": 8000,
+  "batch": 12,
+  "qat_after": 5500,
+  "validate_every": 500,
+  "torch": "2.11.0+cu128",
+  "device": "NVIDIA GeForce RTX 5070",
+  "manifest_sha256": "85364e6d04d761e0fe5b22d34689f036f6d9f5b3dccd35b845927bbc6dbe5b17",
+  "style_refs": [
+    "trainA/00001.jpg",
+    "trainA/00201.jpg",
+    "trainA/00394.jpg",
+    "trainA/00618.jpg",
+    "trainA/00803.jpg",
+    "trainA/00982.jpg",
+    "trainA/01164.jpg",
+    "trainA/01337.jpg"
+  ],
+  "parameters": 8251,
+  "loss": "content VGG relu3_3 + 1500*sum Gram + .03 TV + 5*teacher L1 (student)"
+}

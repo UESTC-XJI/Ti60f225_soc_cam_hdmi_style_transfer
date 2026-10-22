@@ -1,0 +1,16 @@
+{
+  "source": "/home/goodmann/Downloads/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_style_demo_merged/outflow_merged/ti60f225_oob.map.v",
+  "sha256": "71c23f57a6f640e3fbb880fa70b1db79ed635000537c4ddeaa9dff1a99ba8cb1",
+  "scope": "style_demo/accelerator/",
+  "primitive_count": 16079,
+  "types": {
+    "EFX_FF": 7260,
+    "EFX_ADD": 2367,
+    "EFX_RAM10": 115,
+    "EFX_DSP48": 25,
+    "EFX_DSP24": 96,
+    "EFX_SRL8": 397,
+    "EFX_LUT4": 5819
+  },
+  "limitations": "Exact net token only; aliases and expression bit expansion omitted; high fanout control omitted in drawing"
+}

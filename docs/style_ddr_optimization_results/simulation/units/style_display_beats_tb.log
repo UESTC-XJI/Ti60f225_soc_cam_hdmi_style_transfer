@@ -1,0 +1,2 @@
+PASS display beats: full burst with stalled consumer, 512 packets, RGB padding, RRESP/RLAST, random backpressure, reset
+tests/style_display_beats_tb.sv:44: $finish called at 9610000 (1ps)

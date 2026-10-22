@@ -1,0 +1,24 @@
+预取运行时遥测增强版本
+
+基线：merged-lite-osd-stats-prefetch。
+新增RTL计数器：
+  PF：本次CNN任务启动的安全预取次数。
+  PFC：预取读完成次数。正常完成时PFC应等于PF。
+  OVLP：预取读有效且CNN计算同时有效的CNN时钟周期数。
+
+APB寄存器（style accelerator）：
+  0xB0 PF starts
+  0xB4 PFC completions
+  0xB8 OVLP read/compute overlap cycles
+
+UART每秒DDR100M行新增：PF <n> PFC <n> OVLP <n>。
+这些计数器在每次CNN任务开始时清零，在任务完成快照后由CPU读取；因此反映最近一次完成任务，不是跨任务累计值。
+预取仍由RTL自动按安全条件启用，不增加软件开关。
+
+验证：
+  32x24完整网络整数RGB对拍通过，prefetch telemetry：PF=59、PFC=59、OVLP=987。
+  原有预取随机DDR停顿回归通过，OVERLAP=1091，cycles=21374。
+  Efinity map/interface/PNR/pgm通过，资源见evidence。
+  未上板，未烧录。
+
+使用：烧录本版本bit后，下载同目录ELF；观察DDR100M行中的PF/PFC/OVLP。

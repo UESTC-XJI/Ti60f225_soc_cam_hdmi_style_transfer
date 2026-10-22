@@ -1,0 +1,28 @@
+{
+  "source": "C:\\OneDrive\\comp\\Ti60F225_DemoBoard_v4\\soc_hdmi_test\\Ti60f225_soc_cam_hdmi_soc_sim",
+  "head": "d55c1ac50db5dcc1e8b60bdd9c12d43cb4acda04",
+  "overlay_sha256": {
+    ".gitignore": "c61cbc65f79e16f0797817b99141a9853515067070cf10a56e7dadd0105c9ee5",
+    "docs/INTEGRATION_LOG.md": "d57bc5779089bcbda8e89ec24ff27b92d92e8426a1de5addfdd54c41711ec3b6",
+    "docs/PROJECT_HANDOFF.md": "59afef37e9e6844b6c453929323751f3feecc2cffe0af8f51fd3c31513e56bfa",
+    "rtl/defines.v": "a072b9fbdbe375b4e765670856f1b3b45428e1e8ebf7eac3ae96ee6043c5e9a5",
+    "rtl/isp/capture_frame_stats.sv": "660502caca79b630d2fa8a9ac6395c2448aed3a2c3502ce095448fbd85accf0b",
+    "rtl/isp/hdmi_frame_histogram.v": "cf10b01f1b54cd498b1deb4d3edee585c0a8249d0240cf3920601dcbe9f54325",
+    "rtl/isp/hdmi_info_overlay.v": "db0ebe0dcaa76efad6797184f14dfb1efb83a11143a4af2cf00bb0e32efff740",
+    "rtl/soc_integration/osd_text_double_buffer.sv": "83d8457680aa94ff22bf6ba7d9bdf1aa7172dac592ba8298d2f80026e301e7d5",
+    "rtl/soc_integration/video_apb_ctrl.sv": "079dff89c49aa0ce779fe767042d1ab7e10be4722a0195036d5000d1d4157843",
+    "tests/video_3a_tb.sv": "6f9120a9de7cc8e93ee2ea43c16be83e3bd5dcd4f54898c9bdf0848e0c8b377c",
+    "ti60f225_cam_hdmi.xml": "cfe401756d2321502b48c84250a4c1f77cb48ece4de7b6ade898ca5bbbf227a0",
+    "tools/check_rtl_config.py": "73522bbeaed61645d15705680297ced22ef92d51f391aaa46f3d57d301b3d4cf",
+    "tools/rtl_config_manifest.json": "c2432ffade3481cdbbc1f2540307b9ce9f5b642d86617d5ae4d09547a5cea7a0",
+    "docs/RESOURCE_OPTIMIZATION_PLAN.md": "43c332949f63557150ee221e5999753fa69e89c8a96b71b2af7cf3e949056b19",
+    "docs/STYLE_TRANSFER_FPGA_PLAN.md": "8015a634c086966d6aa83d0c00d0818d655e5c2374ed7158a1182c5f398db89d",
+    "tests/capture_bram_backpressure_tb.sv": "a92260a8181d7b2925094bc4c3e3fa2604d62e22444397baea11d6d3774cd767",
+    "tests/osd_bram_pixels_tb.sv": "91ce42698675551436e2896dce5b8c06096633b6764f3d16039eb5b84a21e76d",
+    "tools/audit_style_dataset.py": "63947aa0e2812238ccd886906f547f51b6d849b313dc8576dd7209ae4b8f2284",
+    "tools/check_resource_optimization.py": "01fac5db18f9c7e9ee480d34d80d2317399e4dea60c64da86ba20eaa367315bd",
+    "tools/estimate_style_network.py": "b38095cf9722dff703b5c2368947f86cc25c8ce1cb2ee305728855eee2108d09",
+    "tools/summarize_resource_optimization.py": "d324e057bfb5f800dc20a5cbf2d9af5e5124a0347d9d6aaf1073ff44c49e57f2",
+    "tools/test_resource_optimization.py": "e24a79fd092e8298a49f2170bef1ff1ee5f0e470ab3806bcee9307c506ede870"
+  }
+}

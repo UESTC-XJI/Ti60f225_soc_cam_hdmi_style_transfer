@@ -1,0 +1,2 @@
+PASS style_accel all 6144 APB coefficients+CDC+IRQ 32x24 expected AXI error completion/W1C, AXI random stalls cycles=238 reads=2 writes=1
+C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\reports\style_demo\errors\write_error.sv:80: $finish called at 370840000 (1ps)

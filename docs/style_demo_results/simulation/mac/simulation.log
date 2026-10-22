@@ -1,0 +1,2 @@
+PASS style_mac packets=4989 outputs=2002 randomized stalls cycles=6651
+tests/style_mac_tb.sv:35: $finish called at 66535000 (1ps)

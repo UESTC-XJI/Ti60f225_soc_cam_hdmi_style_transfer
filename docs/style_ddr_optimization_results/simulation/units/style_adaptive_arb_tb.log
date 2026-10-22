@@ -1,0 +1,4 @@
+rtl/soc_integration/axi_shared_ddr_2m.sv:57: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
+rtl/soc_integration/axi_shared_ddr_2m.sv:57: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
+PASS adaptive arbitration: urgent display <=3 bypass bursts, nonurgent round-robin, 180 reads, full IDs, no starvation
+reports/style_demo/ddr_optimization/units/adaptive_tb.sv:63: $finish called at 18040000 (1ps)

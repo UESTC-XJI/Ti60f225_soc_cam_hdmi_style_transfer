@@ -1,0 +1,17 @@
+PASS RV32 3A: AE: frame-start Group Hold, preserved fields, verified writes, conservative N+2 guard
+PASS RV32 3A: AE: delayed Group Hold readback for 3802 delays 0..3; confirmation/timeout/read failure preserve last verified exposure
+PASS RV32 3A: AE: independent bright-to-target plant converges within deadband, exposure always in bounds
+PASS RV32 3A: AE: delayed 30 FPS dark/bright steps settle within 45 frames (1.5 seconds)
+PASS RV32 3A: AE: fixed-scene +/-7 noise and isolated +/-10 spikes cause zero writes; sustained drift escapes hold
+PASS RV32 3A: AE: isolated clipped light at 0.8..1.4% and persistent 5% highlights converge without pumping or dark-scene collapse
+PASS RV32 3A: AE/AWB: coupled gain-dependent brightness and clipped light converge, with no late AE writes
+PASS RV32 3A: AE: unreachable target at minimum/maximum exposure holds without repeated writes
+PASS RV32 3A: AWB: two-green factor, bounded smooth commits and absolute RAW gain convergence
+PASS RV32 3A: coordination: pending gain/old CFG rejected; AWB waits for exposure settling
+PASS RV32 3A: AWB: fixed/lock modes, zero-denominator and insufficient-candidate hold
+PASS RV32 3A: I2C: real BSP NACK/timeout handling; failed exposure never confirmed; hold release always attempted
+PASS RV32 3A: I2C recovery: stuck bus is bounded; RECOVER timeout/dropped/remaining SDA-low never reports initialized
+PASS RV32 3A: invalid VTS/ID, missing ACK, no statistics, torn snapshots and capture faults stop new control
+PASS RV32 3A: 32-bit source/statistics wraparound retains valid seq=0 and settling guard
+PASS RV32 3A: full _start/main: actual initialization, cooperative 3A service, UART state, OSD ACK and startup gate
+PASS RV32 3A: histogram driver: nonblocking ACQUIRE/78-word read/RELEASE, four-word budget and bin-sum validation

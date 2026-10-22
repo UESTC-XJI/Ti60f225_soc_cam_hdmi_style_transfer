@@ -1,0 +1,2 @@
+PASS 4-entry control CDC FIFOs: 40/45 bits, unrelated clocks in both directions, full backpressure, reset discards, 1000 ordered words each
+tests/style_control_fifo_tb.sv:60: $finish called at 20168330 (1ps)
