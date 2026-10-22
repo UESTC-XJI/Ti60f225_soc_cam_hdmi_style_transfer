@@ -1,0 +1,5 @@
+# CUDA 版本请按 https://pytorch.org/get-started/locally/ 选择对应命令安装
+torch>=2.0
+torchvision>=0.15
+numpy
+pillow
