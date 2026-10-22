@@ -1,88 +1,139 @@
-# Ti60F225 实时 AI 风格化视频（SC431HAI → CNN → HDMI）
+# 超轻量快速风格迁移：通道剪枝 + 微调
 
-易灵思 Titanium Ti60F225 上的端到端风格迁移演示：摄像头 RAW → debayer/ISP → 640×480 风格网络（行缓冲全流水）→ 720p60 HDMI 输出。
+面向 FPGA 部署的 Fast Neural Style 网络。训练、**通道前缀剪枝**、剪枝后微调、出图，全部在 `train/` 里，纯 PyTorch，无私有依赖。
 
-- 网络：12 层 int8 卷积（3×3 / 1×1），权重编译进固件
-- 显示：720p60，显示与网络共享 DDR3，按 burst 公平仲裁
-- 控制：Sapphire RISC-V 软核跑 3A（软件 AE/AWB）、统计与 UART 日志
+- 网络：Johnson et al. 的 encoder–residual–decoder，反射填充卷积 + InstanceNorm(affine)
+- 训练：VGG16 感知损失（content + Gram style + TV）
+- 剪枝：结构化通道剪枝（保留通道前缀），剪完热启动微调
+- 目标：在 640×480 上实时，权重压到几 KB～几十 KB
 
-## 实板实测
+## 快速开始
 
-| 指标 | 数值 | 口径 |
+```bash
+python -m venv .venv
+# Windows: .venv\Scripts\activate    Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
+
+# 1) 下载数据（COCO val2017 前 N 张 + Wikimedia 公版风格图）
+python -m train.fetch_data --content 800 --styles 3
+
+# 2) 训练基线（约 17.3K 参数）
+python -m train.train --net "改D: 1/8ch 3res 3x3" --style starry_night \
+    --steps 4000 --tag baseline
+
+# 3) 通道前缀剪枝 → cap8（中间通道 16→8，5.6K 参数）
+python -m train.prune --ckpt runs/baseline/net.pt \
+    --net "改D: cap8 3res 3x3" --out runs/pruned
+
+# 4) 微调（必须做，否则画质明显下降）
+python -m train.train --net "改D: cap8 3res 3x3" --init runs/pruned \
+    --style starry_night --steps 2000 --lr 5e-4 --tag pruned_ft
+
+# 5) 出图
+python -m train.stylize --ckpt runs/pruned_ft --input data/content --limit 5 --max-side 640
+```
+
+第一次训练会自动下载 VGG16 预训练权重（约 528 MB）。
+
+## 剪枝做了什么
+
+只剪**卷积输出通道**，并且每个卷积**保留前 N 个通道**：
+
+```
+W' = W[:co_new, :ci_new, :, :]
+```
+
+不按权重的重要性重排通道。这是一个刻意偏袒硬件的选择：小网络的每一行仍是原权重的一段前缀，部署时权重可以按固定行宽连续摆放，不需要 gather/重排；代价是被剪掉的通道不一定最不重要，所以**必须微调**。
+
+模型族（`train/model.py`）的通道数按 `mult` / `cap` 单调缩放，因此小网络的每个通道都在大网络里存在且编号相同——这是前缀剪枝成立的前提。脚本会逐层核对形状，任何不兼容都直接报错，不会静默截断。
+
+| 网络 | 通道 (enc1/enc2/enc3) | 参数量（含 IN affine） | 说明 |
+|---|---|---:|---|
+| `改D: 1/8ch 3res 3x3` | 4 / 8 / 16 | 17,331 | 基线；去掉 IN affine 为 17,059 |
+| `改D: cap8 3res 3x3` | 4 / 8 / 8 | 5,643 | 中间层 16→8，画质几乎不掉 |
+| `改D: 1/16ch 3res 3x3` | 2 / 4 / 8 | 4,491 | 极窄；非重训剪枝画质明显变差，仅作下限 |
+
+实测（同一张图、同一风格）：cap8 剪枝 + 2K 步微调后与原模型肉眼几乎一致；按“输出 vs 输入内容图”计的 PSNR/SSIM 为 12.43 dB / 0.2836（原模型 11.88 dB / 0.2541）。这两个指标衡量的是内容保留，不是“像不像画”，需配合样张一起看。
+
+## 命令与参数
+
+### `train.train` — 训练 / 微调
+
+```bash
+python -m train.train --net "改D: cap8 3res 3x3" --style starry_night --steps 3000
+```
+
+| 参数 | 默认 | 含义 |
 |---|---|---|
-| 风格化帧率 | **17.2 fps**（`MS 57–58`） | 640×480，实板，≥15fps 达标 |
-| 显示 | 720p60 | `UF/DUF 0`，无 underflow |
-| 逻辑 | XLR **59,057 / 60,800**（97.13%） | PnR 后 |
-| RAM / DSP | **244** / **147** | PnR 后 |
-| 视频时钟 slack | **+0.192 ns** | I3 时序模型 |
-| 3A | `exp 4989 / vts 2500 / err 0` | 暗部细节可辨 |
+| `--net` | `改D: 1/8ch 3res 3x3` | 结构，可选值见 `train/model.py::BUILDERS` |
+| `--style` | `starry_night` | 短名 / 文件路径 / 目录（多图时随机采样） |
+| `--steps` | 3000 | 训练步数 |
+| `--lr` | 1e-3 | 学习率（微调建议 5e-4） |
+| `--init` | 无 | 热启动：从 `runs/<tag>` 或 `net.pt` 载入权重 |
+| `--tag` | 自动 | 输出到 `runs/<tag>/` |
+| `--calibrate` | 关 | 只跑一步，打印三项损失的原始量级 |
 
-## 仓库结构
+损失权重 `--content-weight` / `--style-weight` / `--tv-weight` 默认 `1 / 1e5 / 1e-4`。不确定量级时先跑 `--calibrate`。
 
-```
-rtl/           RTL 源码（rowpipe 网络、采集/显示、SoC 集成、DDR 仲裁）
-soc/           Efinity Sapphire SoC（RISC-V 子系统）
-software/      BSP + 固件（C）
-  firmware/    3A、风格驱动、视频驱动
-tests/         ModelSim 测试平台
-tools/         构建与校验脚本
-docs/          模块说明与集成记录
-model/         权重 blob 与导出头文件
-artifacts/     已验证的位流 + ELF
-ti60f225_cam_hdmi.xml    Efinity 工程（相对路径，直接打开）
-ti60f225_oob.peri.xml    SoC 外设定义
-ti60f225_oob.sdc         时序约束
-```
-
-## 构建
-
-**位流**（Efinity 2026.1，`efx_run_*` 脚本）：
+### `train.prune` — 通道前缀剪枝
 
 ```bash
-efx_run_map.py  ti60f225_oob --family Titanium --device Ti60F225 \
-    --project_xml ti60f225_cam_hdmi.xml --output_dir outflow --work_dir work_syn \
-    --opt root=ti60f225_oob_top --opt veri_options=verilog_mode=sv_09,vhdl_mode=vhdl_2008
-efx_run_pt_unified.py ti60f225_oob Titanium Ti60F225 --output_dir outflow --timing_model I3 \
-    --project_xml ti60f225_cam_hdmi.xml
-efx_run_pnr.py  ti60f225_oob --prj ti60f225_cam_hdmi.xml --family Titanium --device Ti60F225 \
-    --timing_model I3 --output_dir outflow --work_dir work_pnr \
-    --opt sdc_file=ti60f225_oob.sdc
-efx_run_pgm.py  ti60f225_oob --family Titanium --device Ti60F225 --output_dir outflow \
-    --work_dir work_pnr --opt mode=active width=1 enable_roms=on spi_low_power_mode=on \
-    io_weak_pullup=on oscillator_clock_divider=DIV8 enable_crc_check=on \
-    bitstream_compression=on active_capture_clk_edge=posedge release_tri_then_reset=on \
-    enable_external_master_clock=off jtag_usercode=0xFFFFFFFF
+python -m train.prune --ckpt runs/baseline/net.pt \
+    --net "改D: cap8 3res 3x3" --out runs/pruned
 ```
 
-> 工程必须整个放在 Efinity 可访问的路径内；把单个源文件放到工程外会让 `efx_map` 失败。
+| 参数 | 含义 |
+|---|---|
+| `--ckpt` | 源 ckpt 文件或目录（目录下取 `net.pt`） |
+| `--net` | 目标结构；通道数必须 ≤ 源 |
+| `--out` | 输出目录，写 `<out>/net.pt` |
+| `--overwrite` | 允许覆盖已有输出（默认拒绝） |
 
-**固件**（RISC-V 工具链，Efinity 自带）：
+脚本会打印每一层的形状变化，并跑一次前向自检（NaN/Inf）。
+
+### `train.stylize` — 出图
 
 ```bash
-SOC_RISCV_TOOLCHAIN=/path/to/efinity-riscv-ide/toolchain/bin python tools/build_firmware.py
-# 产出 software/firmware/build/soc_video_app.elf
+python -m train.stylize --ckpt runs/pruned_ft --input data/content --limit 5 --max-side 640
 ```
 
-## 运行
+输出写到 `runs/<tag>/out/`，同时打印 PSNR/SSIM。
 
-1. 烧 `artifacts/ti60f225_cap8_fps_fair.bit`；
-2. 通过 JTAG 下载 `artifacts/soc_video_app_cap8_ae_crop_goal128_vts2500_max4989.elf`；
-3. UART 115200 8N1 观察每秒一行的 3A / 帧率 / DDR 统计。
+### `train.fetch_data` — 下载数据
 
-**位流与 ELF 必须配套使用**，md5：
-
-```
-848717a2fa1c691ad323a7f8d215bfd3  ti60f225_cap8_fps_fair.bit
-e9f7e5e4af27a60937461f4ad4db36d5  soc_video_app_..._vts2500_max4989.elf
+```bash
+python -m train.fetch_data --content 800 --styles 3
 ```
 
-相机在 `VTS=2500`（约 18fps）下跑，AE 曝光上限 4989 半行。改 VTS 后必须重验 UART 的 3A 行。
+内容图来自 COCO val2017（Fast Neural Style 论文同款数据）；风格图从 Wikimedia Commons 取公版名画（梵高《星月夜》、葛饰北斋《神奈川冲浪里》等）。
 
-## 已知问题
+## 目录结构
 
-- `OSD metrics COMMIT timeout` 每秒一次：文本 OSD 已从设计中移除，固件仍在等 ACK；不影响画面，`DISP` 字段因此恒为 0。
-- 显示与网络共享 DDR，网络帧率受仲裁参数影响；`rtl/style/style_video_system.sv` 中 `URGENT_OVERRIDES_FAIRNESS` / `RESERVE_URGENT_READ` 为帧率关键开关。
+```
+train/
+  model.py      FNSNet 及各候选结构（BUILDERS）
+  prune.py      通道前缀剪枝
+  train.py      训练 / 微调主程序
+  stylize.py    推理出图 + PSNR/SSIM
+  data.py       内容图随机裁剪、风格图预处理、亮度/色度工具
+  vgg.py        VGG16 感知损失
+  quant.py      训练期输出量化（STE），剪枝流程不需要
+  metrics.py    平坦度/噪声等训练监控指标
+  fetch_data.py 下载 COCO + 风格图
+examples/
+  prune_cap8.sh 一页纸跑完“训练 → 剪枝 → 微调”
+```
+
+运行产物（`runs/`、`data/`、`*.pt`）已在 `.gitignore` 中忽略。
 
 ## 说明
 
-Efinix Sapphire SoC / BSP 归 Efinix 所有，随其 SDK 发行；本项目其余部分为竞赛作品源码。
+- 网络名里的“改D / cap8”是项目内的实验代号，保留原名是为了让现有 ckpt 直接可用；结构本身在 `train/model.py` 里有完整定义。
+- 代码注释保留了项目当时的实验记录风格；其中提到的 `stnet/`（硬件成本模型）和 `tools/`（部署后处理）**不包含在本仓库**，不影响训练与剪枝流程。
+- 训练与推理的输入尺寸不必相同：网络全卷积，训练用 256×256 随机裁剪，推理可直接喂 640×480（InstanceNorm 统计量会随尺寸变化，但风格表现一致）。
+- 剪枝只处理该模型族的前缀结构；对任意 CNN 做通用剪枝需要额外的通道重要性评估与重排，不在本脚本范围内。
+
+## 参考
+
+- Johnson, Alahi, Fei-Fei. *Perceptual Losses for Real-Time Style Transfer and Super-Resolution*. ECCV 2016.
+- pytorch/examples `fast_neural_style`
