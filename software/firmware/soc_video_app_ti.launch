@@ -49,7 +49,7 @@
     <stringAttribute key="org.eclipse.cdt.dsf.gdb.DEBUG_NAME" value="${eclipse_home}/../toolchain/bin/riscv-none-elf-gdb.exe"/>
     <booleanAttribute key="org.eclipse.cdt.dsf.gdb.UPDATE_THREADLIST_ON_SUSPEND" value="false"/>
     <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="0"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="C:\OneDrive\comp\Ti60F225_DemoBoard_v4\soc_hdmi_test\Ti60f225_soc_cam_hdmi_style_demo\reports\style_demo\release_ddr_opt\soc_video_app.elf"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="C:\OneDrive\comp\2026fpga\ti60_style_demo\reports\versions\merged-lite-osd-stats-prefetch-telemetry\artifacts\soc_video_app.elf"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="soc_video_app"/>
     <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value=""/>
