@@ -1,0 +1,17 @@
+# Efinity 构建产物
+/outflow/
+/work_syn/
+/work_pnr/
+/reports/
+*.peri.rpt
+*.place.rpt
+*.route.rpt
+*.efx_*.log
+
+# 固件编译产物
+software/firmware/build/
+
+# 仿真产物
+*.vcd
+*.wlf
+transcript
