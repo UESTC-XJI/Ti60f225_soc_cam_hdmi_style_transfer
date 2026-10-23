@@ -45,6 +45,8 @@
 
 soc u_soc
 (
+    .system_uart_1_io_rxd ( system_uart_1_io_rxd ),
+    .system_uart_1_io_txd ( system_uart_1_io_txd ),
     .io_systemClk ( io_systemClk ),
     .io_ddrA_w_payload_strb ( io_ddrA_w_payload_strb ),
     .io_ddrA_w_payload_data ( io_ddrA_w_payload_data ),

@@ -2,6 +2,8 @@
 module soc_video_ddr_integration (
   input wire clk, rst_n, allow_access,
   input wire style_irq,
+  input wire io_sw1, io_sw2, io_key0, io_key1,
+  input wire ble_uart_rxd, output wire ble_uart_txd,
   input wire [7:0] vid_awid, input wire [31:0] vid_awaddr, input wire [7:0] vid_awlen, input wire [2:0] vid_awsize, input wire [1:0] vid_awburst, input wire vid_awvalid, output wire vid_awready,
   input wire [127:0] vid_wdata, input wire [15:0] vid_wstrb, input wire vid_wlast, input wire vid_wvalid, output wire vid_wready, output wire [7:0] vid_bid, output wire [1:0] vid_bresp, output wire vid_bvalid, input wire vid_bready,
   input wire [7:0] vid_arid, input wire [31:0] vid_araddr, input wire [7:0] vid_arlen, input wire [2:0] vid_arsize, input wire [1:0] vid_arburst, input wire vid_arvalid, output wire vid_arready, output wire [7:0] vid_rid, output wire [127:0] vid_rdata, output wire [1:0] vid_rresp, output wire vid_rlast, output wire vid_rvalid, input wire vid_rready,
@@ -244,7 +246,11 @@ module soc_video_ddr_integration (
   assign io_ddrMasters_0_aw_payload_id = '0;
   assign io_ddrMasters_0_aw_payload_addr = '0;
   assign io_ddrMasters_0_aw_valid = '0;
-  assign system_gpio_0_io_read = '0;
+  qse_gpio_sync qse_inputs (
+    .clk(clk), .rst_n(rst_n && !io_systemReset),
+    .io_sw1(io_sw1), .io_sw2(io_sw2),
+    .io_key0(io_key0), .io_key1(io_key1),
+    .gpio_read(system_gpio_0_io_read));
   assign spi_ss=system_spi_0_io_ss;
   assign spi_sclk=system_spi_0_io_sclk_write;
   assign spi_d0_out=system_spi_0_io_data_0_write;
@@ -254,6 +260,8 @@ module soc_video_ddr_integration (
   // The generated IP exposes an auxiliary 32-bit AXI master and a second
   // DDR master port. They are intentionally tied off; only io_ddrA is CPU DDR.
   soc u_soc (
+    .system_uart_1_io_rxd(ble_uart_rxd),
+    .system_uart_1_io_txd(ble_uart_txd),
     .io_systemClk(io_systemClk),
     .io_ddrA_w_payload_strb(io_ddrA_w_payload_strb),
     .io_ddrA_w_payload_data(io_ddrA_w_payload_data),

@@ -24,6 +24,7 @@
 `include "isp/hdmi_frame_histogram.v"
 `include "isp/hdmi_info_overlay.v"
 `include "soc_integration/osd_font8x16.sv"
+`include "soc_integration/qse_ui_control.sv"
 `include "soc_integration/hdmi_startup_colorbar.sv"
 `include "soc_integration/video_frame_diagnostics.sv"
 `include "soc_integration/video_cfg_cdc.sv"
@@ -70,6 +71,9 @@ module ti60f225_oob_top #(
   (* syn_peri_port = 0 *) output jtag_inst1_TDO,
 
   input wire system_uart_0_io_rxd,
+  input wire io_sw1, io_sw2, io_key0, io_key1,
+  input wire ble_uart_rxd,
+  output wire ble_uart_txd,
   output wire system_uart_0_io_txd,
   input wire system_spi_0_io_data_0_IN,
   input wire system_spi_0_io_data_1_IN,
@@ -584,6 +588,15 @@ assign io_cam_scl_OE = ~soc_i2c_scl_out;
 assign io_cam_sda_OE = ~soc_i2c_sda_out;
 wire [31:0] soc_axi_error_count;
 wire osd_apb_enable; wire [11:0] osd_apb_x,osd_apb_y; wire [23:0] osd_apb_color;
+wire qse_osd_enable,qse_compare_enable;
+wire [1:0] qse_selection;
+reg qse_vs_d;
+always @(posedge hdmi_tx_slow_clk or negedge display_reset_n)
+  if(!display_reset_n)qse_vs_d<=0;else qse_vs_d<=osd_vs;
+qse_ui_control qse_ui(
+  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.frame_start(osd_vs&&!qse_vs_d),
+  .io_sw1(io_sw1),.io_sw2(io_sw2),.io_key0(io_key0),.io_key1(io_key1),
+  .osd_enable(qse_osd_enable),.compare_enable(qse_compare_enable),.selection(qse_selection));
 wire osd_apb_char_we,osd_apb_char_page,osd_apb_commit_toggle,osd_apb_commit_page; wire [6:0] osd_apb_char_addr; wire [7:0] osd_apb_char_data;
 wire osd_db_ack,osd_db_active,osd_db_busy,osd_video_ready;
 // One-second capture/display statistics are exposed through the APB status
@@ -600,7 +613,8 @@ wire style_select=soc_apb_paddr[15:8]==8'h02;
 assign soc_apb_prdata=style_select ? style_prdata:video_prdata;
 assign soc_apb_pready=style_select ? style_pready:video_pready;
 assign soc_apb_pslverr=style_select ? style_pslverr:video_pslverr;
-style_video_system style_demo(
+style_video_system #(.UI_ENABLE(1'b1)) style_demo(
+  .compare_enable(qse_compare_enable),
   .clk(core_clk),.cnn_clk(vid_clk_dvi2),.pix_clk(hdmi_tx_slow_clk),.rst_n(status_reset_n&&!soc_system_reset),
   .rgb_vs(rgb_vs),.rgb_de(rgb_de),.rgb_data(rgb_datax2),
   .psel(soc_apb_psel&&style_select),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr[7:0]),.pwdata(soc_apb_pwdata),
@@ -638,6 +652,8 @@ video_status_counters status_counters(
   .underflow_count(status_underflow_count),.error_count(status_error_count),
   .capture_fps(status_capture_fps),.display_fps(status_display_fps),.raw_fps(status_raw_fps));
 soc_video_ddr_integration soc_video_inst(
+  .io_sw1(io_sw1),.io_sw2(io_sw2),.io_key0(io_key0),.io_key1(io_key1),
+  .ble_uart_rxd(ble_uart_rxd),.ble_uart_txd(ble_uart_txd),
   .clk(core_clk),.rst_n(barrier_sys_reset_n),.allow_access(barrier_allow_sys),
   .vid_awid({2'b0,fb_awid}),.vid_awaddr(fb_awaddr),.vid_awlen(fb_awlen),.vid_awsize(fb_awsize),.vid_awburst(fb_awburst),.vid_awvalid(fb_awvalid),.vid_awready(fb_awready),
   .vid_wdata(fb_wdata),.vid_wstrb(fb_wstrb),.vid_wlast(fb_wlast),.vid_wvalid(fb_wvalid),.vid_wready(fb_wready),.vid_bid(soc_vid_bid),.vid_bresp(soc_vid_bresp),.vid_bvalid(soc_vid_bvalid),.vid_bready(fb_bready),
@@ -679,8 +695,9 @@ video_apb_ctrl osd_apb(
   .o_enable(osd_apb_enable),.o_x(osd_apb_x),.o_y(osd_apb_y),.o_color(osd_apb_color),.o_char_we(osd_apb_char_we),.o_char_addr(osd_apb_char_addr),.o_char_page(osd_apb_char_page),.o_char_data(osd_apb_char_data),.o_commit_toggle(osd_apb_commit_toggle),.o_commit_page(osd_apb_commit_page),.o_video_ready(osd_video_ready),.i_ack_toggle(osd_db_ack),.i_active_page(osd_db_active),.i_busy(osd_db_busy),.i_frame_count(status_display_fps),.i_capture_fps(status_capture_fps),.i_display_fps(status_display_fps),.i_drop_count(status_drop_count[15:0]),.i_error_count(status_error_count[15:0]));
 
 wire db_vs,db_hs,db_de,db_char_pixel; wire [7:0] db_r,db_g,db_b;
-osd_text_double_buffer #(.FRAME_WIDTH(1280),.FRAME_HEIGHT(720),.PAGE_SIZE(80)) osd_db(
-  .wr_clk(core_clk),.pix_clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.wr_en(osd_apb_char_we),.wr_page(osd_apb_char_page),.wr_addr(osd_apb_char_addr),.wr_data(osd_apb_char_data),.wr_commit(osd_apb_commit_toggle),.wr_commit_page(osd_apb_commit_page),.wr_enable(osd_apb_enable),.wr_x(osd_apb_x),.wr_y(osd_apb_y),.wr_color(osd_apb_color),
+osd_text_double_buffer #(.FRAME_WIDTH(1280),.FRAME_HEIGHT(720),.PAGE_SIZE(80),.BASE_Y(40),.QSE_UI(1'b1)) osd_db(
+  .ui_selection(qse_selection),
+  .wr_clk(core_clk),.pix_clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.wr_en(osd_apb_char_we),.wr_page(osd_apb_char_page),.wr_addr(osd_apb_char_addr),.wr_data(osd_apb_char_data),.wr_commit(osd_apb_commit_toggle),.wr_commit_page(osd_apb_commit_page),.wr_enable(osd_apb_enable&&qse_osd_enable),.wr_x(osd_apb_x),.wr_y(12'd40),.wr_color(osd_apb_color),
   .i_vs(osd_vs),.i_hs(osd_hs),.i_de(osd_de),.i_r(osd_r),.i_g(osd_g),.i_b(osd_b),.o_vs(db_vs),.o_hs(db_hs),.o_de(db_de),.o_r(db_r),.o_g(db_g),.o_b(db_b),.o_char_pixel(db_char_pixel),.ack_toggle(osd_db_ack),.active_page(osd_db_active),.busy(osd_db_busy));
 
 ddr3_top                 u_ddr3_top
@@ -911,7 +928,7 @@ hdmi_info_overlay #(.FRAME_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_INFORMATION_OVERLA
   .i_de(lift_de),
   .i_r(lift_rdata),.i_g(lift_gdata),
   .i_b(lift_bdata),
-  .i_hist_enable(video_display_hist[0]),.i_hist_mode(video_display_hist[2:1]),.i_text_enable(1'b0),
+  .i_hist_enable(video_display_hist[0]&&qse_osd_enable),.i_hist_mode(video_display_hist[2:1]),.i_text_enable(1'b0),
   .i_text_valid(1'b0),.i_text_rgb(24'd0),.o_x(),.o_y(),
   .o_hist_valid(),.o_hist_samples(),
   .o_vs(osd_vs),.o_hs(osd_hs),.o_de(osd_de),.o_r(osd_r),.o_g(osd_g),.o_b(osd_b)

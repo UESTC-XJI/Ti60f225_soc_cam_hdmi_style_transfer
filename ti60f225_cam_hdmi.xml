@@ -14,6 +14,7 @@
         <efx:design_file name="rtl/soc_integration/video_status_counters.sv" version="default" library="default" />
         <efx:design_file name="rtl/soc_integration/ddr_startup_barrier.sv" version="default" library="default" />
         <efx:design_file name="rtl/soc_integration/soc_video_ddr_integration.sv" version="default" library="default" />
+        <efx:design_file name="rtl/soc_integration/qse_gpio_sync.sv" version="default" library="default" />
         <efx:design_file name="soc/efx_sapphire_soc/soc/soc.v" version="default" library="default" />
         <efx:design_file name="rtl/user_dual_port_ram.v" version="default" library="default" />
         <efx:design_file name="rtl/dual_clock_fifo.v" version="default" library="default" />

@@ -1,7 +1,8 @@
 // Fixed 720p60 timing. Missing pixels become black without stopping sync.
 // DDR only supplies the two VGA rectangles; the 120-line bars are generated.
-module style_display #(parameter bit BUFFERED=1'b1)(
+module style_display #(parameter bit BUFFERED=1'b1, UI_ENABLE=1'b0)(
   input wire clk,pix_clk,rst_n,
+  input wire compare_enable,
   input wire [2:0] display_slot,input wire display_valid,
   output wire display_frame_event,display_safe,
   output reg [31:0] pixel,output reg hs,vs,de,underflow,
@@ -12,14 +13,15 @@ module style_display #(parameter bit BUFFERED=1'b1)(
 );
   reg [10:0] h;reg [9:0] v;reg [7:0] epoch,epoch_gray;
   (* async_reg="true" *)reg [2:0] slot1,slot2;reg dv1,dv2;
-  wire image=v>=145&&v<625&&h>=260&&h<1540;
+  reg frame_compare;
+  wire image=v>=145&&v<625&&(frame_compare ? (h>=260&&h<1540):(h>=580&&h<1220));
   wire active=v>=25&&v<745&&h>=260&&h<1540;
-  wire [8:0] expect_row=v-145;wire [10:0] expect_x=h-260;
+  wire [8:0] expect_row=v-145;wire [10:0] expect_x=h-(frame_compare ? 260:580);
   wire request=h==0&&v>=144&&v<624&&dv2;
-  wire request_ready,req_valid,req_ready;wire [19:0] req;
+  wire request_ready,req_valid,req_ready;wire [20:0] req;
   wire [8:0] request_row=v-144;
-  style_async_fifo #(.WIDTH(20)) requests(.reset_n(rst_n),.wclk(pix_clk),.rclk(clk),
-    .in_valid(request),.in_ready(request_ready),.in_data({epoch,slot2,request_row}),
+  style_async_fifo #(.WIDTH(21)) requests(.reset_n(rst_n),.wclk(pix_clk),.rclk(clk),
+    .in_valid(request),.in_ready(request_ready),.in_data({epoch,frame_compare,slot2,request_row}),
     .out_valid(req_valid),.out_ready(req_ready),.out_data(req));
   (* async_reg="true" *)reg [7:0] eg1,eg2;reg [7:0] current_epoch,seen_epoch;integer bit_index;
   always @*begin
@@ -33,7 +35,7 @@ module style_display #(parameter bit BUFFERED=1'b1)(
   assign display_frame_event=current_epoch!=seen_epoch;
   reg [1:0] state;localparam IDLE=0,START=1,WAIT=2;
   reg [7:0] row_epoch;reg [2:0] row_slot;reg [8:0] row_number;reg [10:0] x;reg right_side;
-  reg rd_start;reg [31:0] rd_address;
+  reg rd_start;reg [31:0] rd_address;reg row_compare;
   reg [11:0] row_age;
   localparam integer PIXEL_LOG=BUFFERED ? 9:10;
   wire [PIXEL_LOG:0] pixel_level;
@@ -74,12 +76,13 @@ module style_display #(parameter bit BUFFERED=1'b1)(
     .out_valid(pixel_valid),.out_ready(pixel_ready),.out_data(packet),.write_level(pixel_level));
   wire match=pixel_valid&&packet[59:52]==epoch&&packet[51:43]==expect_row&&packet[42:32]==expect_x;
   wire obsolete=pixel_valid&&(packet[59:52]!=epoch || v>=625 ||
-    (v>=145 && (packet[51:43]<expect_row || (packet[51:43]==expect_row && h>=260 && packet[42:32]<expect_x))));
+    (v>=145 && (packet[51:43]<expect_row || (packet[51:43]==expect_row && h>=(frame_compare ? 260:580) && packet[42:32]<expect_x))));
   assign pixel_ready=obsolete||(image&&match);
   always @(posedge pix_clk or negedge rst_n)begin
-    if(!rst_n)begin h<=0;v<=0;epoch<=0;epoch_gray<=0;slot1<=0;slot2<=0;dv1<=0;dv2<=0;pixel<=0;hs<=0;vs<=0;de<=0;underflow<=0;end
+    if(!rst_n)begin frame_compare<=1;h<=0;v<=0;epoch<=0;epoch_gray<=0;slot1<=0;slot2<=0;dv1<=0;dv2<=0;pixel<=0;hs<=0;vs<=0;de<=0;underflow<=0;end
     else begin
       slot1<=display_slot;slot2<=slot1;dv1<=display_valid;dv2<=dv1;
+      if(h==0&&v==1)frame_compare<=UI_ENABLE ? compare_enable:1'b1;
       if(h==1649)begin h<=0;if(v==749)v<=0;else v<=v+1'b1;end else h<=h+1'b1;
       if(h==0&&v==0)begin epoch<=epoch+1'b1;epoch_gray<=((epoch+1'b1)>>1)^(epoch+1'b1);end
       hs<=h<40;vs<=v<5;de<=active;pixel<=image&&match ? packet[31:0]:0;
@@ -87,21 +90,21 @@ module style_display #(parameter bit BUFFERED=1'b1)(
     end
   end
   always @(posedge clk or negedge rst_n)begin
-    if(!rst_n)begin state<=IDLE;rd_start<=0;rd_address<=0;row_epoch<=0;row_slot<=0;row_number<=0;x<=0;right_side<=0;dma_errors<=0;row_age<=0;end
+    if(!rst_n)begin row_compare<=1;state<=IDLE;rd_start<=0;rd_address<=0;row_epoch<=0;row_slot<=0;row_number<=0;x<=0;right_side<=0;dma_errors<=0;row_age<=0;end
     else begin
       rd_start<=0;
       if(state==IDLE)row_age<=0;
       else if(row_age!=4095)row_age<=row_age+1'b1;
       if(rd_valid&&rd_ready)x<=x+1'b1;
       case(state)
-        IDLE:if(req_valid&&req_ready&&req[19:12]==current_epoch)begin
-          row_epoch<=req[19:12];row_slot<=req[11:9];row_number<=req[8:0];x<=0;right_side<=0;
-          rd_address<=raw_base(req[11:9])+req[8:0]*2560;state<=START;
+        IDLE:if(req_valid&&req_ready&&req[20:13]==current_epoch)begin
+          row_epoch<=req[20:13];row_compare<=req[12];row_slot<=req[11:9];row_number<=req[8:0];x<=0;right_side<=0;
+          rd_address<=raw_base(req[11:9])+(req[12] ? 32'd0:32'h00800000)+req[8:0]*2560;state<=START;
         end
         START:begin rd_start<=1;state<=WAIT;end
         WAIT:if(rd_done)begin
           if(rd_error)dma_errors<=dma_errors+1'b1;
-          if(!right_side)begin right_side<=1;rd_address<=raw_base(row_slot)+32'h00800000+row_number*2560;state<=START;end
+          if(row_compare&&!right_side)begin right_side<=1;rd_address<=raw_base(row_slot)+32'h00800000+row_number*2560;state<=START;end
           else state<=IDLE;
         end
       endcase

@@ -1,3 +1,8 @@
+# QSE asynchronous pads: cut only pad-to-first-stage paths.
+# Do not cut the synchronizer interstage timing.
+set_false_path -from [get_ports {io_sw1 io_sw2 io_key0 io_key1}] -to [get_pins {*qse*inputs*qse_meta*|D}]
+set_false_path -from [get_ports {ble_uart_rxd}] -to [get_pins {*system_uart_1_io_logic*io_rxd_buffercc*buffers_0*|D}]
+
 # PLL Constraints
 #################
 # PLL Constraints

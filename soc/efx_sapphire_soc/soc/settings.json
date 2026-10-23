@@ -110,7 +110,7 @@
     "UART2": "1'b0",
     "UART1_FIFODEPTH": "128",
     "UART1_INT_ID": "2",
-    "UART1": "1'b0",
+    "UART1": "1'b1",
     "SPI2": "1'b0",
     "SPI2DW": "8",
     "SPI2SS": "1",

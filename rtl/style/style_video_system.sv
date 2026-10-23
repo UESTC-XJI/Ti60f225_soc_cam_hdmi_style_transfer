@@ -1,7 +1,8 @@
 // Replaces the baseline resize/framebuffer/CVO path in the isolated demo branch.
 // The nested bridge saves full local IDs before the outer CPU/video bridge.
-module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1)(
+module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1,UI_ENABLE=1'b0)(
   input wire clk,cnn_clk,pix_clk,rst_n,
+  input wire compare_enable,
   input wire rgb_vs,rgb_de,input wire [47:0] rgb_data,
   input wire psel,penable,pwrite,input wire [7:0] paddr,input wire [31:0] pwdata,
   output wire [31:0] prdata,output wire pready,pslverr,irq,
@@ -46,7 +47,7 @@ module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1
     .display_frame_event(display_frame_event),.display_safe(display_safe),.display_slot(display_slot),.display_valid(display_valid),
     .captured(captured),.dropped(dropped),.inferred(inferred),.infer_errors(infer_errors),.display_frame_id(display_frame_id),
     .awaddr(v_awaddr),.awlen(v_awlen),.awvalid(v_awvalid),.awready(v_awready),.wdata(v_wdata),.wstrb(v_wstrb),.wlast(v_wlast),.wvalid(v_wvalid),.wready(v_wready),.bresp(v_bresp),.bvalid(v_bvalid),.bready(v_bready));
-  style_display #(.BUFFERED(DISPLAY_BUFFER)) display(.clk(clk),.pix_clk(pix_clk),.rst_n(rst_n),.display_slot(display_slot),.display_valid(display_valid),
+  style_display #(.BUFFERED(DISPLAY_BUFFER),.UI_ENABLE(UI_ENABLE)) display(.clk(clk),.pix_clk(pix_clk),.rst_n(rst_n),.display_slot(display_slot),.display_valid(display_valid),.compare_enable(compare_enable),
     .display_frame_event(display_frame_event),.display_safe(display_safe),.pixel(pixel),.hs(hs),.vs(vs),.de(de),.underflow(underflow),.dma_errors(display_dma_errors),
     .read_urgent(display_read_urgent),
     .araddr(v_araddr),.arlen(v_arlen),.arvalid(v_arvalid),.arready(v_arready),.rdata(v_rdata),.rresp(v_rresp),.rlast(v_rlast),.rvalid(v_rvalid),.rready(v_rready));

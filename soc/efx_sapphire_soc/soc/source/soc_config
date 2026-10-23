@@ -1,4 +1,4 @@
---ramHex "C:\Efinity\2025.2\ipm\ip\efx_soc\efx_soc\generator\bootloader\bootloader_124K.hex"
+--ramHex /home/goodmann/efinity/2026.1/ipm/ip/efx_soc/efx_soc/generator/bootloader/bootloader_124K.hex
 --ddrASize 0xe0000000
 --ddrAIdWidth 8
 --uart name=system_uart_0_io,address=0x010000,interruptId=1,fifoDepth=128
@@ -32,3 +32,7 @@
 --softTap false
 --apbBridgeAddress 0xf8000000
 --dCacheWays 1
+
+--uart name=system_uart_1_io,address=0x011000,interruptId=2,fifoDepth=128
+--noDdrAClock
+--lowArea 5

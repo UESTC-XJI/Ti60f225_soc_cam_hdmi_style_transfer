@@ -1,0 +1,10 @@
+WARNING: cannot find correct IV value
+Creating /home/goodmann/Documents/comp/2026fpga/ti60_style_demo/outflow_qse_ui_final
+Running: efx_run_map.py ti60f225_oob --family Titanium --device Ti60F225 --project_xml /home/goodmann/Documents/comp/2026fpga/ti60_style_demo/ti60f225_cam_hdmi.xml --output_dir outflow_qse_ui_final --work_dir work_syn --opt root=ti60f225_oob_top --opt veri_options=verilog_mode=sv_09,vhdl_mode=vhdl_2008 work-dir=work_syn write_efx_verilog=on
+[92m   map :	PASS [0m
+Running: efx_run_pt_unified.py ti60f225_oob Titanium Ti60F225 --output_dir outflow_qse_ui_final --timing_model I3 --project_xml ti60f225_cam_hdmi.xml
+[92m   interface :	PASS [0m
+Running: efx_run_pnr.py ti60f225_oob --prj /home/goodmann/Documents/comp/2026fpga/ti60_style_demo/ti60f225_cam_hdmi.xml --family Titanium --device Ti60F225 --timing_model I3 --output_dir outflow_qse_ui_final --work_dir work_pnr --opt sdc_file=ti60f225_oob.sdc
+[92m   pnr :	PASS [0m
+Running: efx_run_pgm.py ti60f225_oob --family Titanium --device Ti60F225 --output_dir outflow_qse_ui_final --work_dir work_pnr --opt mode=active width=1 enable_roms=on spi_low_power_mode=on io_weak_pullup=on oscillator_clock_divider=DIV8 enable_crc_check=on bitstream_compression=on active_capture_clk_edge=posedge release_tri_then_reset=on enable_external_master_clock=off jtag_usercode=0xFFFFFFFF
+[92m   pgm :	PASS [0m

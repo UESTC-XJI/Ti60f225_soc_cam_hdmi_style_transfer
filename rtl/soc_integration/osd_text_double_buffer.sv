@@ -2,12 +2,14 @@
 // RGB and all qualifiers have the same three-clock input-to-output latency.
 module osd_text_double_buffer #(
   parameter integer FRAME_WIDTH=1280,FRAME_HEIGHT=720,PAGE_SIZE=80,
-  parameter integer BASE_X=16,BASE_Y=16
+  parameter integer BASE_X=16,BASE_Y=16,
+  parameter bit QSE_UI=1'b0
 )(
   input logic wr_clk,pix_clk,rst_n,
   input logic wr_en,wr_page,input logic [6:0] wr_addr,input logic [7:0] wr_data,
   input logic wr_commit,wr_commit_page,wr_enable,
   input logic [11:0] wr_x,wr_y,input logic [23:0] wr_color,
+  input logic [1:0] ui_selection,
   input logic i_vs,i_hs,i_de,input logic [7:0] i_r,i_g,i_b,
   output logic o_vs,o_hs,o_de,output logic [7:0] o_r,o_g,o_b,output logic o_char_pixel,
   output logic ack_toggle,active_page,output logic busy
@@ -31,14 +33,35 @@ module osd_text_double_buffer #(
   logic [23:0] col1,col2,active_color;
   logic vs_d;
   wire in_text=x>=active_x&&x<active_x+8*PAGE_SIZE&&y>=active_y&&y<active_y+16;
+  wire in_label=QSE_UI&&x>=16&&x<80&&y>=16&&y<32;
+  wire [11:0] label_x=x-16;
+  function automatic [7:0] label_char(input [1:0] sel,input [2:0] index);
+    reg [63:0] text;
+    begin
+      case(sel)
+        0:text="0:origin";
+        1:text="1:style1";
+        2:text="2:style2";
+        3:text="3:style3";
+      endcase
+      label_char=text[63-index*8 -: 8];
+    end
+  endfunction
   wire [11:0] relative_x=x-active_x;
   wire [6:0] char_idx=relative_x[9:3];
-  logic [7:0] active_ch,font_bits;
+  logic [7:0] page_ch,label_ch,font_bits;
+  logic label_d;
+  wire [7:0] active_ch=label_d ? label_ch:page_ch;
   logic [3:0] row1;logic [2:0] glyph_col1,glyph_col2;
   logic v1,h1,d1,e1,v2,h2,d2,e2;
   logic [23:0] rgb1,rgb2,color1,color2;
   // No read reset: e1/e2 mask RAM/ROM contents during reset and outside text.
-  always_ff @(posedge pix_clk) active_ch<=page_mem[{active_page,char_idx}];
+  // Keep RAM's read port unconditional so it remains a true dual-clock BRAM.
+  always_ff @(posedge pix_clk) page_ch<=page_mem[{active_page,char_idx}];
+  always_ff @(posedge pix_clk) begin
+    label_d<=in_label;
+    label_ch<=label_char(ui_selection,label_x[5:3]);
+  end
   osd_font8x16 font(.clk(pix_clk),.ch(active_ch),.row(row1),.bits(font_bits));
   wire glyph=e2&&d2&&font_bits[7-glyph_col2];
   logic busy_pix,busy_wr1,busy_wr2;
@@ -60,8 +83,9 @@ module osd_text_double_buffer #(
     end else begin
       cmt1<=wr_commit;cmt2<=cmt1;page1<=wr_commit_page;page2<=page1;en1<=wr_enable;en2<=en1;
       x1<=wr_x;x2<=x1;y1<=wr_y;y2<=y1;col1<=wr_color;col2<=col1;
-      v1<=i_vs;h1<=i_hs;d1<=i_de;e1<=active_enable&&in_text;
-      rgb1<={i_r,i_g,i_b};color1<=active_color;row1<=y-active_y;glyph_col1<=relative_x[2:0];
+      v1<=i_vs;h1<=i_hs;d1<=i_de;e1<=active_enable&&(in_text||in_label);
+      rgb1<={i_r,i_g,i_b};color1<=in_label ? 24'h20ff40:active_color;
+      row1<=in_label ? y-16:y-active_y;glyph_col1<=in_label ? label_x[2:0]:relative_x[2:0];
       v2<=v1;h2<=h1;d2<=d1;e2<=e1;rgb2<=rgb1;color2<=color1;glyph_col2<=glyph_col1;
       o_vs<=v2;o_hs<=h2;o_de<=d2;o_char_pixel<=glyph;
       {o_r,o_g,o_b}<=glyph ? color2 : rgb2;

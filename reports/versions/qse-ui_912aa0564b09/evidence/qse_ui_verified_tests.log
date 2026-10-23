@@ -1,0 +1,22 @@
+PASS font: all 256 characters x16 rows x8 pixel bits; unknown character blank
+/home/goodmann/Documents/comp/2026fpga/ti60_style_demo/work/validation/font_equivalence_tb.sv:15: $finish called at 40976000 (1ps)
+
+PASS compact font depth
+PASS qse GPIO: 16 combinations, two-stage latency, polarity, reset
+/home/goodmann/Documents/comp/2026fpga/ti60_style_demo/tests/qse_gpio_tb.sv:23: $finish called at 351000 (1ps)
+PASS Efinity-generated UART1 controller: BMB config, 8N1 TX/RX loopback A5
+/home/goodmann/Documents/comp/2026fpga/ti60_style_demo/tests/qse_uart_tb.sv:44: $finish called at 8180000 (1ps)
+PASS QSE UI defaults, bounce rejection, hold, repeated presses, frame commit, Gray decode
+/home/goodmann/Documents/comp/2026fpga/ti60_style_demo/tests/qse_ui_tb.sv:28: $finish called at 1660000 (1ps)
+/home/goodmann/Documents/comp/2026fpga/ti60_style_demo/rtl/soc_integration/osd_font8x16.sv:1530: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
+/home/goodmann/Documents/comp/2026fpga/ti60_style_demo/tests/qse_osd_tb.sv:14: vvp.tgt sorry: procedural continuous assignments are not yet fully supported. The RHS of this assignment will only be evaluated once, at the time the assignment statement is executed.
+PASS OSD exact labels for all selections and disabled RGB bypass
+/home/goodmann/Documents/comp/2026fpga/ti60_style_demo/tests/qse_osd_tb.sv:25: $finish called at 470000 (1ps)
+/home/goodmann/Documents/comp/2026fpga/ti60_style_demo/rtl/soc_integration/osd_font8x16.sv:1530: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
+PASS QSE labels: 19200 exact pixels, all four labels, disabled overlay, 3-cycle RGB and sync alignment
+/home/goodmann/Documents/comp/2026fpga/ti60_style_demo/tests/qse_label_pixels_tb.sv:37: $finish called at 192840000 (1ps)
+PASS display mode: comparison raw base; single style base and centered 640px viewport
+/home/goodmann/Documents/comp/2026fpga/ti60_style_demo/tests/qse_display_mode_tb.sv:18: $finish called at 6652999000 (1ps)
+PASS full frames comparison -> single -> comparison: exact RGB, 1536000 image pixels, no underflow/DMA errors
+/home/goodmann/Documents/comp/2026fpga/ti60_style_demo/tests/qse_display_frames_tb.sv:28: $finish called at 51882663000 (1ps)
+PASS pin/pull/voltage contract, UART0 preserved, UART1 config, active project sources

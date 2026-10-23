@@ -40,6 +40,8 @@
 component soc is
 port (
     io_systemClk : in std_logic;
+    system_uart_1_io_rxd : in std_logic;
+    system_uart_1_io_txd : out std_logic;
     io_ddrA_w_payload_strb : out std_logic_vector(15 downto 0);
     io_ddrA_w_payload_data : out std_logic_vector(127 downto 0);
     axiA_awready : in std_logic;
@@ -212,6 +214,8 @@ end component soc;
 u_soc : soc
 port map (
     io_systemClk => io_systemClk,
+    system_uart_1_io_rxd => system_uart_1_io_rxd,
+    system_uart_1_io_txd => system_uart_1_io_txd,
     io_ddrA_w_payload_strb => io_ddrA_w_payload_strb,
     io_ddrA_w_payload_data => io_ddrA_w_payload_data,
     axiA_awready => axiA_awready,
