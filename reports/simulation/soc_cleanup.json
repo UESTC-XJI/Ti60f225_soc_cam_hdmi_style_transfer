@@ -1,6 +1,6 @@
 {
   "checks": [
-    "Active top/project: obsolete instances removed; direct HDMI histogram controls, dynamic text, display meter and startup retained",
+    "Active top/project: obsolete instances removed; HDMI histogram overlay and display meter removed; dynamic text and startup retained",
     "PASS equivalence: active-top I2C pads and all 256 manual-lift strengths match original modules",
     "PASS OSD: async two-page COMMIT/ACK, active-page protection, frame-boundary enable/disable without COMMIT, disabled commit and RGB passthrough",
     "OSD negative regression: missing en2 synchronizer reproduces text-disable failure"

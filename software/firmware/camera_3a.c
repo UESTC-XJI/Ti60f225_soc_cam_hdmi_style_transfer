@@ -8,6 +8,12 @@
 #endif
 volatile uint32_t app_awb_mode=AWB_AUTO;
 camera_3a_t app_3a;
+/* Hardware AWB keeps only the dark/saturation range check, so coloured objects
+ * also enter the grey-world sums. Commit a gain step only after this many
+ * consecutive snapshots ask for the same R/B direction. Conservative; tune on board. */
+#ifndef AWB_CONFIRM
+#define AWB_CONFIRM 3u
+#endif
 static int advanced(uint32_t now,uint32_t old,uint32_t frames) { return (int32_t)(now-old)>=(int32_t)frames; }
 int camera_3a_init(camera_3a_t *s,uint64_t now) {
   for(unsigned i=0;i<sizeof(*s);i++)((volatile unsigned char *)s)[i]=0;
@@ -119,13 +125,18 @@ void camera_3a_service(camera_3a_t *s,uint64_t now) {
   if(app_awb_mode==AWB_LOCK)return;
   if(app_awb_mode==AWB_FIXED) {nr=0x168;nb=0x1a9;if(r==nr&&b==nb)return;}
   else {
-    if(app_awb_mode!=AWB_AUTO||(s->have_awb_frame&&!advanced(v.frame,s->last_awb_frame,4))||
-      !camera_awb_target(&v,r,b,&nr,&nb))return;
+    if(app_awb_mode!=AWB_AUTO)return;
+    if(!camera_awb_target(&v,r,b,&nr,&nb)){s->awb_streak=0;s->awb_direction=0;return;}
+    uint32_t direction=(nr>r?1u:nr<r?2u:0u)|(nb>b?4u:nb<b?8u:0u);
+    s->awb_streak=direction==s->awb_direction?s->awb_streak+1u:1u;
+    s->awb_direction=direction;
+    if(s->awb_streak<AWB_CONFIRM||(s->have_awb_frame&&!advanced(v.frame,s->last_awb_frame,4)))return;
   }
   if(video_read(VIDEO_CFG_STATUS)&1)return;
   s->wanted_cfg=video_read(VIDEO_CAP_ACTIVE_SEQ)+1u;
   if(video_apply_gains(nr,256,nb))return;
   s->expected_r=nr;s->expected_b=nb;s->waiting_gain=1;s->wait_start=now;
+  s->awb_streak=0;s->awb_direction=0;  /* next step needs evidence taken with the new gains */
   s->last_awb_frame=v.frame;s->have_awb_frame=1;s->status=THREE_A_GAIN_WAIT;
 }
 

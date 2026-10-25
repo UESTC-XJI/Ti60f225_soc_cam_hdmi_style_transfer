@@ -1,0 +1,2 @@
+PASS capture BRAM: same/distinct bins, unknown RAM contents, snapshot frozen across three frames, stable stalled stream, live stats, bank reuse and reset
+tests/capture_bram_backpressure_tb.sv:80: $finish called at 46440000 (1ps)

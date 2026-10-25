@@ -1,2 +1,2 @@
-PASS range budget: R/B22 G/Y23 AE15 AWB14 correction25 ratio41
-/home/goodmann/Downloads/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_style_demo_merged/work/validation/width_budget_tb.sv:5: $finish called at 0 (1s)
+PASS range budget: R/B22 G/Y23 AE15 AWB14
+/home/goodmann/Documents/comp/2026fpga/ti60_style_demo/work/validation/width_budget_tb.sv:5: $finish called at 0 (1s)

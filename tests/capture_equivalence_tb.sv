@@ -9,20 +9,23 @@ reg [15:0] gain_r=65535,gain_g=65535,gain_b=65535;
 reg [7:0] high_threshold=232;reg [31:0] awb_filter=32'h00ff0001;
 reg [15:0] neutral_ratio=65535;
 reg capture_fault=0,resize_fault=0,stats_ready=1,hist_request=0,hist_ready=0;
-wire av,bv,ah,bh,ao,bo;wire [383:0] ad,bd;wire [38:0] ax,bx;
+wire av,bv,bh,ao,bo;wire [383:0] ad,bd;wire [38:0] bx;
+// The reference keeps its histogram and neutral filter; awb_filter[0]=0 disables
+// the neutral test so it matches the range-only AWB of the simplified DUT.
+wire [31:0] ref_awb_filter=awb_filter&~32'd1;
 capture_frame_stats #(.FRAME_WIDTH(W),.FRAME_HEIGHT(H),.MIN_SAMPLES(1)) dut(
- .stats_valid(av),.stats_data(ad),.hist_valid(ah),.hist_data(ax),.overrun(ao),.*);
+ .stats_valid(av),.stats_data(ad),.overrun(ao),.*);
 capture_frame_stats_baseline #(.FRAME_WIDTH(W),.FRAME_HEIGHT(H),.MIN_SAMPLES(1)) refdut(
- .stats_valid(bv),.stats_data(bd),.hist_valid(bh),.hist_data(bx),.overrun(bo),.*);
+ .stats_valid(bv),.stats_data(bd),.hist_valid(bh),.hist_data(bx),.overrun(bo),.awb_filter(ref_awb_filter),.*);
 integer checks=0,packets=0,words=0;
 always @(posedge clk)begin
  if(rst_n&&av&&stats_ready)packets++;
- if(rst_n&&ah&&hist_ready)words++;
+ if(rst_n&&bh&&hist_ready)words++;
  #1;
  if(rst_n)begin
- if({av,ad,ah,ao}!=={bv,bd,bh,bo})$fatal(1,"capture publication mismatch");
- if(ah&&ax!==bx)$fatal(1,"frozen stream mismatch");
- if(dut.rs!==refdut.rs||dut.gs!==refdut.gs||dut.bs!==refdut.bs||dut.ys!==refdut.ys||dut.samples!==refdut.samples||dut.hot!==refdut.hot||dut.cells!==refdut.cells||dut.total!==refdut.total)$fatal(1,"live accumulator mismatch");
+ if({av,ad,ao}!=={bv,bd,bo})$fatal(1,"capture publication mismatch");
+ if(dut.ys!==refdut.ys||dut.samples!==refdut.samples||dut.hot!==refdut.hot||dut.total!==refdut.total||
+    dut.done_rs!==refdut.done_rs||dut.done_gs!==refdut.done_gs||dut.done_bs!==refdut.done_bs||dut.done_cells!==refdut.done_cells)$fatal(1,"accumulator mismatch (AE live, AWB latched)");
  checks++;
  end
 end

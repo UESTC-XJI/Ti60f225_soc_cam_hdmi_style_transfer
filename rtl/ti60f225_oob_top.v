@@ -18,11 +18,8 @@
 // Include ISP modules here so GUI project-file saves cannot drop their sources.
 // Included modules should not also be added as separate project design files.
 `include "isp/isp_cdc_mailbox.v"
-`include "isp/ae_frame_stats.v"
 `include "isp/luma_color_suppress.v"
 `include "isp/luma_tone_map.v"
-`include "isp/hdmi_frame_histogram.v"
-`include "isp/hdmi_info_overlay.v"
 `include "soc_integration/osd_font8x16.sv"
 `include "soc_integration/qse_ui_control.sv"
 `include "soc_integration/hdmi_startup_colorbar.sv"
@@ -588,15 +585,11 @@ assign io_cam_scl_OE = ~soc_i2c_scl_out;
 assign io_cam_sda_OE = ~soc_i2c_sda_out;
 wire [31:0] soc_axi_error_count;
 wire osd_apb_enable; wire [11:0] osd_apb_x,osd_apb_y; wire [23:0] osd_apb_color;
-wire qse_osd_enable,qse_compare_enable;
-wire [1:0] qse_selection;
-reg qse_vs_d;
-always @(posedge hdmi_tx_slow_clk or negedge display_reset_n)
-  if(!display_reset_n)qse_vs_d<=0;else qse_vs_d<=osd_vs;
-qse_ui_control qse_ui(
-  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.frame_start(osd_vs&&!qse_vs_d),
-  .io_sw1(io_sw1),.io_sw2(io_sw2),.io_key0(io_key0),.io_key1(io_key1),
-  .osd_enable(qse_osd_enable),.compare_enable(qse_compare_enable),.selection(qse_selection));
+// QSE view mode and knob label are written by firmware (APB 0x130) and published
+// at the display frame boundary through the display config CDC.
+wire [2:0] video_display_ui;
+wire qse_compare_enable=video_display_ui[0];
+wire [1:0] qse_selection=video_display_ui[2:1];
 wire osd_apb_char_we,osd_apb_char_page,osd_apb_commit_toggle,osd_apb_commit_page; wire [6:0] osd_apb_char_addr; wire [7:0] osd_apb_char_data;
 wire osd_db_ack,osd_db_active,osd_db_busy,osd_video_ready;
 // One-second capture/display statistics are exposed through the APB status
@@ -672,7 +665,7 @@ assign system_spi_0_io_data_0_OE=soc_spi_d0_oe;
 assign system_spi_0_io_data_1_OUT=soc_spi_d1_out;
 assign system_spi_0_io_data_1_OE=soc_spi_d1_oe;
 assign fb_bid=soc_vid_bid[5:0]; assign fb_rid=soc_vid_rid[5:0]; assign fb_bresp=soc_vid_bresp; assign fb_rresp=soc_vid_rresp; assign fb_bvalid=soc_vid_bvalid; assign fb_rvalid=soc_vid_rvalid; assign fb_rlast=soc_vid_rlast; assign fb_rdata=soc_vid_rdata;
-wire [31:0] video_display_tone,video_display_lift;wire [2:0] video_display_hist;
+wire [31:0] video_display_tone,video_display_lift;
 reg [6:0] video_csi_sticky;
 always @(posedge i_mipi_rx_pclk or negedge csi_reset_n)
   if(!csi_reset_n) video_csi_sticky<=0;
@@ -686,10 +679,8 @@ video_apb_ctrl osd_apb(
   .drop_count32(status_drop_count),.axi_errors32(soc_axi_error_count),.underflows32(status_underflow_count),
   .resize_frames32(status_capture_frames),.display_frames32(status_display_frames),.csi_errors(video_csi_sticky),
   .reset_status({display_reset_n,capture_reset_n,cal_done,pll_locked,barrier_sys_reset_n}),
-  .display_stats_valid(display_stats_valid),.display_mean(display_stats_mean),
-  .display_strength(effective_lift_strength),.display_at_max(1'b0),
   .gain_r(r_gain),.gain_g(g_gain),.gain_b(b_gain),
-  .display_tone(video_display_tone),.display_lift(video_display_lift),.display_hist(video_display_hist),
+  .display_tone(video_display_tone),.display_lift(video_display_lift),.display_ui(video_display_ui),
   .i_raw_fps(status_raw_fps),
   .pclk(core_clk),.preset_n(status_reset_n && !soc_system_reset),.psel(soc_apb_psel&&!style_select),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr),.pwdata(soc_apb_pwdata),.prdata(video_prdata),.pready(video_pready),.pslverr(video_pslverr),
   .o_enable(osd_apb_enable),.o_x(osd_apb_x),.o_y(osd_apb_y),.o_color(osd_apb_color),.o_char_we(osd_apb_char_we),.o_char_addr(osd_apb_char_addr),.o_char_page(osd_apb_char_page),.o_char_data(osd_apb_char_data),.o_commit_toggle(osd_apb_commit_toggle),.o_commit_page(osd_apb_commit_page),.o_video_ready(osd_video_ready),.i_ack_toggle(osd_db_ack),.i_active_page(osd_db_active),.i_busy(osd_db_busy),.i_frame_count(status_display_fps),.i_capture_fps(status_capture_fps),.i_display_fps(status_display_fps),.i_drop_count(status_drop_count[15:0]),.i_error_count(status_error_count[15:0]));
@@ -697,7 +688,7 @@ video_apb_ctrl osd_apb(
 wire db_vs,db_hs,db_de,db_char_pixel; wire [7:0] db_r,db_g,db_b;
 osd_text_double_buffer #(.FRAME_WIDTH(1280),.FRAME_HEIGHT(720),.PAGE_SIZE(80),.BASE_Y(40),.QSE_UI(1'b1)) osd_db(
   .ui_selection(qse_selection),
-  .wr_clk(core_clk),.pix_clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.wr_en(osd_apb_char_we),.wr_page(osd_apb_char_page),.wr_addr(osd_apb_char_addr),.wr_data(osd_apb_char_data),.wr_commit(osd_apb_commit_toggle),.wr_commit_page(osd_apb_commit_page),.wr_enable(osd_apb_enable&&qse_osd_enable),.wr_x(osd_apb_x),.wr_y(12'd40),.wr_color(osd_apb_color),
+  .wr_clk(core_clk),.pix_clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.wr_en(osd_apb_char_we),.wr_page(osd_apb_char_page),.wr_addr(osd_apb_char_addr),.wr_data(osd_apb_char_data),.wr_commit(osd_apb_commit_toggle),.wr_commit_page(osd_apb_commit_page),.wr_enable(osd_apb_enable),.wr_x(osd_apb_x),.wr_y(12'd40),.wr_color(osd_apb_color),
   .i_vs(osd_vs),.i_hs(osd_hs),.i_de(osd_de),.i_r(osd_r),.i_g(osd_g),.i_b(osd_b),.o_vs(db_vs),.o_hs(db_hs),.o_de(db_de),.o_r(db_r),.o_g(db_g),.o_b(db_b),.o_char_pixel(db_char_pixel),.ack_toggle(osd_db_ack),.active_page(osd_db_active),.busy(osd_db_busy));
 
 ddr3_top                 u_ddr3_top
@@ -901,8 +892,7 @@ luma_color_suppress tone_adjustment(
 
 wire [`CFG_BITS_8-1:0] lift_rdata,lift_gdata,lift_bdata;
 wire lift_vs,lift_hs,lift_de;
-wire display_stats_valid;
-wire [`CFG_BITS_8-1:0] display_stats_mean,effective_lift_strength;
+wire [`CFG_BITS_8-1:0] effective_lift_strength;
 // Automatic lift is disabled by the APB contract; retain the old manual
 // strength clamp without the inactive feedback controller.
 assign effective_lift_strength = video_display_lift[15:8]>8'd128 ? 8'd128 : video_display_lift[15:8];
@@ -912,27 +902,11 @@ luma_tone_map #(.HIGHLIGHT_SAFE(`CFG_TI60F225_OOB_TOP_V_INST_LIFT_ADJUSTMENT_HIG
   .o_vs(lift_vs),.o_hs(lift_hs),.o_de(lift_de),.o_r(lift_rdata),.o_g(lift_gdata),.o_b(lift_bdata)
 );
 
-// Separate feedback after lift, before overlay. Single-pixel HDMI clock domain.
-ae_frame_stats #(.FRAME_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_METER_FRAME_WIDTH),.FRAME_HEIGHT(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_METER_FRAME_HEIGHT),.PIXELS_PER_CLOCK(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_METER_PIXELS_PER_CLOCK),.MEAN_ONLY(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_METER_MEAN_ONLY),.FULL_FRAME_MEAN(`CFG_TI60F225_OOB_TOP_V_INST_DISPLAY_METER_FULL_FRAME_MEAN)) display_meter(
-  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),.i_vs(lift_vs),.i_de(lift_de),
-  .i_rgb({24'd0,lift_bdata,lift_gdata,lift_rdata}),.i_high_threshold(8'd232),
-  .o_valid(display_stats_valid),.o_mean(display_stats_mean),.o_highlights(),.o_high_permille()
-);
 wire osd_vs,osd_hs,osd_de;
 wire [`CFG_BITS_8-1:0] osd_r,osd_g,osd_b;
-// Histogram controls already belong to this HDMI clock domain after the
-// display_config frame-boundary APPLY/ACK. Text is drawn by osd_db.
-hdmi_info_overlay #(.FRAME_WIDTH(`CFG_TI60F225_OOB_TOP_V_INST_INFORMATION_OVERLAY_FRAME_WIDTH),.FRAME_HEIGHT(`CFG_TI60F225_OOB_TOP_V_INST_INFORMATION_OVERLAY_FRAME_HEIGHT)) information_overlay(
-  .clk(hdmi_tx_slow_clk),.rst_n(display_reset_n),
-  .i_vs(lift_vs),.i_hs(lift_hs),
-  .i_de(lift_de),
-  .i_r(lift_rdata),.i_g(lift_gdata),
-  .i_b(lift_bdata),
-  .i_hist_enable(video_display_hist[0]&&qse_osd_enable),.i_hist_mode(video_display_hist[2:1]),.i_text_enable(1'b0),
-  .i_text_valid(1'b0),.i_text_rgb(24'd0),.o_x(),.o_y(),
-  .o_hist_valid(),.o_hist_samples(),
-  .o_vs(osd_vs),.o_hs(osd_hs),.o_de(osd_de),.o_r(osd_r),.o_g(osd_g),.o_b(osd_b)
-);
+// Text is drawn later by osd_db; the HDMI histogram overlay was removed.
+assign osd_vs=lift_vs;assign osd_hs=lift_hs;assign osd_de=lift_de;
+assign osd_r=lift_rdata;assign osd_g=lift_gdata;assign osd_b=lift_bdata;
 // Stable bars are shown until the CPU has initialized the camera and first
 // OSD page. Switch only at a frame boundary in the HDMI clock domain.
 wire bar_hs,bar_vs,bar_de;

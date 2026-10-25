@@ -7,6 +7,11 @@ extern volatile uint32_t app_style_prefetch_starts,app_style_prefetch_completion
 int style_init_and_selftest(void);
 void style_irq_service(void);
 void style_stream_enable(void);
+void style_stream_set(int on);
+int style_busy(void);
+int style_display_slot(void);
+/* 0 (default): no periodic UART0 logs. Set to 1 in the IDE to get the 1 Hz MONET/DDR/3A lines. */
+extern volatile uint32_t app_uart_debug;
 void style_update_metrics(void);
 void style_log_ddr(void);
 int style_submit_metrics(uint64_t now);

@@ -13,8 +13,7 @@ for addr,value in re.findall(r"rom\[12'h([0-9a-f]+)\] = 8'h([0-9a-f]+)",
     font[int(addr,16)]=int(value,16)
 oracle=BUILD/'font_oracle.hex'
 oracle.write_text(''.join(f'{value:02x}\n' for value in font))
-jobs=[('capture_bram_backpressure_tb',['rtl/isp/capture_frame_stats.sv'],'capture_bram'),
-      ('osd_bram_pixels_tb',['rtl/soc_integration/osd_text_double_buffer.sv',
+jobs=[('osd_bram_pixels_tb',['rtl/soc_integration/osd_text_double_buffer.sv',
                            'rtl/soc_integration/osd_font8x16.sv'],'osd_pixels')]
 for top,sources,name in jobs:
     sim=BUILD/(top+'.vvp')

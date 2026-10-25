@@ -147,6 +147,9 @@ int camera_reg_read(uint16_t reg,uint8_t *value) {return sapphire_i2c_read16(reg
 int camera_reg_write(uint16_t reg,uint8_t value) {return sapphire_i2c_write16(reg,value);}
 static uint32_t osd_status(void) { return osd_read(OSD_STATUS); }
 void osd_set_video_ready(uint32_t ready) { osd_write(OSD_VIDEO_READY,ready & 1u); }
+/* KEY0 state owned by firmware; osd_submit_string must not force the text back on. */
+static uint32_t osd_user_on=1;
+void osd_set_user_enable(uint32_t on) { osd_user_on=on&1u; osd_write(OSD_ENABLE,osd_user_on); }
 static int osd_wait_ack(uint32_t old_ack) {
 #ifdef EFX_SAPPHIRE_BSP
   uint64_t start=clint_getTime(BSP_CLINT);
@@ -170,7 +173,7 @@ int osd_poll(void) {
 int osd_submit_string(const char *text) {
   uint32_t before=osd_status(), page=((before>>1)&1u)^1u;
   if(!text || (before&(1u<<2))) return -1;
-  osd_write(OSD_ENABLE,1); osd_write(OSD_X,16); osd_write(OSD_Y,16); osd_write(OSD_COLOR,0x20ff40);
+  osd_write(OSD_ENABLE,osd_user_on); osd_write(OSD_X,16); osd_write(OSD_Y,16); osd_write(OSD_COLOR,0x20ff40);
   uint32_t ended=0;
   for(uint32_t i=0;i<80;i++) {
     uint8_t ch=' ';

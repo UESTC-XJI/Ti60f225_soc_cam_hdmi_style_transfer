@@ -16,6 +16,7 @@ u.reg_write(UC_RISCV_REG_SP, SYMBOLS['_sp'])
 u.reg_write(UC_RISCV_REG_GP, SYMBOLS['__global_pointer$'])
 u.mem_write(SYMBOLS['app_style_read_cycles'], (148500 * 17).to_bytes(4, 'little'))
 u.mem_write(SYMBOLS['app_style_compute_cycles'], (148500 * 3).to_bytes(4, 'little'))
+u.mem_write(SYMBOLS['app_uart_debug'], (1).to_bytes(4, 'little'))  # log format is only printed when enabled
 
 previous = [0] * 12
 snapshots = [

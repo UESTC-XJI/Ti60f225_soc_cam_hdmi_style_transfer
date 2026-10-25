@@ -24,7 +24,7 @@ report='''# QSE UI candidate — offline verified, not board tested
 
 - Branch: qse-extension. No commit or board programming performed.
 - Rotary label only: 0:origin / 1:style1 / 2:style2 / 3:style3. No model/weight changes.
-- KEY0 toggles OSD/histogram, default on. KEY1 toggles side-by-side comparison / centered single styled VGA image, default comparison.
+- KEY0 toggles text OSD, default on. KEY1 toggles side-by-side comparison / centered single styled VGA image, default comparison.
 - RTL 20 ms contact debounce, press edge, no autorepeat. Whole-selector candidate stability. Frame-boundary publishing; row mode crosses via request FIFO.
 - Existing metrics moved to y=40, label at (16,16). Existing firmware rebuilt without business-logic changes.
 

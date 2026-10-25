@@ -11,12 +11,12 @@
     "AWB: two-green factor, bounded smooth commits and absolute RAW gain convergence",
     "coordination: pending gain/old CFG rejected; AWB waits for exposure settling",
     "AWB: fixed/lock modes, zero-denominator and insufficient-candidate hold",
+    "AWB: three-snapshot direction guard; alternating colour never commits; outlier restarts the count",
     "I2C: real BSP NACK/timeout handling; failed exposure never confirmed; hold release always attempted",
     "I2C recovery: stuck bus is bounded; RECOVER timeout/dropped/remaining SDA-low never reports initialized",
     "invalid VTS/ID, missing ACK, no statistics, torn snapshots and capture faults stop new control",
     "32-bit source/statistics wraparound retains valid seq=0 and settling guard",
-    "full _start/main: actual initialization, cooperative 3A service, UART state, OSD ACK and startup gate",
-    "histogram driver: nonblocking ACQUIRE/78-word read/RELEASE, four-word budget and bin-sum validation"
+    "full _start/main: actual initialization, cooperative 3A service, UART state, OSD ACK and startup gate"
   ],
   "response": [
     {
@@ -30,5 +30,5 @@
       "updates": 5
     }
   ],
-  "elf": "/home/goodmann/Downloads/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_style_demo_merged/software/firmware/build/soc_video_app.elf"
+  "elf": "/home/goodmann/Documents/comp/2026fpga/ti60_style_demo/software/firmware/build/soc_video_app.elf"
 }

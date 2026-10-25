@@ -4,7 +4,7 @@ Branch: `qse-extension`. Hardware UI only; no firmware debounce or weight reload
 
 ## Controls
 
-- KEY0: toggle all text OSD and histogram visibility. Default on. Firmware's OSD enable remains an additional gate and cannot override a KEY0-off state.
+- KEY0: toggle text OSD visibility. Default on. (The HDMI histogram overlay was removed.) Firmware's OSD enable remains an additional gate and cannot override a KEY0-off state.
 - KEY1: toggle comparison/single-style. Default comparison. Comparison retains the original left 640x480 image and corresponding styled right 640x480 image. Single-style displays that same styled 640x480 image centered in the 1280x720 output (x=320..959, y=120..599), with black margins; no resizing or weight replacement.
 - Rotary selector: display `0:origin`, `1:style1`, `2:style2`, `3:style3` at x=16,y=16. These labels are informational; even `0:origin` does not change the inference model or select an original-only view. Existing metrics move to y=40.
 

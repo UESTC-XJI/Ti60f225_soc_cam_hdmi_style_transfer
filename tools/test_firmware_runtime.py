@@ -40,14 +40,76 @@ TABLE = [(int(a, 16), int(b, 16)) for a, b in re.findall(
     r'\{0x([0-9a-f]+),0x([0-9a-f]+),[01],\d+\}',
     (ROOT / 'software/firmware/camera_init_table.h').read_text())]
 
+def crc16(data):
+    c = 0xffff
+    for b in data:
+        c ^= b << 8
+        for _ in range(8): c = ((c << 1) ^ 0x1021) & 0xffff if c & 0x8000 else (c << 1) & 0xffff
+    return c
+
+# Style-result test frame: smooth colour field with edges, R in bits 7:0, G 15:8, B 23:16.
+IMG_SLOT = 3
+IMG_PIXELS = [((x * 255) // 639, (y * 255) // 479, 255 if (x // 80 + y // 80) & 1 else 40)
+              for y in range(480) for x in range(640)]
+IMG_SOURCE = b''.join(bytes((r, g, b, 0)) for r, g, b in IMG_PIXELS)
+
+def check_rate(m):
+    # No window may carry more than rate * t + one 20-byte burst (plus one byte of rounding).
+    rate = int.from_bytes(m.uc.mem_read(SYMBOLS['qse_ble_rate'], 4), 'little')
+    t = m.ble_times
+    j = 0
+    for i in range(len(t)):
+        while t[i] - t[j] > 100000000: j += 1
+        assert i - j + 1 <= rate * (t[i] - t[j]) / 100000000 + 21, (i, j, rate)
+    if len(t) > 200:
+        span = (t[-1] - t[0]) / 100000000
+        print('  UART1 %d B in %.2f s = %.0f B/s (limit %d)' % (len(t), span, len(t) / span, rate))
+
+def check_snapshot(m):
+    import zlib
+    assert m.img_end and m.img_header, (m.img_header, m.ble[-80:])
+    _, w, h, size, crc, count = m.img_header.split(',')
+    w, h, size, count = int(w), int(h), int(size), int(count)
+    assert (w, h) == (160, 120) and count == len(m.img_packets) == (size + 127) // 128
+    data = b''.join(m.img_packets[i] for i in range(count))
+    assert len(data) == size and zlib.crc32(data) == int(crc, 16)
+    assert data[:2] == b'\xff\xd8' and data[-2:] == b'\xff\xd9'
+    assert m.img_naked and m.word('qse_imgtx_resends') >= 1 and m.word('qse_imgtx_images') == 1
+    assert m.stream_writes[-2:] == [0, 16] and m.style_enabled, m.stream_writes  # paused, then resumed
+    (ROOT / 'reports/simulation').mkdir(parents=True, exist_ok=True)
+    (ROOT / 'reports/simulation/img_snap.jpg').write_bytes(data)
+    # Board->browser byte stream, replayed by tools/ble_web/test_ble_proto.js.
+    (ROOT / 'reports/simulation/img_snap_stream.bin').write_bytes(m.ble.encode('latin-1'))
+    try:
+        from PIL import Image
+    except ImportError:
+        print('NOTE PIL missing: JPEG decoded check skipped'); return
+    import io, math
+    img = Image.open(io.BytesIO(data)); img.load()
+    assert img.size == (160, 120)
+    got = img.convert('RGB').tobytes()
+    ref = []
+    for oy in range(120):
+        for ox in range(160):
+            px = [IMG_PIXELS[(oy*4+sy)*640+ox*4+sx] for sy in range(4) for sx in range(4)]
+            ref += [sum(p[c] for p in px) // 16 for c in range(3)]
+    def psnr(pix):
+        return 10 * math.log10(255 * 255 * len(ref) / sum((a - b) ** 2 for a, b in zip(pix, ref)))
+    # Reference: libjpeg via PIL, same quality and 4:2:0 subsampling.
+    b = io.BytesIO(); Image.frombytes('RGB', (160, 120), bytes(ref)).save(b, 'JPEG', quality=70, subsampling=2)
+    lib = psnr(Image.open(io.BytesIO(b.getvalue())).convert('RGB').tobytes())
+    ours = psnr(got)
+    assert ours >= lib - 0.5 and size <= len(b.getvalue()) * 1.1, (ours, lib, size, len(b.getvalue()))
+    print('PASS BLE snapshot: %d B JPEG in %d packets, PSNR %.1f dB (libjpeg %.1f dB, %d B)'
+          % (size, count, ours, lib, len(b.getvalue())))
+
 class Machine:
     def __init__(self, scenario):
         self.scenario = scenario
         self.uc = Uc(UC_ARCH_RISCV, UC_MODE_RISCV32)
         self.uc.mem_map(0, 0x20000)
         self.uc.mem_map(0x01000000, 0x100000)
-        self.uc.mem_map(0x05000000, 0x10000)
-        self.uc.mem_map(0x05800000, 0x10000)
+        self.uc.mem_map(0x05000000, 0x1000000)  # raw + style result slots
         for addr, data in SEGMENTS: self.uc.mem_write(addr, data)
         self.uc.mem_write(SYMBOLS['__bss_start'], b'\xa5' *
                           (SYMBOLS['__bss_end'] - SYMBOLS['__bss_start']))
@@ -78,7 +140,11 @@ class Machine:
         self.ready_writes = []
         self.invalidates = 0
         self.main_seen = False
-        self.style_regs={0:0x3154534e,8:16,0x30:0}
+        self.style_regs={0:0x3154534e,8:16,0x30:0,0x88:0x80000000|(8|IMG_SLOT if scenario=='img_snap' else 0)}
+        self.img_header=None;self.img_packets={};self.img_end=False;self.img_naked=False;self.stream_writes=[]
+        if scenario=='img_snap':
+            self.uc.mem_write(0x05000000+IMG_SLOT*0x140000+0x800000,IMG_SOURCE)
+            self.ble_rx_queue=[b'SNAP,160,70,4\r\n']
         self.initial_coeff_count=6144 if scenario=='style_reload' else 0
         self.style_regs[0x30]=self.initial_coeff_count*0x10001
         self.coeff_addr=0;self.coeff_writes=[];self.style_enabled=False
@@ -90,6 +156,16 @@ class Machine:
         self.style_output=[int(x,16) for x in re.findall(r'0x([0-9a-f]{8})u',fixture.split('style_test_expected')[1])]
         assert len(self.style_input)==len(self.style_output)==768
         self.uc.mmio_map(0xf8010000, 0x1000, self.uart_read, None, self.uart_write, None)
+        self.ble = ''          # UART1 (BLE module) transmit log, kept apart from the UART0 terminal
+        self.ble_rx = {'ble_echo':b'KNOB?\r\n','img_snap':b'SNAP,160,70,4\r\n',
+                       'ble_ui':b'OSD\r\nVIEW,0\r\nKNOB,2\r\nRATE,800\r\nSTATE\r\n'}.get(scenario,b'')  # phone -> UART1
+        self.ble_times = []    # CLINT time of every UART1 byte, for the rate limit check
+        self.ui_writes = []    # VIDEO_UI_SHADOW values
+        self.osd_enables = []
+        self.ble_parsed = 0
+        self.gpio = 0          # GPIO0 input {SW2,SW1,KEY1,KEY0}; 0 = knob at 0, keys released
+        self.uc.mmio_map(0xf8011000, 0x1000, self.ble_read, None, self.ble_write, None)
+        self.uc.mmio_map(0xf8015000, 0x1000, self.gpio_read, None, self.ignore_write, None)
         self.uc.mmio_map(0xf8016000, 0x1000, self.i2c_read, None, self.i2c_write, None)
         self.uc.mmio_map(0xf8b00000, 0x10000, self.clint_read, None, self.ignore_write, None)
         self.uc.mmio_map(0xf8100000, 0x1000, self.osd_read, None, self.osd_write, None)
@@ -124,6 +200,47 @@ class Machine:
 
     def uart_read(self, uc, off, size, data):
         return 128 << 16 if off == 4 else 0
+
+    def ble_read(self, uc, off, size, data):
+        if off == 4: return (min(len(self.ble_rx), 255) << 24) | (128 << 16)
+        if off == 0 and self.ble_rx:
+            b, self.ble_rx = self.ble_rx[0], self.ble_rx[1:]
+            return b
+        return 0
+
+    def ble_write(self, uc, off, size, value, data):
+        if off == 0:
+            self.ble += chr(value & 255)
+            self.ble_times.append(self.clock)
+            if self.scenario == 'img_snap': self.phone()
+            # Physical knob moves to position 1 after the KNOB,2 shortcut: the override must end.
+            if self.scenario == 'ble_ui' and self.ble.endswith('KNOB,2\r\n'): self.gpio = 4
+        else: self.config[('ble', off)] = value
+
+    def phone(self):
+        # Model browser: parse IMG header and packets, NAK the first copy of packet 2, ACK the rest.
+        while True:
+            buf = self.ble[self.ble_parsed:]
+            if buf.startswith('\xa5\x5a'):
+                if len(buf) < 5: return
+                n = ord(buf[4])
+                if len(buf) < n + 7: return
+                raw = buf[:n+7].encode('latin-1'); self.ble_parsed += n + 7
+                seq = raw[2] | raw[3] << 8
+                assert crc16(raw[2:5+n]) == raw[5+n] | raw[6+n] << 8, 'packet crc'
+                if seq == 2 and not self.img_naked:
+                    self.img_naked = True; self.ble_rx += b'NAK,2\r\n'; continue
+                self.img_packets[seq] = raw[5:5+n]
+                if seq + 1 == len(self.img_packets): self.ble_rx += b'ACK,%d\r\n' % (seq + 1)
+                continue
+            if '\r\n' not in buf: return
+            line = buf[:buf.index('\r\n')]; self.ble_parsed += len(line) + 2
+            if line.startswith('IMG,END'): self.img_end = True
+            elif line.startswith('IMG,ERR'): raise AssertionError(line)
+            elif line.startswith('IMG,'): self.img_header = line
+
+    def gpio_read(self, uc, off, size, data):
+        return self.gpio if off == 0 else 0
 
     def uart_write(self, uc, off, size, value, data):
         if off != 0:
@@ -247,9 +364,11 @@ class Machine:
                     if self.scenario=='style_corrupt':raw=bytes([raw[0]^1])+raw[1:]
                     uc.mem_write(0x05800000,raw)
                     self.style_regs[8]|=2;self.irq_pending=True
-                self.style_enabled=bool(value&16)
+                self.style_enabled=bool(value&16);self.stream_writes.append(value)
             else:self.style_regs[off]=value
             return
+        if off == 0x130: self.ui_writes.append(value)
+        if off == 0x04: self.osd_enables.append(value)
         if off == 0x28:
             self.video_ready = value & 1
             self.ready_writes.append(self.video_ready)
@@ -296,12 +415,27 @@ class Machine:
         return int.from_bytes(self.uc.mem_read(SYMBOLS[name], 4), 'little')
 
     def run(self):
-        self.uc.emu_start(ENTRY, 0x20000, count=10000000)
+        self.uc.emu_start(ENTRY, 0x20000, count=80000000 if self.scenario == 'img_snap' else 10000000)
         assert self.main_seen
         assert self.word('firmware_trap_cause') == 0
         assert self.ready_writes[0] == 0
         assert self.ack_stalls == 0, 'stale RX_ACK stalled a checked transaction'
         if self.scenario == 'bus_recover': assert self.bus_recoveries == 1
+        if self.scenario == 'img_snap':
+            check_snapshot(self)
+        if self.scenario in ('img_snap', 'ble_ui'):
+            check_rate(self)
+        if self.scenario == 'ble_ui':
+            lines = self.ble.split('\r\n')
+            want = ['OSD,0', 'VIEW,0', 'KNOB,2', 'RATE,800', 'KNOB,2', 'OSD,0', 'VIEW,0', 'RATE,800', 'KNOB,1']
+            assert lines[:len(want)] == want, lines
+            assert self.osd_enables[-1] == 0, self.osd_enables
+            assert 2 << 1 in self.ui_writes, self.ui_writes          # override: view 0, knob 2
+            assert self.ui_writes[-1] == 1 << 1, self.ui_writes      # physical knob 1 took over
+            assert self.word('qse_ble_rate') == 800
+        if self.scenario == 'ble_echo':
+            assert not self.ble_rx and 'KNOB?\r\n' in self.ble, self.ble
+            assert self.word('qse_ble_rx_bytes') == 7
         assert self.video_ready == (0 if self.scenario in ('ddr_corrupt', 'style_corrupt', 'no_ack') else 1)
         if self.scenario == 'ddr_corrupt':
             assert self.word('app_ddr_errors') == 1
@@ -314,12 +448,14 @@ class Machine:
         else:
             assert self.word('app_metrics_updates') == 3
             assert self.word('app_ddr_errors') == 0
-            assert self.invalidates == 5  # Startup + DDR passes + CNN input/output cache operations.
+            # Startup + DDR passes + CNN input/output cache operations, + one per BLE snapshot.
+            assert self.invalidates == (6 if self.scenario == 'img_snap' else 5)
             assert self.style_enabled and self.irq_returns==1 and self.word('app_style_irqs')==1
             assert self.word('app_style_selftest_errors')==0
             assert self.config[('uart', 8)] == 107
             assert self.config[('i2c', 0x50)] == 500
             assert self.config[('i2c', 0x54)] == 500
+            assert self.config[('ble', 8)] == 96  # UART1: 100 MHz / (128000 * 8) - 1
             assert 'DDR scratch PASS' in self.uart
             if self.scenario == 'id_retry':
                 assert self.camera_writes[0] == (0x100, 0)
@@ -336,8 +472,9 @@ class Machine:
                 assert self.commits[0].rstrip() == 'MONET VGA'
                 assert self.word('app_osd_errors') == 0
                 for text in self.commits[1:]:
-                    assert text.rstrip() + '\r\n' in self.uart
                     assert 'DROP 0 MS 0 ERR 0' in text
+                # app_uart_debug defaults to 0: OSD gets the metrics, UART0 stays quiet after boot.
+                assert 'MONET CAP' not in self.uart and 'DDR100M' not in self.uart and '3A state' not in self.uart
                 assert self.commits[-1].rstrip() == 'MONET CAP 0 NN 0 DISP 60 DROP 0 MS 0 ERR 0'
                 assert all(b-a >= 99000000 for a,b in zip(self.commit_times, self.commit_times[1:]))
         print('PASS RV32 ELF:', self.scenario, 'entry, stack/gp/BSS, UART, DDR, camera, OSD/timer')
@@ -347,7 +484,7 @@ class Machine:
                 'cache_operations_modeled': self.invalidates}
 
 if __name__ == '__main__':
-    results = [Machine(s).run() for s in ['normal', 'stale_ack', 'bus_recover', 'id_retry', 'no_ack', 'ddr_corrupt', 'timer_wrap','style_corrupt','style_reload']]
+    results = [Machine(s).run() for s in ['normal', 'stale_ack', 'bus_recover', 'id_retry', 'no_ack', 'ddr_corrupt', 'timer_wrap','style_corrupt','style_reload','ble_echo','img_snap','ble_ui']]
     trap = Machine('trap')
     trap.uc.reg_write(UC_RISCV_REG_GP, SYMBOLS['__global_pointer$'])
     trap.uc.reg_write(UC_RISCV_REG_SP, SYMBOLS['_sp'])

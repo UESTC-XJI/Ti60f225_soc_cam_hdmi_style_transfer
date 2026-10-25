@@ -3,13 +3,12 @@
 #include "soc_video_driver.h"
 #include "camera_3a.h"
 #include "style_driver.h"
+#include "qse_ble.h"
 
 /* Inspect these in the IDE if a trap stops normal UART output. */
 volatile uint32_t firmware_trap_cause, firmware_trap_pc, firmware_trap_value;
 volatile uint32_t app_ddr_errors, app_osd_errors, app_camera_errors;
 volatile uint32_t app_metrics_updates;
-volatile uint32_t app_hist_enable,app_hist_updates,app_hist_errors;
-video_hist_t app_hist;
 
 #define DDR_TEST_BASE 0x01000000u
 #define DDR_TEST_WORDS (64u * 1024u / 4u)
@@ -82,14 +81,12 @@ int main(void) {
     }
     uint64_t last_service=last_update,osd_started=last_update;
     int osd_pending=0;
+    qse_ble_init(last_update);
     for (;;) {
         uint64_t now = clint_getTime(BSP_CLINT);
+        qse_ble_poll(now);
         if(now-last_service>=BSP_CLINT_HZ/1000u) {
             if(!camera_rc)camera_3a_service(&app_3a,now);
-            if(app_hist_enable) {
-                int rc=video_hist_poll(&app_hist);
-                if(rc>0)++app_hist_updates;else if(rc<0)++app_hist_errors;
-            }
             last_service=now;
         }
         if(osd_pending) {
@@ -114,7 +111,7 @@ int main(void) {
             if(!osd_rc){osd_pending=1;osd_started=clint_getTime(BSP_CLINT);}
             else if(!( *(volatile uint32_t *)(0xf8100020u)&4u))++app_osd_errors;
         }
-        if(app_3a.enabled||app_3a.status)camera_3a_log(&app_3a);
+        if(app_uart_debug&&(app_3a.enabled||app_3a.status))camera_3a_log(&app_3a);
         style_update_metrics();
         style_log_ddr();
         ++app_metrics_updates;

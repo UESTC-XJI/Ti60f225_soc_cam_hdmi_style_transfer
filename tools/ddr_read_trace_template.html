@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>共享 DDR 读通道占用</title>
+<style>
+:root{
+  color-scheme:light;
+  --paper:#eef2f4;--sheet:#fbfcfd;--ink:#1b2a38;--muted:#5b6b78;--rule:#d3dce2;
+  --c-beat:#0f6e77;--c-wait:#8cc3c6;--blocked:#6b4c9a;
+  --d-beat:#b86e00;--d-wait:#efc77f;--d-bp:#b23a48;
+  --font:"Fira Sans","Noto Sans CJK SC","Source Han Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 var(--font);font-variant-numeric:tabular-nums}
+main{max-width:1240px;margin:0 auto;padding:40px 28px 72px}
+h1{font-size:30px;line-height:1.25;font-weight:600;margin:0 0 10px;letter-spacing:-.01em}
+h2{font-size:20px;line-height:1.3;font-weight:600;margin:48px 0 6px}
+p{margin:0 0 12px;max-width:72ch}
+.lede{color:var(--muted);max-width:76ch}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:18px 18px 14px;margin-top:22px}
+.controls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-bottom:10px}
+.controls .span{color:var(--muted);font-size:14px;margin-left:auto}
+button{font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1px solid #b9c6cf;border-radius:4px;padding:4px 12px;cursor:pointer}
+button:hover{background:#e7eef2}
+button:focus-visible,canvas:focus-visible{outline:2px solid #1f5fae;outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--muted);margin:2px 0 12px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.hatch{background:repeating-linear-gradient(135deg,var(--blocked) 0 2px,#d9cfe8 2px 4px)}
+#wrap{position:relative}
+#timeline{display:block;width:100%;cursor:crosshair;touch-action:none}
+#tip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--rule);border-radius:4px;padding:8px 10px;font-size:13px;line-height:1.5;box-shadow:0 2px 8px rgba(27,42,56,.12);display:none;white-space:nowrap;z-index:2}
+#tip b{font-weight:600}
+.hint{font-size:13px;color:var(--muted);margin:8px 0 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:right;padding:7px 10px;border-bottom:1px solid var(--rule)}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--muted)}
+.bars{display:grid;grid-template-columns:minmax(140px,220px) 1fr;gap:10px 16px;align-items:center}
+.bar{display:flex;height:26px;border-radius:3px;overflow:hidden;background:#fff;border:1px solid var(--rule)}
+.bar span{height:100%}
+.bar-label{font-size:14px}
+.bar-label small{display:block;color:var(--muted);font-size:12px;line-height:1.3}
+.nums{grid-column:2;font-size:13px;color:var(--muted);margin-top:-6px}
+.finding{border-left:3px solid var(--ink);padding:2px 0 2px 16px;margin:18px 0}
+.finding.warn{border-color:var(--d-bp)}
+.finding h3{font-size:16px;margin:0 0 4px;font-weight:600}
+.note{font-size:14px;color:var(--muted)}
+code{font-size:.92em;background:#e3e9ed;padding:1px 4px;border-radius:3px}
+@media (max-width:700px){main{padding:24px 14px 48px}h1{font-size:24px}.bars{grid-template-columns:1fr}.nums{grid-column:1}}
+</style>
+</head>
+<body>
+<main>
+<h1>共享 DDR 读通道在一次 640×48 任务里的占用</h1>
+<p class="lede">同一份激励（slot0 预置显示帧，slot1 跑 640×48 CNN，slot2 同时抓一帧 1080p，DDR 随机停顿），用当前 RTL 跑三种读通道配置，逐周期记录 DDR 侧 AR/R 握手。三条泳道共用一个时间轴，起点都是 CNN 任务开始，所以泳道越短，任务越快。</p>
+
+<section class="sheet" aria-label="读通道时间线">
+  <div class="controls">
+    <button id="zin" type="button">放大</button>
+    <button id="zout" type="button">缩小</button>
+    <button id="reset" type="button">看全程</button>
+    <span class="span" id="span"></span>
+  </div>
+  <div class="legend" id="legend"></div>
+  <div id="wrap">
+    <canvas id="timeline" tabindex="0" aria-label="三种配置的读通道时间线；方向键平移，加减号缩放"></canvas>
+    <div id="tip" role="status"></div>
+  </div>
+  <p class="hint">拖动框选放大，滚轮缩放，方向键平移。上半部分是显示读，下半部分是 CNN 读，中间空白是通道空闲；每条泳道下方的细线是显示像素 FIFO 水位（满 512，虚线为 urgent 阈值 384）。放大到每像素不足一拍时显示的是精确状态。</p>
+</section>
+
+<h2>任务期间读通道时间分配</h2>
+<p class="note">按周期互斥划分（和板上计数器不同，这里各项相加等于 100%），统计窗口为 CNN busy 期间，单位为 100 MHz 周期。</p>
+<div class="sheet"><div class="bars" id="bars"></div></div>
+
+<h2>从 trace 里看到的</h2>
+<div id="findings"></div>
+
+<h2>历史汇总数据</h2>
+<p class="note">来自之前各轮的 metrics.json。RTL 在这些轮次之间有改动，例如后来加入了 prefetch，所以不能和上面的 trace 直接横比，只用来看趋势。AR 等待、返回间隙、显示反压是会重叠的计数，不能相加。</p>
+<div class="sheet" style="overflow-x:auto"><table id="hist"></table></div>
+</main>
+
+<script>
+const DATA=/*__DATA__*/null;
+const CATS=[
+  {k:'c_beat',name:'CNN 数据拍',color:'#0f6e77',side:'c'},
+  {k:'c_wait',name:'CNN 等 DDR 返回',color:'#8cc3c6',side:'c'},
+  {k:'blocked',name:'CNN 被 urgent 预留挡住',color:'#6b4c9a',side:'c',hatch:true},
+  {k:'d_beat',name:'显示数据拍',color:'#b86e00',side:'d'},
+  {k:'d_wait',name:'显示等 DDR 返回',color:'#efc77f',side:'d'},
+  {k:'d_bp',name:'显示拉低 RREADY 占住通道',color:'#b23a48',side:'d'},
+  {k:'idle',name:'空闲',color:null,side:null},
+];
+const PHASE=['空闲','AR 发出','等 RVALID','数据拍','RREADY 低'];
+const fmt=n=>n.toLocaleString('en-US');
+const pct=(a,b)=>(100*a/b).toFixed(1)+'%';
+
+async function inflate(b64){
+  const bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+  const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+function category(code){
+  const ph=code&7,own=code>>3&1;
+  if(ph===0)return (code>>4&1)&&(code>>6&1)?2:6;
+  if(ph===1||ph===2)return own?4:1;
+  if(ph===3)return own?3:0;
+  return 5;
+}
+async function decode(v){
+  const raw=await inflate(v.changes);
+  const times=[],codes=[];let p=0,t=0;
+  while(p<raw.length){let d=0,s=0,b;do{b=raw[p++];d|=(b&127)<<s;s+=7}while(b&128);t+=d;times.push(t);codes.push(raw[p]|raw[p+1]<<8);p+=2}
+  // keep only the job window, rebased to job start
+  let i0=0;while(i0+1<times.length&&times[i0+1]<=v.start)i0++;
+  const n=times.length-i0;
+  v.t=new Float64Array(n);v.code=new Uint16Array(n);v.cat=new Uint8Array(n);
+  for(let i=0;i<n;i++){v.t[i]=Math.max(times[i0+i],v.start)-v.start;v.code[i]=codes[i0+i];v.cat[i]=category(codes[i0+i])}
+  v.cum=CATS.map(()=>new Float64Array(n+1));
+  for(let i=0;i<n;i++){const dt=(i+1<n?v.t[i+1]:v.total)-v.t[i];for(let c=0;c<CATS.length;c++)v.cum[c][i+1]=v.cum[c][i]+(v.cat[i]===c?Math.max(dt,0):0)}
+  const lv=await inflate(v.levels);v.level=new Uint16Array(lv.buffer,lv.byteOffset,lv.byteLength>>1);
+}
+function idxAt(v,t){let lo=0,hi=v.t.length-1;while(lo<hi){const m=(lo+hi+1)>>1;if(v.t[m]<=t)lo=m;else hi=m-1}return lo}
+function upTo(v,t,out){const i=idxAt(v,t);for(let c=0;c<CATS.length;c++)out[c]=v.cum[c][i]+(v.cat[i]===c?t-v.t[i]:0)}
+
+const cv=document.getElementById('timeline'),ctx=cv.getContext('2d'),tip=document.getElementById('tip');
+const L={left:150,right:14,top:28,lane:96,level:26,gap:30,axis:34};
+let V=[],maxT=0,view=[0,1],drag=null,hover=null,hatchPat=null;
+
+function layout(){
+  const w=cv.parentElement.clientWidth,h=L.top+V.length*(L.lane+L.level+L.gap)-L.gap+L.axis;
+  const dpr=window.devicePixelRatio||1;cv.width=w*dpr;cv.height=h*dpr;cv.style.height=h+'px';ctx.setTransform(dpr,0,0,dpr,0,0);
+  const pc=document.createElement('canvas');pc.width=pc.height=6;const pg=pc.getContext('2d');
+  pg.fillStyle='#d9cfe8';pg.fillRect(0,0,6,6);pg.strokeStyle='#6b4c9a';pg.lineWidth=2;pg.beginPath();pg.moveTo(-1,7);pg.lineTo(7,-1);pg.moveTo(5,7);pg.lineTo(7,5);pg.moveTo(-1,1);pg.lineTo(1,-1);pg.stroke();
+  hatchPat=ctx.createPattern(pc,'repeat');draw();
+}
+const plotW=()=>cv.clientWidth-L.left-L.right;
+const x2t=x=>view[0]+(x-L.left)/plotW()*(view[1]-view[0]);
+const t2x=t=>L.left+(t-view[0])/(view[1]-view[0])*plotW();
+function laneY(i){return L.top+i*(L.lane+L.level+L.gap)}
+
+function draw(){
+  const W=cv.clientWidth,H=cv.clientHeight,pw=plotW(),span=view[1]-view[0];
+  ctx.clearRect(0,0,W,H);ctx.font='13px '+getComputedStyle(document.body).fontFamily;ctx.textBaseline='middle';
+  // axis ticks
+  const raw=span/8,mag=10**Math.floor(Math.log10(raw)),step=[1,2,5,10].map(m=>m*mag).find(s=>s>=raw);
+  ctx.strokeStyle='#e3e9ed';ctx.fillStyle='#5b6b78';ctx.lineWidth=1;ctx.textAlign='center';
+  for(let t=Math.ceil(view[0]/step)*step;t<=view[1];t+=step){const x=Math.round(t2x(t))+.5;ctx.beginPath();ctx.moveTo(x,L.top-6);ctx.lineTo(x,H-L.axis+4);ctx.stroke();
+    const us=t/100;ctx.fillText(us>=1000?(us/1000).toFixed(step>=100000?0:step>=10000?1:2)+' ms':us>=1?+us.toFixed(step>=100?0:2)+' µs':fmt(t)+' 拍',x,H-L.axis/2)}
+  const acc=new Float64Array(CATS.length),prev=new Float64Array(CATS.length),col=new Float64Array(CATS.length);
+  V.forEach((v,i)=>{
+    const y=laneY(i),mid=y+L.lane/2;
+    ctx.textAlign='right';ctx.fillStyle='#1b2a38';ctx.font='600 14px '+getComputedStyle(document.body).fontFamily;ctx.fillText(v.name,L.left-12,mid-9);
+    ctx.font='12px '+getComputedStyle(document.body).fontFamily;ctx.fillStyle='#5b6b78';ctx.fillText((v.total/1e5).toFixed(2)+' ms',L.left-12,mid+9);
+    ctx.fillStyle='#ffffff';ctx.fillRect(L.left,y,pw,L.lane);
+    const endX=Math.min(t2x(v.total),L.left+pw);
+    if(endX<L.left+pw){ctx.fillStyle='#e9eef1';ctx.fillRect(Math.max(endX,L.left),y,L.left+pw-Math.max(endX,L.left),L.lane);
+      if(endX>L.left+4){ctx.fillStyle='#5b6b78';ctx.textAlign='left';ctx.fillText('任务完成',endX+8,mid)}}
+    upTo(v,Math.max(view[0],0),prev);
+    for(let px=0;px<pw;px++){
+      const t1=view[0]+(px+1)/pw*span;if(view[0]+px/pw*span>=v.total)break;
+      upTo(v,Math.min(Math.max(t1,0),v.total),acc);
+      let tot=0;for(let c=0;c<CATS.length;c++){col[c]=acc[c]-prev[c];tot+=col[c];prev[c]=acc[c]}
+      if(tot<=0)continue;
+      let yc=y+L.lane,yd=y;
+      for(const c of [0,1,2]){const h=col[c]/tot*L.lane;if(h>0){ctx.fillStyle=CATS[c].hatch?hatchPat:CATS[c].color;ctx.fillRect(L.left+px,yc-h,1.02,h);yc-=h}}
+      for(const c of [3,4,5]){const h=col[c]/tot*L.lane;if(h>0){ctx.fillStyle=CATS[c].color;ctx.fillRect(L.left+px,yd,1.02,h);yd+=h}}
+    }
+    ctx.strokeStyle='#d3dce2';ctx.strokeRect(L.left+.5,y+.5,pw-1,L.lane-1);
+    // layer ticks
+    ctx.fillStyle='#5b6b78';ctx.textAlign='center';ctx.font='11px '+getComputedStyle(document.body).fontFamily;let lastX=-99;
+    for(const [t,n] of v.layers){const x=t2x(t);if(x<L.left||x>L.left+pw)continue;ctx.fillStyle='#1b2a38';ctx.fillRect(Math.round(x),y-5,1,5);
+      if(x-lastX>22){ctx.fillStyle='#5b6b78';ctx.fillText('L'+n,x,y-12);lastX=x}}
+    // FIFO level strip
+    const ly=y+L.lane+6,lh=L.level-8;
+    ctx.fillStyle='#f4f7f9';ctx.fillRect(L.left,ly,pw,lh);
+    ctx.setLineDash([3,3]);ctx.strokeStyle='#b23a48';ctx.beginPath();const ty=ly+lh-384/512*lh;ctx.moveTo(L.left,ty);ctx.lineTo(L.left+pw,ty);ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle='#1b2a38';ctx.lineWidth=1;ctx.beginPath();let started=false;
+    for(let px=0;px<pw;px++){const a=view[0]+px/pw*span,b=view[0]+(px+1)/pw*span;if(a>=v.total)break;
+      const s0=Math.max(0,Math.floor((a+v.start)/32)),s1=Math.min(v.level.length-1,Math.max(s0,Math.floor((b+v.start)/32)));let m=512;for(let s=s0;s<=s1;s++)m=Math.min(m,v.level[s]);
+      const yy=ly+lh-Math.min(m,512)/512*lh;if(!started){ctx.moveTo(L.left+px,yy);started=true}else ctx.lineTo(L.left+px,yy)}
+    ctx.stroke();ctx.lineWidth=1;
+  });
+  if(drag&&Math.abs(drag.x1-drag.x0)>2){ctx.fillStyle='rgba(31,95,174,.12)';ctx.strokeStyle='#1f5fae';const a=Math.min(drag.x0,drag.x1),b=Math.max(drag.x0,drag.x1);ctx.fillRect(a,L.top-6,b-a,H-L.axis-L.top+10);ctx.strokeRect(a+.5,L.top-6,b-a,H-L.axis-L.top+10)}
+  if(hover!=null){ctx.strokeStyle='#1b2a38';ctx.beginPath();ctx.moveTo(hover+.5,L.top-6);ctx.lineTo(hover+.5,H-L.axis+4);ctx.stroke()}
+  document.getElementById('span').textContent=`当前窗口 ${fmt(Math.round(span))} 拍（${(span/100).toFixed(span<1000?2:0)} µs），每像素 ${(span/pw).toFixed(span/pw<10?2:0)} 拍`;
+}
+function clampView(a,b){const minSpan=40;let s=Math.max(b-a,minSpan);s=Math.min(s,maxT);a=Math.max(0,Math.min(a,maxT-s));view=[a,a+s];draw()}
+function zoom(f,cx){const t=cx==null?(view[0]+view[1])/2:x2t(cx);clampView(t-(t-view[0])*f,t+(view[1]-t)*f)}
+function stateText(v,t){
+  if(t<0||t>=v.total)return '任务已结束';
+  const i=idxAt(v,t),c=v.code[i],own=c>>3&1,ph=c&7;
+  const who=ph?(own?'显示':'CNN'):'';const parts=[`${who}${PHASE[ph]}`];
+  if(c>>4&1)parts.push('CNN AR 排队');if(c>>5&1)parts.push('显示 AR 排队');if(c>>6&1)parts.push('urgent');
+  if(c>>7&1)parts.push('CNN 读阶段');else if(c>>8&1)parts.push('CNN 计算');
+  const s=Math.min(v.level.length-1,Math.floor((t+v.start)/32));
+  return parts.join('，')+`；FIFO ${v.level[s]}`;
+}
+function showTip(x,y){
+  if(x<L.left||x>L.left+plotW()){tip.style.display='none';hover=null;draw();return}
+  hover=x;const t=x2t(x);
+  tip.innerHTML=`<b>第 ${fmt(Math.floor(t))} 拍</b>（${(t/100).toFixed(2)} µs）<br>`+V.map(v=>`${v.name}：${stateText(v,Math.floor(t))}`).join('<br>');
+  tip.style.display='block';const w=tip.offsetWidth,W=cv.clientWidth;tip.style.left=Math.min(Math.max(x+14,0),W-w-4)+'px';tip.style.top=(y+16)+'px';draw();
+}
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);drag={x0:e.offsetX,x1:e.offsetX}});
+cv.addEventListener('pointermove',e=>{if(drag){drag.x1=e.offsetX;draw()}else showTip(e.offsetX,e.offsetY)});
+cv.addEventListener('pointerup',e=>{if(drag){const a=Math.min(drag.x0,drag.x1),b=Math.max(drag.x0,drag.x1);drag=null;if(b-a>4)clampView(x2t(Math.max(a,L.left)),x2t(Math.min(b,L.left+plotW())));else draw()}});
+cv.addEventListener('pointerleave',()=>{if(!drag){tip.style.display='none';hover=null;draw()}});
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY>0?1.25:0.8,e.offsetX)},{passive:false});
+cv.addEventListener('keydown',e=>{const s=view[1]-view[0];
+  if(e.key==='ArrowLeft'){clampView(view[0]-s*.2,view[1]-s*.2);e.preventDefault()}
+  else if(e.key==='ArrowRight'){clampView(view[0]+s*.2,view[1]+s*.2);e.preventDefault()}
+  else if(e.key==='+'||e.key==='='){zoom(.5)}else if(e.key==='-'){zoom(2)}else if(e.key==='0'){clampView(0,maxT)}});
+document.getElementById('zin').onclick=()=>zoom(.5);
+document.getElementById('zout').onclick=()=>zoom(2);
+document.getElementById('reset').onclick=()=>clampView(0,maxT);
+window.addEventListener('resize',layout);
+
+function renderStatic(){
+  document.getElementById('legend').innerHTML=CATS.map(c=>`<span><i class="${c.hatch?'hatch':''}" style="${c.hatch?'':`background:${c.color||'#fff'};`}${c.color?'':'border:1px solid #b9c6cf'}"></i>${c.name}</span>`).join('');
+  document.getElementById('bars').innerHTML=V.map(v=>{
+    const s=v.share,segs=CATS.filter(c=>c.color).map(c=>`<span title="${c.name} ${pct(s[c.k],v.total)}" style="width:${100*s[c.k]/v.total}%;background:${c.hatch?'repeating-linear-gradient(135deg,#6b4c9a 0 2px,#d9cfe8 2px 4px)':c.color}"></span>`).join('');
+    return `<div class="bar-label">${v.name}<small>${(v.total/1e5).toFixed(2)} ms，${fmt(v.cnn_cycles)} 个 148.5 MHz 周期${v.passed?'':'，仿真未 PASS'}</small></div><div class="bar" role="img" aria-label="${v.name} 读通道分配">${segs}</div>
+    <div class="nums">CNN 拍 ${pct(s.c_beat,v.total)}，CNN 等返回 ${pct(s.c_wait,v.total)}，被预留挡住 ${pct(s.blocked,v.total)}，显示拍 ${pct(s.d_beat,v.total)}，显示等返回 ${pct(s.d_wait,v.total)}，显示反压 ${pct(s.d_bp,v.total)}，空闲 ${pct(s.idle,v.total)}；突发 CNN ${fmt(v.bursts.cnn)} / 显示 ${fmt(v.bursts.display)}</div>`}).join('');
+  const by=Object.fromEntries(V.map(v=>[v.key,v]));
+  const f=[];
+  const b=by.baseline,u=by.buffer,a=by.adaptive;
+  if(b)f.push(['', 'baseline：显示拉低 RREADY 占住了四成通道',`显示 reader 一拍一拍拆 128 位 beat，FIFO 满时拉低 RREADY，整个突发期间通道被它占着。这段时间占任务的 ${pct(b.share.d_bp,b.total)}（${fmt(b.share.d_bp)} 拍），CNN 的数据拍只占 ${pct(b.share.c_beat,b.total)}。`]);
+  if(b&&u)f.push(['', 'buffer：beat 缓冲把这部分反压清零',`显示反压从 ${fmt(b.share.d_bp)} 拍降到 ${fmt(u.share.d_bp)}，任务从 ${(b.total/1e5).toFixed(2)} ms 缩短到 ${(u.total/1e5).toFixed(2)} ms。同样 103,680 个 CNN beat，只是不再被挡；任务期间空闲时间升到 ${pct(u.share.idle,u.total)}，说明读通道已经不是瓶颈。`]);
+  if(a&&u)f.push(['warn','adaptive：urgent 预留在 FIFO 已满时仍挡住 CNN',`当前 main 的配置比 buffer 慢 ${((a.total/u.total-1)*100).toFixed(0)}%（${(a.total/1e5).toFixed(2)} ms 对 ${(u.total/1e5).toFixed(2)} ms）。通道空闲、CNN AR 在排队、但 urgent 拉高而被 <code>RESERVE_URGENT_READ</code> 拒绝的时间有 ${fmt(a.blocked.cycles)} 拍（${pct(a.blocked.cycles,a.total)}），共 ${fmt(a.blocked.runs)} 段，最长 ${fmt(a.blocked.max)} 拍。其中 ${pct(a.blocked.near_full,Math.max(a.blocked.cycles,1))} 的时间显示 FIFO 水位 ≥448，远高于 384 的阈值，所以触发 urgent 的不是水位低，而是 <code>row_age&gt;=1600</code> 或 <code>req_valid</code>：FIFO 满、reader 停住时行年龄照样增长，显示此时其实收不下数据，却仍然独占读通道。这是根据 trace 和 <code>style_display.sv</code> 第 43 行的推断，还没有改 RTL 验证。`]);
+  if(u&&!u.passed)f.push(['', 'buffer 这组为什么报 FATAL',`CNN 输出逐拍对拍已通过（tb 第 120 行），失败的是第 121 行的覆盖检查：${u.fatal}。任务结束时相机帧还没写完（1080 行 × 1000 个 148.5 MHz 周期约 7.3 ms，任务只用了 ${(u.total/1e5).toFixed(2)} ms），testbench 假设任务比相机帧慢。所以这是激励长度的问题，不是数据错误；trace 本身完整可用。`]);
+  document.getElementById('findings').innerHTML=f.map(([cls,h,p])=>`<div class="finding ${cls}"><h3>${h}</h3><p>${p}</p></div>`).join('');
+  const H=DATA.history;
+  document.getElementById('hist').innerHTML='<thead><tr><th>版本</th><th>任务尺寸</th><th>CNN 周期</th><th>耗时</th><th>CNN AR 等待</th><th>CNN 返回间隙</th><th>显示反压</th><th>CNN / 显示 beat</th></tr></thead><tbody>'+
+    H.map(r=>`<tr><td>${r.label}</td><td>640×${r.height}</td><td>${fmt(r.cycles)}</td><td>${r.ms.toFixed(2)} ms</td><td>${pct(r.ar,r.ticks)}</td><td>${pct(r.gap,r.ticks)}</td><td>${pct(r.dbp,r.ticks)}</td><td>${fmt(r.rb)} / ${fmt(r.drb)}</td></tr>`).join('')+'</tbody>';
+}
+
+(async()=>{
+  if(!DATA||!DATA.variants.length){document.querySelector('main').insertAdjacentHTML('beforeend','<p>没有数据。先运行 tools/trace_ddr_read.py，再运行 tools/plot_ddr_read_trace.py。</p>');return}
+  if(typeof DecompressionStream==='undefined'){document.getElementById('wrap').innerHTML='<p>这个浏览器不支持 DecompressionStream，时间线无法解码。请用较新的 Chrome、Edge 或 Firefox 打开。</p>'}
+  V=DATA.variants.map(v=>({...v,key:v.name,name:v.name}));
+  renderStatic();
+  if(typeof DecompressionStream==='undefined')return;
+  await Promise.all(V.map(decode));
+  maxT=Math.max(...V.map(v=>v.total));view=[0,maxT];layout();
+})();
+</script>
+</body>
+</html>

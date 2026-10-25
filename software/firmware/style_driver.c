@@ -10,6 +10,7 @@ volatile uint32_t app_style_irqs,app_style_errors,app_style_last_status,app_styl
 volatile uint32_t app_style_captured,app_style_dropped,app_style_inferred,app_style_cycles;
 volatile uint32_t app_style_ddr_delta[12],app_style_read_cycles,app_style_compute_cycles;
 volatile uint32_t app_style_prefetch_starts,app_style_prefetch_completions,app_style_overlap_cycles;
+volatile uint32_t app_uart_debug;
 static void sync_ddr(void) { __asm__ volatile("fence rw,rw\n.word 0x0000500f" ::: "memory"); }
 void style_irq_service(void) {
     uint32_t status=regs[2];app_style_last_status=status;
@@ -62,6 +63,15 @@ int style_init_and_selftest(void) {
     return app_style_selftest_errors ? -6:0;
 }
 void style_stream_enable(void) { regs[1]=16u; }
+void style_stream_set(int on) { regs[1]=on ? 16u:0u; }
+int style_busy(void) { return (int)(regs[2]&1u); }
+/* Displayed slot 0..5; -1 while nothing is displayed, -2 on a bitstream without the 0x88 readback. */
+int style_display_slot(void) {
+    uint32_t v=regs[0x88/4];
+    if(!(v&0x80000000u))return -2;
+    if(!(v&8u)||(v&7u)>5u)return -1;
+    return (int)(v&7u);
+}
 void style_update_metrics(void) {
     app_style_captured=regs[14];app_style_dropped=regs[15];
     app_style_inferred=regs[16];
@@ -79,6 +89,7 @@ void style_log_ddr(void) {
     for(uint32_t i=0;i<12;++i)snapshot[i]=regs[0x58/4+i];
     regs[0x54/4]=0;__asm__ volatile("fence iorw,iorw" ::: "memory");
     for(uint32_t i=0;i<12;++i){app_style_ddr_delta[i]=snapshot[i]-previous[i];previous[i]=snapshot[i];}
+    if(!app_uart_debug)return;
     static const char *const labels[9]={" AR "," DOWN "," RGAP "," RBP "," DBP "," AW "," W "," B "," IDLE "};
     // Also fit ten-digit fields after an unusually long debugger pause or
     // a counter reset between snapshots; these intervals are not valid rates.
@@ -127,6 +138,6 @@ int style_submit_metrics(uint64_t now) {
     p=put_text(p," DROP ");p=put_decimal(p,app_style_dropped);
     p=put_text(p," MS ");p=put_decimal(p,app_style_cycles/148500u);
     p=put_text(p," ERR ");p=put_decimal(p,app_style_errors+regs[19]+regs[20]);*p=0;
-    uart_writeStr(BSP_UART_TERMINAL,line);uart_writeStr(BSP_UART_TERMINAL,"\r\n");
+    if(app_uart_debug){uart_writeStr(BSP_UART_TERMINAL,line);uart_writeStr(BSP_UART_TERMINAL,"\r\n");}
     return osd_submit_string(line);
 }

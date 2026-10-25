@@ -27,17 +27,7 @@
 #define VIDEO_SAMPLE_COUNT 0x0e4u
 #define VIDEO_HOT_COUNT 0x0e8u
 #define VIDEO_SOURCE 0x0ecu
-#define VIDEO_HIST_OSD 0x100u
-#define VIDEO_HIST_CMD 0x108u
-#define VIDEO_HIST_STATUS 0x10cu
-#define VIDEO_HIST_FRAME 0x110u
-#define VIDEO_HIST_SAMPLES 0x114u
-#define VIDEO_HIST_INDEX 0x118u
-#define VIDEO_HIST_DATA 0x11cu
-#define VIDEO_HIST_CFG 0x120u
-#define VIDEO_HIST_SEQ 0x124u
-#define VIDEO_HIST_META_INDEX 0x128u
-#define VIDEO_HIST_META_DATA 0x12cu
+#define VIDEO_UI_SHADOW 0x130u   /* {selection[1:0], compare_enable}; applied by VIDEO_CFG_APPLY bit1 */
 #define VIDEO_FAULTS 0x140u
 #define VIDEO_AWB_R_SUM 0x180u
 #define VIDEO_AWB_G_SUM 0x184u
@@ -56,8 +46,3 @@ typedef struct {
   uint64_t timestamp;
 } video_stats_t;
 int video_stats_read(video_stats_t *s);
-typedef struct {
-  uint32_t bins[64],meta[14],sequence,index,state;
-} video_hist_t;
-/* Nonblocking: 1 complete, 0 pending, negative error. Calls read <=4 words. */
-int video_hist_poll(video_hist_t *h);

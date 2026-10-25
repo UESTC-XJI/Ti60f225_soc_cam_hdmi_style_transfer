@@ -23,7 +23,7 @@ State._fields_=[(name.strip(),C.c_uint64 if kind=='uint64_t' else C.c_uint32)
 
 class ControlMachine(Machine):
     def __init__(self, failure=None, readback_delay=0):
-        self.regs={0:0x4f534431,0x34:0x10000,0x38:0x1ff,0xec:1,
+        self.regs={0:0x4f534431,0x34:0x20000,0x38:0x1bf,0xec:1,
                    0x60:0x168,0x64:256,0x68:0x1a9,0x58:0,0x54:0}
         self.failure=failure
         self.hold=False
@@ -96,6 +96,8 @@ class ControlMachine(Machine):
     def osd_write(self,uc,off,size,value,data):
         self.regs[off]=value
         if off==0x50:
+            # bit1 = display APPLY (QSE view/label); the HDMI side is not modeled, so it completes at once.
+            if value==2:return
             assert value==1 and not self.regs.get(0x54,0)
             self.regs[0x54]=1
 
@@ -270,13 +272,16 @@ results.append('AWB: two-green factor, bounded smooth commits and absolute RAW g
 
 # While gain is pending or ACKed with old statistics, AE does not use that
 # snapshot. Fixed/lock modes retain or restore the correct confirmed gains.
-m=ControlMachine();assert m.init()==0;m.frame(1);m.service();assert m.state().waiting_gain
-m.frame(2,30);m.service();assert not m.camera_writes
-m.ack_gain();m.frame(3,30,cfg=0);m.service();assert not m.camera_writes
-m.frame(4,30);m.service();assert m.state().queued_exposure
-m.regs[0xe0]=5;m.service();assert m.state().ae_updates==0
+# AWB_CONFIRM=3: frames 1..3 agree on direction before the first gain commit.
+m=ControlMachine();assert m.init()==0
+for f in (1,2,3):m.frame(f);m.service()
+assert m.state().waiting_gain
+m.frame(4,30);m.service();assert not m.camera_writes
+m.ack_gain();m.frame(5,30,cfg=0);m.service();assert not m.camera_writes
+m.frame(6,30);m.service();assert m.state().queued_exposure
+m.regs[0xe0]=7;m.service();assert m.state().ae_updates==0
 assert m.state().waiting_exposure
-for f in (5,6,7):m.frame(f);m.service();assert not m.regs[0x54]
+for f in (7,8,9):m.frame(f);m.service();assert not m.regs[0x54]
 results.append('coordination: pending gain/old CFG rejected; AWB waits for exposure settling')
 
 for mode in (0,2):
@@ -292,6 +297,24 @@ for mode in (0,2):
 for values in [dict(cells=0),dict(r=0),dict(b=0),dict(cells=1),dict(cells=40)]:
     m=ControlMachine();assert m.init()==0;m.frame(1,**values);m.service();assert not m.regs[0x54]
 results.append('AWB: fixed/lock modes, zero-denominator and insufficient-candidate hold')
+
+# Range-only hardware AWB lets coloured objects into the sums. Firmware commits a
+# step only after three consecutive snapshots ask for the same R/B direction.
+m=ControlMachine();assert m.init()==0
+for f in (1,2):m.frame(f);m.service();assert not m.regs[0x54]
+m.frame(3);m.service();assert m.regs[0x54]
+# Alternating scene colour (red-heavy / blue-heavy) flips direction every frame: no commit.
+m=ControlMachine();assert m.init()==0
+for f in range(1,41):
+    m.frame(f,r=40,b=80) if f%2 else m.frame(f,r=80,b=40)
+    m.service(33);assert not m.regs[0x54]
+assert m.state().awb_updates==0
+# One outlier inside a steady run restarts the count.
+m=ControlMachine();assert m.init()==0
+m.frame(1);m.service();m.frame(2);m.service();m.frame(3,cells=0);m.service()
+m.frame(4);m.service();m.frame(5);m.service();assert not m.regs[0x54]
+m.frame(6);m.service();assert m.regs[0x54]
+results.append('AWB: three-snapshot direction guard; alternating colour never commits; outlier restarts the count')
 
 for failure in ('nack','timeout','start_dropped','stop_dropped','missing_ack_valid'):
     m=ControlMachine(failure);assert m.init()!=0 and not m.state().enabled and m.state().errors
@@ -328,7 +351,9 @@ results.append('I2C recovery: stuck bus is bounded; RECOVER timeout/dropped/rema
 
 m=ControlMachine();m.sensor[0x320e]=0;m.sensor[0x320f]=4;assert m.init()!=0 and not m.state().enabled
 m=ControlMachine();m.sensor[0x3107]=0;assert m.init()!=0
-m=ControlMachine();assert m.init()==0;m.frame(1);m.service();m.service(2100)
+m=ControlMachine();assert m.init()==0
+for f in (1,2,3):m.frame(f);m.service()
+assert m.regs[0x54];m.service(2100)
 assert m.state().status==6 and not m.state().enabled  # No ACK is not success.
 m=ControlMachine();assert m.init()==0;m.service(1100);assert m.state().status==4
 m=ControlMachine('tearing');assert m.init()==0;m.frame(1,20);m.service();assert not m.camera_writes and not m.regs[0x54]
@@ -364,36 +389,8 @@ class Boot3A(ControlMachine):
 m=Boot3A();m.uc.emu_start(SYMBOLS['_start'],0x20000,count=20000000)
 assert m.word('app_metrics_updates')==3 and m.video_ready and m.state().enabled
 assert m.state().ae_updates>=2 and m.state().awb_updates>0 and 'Software AE/AWB enabled' in m.uart
-assert '3A state ' in m.uart and m.word('app_osd_errors')==0 and m.word('app_ddr_errors')==0
+assert '3A state ' not in m.uart and m.word('app_osd_errors')==0 and m.word('app_ddr_errors')==0
 results.append('full _start/main: actual initialization, cooperative 3A service, UART state, OSD ACK and startup gate')
-
-# Exercise the retained, optional histogram reader with its real RV32 ABI.
-class HistMachine(ControlMachine):
-    def __init__(self,corrupt=False):
-        super().__init__();self.words_read=0;self.released=False
-        self.hbins=[16]*40+[15]*24
-        self.hmeta=[96000,1000,2,40000,200000,50000,1000,1000,17,123,4,0,0,1]
-        if corrupt:self.hbins[0]+=1
-        self.uc.mem_write(SYMBOLS['app_hist'],bytes(324))
-    def osd_read(self,uc,off,size,data):
-        if off==0x11c:self.words_read+=1;return self.hbins[self.regs[0x118]]
-        if off==0x12c:self.words_read+=1;return self.hmeta[self.regs[0x128]]
-        return super().osd_read(uc,off,size,data)
-    def osd_write(self,uc,off,size,value,data):
-        if off==0x108:
-            if value==1:self.regs[0x10c]=1
-            else:self.regs[0x10c]=0;self.released=True
-        else:super().osd_write(uc,off,size,value,data)
-for corrupt in (False,True):
-    m=HistMachine(corrupt)
-    assert m.call('video_hist_poll',SYMBOLS['app_hist'])==0
-    assert m.call('video_hist_poll',SYMBOLS['app_hist'])==0 and m.words_read==0
-    m.regs[0x10c]=2;m.regs[0x124]=7
-    rc=0
-    while rc==0:
-        before=m.words_read;rc=m.call('video_hist_poll',SYMBOLS['app_hist']);assert m.words_read-before<=4
-    assert rc==(-3 if corrupt else 1) and m.released and m.words_read==78
-results.append('histogram driver: nonblocking ACQUIRE/78-word read/RELEASE, four-word budget and bin-sum validation')
 
 for result in results:print('PASS RV32 3A:',result)
 out=ROOT/'reports/simulation/camera_3a_runtime.json'

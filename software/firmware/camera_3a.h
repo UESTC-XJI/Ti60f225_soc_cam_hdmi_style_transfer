@@ -10,6 +10,7 @@ typedef struct {
   uint32_t queued_exposure,queue_sensor;
   uint32_t pending_exposure,exposure_reserved,confirm_frames,last_error,readback_exposure;
   uint32_t ae_goal,ae_held,ae_direction,ae_streak;
+  uint32_t awb_direction,awb_streak;
   uint64_t last_stats_time,wait_start;
 } camera_3a_t;
 extern volatile uint32_t app_awb_mode;

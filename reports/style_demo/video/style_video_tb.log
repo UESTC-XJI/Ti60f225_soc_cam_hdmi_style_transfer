@@ -1,0 +1,2 @@
+PASS style crop and frame store: exact averages, 6-slot exhaustion, paired ownership, unsafe swap, errors
+tests/style_video_tb.sv:94: $finish called at 80380000 (1ps)

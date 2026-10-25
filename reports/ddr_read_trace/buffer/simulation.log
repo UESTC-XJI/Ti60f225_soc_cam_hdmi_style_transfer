@@ -1,0 +1,26 @@
+NETWORK layer=0 total_cycles=0
+NETWORK layer=1 total_cycles=80601
+NETWORK layer=2 total_cycles=104489
+NETWORK layer=3 total_cycles=114655
+NETWORK layer=4 total_cycles=137585
+NETWORK layer=5 total_cycles=152735
+NETWORK layer=6 total_cycles=175678
+NETWORK layer=7 total_cycles=213751
+NETWORK layer=8 total_cycles=237131
+NETWORK layer=9 total_cycles=252157
+NETWORK layer=10 total_cycles=275337
+NETWORK layer=11 total_cycles=313375
+NETWORK layer=12 total_cycles=336917
+NETWORK layer=13 total_cycles=351902
+NETWORK layer=14 total_cycles=375130
+NETWORK layer=15 total_cycles=412814
+NETWORK layer=16 total_cycles=438798
+NETWORK layer=17 total_cycles=458366
+NETWORK layer=18 total_cycles=487747
+NETWORK layer=19 total_cycles=536902
+NETWORK layer=20 total_cycles=598059
+NETWORK layer=21 total_cycles=671504
+NETWORK layer=22 total_cycles=789515
+TELEMETRY starts=125 completions=125 overlap_pixels=29051
+FATAL: /home/goodmann/Documents/comp/2026fpga/ti60_style_demo/reports/ddr_read_trace/buffer/tb.sv:121: concurrent system coverage/fault cap=66126 pix=180056 underflow=0
+       Time: 6348400000  Scope: style_system_tb

@@ -89,5 +89,7 @@ module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1
   assign prdata=paddr==8'h38 ? captured:paddr==8'h3c ? dropped:paddr==8'h40 ? inferred:
     paddr==8'h44 ? infer_errors:paddr==8'h48 ? display_frame_id:paddr==8'h4c ? display_dma_errors:
     paddr==8'h50 ? bridge_errors:paddr==8'h54 ? {31'b0,profile_freeze}:
+    // Snapshot readback: bit 31 marks the register as present on this bitstream.
+    paddr==8'h88 ? {1'b1,27'b0,display_valid,display_slot}:
     (paddr>=8'h58&&paddr<=8'h84) ? profile_value:accel_prdata;
 endmodule

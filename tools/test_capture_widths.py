@@ -16,8 +16,8 @@ print(p.stdout);assert p.returncode==0,p.stderr
 tb='''module width_budget_tb;
 capture_frame_stats dut();
 initial begin
-if($bits(dut.rs)>22 || $bits(dut.gs)>23 || $bits(dut.ys)>23 || $bits(dut.samples)>15 || $bits(dut.cells)>14 || $bits(dut.corr_r)>25 || $bits(dut.neutral_rhs)>41)$fatal(1,"internal width budget not implemented");
-$display("PASS range budget: R/B22 G/Y23 AE15 AWB14 correction25 ratio41");$finish;
+if($bits(dut.rs)>22 || $bits(dut.gs)>23 || $bits(dut.ys)>23 || $bits(dut.samples)>15 || $bits(dut.cells)>14)$fatal(1,"internal width budget not implemented");
+$display("PASS range budget: R/B22 G/Y23 AE15 AWB14");$finish;
 end
 endmodule
 '''

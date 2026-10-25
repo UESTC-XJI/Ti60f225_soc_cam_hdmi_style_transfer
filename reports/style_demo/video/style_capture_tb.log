@@ -1,0 +1,2 @@
+PASS full 1080p -> VGA capture: 307200 exact XBGR pixels, 2400 DDR bursts, 148.5/100MHz FIFO, no overflow
+tests/style_capture_tb.sv:53: $finish called at 7272810000 (1ps)

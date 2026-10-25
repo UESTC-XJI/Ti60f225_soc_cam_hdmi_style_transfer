@@ -1,10 +1,9 @@
 `timescale 1ns/1ps
 // Open-drain bit-level sensor model; uses the real controller and I2C core.
 module i2c_runtime_tb;
-  reg clk=0,rst=0,mwr=0,mrd=0,ae_mode=0,en=0,sv=0,fs=0;
+  reg clk=0,rst=0,mwr=0,mrd=0;
   reg[15:0] ma=0;reg[7:0] md=0;
   wire cfg,wd,rd,we,re;wire[7:0] result;
-  wire aw,ar,ready,limit,fault;wire[15:0] aa,exp,vts;wire[7:0] ad,mean;
   wire sclo,sdao,scloe,sdaoe;tri1 scl,sda;
   reg slave_low=0,nack=0;
   assign scl=scloe?1'bz:sclo;
@@ -14,19 +13,10 @@ module i2c_runtime_tb;
   i2c_master_ctrl_top #(.RUNTIME_ENABLE(1),.CLK_DIV(2)) bus(
     .clk(clk),.rst_n(rst),.scl_pad_i(scl),.scl_pad_o(sclo),.scl_padoen_o(scloe),
     .sda_pad_i(sda),.sda_pad_o(sdao),.sda_padoen_o(sdaoe),
-    .runtime_wr_en(ae_mode?aw:mwr),.runtime_rd_en(ae_mode?ar:mrd),
-    .runtime_addr(ae_mode?aa:ma),.runtime_data(ae_mode?ad:md),
+    .runtime_wr_en(mwr),.runtime_rd_en(mrd),
+    .runtime_addr(ma),.runtime_data(md),
     .config_done(cfg),.runtime_wr_done(wd),.runtime_rd_done(rd),
     .runtime_wr_error(we),.runtime_rd_error(re),.runtime_read_data(result));
-  sc431hai_auto_exposure #(.EXPOSURE_PRIORITY_ENABLE(0),.FIXED_STEP_ENABLE(1),.PREDICTIVE_ENABLE(0),.WAIT_FRAMES(1),.TIMEOUT_CYCLES(20000),
-    .FILTER_SHIFT(0),.CONFIRM_FRAMES(1),.DEADBAND(8),.SETTLE_BAND(8),
-    .SMALL_STEP_SHIFT(3),.LARGE_STEP_SHIFT(3),.RELEASE_FRAMES(1)) ae(
-    .clk(clk),.rst_n(rst),.i_config_done(cfg && ae_mode),.i_enable(en),.i_sensor_frame_start(fs),
-    .i_stats_valid(sv),.i_highlights(1'b0),.i_mean(8'd40),.i_target(8'd96),
-    .o_wr_en(aw),.o_rd_en(ar),.o_addr(aa),.o_data(ad),.i_wr_done(wd),.i_rd_done(rd),
-    .i_wr_error(we),.i_rd_error(re),.i_read_data(result),.o_exposure(exp),.o_vts(vts),
-    .o_mean(mean),.o_ready(ready),.o_at_limit(limit),.o_error(fault),
-    .i_high_protect(1'b0),.i_high_permille(10'd0),.i_high_limit(8'd10));
   reg[7:0] mem[0:65535];reg[15:0] pointer=0;
   reg[7:0] rxbyte=0,txbyte=0;
   integer phase=0,bitno=0,stage=0,ackstep=0,nextphase=1,txbit=7,starts=0,stops=0;
@@ -89,7 +79,7 @@ module i2c_runtime_tb;
   integer i;
   initial begin
     for(i=0;i<65536;i=i+1) mem[i]=0;
-    mem['h320e]='h85;mem['h320f]='hdc; // Reserved bit 7 must be ignored by AE.
+    mem['h320e]='h85;mem['h320f]='hdc;
     repeat(5) @(negedge clk);rst=1;
     wait(cfg);repeat(4) @(negedge clk);
     read_reg('h3e08,'h83,0);read_reg('h3e09,'h20,0);
@@ -99,14 +89,7 @@ module i2c_runtime_tb;
     read_reg('h3e00,'ha0,0);read_reg('h3e01,'h32,0);read_reg('h3e02,'h05,0);
     nack=1;write_reg('h1234,'h67,1);read_reg('h320e,0,1);
     nack=0;read_reg('h320f,'hdc,0);write_reg('h1234,'h89,0);read_reg('h1234,'h89,0);
-    ae_mode=1;wait(ready || fault);#2;
-    if(fault || exp!=800 || vts!=1500) $fatal(1,"AE real bus boot");
-    repeat(4) @(negedge clk);en=1;sv=1;@(negedge clk);sv=0;
-    wait(ae.state==5);@(negedge clk);fs=1;@(negedge clk);fs=0;
-    wait(exp==928 || fault);#2; // Error 56 -> fixed step128, exposure800 ->928.
-    if(fault || mem['h3812]!='h30 || mem['h3e00]!='ha0 || mem['h3e01]!='h3a || mem['h3e02]!='h05)
-      $fatal(1,"AE real bus group hold result");
-    $display("PASS I2C: 165-entry init, 6.160x analog gain readback, repeated starts, read/write/NACK, AE group update (%0d starts, %0d stops)",starts,stops);$finish;
+    $display("PASS I2C: 165-entry init, 6.160x analog gain readback, repeated starts, read/write/NACK (%0d starts, %0d stops)",starts,stops);$finish;
   end
   initial begin #20000000;$fatal(1,"I2C watchdog phase %0d bus cfg %b wrstate %0d rdstate %0d",phase,cfg,bus.u_i2c_ctrl.wr_state,bus.u_i2c_ctrl.rd_state);end
 endmodule

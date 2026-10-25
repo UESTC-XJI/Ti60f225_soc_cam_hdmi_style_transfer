@@ -35,9 +35,9 @@ p /u *(unsigned int *)0xf8100030
 
 ## 统一统计与软件 AE/AWB
 
-详见 [实现说明](../../docs/VIDEO_3A_IMPLEMENTATION.md)。新 bit/ELF 配套；默认启用软件 AE/AWB（需硬件 CAPS 与真实 VTS/I²C 检查通过）。`app_3a` 为 IDE 可见状态和更新计数，`app_awb_mode`=0固定校准/1自动/2锁定。曝光Group Hold、真实NACK/timeout、读回验证及保守N+2等待均在CPU执行。gain与筛选参数通过统一APB在RAW帧边界生效；AE/AWB同帧、同版本整包发布。
+详见 [实现说明](../../docs/VIDEO_3A_IMPLEMENTATION.md)。新 bit/ELF 配套；默认启用软件 AE/AWB（需硬件 CAPS 与真实 VTS/I²C 检查通过）。`app_3a` 为 IDE 可见状态和更新计数，`app_awb_mode`=0固定校准/1自动/2锁定。曝光Group Hold、真实NACK/timeout、读回验证及保守N+2等待均在CPU执行。gain与暗/饱和范围参数通过统一APB在RAW帧边界生效；AE/AWB同帧、同版本整包发布。
 
-采集统计实际使用增益前RAW8和增益后RGB；64bin Y histogram可冻结读取。自动lift关闭、手动强度32；不修改传感器VTS/PLL，不承诺提高当前约12FPS。新功能未实板验证，历史3898字节固件的上板记录仅适用于旧版本。
+采集统计实际使用增益前RAW8和增益后RGB。硬件只保留Y累加、采样/高光计数和AWB暗/饱和范围筛选；64bin直方图、HDMI直方图叠加、显示端亮度计和中性色筛选已删除（寄存器地址保留，读0、写忽略）。中性色保护改由固件完成：同一R/B方向需连续3个快照（`AWB_CONFIRM`）才提交一步增益，参数需上板调整。自动lift关闭、手动强度32；不修改传感器VTS/PLL，不承诺提高当前约12FPS。新功能未实板验证，历史3898字节固件的上板记录仅适用于旧版本。
 
 ## 构建与仿真
 

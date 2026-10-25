@@ -1,5 +1,6 @@
 """Exercise unified APB and capture statistics with the actual BGGR Debayer."""
 from pathlib import Path
+import os
 import subprocess
 import sys
 ROOT=Path(__file__).resolve().parents[1]
@@ -10,6 +11,6 @@ sources=['tests/video_3a_tb.sv','rtl/soc_integration/video_apb_ctrl.sv',
          'rtl/isp/capture_frame_stats.sv','rtl/isp/isp_cdc_mailbox.v',
          'rtl/debayer/debayer_top_2to1.v','rtl/debayer/rgb_gain_v1.v',
          'rtl/debayer/line_buffer.v','rtl/debayer/raw_to_rgb.v','rtl/true_dual_port_ram.v']
-subprocess.run(['C:/iverilog/bin/iverilog.exe','-g2012','-grelative-include','-I','rtl',
+subprocess.run([os.environ.get('IVERILOG','C:/iverilog/bin/iverilog.exe'),'-g2012','-grelative-include','-I','rtl',
                 '-s','video_3a_tb','-o',str(out),*(['-Pvideo_3a_tb.W=1920','-Pvideo_3a_tb.H=1080'] if '--full' in sys.argv else []),*sources],cwd=ROOT,check=True)
-subprocess.run(['C:/iverilog/bin/vvp.exe',str(out)],cwd=ROOT,check=True,timeout=300)
+subprocess.run([os.environ.get('VVP','C:/iverilog/bin/vvp.exe'),str(out)],cwd=ROOT,check=True,timeout=300)

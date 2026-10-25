@@ -398,30 +398,6 @@
     "fixed_ranges": 18
   },
   {
-    "file": "rtl/isp/auto_tone_lift.v",
-    "config_expressions": 3,
-    "fixed_ranges": 11
-  },
-  {
-    "file": "rtl/isp/hdmi_frame_histogram.v",
-    "config_expressions": 7,
-    "fixed_ranges": 21,
-    "expanded_token_sha256": "b873f2a09922a132399b839eb33267ebaae58132f75252cd7af21f1cc0a9efd2",
-    "intentional_change": "2026-10-12 P1 synchronous RAM / P3 RAW10-only; see RESOURCE_OPTIMIZATION_PLAN.md and reports/resource_optimization"
-  },
-  {
-    "file": "rtl/isp/hdmi_info_overlay.v",
-    "config_expressions": 12,
-    "fixed_ranges": 15,
-    "expanded_token_sha256": "cceb26d493ba55d24dbc448c4316f9f718f6d698e288937a4b2250576e02c361",
-    "intentional_change": "2026-10-12 P1 synchronous RAM / P3 RAW10-only; see RESOURCE_OPTIMIZATION_PLAN.md and reports/resource_optimization"
-  },
-  {
-    "file": "rtl/isp/hdmi_info_overlay_apb.v",
-    "config_expressions": 0,
-    "fixed_ranges": 6
-  },
-  {
     "file": "rtl/isp/isp_cdc_mailbox.v",
     "config_expressions": 4,
     "fixed_ranges": 0
@@ -440,11 +416,6 @@
     "file": "rtl/isp/luma_tone_map.v",
     "config_expressions": 1,
     "fixed_ranges": 17
-  },
-  {
-    "file": "rtl/isp/sc431hai_auto_exposure.v",
-    "config_expressions": 26,
-    "fixed_ranges": 76
   },
   {
     "file": "rtl/mipi_config/panel_config.v",

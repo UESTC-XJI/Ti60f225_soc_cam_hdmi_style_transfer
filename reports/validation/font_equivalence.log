@@ -1,2 +1,2 @@
 PASS font: all 256 characters x16 rows x8 pixel bits; unknown character blank
-/home/goodmann/Downloads/comp/Ti60F225_DemoBoard_v4/soc_hdmi_test/Ti60f225_soc_cam_hdmi_style_demo_merged/work/validation/font_equivalence_tb.sv:15: $finish called at 40976000 (1ps)
+/home/goodmann/Documents/comp/2026fpga/ti60_style_demo/work/validation/font_equivalence_tb.sv:15: $finish called at 40976000 (1ps)
