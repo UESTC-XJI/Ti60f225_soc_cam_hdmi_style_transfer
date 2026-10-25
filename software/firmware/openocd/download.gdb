@@ -8,5 +8,6 @@ target extended-remote localhost:3333
 monitor reset halt
 load
 set $pc = _start
-tbreak *main
-continue
+# Run straight away; firmware initialises itself, no stop at main.
+detach
+quit
