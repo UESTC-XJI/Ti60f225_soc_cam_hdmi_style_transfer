@@ -1,5 +1,15 @@
 #include "camera_3a.h"
 #include "soc_video_driver.h"
+// Colour balance for the display path (measured 2026-10-25 with a 24-patch
+// chart under room light). The Bayer RAW carries roughly twice as much green as
+// red/blue, so neutral white needs R and B pulled well above G. The RTL reset
+// default is 360/256/425, which leaves the picture visibly cyan on this sensor;
+// these values override it once at boot. Retune with _calib_apb.py rather than
+// recompiling: write 0x040/0x044/0x048 then 0x050=1 and read the capture.
+#define STYLE_R_GAIN 520u
+#define STYLE_G_GAIN 290u
+#define STYLE_B_GAIN 520u
+
 #ifdef EFX_SAPPHIRE_BSP
 #include "bsp.h"
 #define THREE_A_HZ BSP_CLINT_HZ
@@ -38,6 +48,10 @@ int camera_3a_init(camera_3a_t *s,uint64_t now) {
   }
   s->maximum=2*s->vts-11;s->exposure=((uint32_t)(a&15)<<12)|((uint32_t)b<<4)|(c>>4);
   s->confirm_frames=3u+(delay&3u);
+  /* Apply the calibrated colour balance once. AWB cannot do this on this build:
+   * its statistics block (0x180..) is absent, so camera_awb_target always bails
+   * on zero sums and the gains never move off the RTL reset default. */
+  video_apply_gains(STYLE_R_GAIN,STYLE_G_GAIN,STYLE_B_GAIN);
   s->last_seq=video_read(VIDEO_STATS_SEQ);s->have_seq=1;
   s->enabled=1;s->status=THREE_A_READY;return 0;
 }
@@ -134,14 +148,14 @@ void camera_3a_service(camera_3a_t *s,uint64_t now) {
   }
   uint16_t r=(uint16_t)video_read(VIDEO_R_ACTIVE),b=(uint16_t)video_read(VIDEO_B_ACTIVE),nr=r,nb=b;
   if(app_awb_mode==AWB_LOCK)return;
-  if(app_awb_mode==AWB_FIXED) {nr=0x168;nb=0x1a9;if(r==nr&&b==nb)return;}
+  if(app_awb_mode==AWB_FIXED) {nr=STYLE_R_GAIN;nb=STYLE_B_GAIN;if(r==nr&&b==nb)return;}
   else {
     if(app_awb_mode!=AWB_AUTO||(s->have_awb_frame&&!advanced(v.frame,s->last_awb_frame,4))||
       !camera_awb_target(&v,r,b,&nr,&nb))return;
   }
   if(video_read(VIDEO_CFG_STATUS)&1)return;
   s->wanted_cfg=video_read(VIDEO_CAP_ACTIVE_SEQ)+1u;
-  if(video_apply_gains(nr,256,nb))return;
+  if(video_apply_gains(nr,STYLE_G_GAIN,nb))return;
   s->expected_r=nr;s->expected_b=nb;s->waiting_gain=1;s->wait_start=now;
   s->last_awb_frame=v.frame;s->have_awb_frame=1;s->status=THREE_A_GAIN_WAIT;
 }
