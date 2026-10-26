@@ -72,22 +72,20 @@ void style_log_ddr(void) {
     for(uint32_t i=0;i<12;++i)snapshot[i]=regs[0x58/4+i];
     regs[0x54/4]=0;__asm__ volatile("fence iorw,iorw" ::: "memory");
     for(uint32_t i=0;i<12;++i){app_style_ddr_delta[i]=snapshot[i]-previous[i];previous[i]=snapshot[i];}
-    static const char *const labels[9]={" AR "," DOWN "," RGAP "," RBP "," DBP "," AW "," W "," B "," IDLE "};
-    // Also fit ten-digit fields after an unusually long debugger pause or
-    // a counter reset between snapshots; these intervals are not valid rates.
+    // 2026-10-27：style_ddr_profiler 只实现 5 项（PnR 面积约束，见 RTL 文件头注）：
+    //   索引 0=总拍数(T) 1=CNN AR 反压 2=显示 AR 反压 3=读气泡(burst 在飞无 beat) 8=等B
+    // 其余索引恒 0，不再打印。0xa8/ac/b0/b4/b8 那五个"算力/预取"快照在当前 bit 上仍为 0
+    // （它们属于 style_network_rowpipe 的另一套计数，未接）。
+    // 提示：位序反着数会得到完全错误的分工 —— 0=总拍数, 8=等B，不是反过来。
     char line[320],*p=put_text(line,"DDR100M T ");p=put_decimal(p,app_style_ddr_delta[0]);
-    // Percentages overlap and use the same coherent 100 MHz interval.
-    for(uint32_t i=1;i<=9;++i){
-        p=put_text(p,labels[i-1]);
-        p=put_decimal(p,app_style_ddr_delta[0] ? (uint64_t)app_style_ddr_delta[i]*100u/app_style_ddr_delta[0]:0);
+    {
+        uint32_t tot=app_style_ddr_delta[0];
+        p=put_text(p," AR ");  p=put_decimal(p,tot?(uint64_t)app_style_ddr_delta[1]*100u/tot:0);
+        p=put_text(p," DAR "); p=put_decimal(p,tot?(uint64_t)app_style_ddr_delta[2]*100u/tot:0);
+        p=put_text(p," RGAP ");p=put_decimal(p,tot?(uint64_t)app_style_ddr_delta[3]*100u/tot:0);
+        p=put_text(p," B ");   p=put_decimal(p,tot?(uint64_t)app_style_ddr_delta[8]*100u/tot:0);
     }
-    p=put_text(p," RB ");p=put_decimal(p,app_style_ddr_delta[10]);
-    p=put_text(p," DRB ");p=put_decimal(p,app_style_ddr_delta[11]);
-    p=put_text(p," RPMS ");p=put_decimal(p,app_style_read_cycles/148500u);
-    p=put_text(p," CPMS ");p=put_decimal(p,app_style_compute_cycles/148500u);
-    p=put_text(p," PF ");p=put_decimal(p,app_style_prefetch_starts);
-    p=put_text(p," PFC ");p=put_decimal(p,app_style_prefetch_completions);
-    p=put_text(p," OVLP ");p=put_decimal(p,app_style_overlap_cycles);*p=0;
+    *p=0;
     uart_writeStr(BSP_UART_TERMINAL,line);uart_writeStr(BSP_UART_TERMINAL,"\r\n");
     // Display starvation is independent of style queue drops and AXI errors.
     // Read the existing status counters; no new FPGA storage is required.

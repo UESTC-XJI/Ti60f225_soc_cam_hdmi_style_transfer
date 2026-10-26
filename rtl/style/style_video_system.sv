@@ -76,7 +76,34 @@ module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1
     .ddr_awid(awid),.ddr_awaddr(awaddr),.ddr_awlen(awlen),.ddr_awsize(awsize),.ddr_awburst(awburst),.ddr_awvalid(awvalid),.ddr_awready(awready),
     .ddr_wdata(wdata),.ddr_wstrb(wstrb),.ddr_wlast(wlast),.ddr_wvalid(wvalid),.ddr_wready(wready),.ddr_bid(bid),.ddr_bresp(bresp),.ddr_bvalid(bvalid),.ddr_bready(bready),
     .ddr_arid(arid),.ddr_araddr(araddr),.ddr_arlen(arlen),.ddr_arsize(arsize),.ddr_arburst(arburst),.ddr_arvalid(arvalid),.ddr_arready(arready),.ddr_rid(rid),.ddr_rdata(rdata),.ddr_rresp(rresp),.ddr_rlast(rlast),.ddr_rvalid(rvalid),.ddr_rready(rready),.axi_error_count(bridge_errors));
+  // ---- DDR 占用剖析器（2026-10-27 恢复）--------------------------------
+  // 提交 4fdc3c8 曾把它接进本模块，之后被删；而固件至今仍在读 0x54/0x58..0x84，
+  // 于是 style_log_ddr() 打出来的 12 个计数器全是 0（静默失效）。此处按当年那版接线恢复。
+  //   APB 0x54 : [0]=freeze（冻结计数，便于软件连贯读取） [1]=clear（写 1 清零）
+  //   APB 0x58..0x84 : index=(paddr-0x58)>>2，12 个槽位
+  // ⚠ 索引与位序（Verilog 拼接最后一个元素落在 bit0，原版 events 的 bit0 是 1'b1）：
+  //     0=总拍数(T) 1=CNN AR 反压 2=显示 AR 反压 3=读气泡(burst 在飞无 beat)
+  //     4=CNN R 背压 5=显示 R 背压 6=AW 7=W **8=等B** 9=空闲 10=CNN R 消费 11=显示 R 消费
+  //   本版只实现 **0/1/2/3/8** 五项（其余装不下，见 style_ddr_profiler.sv 头注），读回 0。
+  //   恢复 12 个全部时会占 661 FF，PnR 在 99.82% 因拥塞失败——面积是这里的硬约束。
+  reg profile_freeze;
+  wire profile_write=psel&&penable&&pwrite&&paddr==8'h54;
+  wire [31:0] profile_value;
+  wire [3:0]  profile_index=(paddr-8'h58)>>2;
+  always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) profile_freeze<=1'b0;
+    else if(profile_write) profile_freeze<=pwdata[0];
+  end
+  style_ddr_profiler profiler(.clk(clk),.rst_n(rst_n),.enable(stream_enable),
+    .freeze(profile_freeze),.clear(profile_write&&pwdata[1]),.network_idle(nn_ready),
+    .index(profile_index),.value(profile_value),
+    .c_arvalid(c_arvalid),.c_arready(c_arready),.c_rvalid(c_rvalid),.c_rready(c_rready),.c_rlast(c_rlast),
+    .c_awvalid(c_awvalid),.c_awready(c_awready),.c_wvalid(c_wvalid),.c_wready(c_wready),.c_wlast(c_wlast),
+    .c_bvalid(c_bvalid),.c_bready(c_bready),
+    .arvalid(v_arvalid),.arready(v_arready),.v_rvalid(v_rvalid),.v_rready(v_rready));
   assign prdata=paddr==8'h38 ? captured:paddr==8'h3c ? dropped:paddr==8'h40 ? inferred:
     paddr==8'h44 ? infer_errors:paddr==8'h48 ? display_frame_id:paddr==8'h4c ? display_dma_errors:
-    paddr==8'h50 ? bridge_errors:accel_prdata;
+    paddr==8'h50 ? bridge_errors:
+    paddr==8'h54 ? {31'b0,profile_freeze}:
+    (paddr>=8'h58&&paddr<=8'h84) ? profile_value:accel_prdata;
 endmodule

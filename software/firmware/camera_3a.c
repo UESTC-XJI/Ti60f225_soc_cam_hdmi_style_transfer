@@ -112,8 +112,14 @@ void camera_3a_service(camera_3a_t *s,uint64_t now) {
   }
   video_stats_t v;
   if(video_stats_read(&v))return;
-  /* Fixed goal 128: ignore the highlight goal reduction. */
-  v.hot=0;
+  /* 2026-10-27: 恢复高光保护。此前这里写死 v.hot=0，把 camera_ae_goal() 的
+   * "高光越多、目标越低" 整条通路废掉了（goal 恒 128）。
+   * 为什么当初要废掉它：RTL 侧 st_hot 位段错了（video_apb_ctrl.sv 原为
+   * ae_rx[73:52]，22 位塞进 21 位），实际得到 {hot[19:0], n[20]}，
+   * 即 ≈2×hot+1 —— 不是"一半"，是"两倍"。于是 5.3% 热就贴底、
+   * 50~85% 热时越界丢帧导致 AE 停摆、>85% 回绕成非单调。
+   * 该位段已在 RTL 侧修正为 [73:53]，此处才敢打开。 */
+  if(v.hot>v.samples) { v.hot=0; s->errors++; }   /* 防御：位段若再出错，不要静默 */
   if(s->have_seq&&v.seq==s->last_seq) {
     if(now-s->last_stats_time>THREE_A_HZ) s->status=THREE_A_NO_STATS;
     return;

@@ -176,7 +176,7 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
   always @(posedge pclk or negedge preset_n) begin
     if(!preset_n) begin st_y<=0; st_n<=0; st_hot<=0; st_frame<=0; st_cfg<=0; stats_seq<=0; end
     else if(ae_arrived) begin
-      st_y<=ae_rx[31:0]; st_n<=ae_rx[52:32]; st_hot<=ae_rx[73:52]; st_frame<=ae_rx[105:74];
+      st_y<=ae_rx[31:0]; st_n<=ae_rx[52:32]; st_hot<=ae_rx[73:53]; st_frame<=ae_rx[105:74];
       st_cfg<=ae_rx[137:106];
       stats_seq<=stats_seq+1'b1;
     end
