@@ -100,7 +100,11 @@ module style_display #(parameter bit BUFFERED=1'b1)(
   assign req_ready=state==IDLE;
   assign display_safe=state==IDLE&&!rd_busy;
   wire pixel_valid,pixel_ready;wire [59:0] packet;
-  wire [31:0] rgb={8'b0,(rd_pixel[23:0]^24'h808080)};
+  // The stylised buffer stores INT8 with a +0x80 bias (0 = mid grey), so only
+  // the right-hand read needs the bias removed. The original frame is already
+  // plain 8-bit RGB. right_side is low for the original fetch and high for the
+  // stylised one (see the fetch FSM below), so it selects the conversion.
+  wire [31:0] rgb={8'b0, right_side ? (rd_pixel[23:0]^24'h808080) : rd_pixel[23:0]};
   style_async_fifo #(.WIDTH(60),.LOG_DEPTH(BUFFERED ? 9:10)) pixels(.reset_n(rst_n),.wclk(clk),.rclk(pix_clk),
     .in_valid(rd_valid),.in_ready(rd_ready),.in_data({row_epoch,row_number,x,rgb}),
     .out_valid(pixel_valid),.out_ready(pixel_ready),.out_data(packet),.write_level(pixel_level));

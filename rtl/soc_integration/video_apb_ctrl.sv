@@ -30,6 +30,11 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
   assign o_commit_toggle=1'b0; assign o_commit_page=1'b0; assign o_video_ready=1'b1;
 
   localparam [127:0] CAP_DEFAULT={24'd0,16'h0200,32'h00f80800,8'd232,16'h01a9,16'h0100,16'h0168};
+  // lift strength stays at 32 (the original value). Lowering it raises the
+  // panel sigma but nearly doubles the share of pixels sharing one exact colour
+  // (measured on the board: 32.5% -> 70.0%), which makes the flat look worse.
+  // lift is gain-based with a 1.25x peak, so it amplifies small differences
+  // instead of clipping them.
   localparam [127:0] DISP_DEFAULT={45'd0,3'd0,16'd0,32'h00002001,32'h00202001};
   reg [127:0] cap_shadow,disp_shadow,cap_pending,disp_pending,cap_mirror,disp_mirror;
   reg cap_req,disp_req;wire cap_ack,disp_ack;

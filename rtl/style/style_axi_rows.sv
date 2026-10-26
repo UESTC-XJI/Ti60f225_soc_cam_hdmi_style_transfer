@@ -42,7 +42,12 @@ module style_axi_rows(
   reg [319:0] wb_next;reg [6:0] wc_next;
   always @* begin
     rd_pixel=0;
-    if(rbpp==4) rd_pixel[23:0]=rb[23:0]^24'h808080;
+    // No format conversion here. This reader serves both buffers: the original
+    // frame is plain 8-bit RGB and the stylised frame is INT8 with a 0x80 bias,
+    // so only the caller knows which conversion applies. Doing the XOR here
+    // biased the original frame and forced the caller to XOR it back, which in
+    // turn cancelled the bias for the stylised frame.
+    if(rbpp==4) rd_pixel[23:0]=rb[23:0];
     else rd_pixel=rb[191:0];
     rb_next=rpop ? rb>>(rbpp*8):rb;rc_next=rpop ? rc-rbpp:rc;
     if(rvalid&&rready)begin

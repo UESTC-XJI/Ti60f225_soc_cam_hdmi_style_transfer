@@ -6,6 +6,15 @@
 // default is 360/256/425, which leaves the picture visibly cyan on this sensor;
 // these values override it once at boot. Retune with _calib_apb.py rather than
 // recompiling: write 0x040/0x044/0x048 then 0x050=1 and read the capture.
+/* Set to 1 to freeze exposure after the first AE update. The colour gains are
+ * only meaningful for a fixed exposure: with AE running, lowering a gain just
+ * makes AE stretch the exposure back, so the picture brightness stays put while
+ * dynamic range shrinks. Calibrate gains with AE frozen. */
+/* AE runs normally now. It was frozen while colour gains were being tuned by
+ * hand; with the quantisation range fixed there is no need to pin exposure, and
+ * a fixed exposure cannot adapt to a change of light. */
+#define STYLE_AE_FREEZE 0
+
 #define STYLE_R_GAIN 520u
 #define STYLE_G_GAIN 290u
 #define STYLE_B_GAIN 520u
@@ -126,6 +135,11 @@ void camera_3a_service(camera_3a_t *s,uint64_t now) {
   }
   s->mean=v.y_sum/v.samples;s->high_permille=(uint32_t)((uint64_t)v.hot*1000/v.samples);s->status=THREE_A_READY;
   s->ae_goal=camera_ae_goal(s->high_permille);
+#if STYLE_AE_FREEZE
+  /* Freeze: report stats but never move the exposure again. */
+  s->ae_held=1;
+  return;
+#endif
   uint32_t target=camera_ae_target(s->exposure,s->maximum,s->mean,s->high_permille);
   uint32_t error=s->mean>s->ae_goal?s->mean-s->ae_goal:s->ae_goal-s->mean;
   if(target==s->exposure) {
