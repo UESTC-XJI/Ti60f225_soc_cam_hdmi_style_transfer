@@ -15,9 +15,15 @@
  * a fixed exposure cannot adapt to a change of light. */
 #define STYLE_AE_FREEZE 0
 
-#define STYLE_R_GAIN 520u
-#define STYLE_G_GAIN 290u
-#define STYLE_B_GAIN 520u
+/* 2026-10-27：从校准值 520/290/520 退回 RTL 默认 360/256/425 做 A/B。
+ * 依据：CAP_DEFAULT[15:0]/[31:16]/[47:32] = 360/256/425（video_apb_ctrl.sv:32）。
+ * 当前 DDR 实测风格帧 B-R = +25.6（模型侧离线预测 +21.4，两者吻合），说明偏色
+ * 主要来自网络对该场景的固有偏色；但这组校准值是否把输入色平衡推歪了尚未验证：
+ * 520/520 是 R、B 同倍放大(×2.03) 而 G 只 ×1.13；默认是 R 1.41 / G 1.0 / B 1.66。
+ * 先测默认值，两个都测完再定。 */
+#define STYLE_R_GAIN 400u
+#define STYLE_G_GAIN 256u
+#define STYLE_B_GAIN 414u
 
 #ifdef EFX_SAPPHIRE_BSP
 #include "bsp.h"
