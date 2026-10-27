@@ -9,6 +9,10 @@ module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1
   output wire [31:0] prdata,output wire pready,pslverr,irq,
   output wire [31:0] pixel,output wire hs,vs,de,underflow,capture_fault,
   output wire [31:0] resized_frames,
+  // Display read urgency (registered copy) exported so the OUTER CPU/video
+  // bridge can honour per-line display deadlines instead of pure round-robin.
+  // The inner bridge keeps using the raw level (see display_read_urgent_raw).
+  output wire display_read_urgent,
   output wire [5:0] awid,arid,output wire [31:0] awaddr,araddr,output wire [7:0] awlen,arlen,
   output wire [2:0] awsize,arsize,output wire [1:0] awburst,arburst,
   output wire awvalid,arvalid,input wire awready,arready,
@@ -37,7 +41,7 @@ module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1
     .out_valid(cap_valid),.out_ready(cap_ready),.out_data(cap_packet));
   wire nn_start,nn_ready,nn_done,nn_error;wire [31:0] nn_source,nn_result,nn_cycles;
   wire [2:0] display_slot;wire display_valid,display_frame_event,display_safe;
-  wire display_read_urgent;
+  wire display_read_urgent_raw;
   wire [31:0] captured,dropped,inferred,infer_errors,display_frame_id,display_dma_errors;
   wire [31:0] v_awaddr,v_araddr;wire [7:0] v_awlen,v_arlen;
   wire v_awvalid,v_awready,v_wlast,v_wvalid,v_wready,v_bvalid,v_bready,v_arvalid,v_arready,v_rvalid,v_rready,v_rlast;
@@ -52,8 +56,17 @@ module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1
   style_key_toggle key_panel_toggle(.clk(clk),.rst_n(rst_n),.key_in(key_panel),.toggle(single_panel));
   style_display #(.BUFFERED(DISPLAY_BUFFER)) display(.clk(clk),.pix_clk(pix_clk),.rst_n(rst_n),.display_slot(display_slot),.display_valid(display_valid),.single_panel(single_panel),
     .display_frame_event(display_frame_event),.display_safe(display_safe),.pixel(pixel),.hs(hs),.vs(vs),.de(de),.underflow(underflow),.dma_errors(display_dma_errors),
-    .read_urgent(display_read_urgent),
+    .read_urgent(display_read_urgent_raw),
     .araddr(v_araddr),.arlen(v_arlen),.arvalid(v_arvalid),.arready(v_arready),.rdata(v_rdata),.rresp(v_rresp),.rlast(v_rlast),.rvalid(v_rvalid),.rready(v_rready));
+  // Break the combinational path at the module boundary: the outer bridge folds
+  // video_read_urgent into its arready cone (axi_shared_ddr_2m.sv:49-52,64,72).
+  // A registered copy costs 1 FF and keeps that path out of style_display's
+  // FIFO comparators (read_urgent itself is combinational, style_display.sv:75).
+  reg display_read_urgent_q;
+  always @(posedge clk or negedge rst_n)
+    if(!rst_n) display_read_urgent_q<=1'b0;
+    else       display_read_urgent_q<=display_read_urgent_raw;
+  assign display_read_urgent=display_read_urgent_q;
   wire [31:0] c_awaddr,c_araddr;wire [7:0] c_awlen,c_arlen;
   wire c_awvalid,c_awready,c_wlast,c_wvalid,c_wready,c_bvalid,c_bready,c_arvalid,c_arready,c_rvalid,c_rready,c_rlast;
   wire [127:0] c_wdata,c_rdata;wire [15:0] c_wstrb;wire [1:0] c_bresp,c_rresp;
@@ -66,7 +79,7 @@ module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1
   wire [31:0] bridge_errors;
   // Hard display deadlines override the CNN bypass limit. CNN reads remain
   // fair when display urgency clears; the outer CPU/video policy is unchanged.
-  axi_shared_ddr_2m #(.DDR_ID_W(6),.VIDEO_READ_PRIORITY(!ADAPTIVE_READ),.DYNAMIC_VIDEO_READ(ADAPTIVE_READ),.URGENT_OVERRIDES_FAIRNESS(1'b0),.RESERVE_URGENT_READ(1'b0)) bridge(.clk(clk),.rst_n(rst_n),.allow_access(1'b1),.video_read_urgent(display_read_urgent),
+  axi_shared_ddr_2m #(.DDR_ID_W(6),.VIDEO_READ_PRIORITY(!ADAPTIVE_READ),.DYNAMIC_VIDEO_READ(ADAPTIVE_READ),.URGENT_OVERRIDES_FAIRNESS(1'b0),.RESERVE_URGENT_READ(1'b0)) bridge(.clk(clk),.rst_n(rst_n),.allow_access(1'b1),.video_read_urgent(display_read_urgent_raw),
     .cpu_awid(8'h03),.cpu_awaddr(c_awaddr),.cpu_awlen(c_awlen),.cpu_awsize(3'd4),.cpu_awburst(2'b01),.cpu_awvalid(c_awvalid),.cpu_awready(c_awready),
     .cpu_wdata(c_wdata),.cpu_wstrb(c_wstrb),.cpu_wlast(c_wlast),.cpu_wvalid(c_wvalid),.cpu_wready(c_wready),.cpu_bid(c_bid),.cpu_bresp(c_bresp),.cpu_bvalid(c_bvalid),.cpu_bready(c_bready),
     .cpu_arid(8'h03),.cpu_araddr(c_araddr),.cpu_arlen(c_arlen),.cpu_arsize(3'd4),.cpu_arburst(2'b01),.cpu_arvalid(c_arvalid),.cpu_arready(c_arready),.cpu_rid(c_rid),.cpu_rdata(c_rdata),.cpu_rresp(c_rresp),.cpu_rlast(c_rlast),.cpu_rvalid(c_rvalid),.cpu_rready(c_rready),

@@ -1,4 +1,4 @@
-﻿`include "defines.v"
+`include "defines.v"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -626,6 +626,11 @@ video_status_counters status_counters(
 // Shared INT8 network and paired VGA video store, on the independent demo branch.
 wire [31:0] style_prdata,video_prdata;
 wire style_pready,style_pslverr,video_pready,video_pslverr,style_irq;
+// Display read urgency, exported by style_demo and consumed by the outer
+// CPU/video bridge inside soc_video_inst. Registered inside style_demo, so this
+// net is a flop output in core_clk (no combinational path from the display FIFO
+// across the module boundary into the bridge's arready cone).
+wire style_read_urgent;
 wire style_select=soc_apb_paddr[15:8]==8'h02;
 assign soc_apb_prdata=style_select ? style_prdata:video_prdata;
 assign soc_apb_pready=style_select ? style_pready:video_pready;
@@ -640,12 +645,13 @@ style_video_system style_demo(
   .awid(fb_awid),.awaddr(fb_awaddr),.awlen(fb_awlen),.awsize(fb_awsize),.awburst(fb_awburst),.awvalid(fb_awvalid),.awready(fb_awready),
   .wdata(fb_wdata),.wstrb(fb_wstrb),.wlast(fb_wlast),.wvalid(fb_wvalid),.wready(fb_wready),.bid(fb_bid),.bresp(fb_bresp),.bvalid(fb_bvalid),.bready(fb_bready),
   .arid(fb_arid),.araddr(fb_araddr),.arlen(fb_arlen),.arsize(fb_arsize),.arburst(fb_arburst),.arvalid(fb_arvalid),.arready(fb_arready),
-  .rid(fb_rid),.rdata(fb_rdata),.rresp(fb_rresp),.rlast(fb_rlast),.rvalid(fb_rvalid),.rready(fb_rready));
+  .rid(fb_rid),.rdata(fb_rdata),.rresp(fb_rresp),.rlast(fb_rlast),.rvalid(fb_rvalid),.rready(fb_rready),
+  .display_read_urgent(style_read_urgent));
 
 
 
 soc_video_ddr_integration soc_video_inst(
-  .clk(core_clk),.rst_n(barrier_sys_reset_n),.allow_access(barrier_allow_sys),
+  .clk(core_clk),.rst_n(barrier_sys_reset_n),.allow_access(barrier_allow_sys),.video_read_urgent(style_read_urgent),
   .vid_awid({2'b0,fb_awid}),.vid_awaddr(fb_awaddr),.vid_awlen(fb_awlen),.vid_awsize(fb_awsize),.vid_awburst(fb_awburst),.vid_awvalid(fb_awvalid),.vid_awready(fb_awready),
   .vid_wdata(fb_wdata),.vid_wstrb(fb_wstrb),.vid_wlast(fb_wlast),.vid_wvalid(fb_wvalid),.vid_wready(fb_wready),.vid_bid(soc_vid_bid),.vid_bresp(soc_vid_bresp),.vid_bvalid(soc_vid_bvalid),.vid_bready(fb_bready),
   .vid_arid({2'b0,fb_arid}),.vid_araddr(fb_araddr),.vid_arlen(fb_arlen),.vid_arsize(fb_arsize),.vid_arburst(fb_arburst),.vid_arvalid(fb_arvalid),.vid_arready(fb_arready),.vid_rid(soc_vid_rid),.vid_rdata(soc_vid_rdata),.vid_rresp(soc_vid_rresp),.vid_rlast(soc_vid_rlast),.vid_rvalid(soc_vid_rvalid),.vid_rready(fb_rready),

@@ -2,6 +2,9 @@
 module soc_video_ddr_integration (
   input wire clk, rst_n, allow_access,
   input wire style_irq,
+  // Display read urgency forwarded from style_demo. Only the bounded
+  // dynamic-urgency policy consumes it; see the bridge instance below.
+  input wire video_read_urgent,
   input wire [7:0] vid_awid, input wire [31:0] vid_awaddr, input wire [7:0] vid_awlen, input wire [2:0] vid_awsize, input wire [1:0] vid_awburst, input wire vid_awvalid, output wire vid_awready,
   input wire [127:0] vid_wdata, input wire [15:0] vid_wstrb, input wire vid_wlast, input wire vid_wvalid, output wire vid_wready, output wire [7:0] vid_bid, output wire [1:0] vid_bresp, output wire vid_bvalid, input wire vid_bready,
   input wire [7:0] vid_arid, input wire [31:0] vid_araddr, input wire [7:0] vid_arlen, input wire [2:0] vid_arsize, input wire [1:0] vid_arburst, input wire vid_arvalid, output wire vid_arready, output wire [7:0] vid_rid, output wire [127:0] vid_rdata, output wire [1:0] vid_rresp, output wire vid_rlast, output wire vid_rvalid, input wire vid_rready,
@@ -181,8 +184,24 @@ module soc_video_ddr_integration (
 
   // Full CPU AXI4 (ID8/128-bit) is adapted to the frame-buffer master and
   // one DDR3 controller (ID4/128-bit). The bridge owns B/R responses.
-  axi_shared_ddr_2m bridge(
-    .clk(clk), .rst_n(rst_n), .allow_access(allow_access),
+  //
+  // Read arbitration policy on this OUTER (CPU vs video) bridge:
+  //   DYNAMIC_VIDEO_READ=1  : when the display asserts urgency AND both masters
+  //                           request in the same cycle, the video read wins -
+  //                           but only while video_read_streak < MAX_VIDEO_BURSTS
+  //                           (default 3). The streak resets as soon as the CPU
+  //                           is granted or stops requesting, so the CPU is
+  //                           guaranteed at least 1 read grant in every 4 while
+  //                           it keeps requesting (bounded, not starved).
+  //   URGENT_OVERRIDES_FAIRNESS=0 (keep) : with 1'b1 the streak cap is bypassed
+  //                           and a sustained urgent display would starve the CPU.
+  //   RESERVE_URGENT_READ=0 (keep)       : with 1'b1 cpu_arready is blocked
+  //                           whenever urgency is high even if the display has no
+  //                           request, which stalls CPU reads for a whole frame.
+  //   VIDEO_READ_PRIORITY=0 (keep)       : 1'b1 ignores urgency entirely and
+  //                           gives the video side unconditional priority.
+  axi_shared_ddr_2m #(.DYNAMIC_VIDEO_READ(1'b1)) bridge(
+    .clk(clk), .rst_n(rst_n), .allow_access(allow_access), .video_read_urgent(video_read_urgent),
     .cpu_awid(io_ddrA_aw_payload_id), .cpu_awaddr(io_ddrA_aw_payload_addr), .cpu_awlen(io_ddrA_aw_payload_len), .cpu_awsize(io_ddrA_aw_payload_size), .cpu_awburst(io_ddrA_aw_payload_burst), .cpu_awvalid(io_ddrA_aw_valid), .cpu_awready(io_ddrA_aw_ready),
     .cpu_wdata(io_ddrA_w_payload_data), .cpu_wstrb(io_ddrA_w_payload_strb), .cpu_wlast(io_ddrA_w_payload_last), .cpu_wvalid(io_ddrA_w_valid), .cpu_wready(io_ddrA_w_ready), .cpu_bid(io_ddrA_b_payload_id), .cpu_bresp(io_ddrA_b_payload_resp), .cpu_bvalid(io_ddrA_b_valid), .cpu_bready(io_ddrA_b_ready),
     .cpu_arid(io_ddrA_ar_payload_id), .cpu_araddr(io_ddrA_ar_payload_addr), .cpu_arlen(io_ddrA_ar_payload_len), .cpu_arsize(io_ddrA_ar_payload_size), .cpu_arburst(io_ddrA_ar_payload_burst), .cpu_arvalid(io_ddrA_ar_valid), .cpu_arready(io_ddrA_ar_ready), .cpu_rid(io_ddrA_r_payload_id), .cpu_rdata(io_ddrA_r_payload_data), .cpu_rresp(io_ddrA_r_payload_resp), .cpu_rlast(io_ddrA_r_payload_last), .cpu_rvalid(io_ddrA_r_valid), .cpu_rready(io_ddrA_r_ready),
