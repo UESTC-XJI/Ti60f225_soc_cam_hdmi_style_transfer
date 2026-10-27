@@ -6,7 +6,11 @@ enum { THREE_A_OFF=0,THREE_A_READY=1,THREE_A_EXPOSURE_WAIT=2,THREE_A_GAIN_WAIT=3
 typedef struct {
   uint32_t exposure,maximum,vts,last_seq,last_frame,write_sensor,write_capture,wanted_cfg;
   uint32_t mean,high_permille,ae_updates,awb_updates,errors,status,have_seq,enabled;
-  uint32_t waiting_exposure,waiting_gain,last_awb_frame,have_awb_frame,expected_r,expected_b;
+  /* expected_g：2026-10-27 新增。原 :109 把 G 通道的期望值写死 256，
+   * 而实际下发的是 STYLE_G_GAIN —— 一旦两者不等（旧的 290 就是），
+   * gain 回读校验永远失败 ⇒ 3A 永久停摆且无重新使能路径。
+   * 现在与 expected_r / expected_b 对称。 */
+  uint32_t waiting_exposure,waiting_gain,last_awb_frame,have_awb_frame,expected_r,expected_b,expected_g;
   uint32_t queued_exposure,queue_sensor;
   uint32_t pending_exposure,exposure_reserved,confirm_frames,last_error,readback_exposure;
   uint32_t ae_goal,ae_held,ae_direction,ae_streak;

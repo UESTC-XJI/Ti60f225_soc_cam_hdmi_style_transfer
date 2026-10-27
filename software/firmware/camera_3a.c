@@ -112,7 +112,11 @@ void camera_3a_service(camera_3a_t *s,uint64_t now) {
       return;
     }
     if(video_read(VIDEO_CAP_ACTIVE_SEQ)!=s->wanted_cfg||video_read(VIDEO_R_ACTIVE)!=s->expected_r||
-      video_read(VIDEO_B_ACTIVE)!=s->expected_b||video_read(VIDEO_G_ACTIVE)!=256) {
+      video_read(VIDEO_B_ACTIVE)!=s->expected_b||video_read(VIDEO_G_ACTIVE)!=s->expected_g) {
+      /* 2026-10-27 修：这里原来写死 `!=256`，而实际下发的是 STYLE_G_GAIN。
+       * 当前 G=256 时侥幸通过；一旦有人改 G（旧的 290 就是），这个校验永远失败，
+       * 3A 会把 enabled 清 0 且没有任何重新使能路径（除相机重连）= 永久停摆。
+       * 现在改成与 expected_r/expected_b 对称的 expected_g。 */
       s->status=THREE_A_CONFIG_TIMEOUT;s->enabled=0;s->errors++;return;
     }
   }
@@ -182,7 +186,7 @@ void camera_3a_service(camera_3a_t *s,uint64_t now) {
   if(video_read(VIDEO_CFG_STATUS)&1)return;
   s->wanted_cfg=video_read(VIDEO_CAP_ACTIVE_SEQ)+1u;
   if(video_apply_gains(nr,STYLE_G_GAIN,nb))return;
-  s->expected_r=nr;s->expected_b=nb;s->waiting_gain=1;s->wait_start=now;
+  s->expected_r=nr;s->expected_b=nb;s->expected_g=STYLE_G_GAIN;s->waiting_gain=1;s->wait_start=now;
   s->last_awb_frame=v.frame;s->have_awb_frame=1;s->status=THREE_A_GAIN_WAIT;
 }
 

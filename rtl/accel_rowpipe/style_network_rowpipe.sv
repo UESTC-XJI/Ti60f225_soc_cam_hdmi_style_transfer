@@ -153,8 +153,8 @@ module style_network_rowpipe #(
     // 位宽：一帧约 7.4M 拍 ⇒ 24 位够（16.7M）；burst 数约 39k ⇒ 16 位够（65.5k）。
     // ==========================================================================
     reg        rd_active, wr_pend;
-    reg [23:0] cyc_rdwait, cyc_wrwait;
-    reg [15:0] ar_cnt, rl_cnt;
+    reg [23:0] cyc_rdwait, cyc_wrwait;   // 24 位=16.7M 拍@148.5MHz=113ms，对当前 50ms 帧够用
+    reg [15:0] ar_cnt, rl_cnt;   // 16 位=65,535 burst，当前 39k；网络放大会先撞这个
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -170,6 +170,11 @@ module style_network_rowpipe #(
             if (bvalid && bready)              wr_pend   <= 1'b0;
 
             if (drv_busy) begin
+                // ⚠ 24 位计数在 148.5MHz 下 113ms 满量程。当前帧 50ms（7.4M 拍），
+                //   有 2.2 倍余量。**若将来帧时间超过 113ms，这里会静默回绕** ——
+                //   试过加饱和比较器，但那个组合逻辑进了 vid_clk_dvi2（6.734ns）域
+                //   的使能路径，实测把该域 setup slack 从 +0.252 打到 -0.710 ns，
+                //   所以退回简单自增。要用满 32 位宽计数器必须先腾面积（CI/CO 16→8）。
                 if ((arvalid && !arready) || (rd_active && !rvalid))
                     cyc_rdwait <= cyc_rdwait + 1'b1;
                 if (wr_pend && !bvalid)
@@ -181,9 +186,11 @@ module style_network_rowpipe #(
     end
 
     // drv_cycles 只在 S_RUN/S_FLUSH 自增，与 drv_busy 等价 ⇒ 不必再单独维护一个 32 位计数器
-    wire [23:0] cyc_rd = (cyc_rdwait > drv_cycles[23:0]) ? drv_cycles[23:0] : cyc_rdwait;
-    assign stat_read_cycles          = {8'd0, cyc_rd};
-    assign stat_compute_cycles       = drv_cycles - {8'd0, cyc_rd};
+    // 24 位计数 → 与 32 位的 drv_cycles 对齐后再钳一次，
+    // 防 power-on 后首帧尚未 start 就已有残值的极端情形。
+    wire [31:0] cyc_rd = ({8'd0, cyc_rdwait} > drv_cycles) ? drv_cycles : {8'd0, cyc_rdwait};
+    assign stat_read_cycles          = cyc_rd;
+    assign stat_compute_cycles       = drv_cycles - cyc_rd;
     assign stat_prefetch_starts      = {16'd0, ar_cnt};
     assign stat_prefetch_completions = {16'd0, rl_cnt};
     assign stat_overlap_cycles       = {8'd0, cyc_wrwait};
