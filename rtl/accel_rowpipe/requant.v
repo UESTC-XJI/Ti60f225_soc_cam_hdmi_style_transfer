@@ -49,6 +49,12 @@ module requant #(
     input  wire signed [31:0]    ld_mid,       // 恒等支的乘数（非残差层给 0）
     input  wire signed [7:0]     ld_qlo,
     input  wire [7:0]            ld_qhi,      // ⚠ **无符号**（0..255）
+    // 2026-10-27：**显式关闭 ReLU**。原本是否 ReLU 只看 `qlo` 的符号，
+    // 于是"末层写成 qlo=0（offset-binary）"就静默把输出负半轴全夹成 0
+    // —— 这是本项目复发过一次的故障（redsky v4、starry g075/g085 都中过）。
+    // 末层由 rowpipe_engine 置 1 强制透传：对 offset-binary 无影响（qlo=0 本来
+    // 就把负数夹到 0），对有符号输出则是必需的。其余层保持 0，行为不变。
+    input  wire                  ld_relu_dis,
 
     // ---- 数据：一拍一个像素的 COUT 个 int32 累加器 ----
     input  wire                  use_id,       // 本层要不要加残差恒等支
@@ -66,6 +72,7 @@ module requant #(
     reg        [PW-1:0] shift_r;
     reg signed [7:0]  qlo_r;
     reg        [7:0]  qhi_r;
+    reg               relu_dis_r;      // 见端口注释：末层强制透传，不 ReLU
     // B1c：半区选择（CO_STORE==COUT 时恒 0 ⇒ 旧行为不变）
     wire [1:0] csel = (CO_STORE > COUT) ? co_sel : 2'd0;
     localparam integer H1 = (CO_STORE > COUT) ? COUT : 0; // cap8: high-half base
@@ -73,7 +80,8 @@ module requant #(
     always @(posedge clk) begin
         if (ld_e && ld_idx < CO_STORE) m_r[ld_idx] <= ld_m;
         if (ld_e && ld_idx < CO_STORE) mid_r[ld_idx] <= ld_mid;
-        if (ld_e) begin shift_r <= ld_shift; qlo_r <= ld_qlo; qhi_r <= ld_qhi; end
+        if (ld_e) begin shift_r <= ld_shift; qlo_r <= ld_qlo; qhi_r <= ld_qhi;
+                      relu_dis_r <= ld_relu_dis; end
     end
 
     // ---- 级 ①：ReLU（按 qlo 判断是否无符号） + 乘 ----
@@ -87,7 +95,7 @@ module requant #(
             wire signed [31:0] a = $signed(acc_in[32*gc +: 32]);
             // 无符号层（qlo>=0）先 ReLU。M 恒正，所以"先 ReLU 再乘"与
             // 模型里"先乘再 ReLU"等价，而且省一级。
-            wire signed [31:0] ar = (qlo_r < 0) ? a : ((a > 0) ? a : 32'sd0);
+            wire signed [31:0] ar = (relu_dis_r || (qlo_r < 0)) ? a : ((a > 0) ? a : 32'sd0);
             // 恒等支：和卷积支共用同一分母（同一 shift），所以两支**先加后舍**
             // —— 只舍入一次，与模型 round((x+y)/s_out) 形状一致。
             wire signed [31:0] xi = $signed(id_in[32*gc +: 32]);
@@ -111,7 +119,7 @@ module requant #(
         reg               vld0;
         for (gc = 0; gc < COUT; gc = gc + 1) begin : g_mul
             wire signed [31:0] a = $signed(acc_in[32*gc +: 32]);
-            wire signed [31:0] ar = (qlo_r < 0) ? a : ((a > 0) ? a : 32'sd0);
+            wire signed [31:0] ar = (relu_dis_r || (qlo_r < 0)) ? a : ((a > 0) ? a : 32'sd0);
             wire signed [31:0] xi = $signed(id_in[32*gc +: 32]);
             wire signed [31:0] xr = use_id ? xi : 32'sd0;
             always @(posedge clk) begin

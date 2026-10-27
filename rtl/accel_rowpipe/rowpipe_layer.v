@@ -122,6 +122,10 @@ module rowpipe_layer #(
     input  wire [RQW-1:0]      ld_shift,
     input  wire signed [7:0]   ld_qlo,
     input  wire [7:0]          ld_qhi,
+    // 2026-10-27：末层由 rowpipe_engine 强制置 1（= 不 ReLU，输出原样透传）。
+    // 原设计里"是否 ReLU"只看 qlo 的符号，于是末层写成 qlo=0（offset-binary）
+    // 就静默把输出负半轴夹成 0 —— redsky v4、starry g075/g085 都中过。见 requant.v。
+    input  wire                ld_relu_dis,
 
     // ---- B1a：运行期几何 / 残差配置（层开始前一次加载；接口仿 `ld_*`）----
     //   addr：0 = WIN（未填充行宽）、1 = NG（每行组数 = WIN/PIX）、
@@ -916,7 +920,7 @@ module rowpipe_layer #(
     requant #(.COUT(CO_ARR), .CO_STORE(CO_FILL), .PW(RQW), .ARCH(1)) u_rq (
         .clk(clk), .rst_n(rst_n),
         .ld_e(ld_me), .ld_idx(ld_midx), .ld_m(ld_m), .ld_mid(ld_mid),
-        .ld_shift(ld_shift), .ld_qlo(ld_qlo), .ld_qhi(ld_qhi),
+        .ld_shift(ld_shift), .ld_qlo(ld_qlo), .ld_qhi(ld_qhi), .ld_relu_dis(ld_relu_dis),
         .use_id(rq_use_id), .id_in(rq_id_arr), .co_sel(rq_sel_d),
         .in_vld(feed_d), .acc_in(rq_pix_acc_r),
         .out_vld(rq_out_vld), .q_out(rq_q)

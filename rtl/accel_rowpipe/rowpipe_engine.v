@@ -135,12 +135,21 @@ module rowpipe_engine (
     wire data_ok;
 
     // B1e（2026-10-18）：**ci_tiles=2** —— 窗口 8 通道（ci_par），ci16 层重读行缓冲。
+    // 2026-10-27：**末层强制关 ReLU**（P0，针对复发过一次的静默故障）。
+    // 原设计里"这一层要不要 ReLU"只看分量化的 qlo 符号：qlo>=0 ⇒ ReLU。
+    // 于是末层一旦按 offset-binary 写成 qlo=0，输出负半轴就被静默夹成 0 ——
+    // redsky v4（平坦泛白 36.6%）、starry g075/g085（σ 7.7、输出全正）都中过，
+    // 而且**不报任何错**，只能靠上板看图发现。
+    // 对 offset-binary 来说这是等价的（qlo=0 本来就把负数夹到 0），
+    // 对有符号输出则是必需的 ⇒ 强制末层透传对两种约定都安全。
+    wire last_layer = (L == NL-1);
+    wire relu_dis   = last_layer;
     rowpipe_layer #(.CI(16), .CIW(8), .PIX(16), .CO(16), .COUT(16)) u_layer (
         .clk(clk), .rst_n(layer_rst_n),
         .ld_we(ld_we), .ld_waddr(ld_waddr), .ld_wdata(ld_wdata),
         .ld_be(ld_be), .ld_baddr(ld_baddr), .ld_bdata(ld_bdata),
         .ld_me(ld_me), .ld_midx(ld_midx), .ld_m(ld_m), .ld_mid(ld_mid),
-        .ld_shift(ld_shift), .ld_qlo(ld_qlo), .ld_qhi(ld_qhi),
+        .ld_shift(ld_shift), .ld_qlo(ld_qlo), .ld_qhi(ld_qhi), .ld_relu_dis(relu_dis),
         .cfg_we(cfg_we), .cfg_addr(cfg_addr), .cfg_data(cfg_data),
         .s_vld(data_ok), .s_col(s_col),
         .grp_vld(grp_vld), .skip_vld(skip_vld),
