@@ -765,7 +765,22 @@ module rowpipe_layer #(
             S_SER: begin
                          if (adv_ser) begin
                              if (scyc == PIXV1) begin
-                                 scyc <= 5'd0; ser <= 0; drain <= 0; st <= S_DRAIN;
+                                 // ---- A-2（2026-10-28）：**不再进 S_DRAIN/S_NEXT**，直接回 S_IDLE ----
+                                 //   为什么可以跳过（不是"省事"，是"本来就不必要"）：
+                                 //   ① FIFO 安全性由 **feed 门控**保证，与 S_DRAIN 无关：
+                                 //      喂之前查 `fifo_ok = (o_cnt+inflight) < OD`（L380），而一次落地
+                                 //      `o_cnt`+1 / `inflight`−1 ⇒ **`o_cnt+inflight` 跨落地恒定**
+                                 //      ⇒ 任何落地的使能拍都有 `o_cnt ≤ OD−1 < OD` ⇒ `o_push`
+                                 //      （L350 `o_cnt < ODV`）**永远不会被挡** ⇒ 不存在"在飞像素丢失"。
+                                 //      （这正是本文件 L309-310 自己写的那条不变式。）
+                                 //   ② S_DRAIN 只等 `inflight==0`，不改任何计数器、不推窗口、不喂 requant；
+                                 //      组计数 grp_in_row/out_row 在**上面这个分支**里已经随最后消费列推进完了。
+                                 //   ③ S_NEXT 的清零（ci_cnt/pass/co_sel/tile）在 S_IDLE 的 `grp_vld` 分支里
+                                 //      逐项重复（见 L700-710 附近）⇒ 完全冗余。
+                                 //   ④ 下一组的 S_STEP 有 ci*9 ≥ 27 拍，远大于 requant 剩余的 5 拍在飞 ⇒
+                                 //      在飞的像素在下一组开始后自然落地，顺序与内容都不变。
+                                 //   ⇒ 只改变"什么时候开始下一组"，不改变任何输出。收益 9 拍/组。
+                                 scyc <= 5'd0; ser <= 0; drain <= 0; st <= S_IDLE;
                                  // ⚠ 组计数**跟最后消费的那一列走**（不跟拍）：背压挂起时全冻
                                  //   —— 硬约束 10「按消费推进不按拍」的同构
                                  grp_in_row <= (grp_in_row == cfg_ng - 16'd1) ? 6'd0 : grp_in_row + 6'd1;
@@ -778,11 +793,14 @@ module rowpipe_layer #(
                          //   ⇒ ser 永远停在偶数 ⇒ adv 永不发生 ⇒ 死锁（2026-10-18 实测）。
                          if (feed && (ser != ser_end)) ser <= ser + 1'b1;
                      end
-            // 排空 requant 的两级流水（不再推窗口）
-            // ⚠ **契约 3 的明面漏洞**：`S_DRAIN` 原来只按拍数走（2 拍），
-            //   不等输出侧 —— 那两拍里 requant 最后两个像素会出来，若 FIFO 接不下就是**静默丢**。
-            //   它自己不出数据，要保证的是"**在飞的都落地**"，所以判据是 `inflight==0`，
-            //   不是字面的 `o_ready`（字面等 `o_ready` 反而没意义）。
+            // 排空 requant 的流水（不再推窗口）
+            // ⚠ **A-2（2026-10-28）起 S_DRAIN / S_NEXT 是【不可达状态】**：
+            //   S_SER 喂完最后一列后直接回 S_IDLE（见上）。保留状态与逻辑只为**回退方便**
+            //   （把 S_SER 里那行 `st <= S_IDLE` 改回 `st <= S_DRAIN` 即恢复旧行为）；
+            //   综合会把这两个状态、以及 drain/s_drain_cyc 一起剪掉。
+            //   历史：S_DRAIN 原来只按拍数走（2 拍）不等输出侧 ⇒ 最后两个像素可能赶上 FIFO 满而静默丢；
+            //   当时改成判 `inflight==0`（而不是字面的 `o_ready`，那个反而没意义）是**正确但非必需**的加固：
+            //   真正保证不丢的是 `fifo_ok` 门控 + `o_cnt+inflight` 跨落地恒定这条不变式（见 S_SER 注释）。
             S_DRAIN: if (inflight != 4'd0) s_drain_cyc <= s_drain_cyc + 1'b1;                     // 等在飞的落地
                      // 3 拍 (不是 2): 上面多了一级流水, 最后两个像素晚一拍
                      else if (drain == 2'd2) st <= S_NEXT;

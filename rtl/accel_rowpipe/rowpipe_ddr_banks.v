@@ -360,7 +360,20 @@ module rowpipe_src_stream #(
     input  wire         beat_last,
     output wire         beat_ready
 );
-    localparam integer IDXW = 6;
+    // ⚠ 2026-10-28（B-1）：原来是写死的 6（只够 DEPTH=64）。DEPTH 改 256 之后
+    //   wr_idx/rd_idx 只有 6 位 => 指针在 64 处回绕、别名 => FIFO 只用 64 槽且错位
+    //   => 数据静默错乱（仿真里表现为 L0 逐层哈希发散）。改成随 DEPTH 推导。
+    //   对照：rowpipe_rd_stream 的 IDXW 本来就是 clogb2(DEPTH)，这里漏了。
+    //   注：clogb2 只在 rowpipe_rd_stream 内部定义，文件作用域没有，故此处另备一份。
+    function integer clogb2;
+        input integer value;
+        integer i;
+        begin
+            clogb2 = 1;
+            for (i = 0; (1 << i) < value; i = i + 1) clogb2 = i + 1;
+        end
+    endfunction
+    localparam integer IDXW = clogb2(DEPTH);
     reg [127:0] mem [0:DEPTH-1];
     reg [IDXW-1:0] wr_idx, rd_idx;
     reg [7:0]  count;
@@ -393,7 +406,10 @@ module rowpipe_src_stream #(
     wire [8:0]  room_beats = room_bytes >> 4;
     wire [8:0]  bst_beats  = (room_beats > MAXB) ? MAXB : room_beats;
     wire [9:0]  bst_words  = {1'b0, bst_beats, 2'b00};
-    wire        free_ok    = ((count + inflight) < (DEPTH - 32));
+    // 2026-10-28（B-1）：原来写死 -32，那是按 MAXB=8 配平的（bst_words = bst_beats*4，
+    //   MAXB=8 => 32 个字）。改 MAXB 时必须同步改这里，否则 count+inflight 能冲过 DEPTH
+    //   => FIFO 溢出 => 静默错图（不报错）。
+    wire        free_ok    = ((count + inflight) < (DEPTH - MAXB*4));
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -824,6 +840,12 @@ module rowpipe_ddr_banks #(
     wire [127:0] rd0_stream_data;
     wire         rd0_stream_avail;
 
+    // 2026-10-28（B-1 实验，**已撤回**）：曾试过 #(.DEPTH(256), .MAXB(32)) 把 L0 源帧流
+    //   的 burst 加长（src 占 53% 的 burst 却只承载 14% 的 beat）。仿真结果三项异常：
+    //   ① L0 写入哈希与基线不符 ② 总周期反而从 26,578 涨到 28,732 ③ 收益无法归因。
+    //   => 按"实验性质、结果负面就回退"的原则还原成默认 DEPTH=64/MAXB=8。
+    //   但它暴露的两个**潜在 bug 保留并已修**（见 free_ok 与 IDXW 两处注释）——
+    //   那两处现在对默认参数是逐位等价的 no-op，但消除了"改 MAXB/DEPTH 就静默错图"的陷阱。
     rowpipe_src_stream u_src (
         .clk(clk), .rst_n(rst_n),
         .req_addr(rd0_addr), .req_en(src_en), .req_ack(rd0_ack),
