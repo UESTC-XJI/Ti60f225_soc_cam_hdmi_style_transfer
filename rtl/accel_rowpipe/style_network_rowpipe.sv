@@ -15,7 +15,15 @@
 `timescale 1ns / 1ps
 
 module style_network_rowpipe #(
-    parameter [31:0] WEIGHT_ADDRESS = 32'h06F0_0000
+    parameter [31:0] WEIGHT_ADDRESS = 32'h06F0_0000,
+    // ---- Track3 算力优化开关（2026-10-27）----------------------------------
+    // 0 = 现状：L10/L11 都在 640x480 卷积（L10 用 up=1 读 L9 的 320x240）
+    // 1 = 方案 A：L10 降到 320x240 卷积（up=0），L11 保持 640x480 但用 up=1
+    //     读 L10 的 320x240 输出。**输出分辨率不变、权重原样复用**。
+    //     算力 33.16ms -> 24.63ms（-25.7%），代价是输出高频细节变少（画面更柔）。
+    // 设计依据见 reports/TRACK3_COMPUTE_RESTRUCTURE.md。
+    // 3x3 卷积权重与分辨率无关 ⇒ 换这个开关不需要换任何权重文件。
+    parameter integer TAIL_LOWRES = 0
 )(
     input  wire         clk,
     input  wire         rst_n,
@@ -77,8 +85,11 @@ module style_network_rowpipe #(
 
     // 注意拼接顺序：左高右低 ⇒ DESCS[0 +: 128] = L0
     localparam [12*128-1:0] DESCS = {
-        mk(4, 3, 640,480,640,40, 0,1,1,0,0, 2'd1,2'd2,2'd0,0, 2'd2,2'd0,2'd0), // L11
-        mk(8, 4, 640,480,640,40, 0,1,1,0,1, 2'd0,2'd1,2'd0,0, 2'd1,2'd2,2'd0), // L10
+        // Track3：TAIL_LOWRES=1 时 L11 改为读 L10 的 320x240（up=1），输出仍是 640x480
+        mk(4, 3, 640,480,640,40, 0,1,1,0,TAIL_LOWRES, 2'd1,2'd2,2'd0,0, 2'd2,2'd0,2'd0), // L11
+        // Track3：TAIL_LOWRES=1 时 L10 降到 320x240 卷积（up=0，顺序读 L9 的 320x240）
+        mk(8, 4, TAIL_LOWRES?320:640, TAIL_LOWRES?240:480, TAIL_LOWRES?320:640, TAIL_LOWRES?20:40,
+              0,1,1,0, TAIL_LOWRES?0:1, 2'd0,2'd1,2'd0,0, 2'd1,2'd2,2'd0), // L10
         mk(8, 8, 320,240,320,20, 0,1,0,0,1, 2'd2,2'd0,2'd0,0, 2'd1,2'd1,2'd0), // L9 cap8
         mk(8,8, 160,120,160,10, 1,0,1,0,0, 2'd1,2'd2,2'd0,0, 2'd1,2'd1,2'd1), // L8 cap8
         mk(8, 8, 160,120,160,10, 0,1,0,0,0, 2'd0,2'd1,2'd0,0, 2'd1,2'd1,2'd0), // L7 cap8
