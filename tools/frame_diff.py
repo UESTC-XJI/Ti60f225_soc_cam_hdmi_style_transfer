@@ -138,28 +138,47 @@ def compare(a, b):
 
 
 def find_live_slot(ocd):
-    """风格帧在 6 个 slot 轮转，APB 没有寄存器能报当前 slot ⇒ 探测 X 字节恒 0 的那个。"""
+    """风格帧在 6 个 slot 轮转，APB 没有寄存器能报当前 slot ⇒ 探测 X 字节恒 0 的那个。
+
+    返回 None = 找不到有效 slot；返回 "dead" = OpenOCD 连接已断（两者别混为一谈，
+    2026-10-27 就因为混了而误报过一次）。"""
+    failed = 0
     for s in range(SLOT_COUNT):
         p = "_probe.bin"
         try:
             ocd.dump(FRAME_BASE + s * SLOT_STRIDE, 0x1000, p)
         except RuntimeError:
+            failed += 1
             continue
+        except (ConnectionResetError, OSError):
+            return "dead"
         d = np.fromfile(p, dtype=np.uint8)
         if os.path.exists(p):
             os.remove(p)
         if len(d) >= 0x1000 and (d[3::4] == 0).mean() > 0.99 and 0.3 < (d != 0).mean() < 0.98:
             return s
+    if failed == SLOT_COUNT:
+        return "dead"          # 6 个全读失败 ⇒ 是连接问题，不是数据问题
     return None
 
 
-def capture(ocd, path):
+def capture(ocd, path, rows=None):
     slot = find_live_slot(ocd)
-    if slot is None:
-        print("找不到有效风格帧（6 个 slot 都不像）——采集停了吗？")
+    if slot == "dead":
+        print("  ** 读 6 个 slot 全部失败 —— OpenOCD 连接已断，重启它再试 **")
         return False
+    if slot is None:
+        print("  ** 6 个 slot 都不像风格帧（X 字节非 0）——采集停了吗？或 DDR 被别的会话改过 **")
+        return False
+    nbytes = FRAME_BYTES if rows is None else min(FRAME_BYTES, rows * FRAME_W * 4)
     ocd.cmd("halt", timeout=10)
-    ocd.dump(FRAME_BASE + slot * SLOT_STRIDE, FRAME_BYTES, path)
+    try:
+        ocd.dump(FRAME_BASE + slot * SLOT_STRIDE, nbytes, path)
+    except (ConnectionResetError, OSError) as e:
+        ocd.cmd("resume", timeout=5)
+        print("  ** OpenOCD 在 dump 途中被断开（%s）**" % type(e).__name__)
+        print("  整帧 1.2MB 要 ~2.8 分钟，OpenOCD 撑不住。用 --rows 240 只抓半帧。")
+        return False
     ocd.cmd("resume", timeout=5)
     print("  已抓 slot%d → %s" % (slot, path))
     return True
@@ -174,9 +193,12 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd")
     p = sub.add_parser("capture", help="抓一帧作为基准")
     p.add_argument("name")
+    p.add_argument("--rows", type=int, default=240,
+                   help="抓多少行（默认 240；整帧 480 行约 2.8 分钟，OpenOCD 常在途中断开）")
     p.add_argument("--note", default="", help="备注（构建号/权重 XOR 等）")
     p = sub.add_parser("check", help="抓一帧并与基准比对")
     p.add_argument("name")
+    p.add_argument("--rows", type=int, default=240, help="抓多少行（默认 240，与基准保持一致）")
     args = ap.parse_args(argv)
 
     if args.a and args.b:
@@ -198,7 +220,7 @@ def main(argv=None):
 
     try:
         if args.cmd == "capture":
-            if not capture(ocd, path):
+            if not capture(ocd, path, args.rows):
                 return 1
             with open(meta, "w", encoding="utf-8") as fh:
                 json.dump({"name": args.name, "note": args.note,
@@ -212,7 +234,7 @@ def main(argv=None):
                 print("基准 %s 不存在，先跑 capture" % path)
                 return 2
             tmp = os.path.join(GOLDEN_DIR, "_live.bin")
-            if not capture(ocd, tmp):
+            if not capture(ocd, tmp, args.rows):
                 return 1
             return compare(load_frame(path), load_frame(tmp))
     finally:
