@@ -74,9 +74,15 @@ void style_log_ddr(void) {
     for(uint32_t i=0;i<12;++i){app_style_ddr_delta[i]=snapshot[i]-previous[i];previous[i]=snapshot[i];}
     // 2026-10-27：style_ddr_profiler 只实现 5 项（PnR 面积约束，见 RTL 文件头注）：
     //   索引 0=总拍数(T) 1=CNN AR 反压 2=显示 AR 反压 3=读气泡(burst 在飞无 beat) 8=等B
-    // 其余索引恒 0，不再打印。0xa8/ac/b0/b4/b8 那五个"算力/预取"快照在当前 bit 上仍为 0
-    // （它们属于 style_network_rowpipe 的另一套计数，未接）。
+    // 其余索引恒 0，不再打印。
     // 提示：位序反着数会得到完全错误的分工 —— 0=总拍数, 8=等B，不是反过来。
+    //
+    // 2026-10-27：下面 5 项（RPMS/CPMS/PF/PFC/WW）来自 style_network_rowpipe 的
+    // stat_* 快照（APB 0xa8..0xb8）。此前它们硬接 0，现已按修正口径接回：
+    //   RPMS = read_cycles/148500  —— 读等待毫秒（AR 未接受 或 burst 在飞无 beat）
+    //   CPMS = compute_cycles/148500 —— 其余（drv_cycles − read_cycles）
+    //   PF/PFC = 发出的/完成的读 burst 数（PF−PFC 应 ≤ 2，否则说明有 burst 卡住）
+    //   WW = 等写响应毫秒（原 OVLP 槽位改用，与上面 profiler 的 B 应大致吻合）
     char line[320],*p=put_text(line,"DDR100M T ");p=put_decimal(p,app_style_ddr_delta[0]);
     {
         uint32_t tot=app_style_ddr_delta[0];
@@ -85,6 +91,11 @@ void style_log_ddr(void) {
         p=put_text(p," RGAP ");p=put_decimal(p,tot?(uint64_t)app_style_ddr_delta[3]*100u/tot:0);
         p=put_text(p," B ");   p=put_decimal(p,tot?(uint64_t)app_style_ddr_delta[8]*100u/tot:0);
     }
+    p=put_text(p," RPMS ");p=put_decimal(p,app_style_read_cycles/148500u);
+    p=put_text(p," CPMS ");p=put_decimal(p,app_style_compute_cycles/148500u);
+    p=put_text(p," PF ");  p=put_decimal(p,app_style_prefetch_starts);
+    p=put_text(p," PFC "); p=put_decimal(p,app_style_prefetch_completions);
+    p=put_text(p," WW ");  p=put_decimal(p,app_style_overlap_cycles/148500u);
     *p=0;
     uart_writeStr(BSP_UART_TERMINAL,line);uart_writeStr(BSP_UART_TERMINAL,"\r\n");
     // Display starvation is independent of style queue drops and AXI errors.

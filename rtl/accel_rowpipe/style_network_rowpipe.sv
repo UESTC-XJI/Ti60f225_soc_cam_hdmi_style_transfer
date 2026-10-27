@@ -134,11 +134,59 @@ module style_network_rowpipe #(
     assign error     = drv_error;
     assign layer_index = {1'b0, drv_layer};
     assign cycles    = drv_cycles;
-    assign stat_read_cycles    = 32'd0;
-    assign stat_compute_cycles = 32'd0;
-    assign stat_prefetch_starts = 32'd0;
-    assign stat_prefetch_completions = 32'd0;
-    assign stat_overlap_cycles = 32'd0;
+
+    // ==========================================================================
+    // 性能快照（2026-10-27 恢复，采用**修正后的口径**）
+    //
+    // 历史：这 5 个口一直硬接 32'd0，导致固件从 APB 0xa8/ac/b0/b4/b8 读到的永远是 0。
+    // 上一版曾按"AXI 反压"实现，被回退 —— 因为那个口径看不见本设计的主导现象
+    // （burst 在飞、但 beat 还没到），会与 style_ddr_profiler 打出互相矛盾的数据
+    // （RPMS 0 / CPMS 57 对 B 86）。本版口径与 profiler 的 counter[3]/counter[8] 一致。
+    //
+    // 口径（全部按 cnn_clk = 148.5 MHz 累计，每帧 start 清零）：
+    //   read_cycles          = AR 未被接受 或 (burst 在飞但本拍没有 beat)
+    //   compute_cycles       = drv_cycles − read_cycles   （drv_cycles 只在 S_RUN/S_FLUSH 自增）
+    //   prefetch_starts      = AR 握手次数（发出的读 burst 数）
+    //   prefetch_completions = R 末拍握手次数（完成的读 burst 数）
+    //   overlap_cycles       = 【已改用】W 发完、等 B 回来的拍数（= profiler counter[8]）
+    //
+    // 位宽：一帧约 7.4M 拍 ⇒ 24 位够（16.7M）；burst 数约 39k ⇒ 16 位够（65.5k）。
+    // ==========================================================================
+    reg        rd_active, wr_pend;
+    reg [23:0] cyc_rdwait, cyc_wrwait;
+    reg [15:0] ar_cnt, rl_cnt;
+
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            rd_active <= 1'b0; wr_pend <= 1'b0;
+            cyc_rdwait <= 24'd0; cyc_wrwait <= 24'd0; ar_cnt <= 16'd0; rl_cnt <= 16'd0;
+        end else if (start) begin
+            rd_active <= 1'b0; wr_pend <= 1'b0;
+            cyc_rdwait <= 24'd0; cyc_wrwait <= 24'd0; ar_cnt <= 16'd0; rl_cnt <= 16'd0;
+        end else begin
+            if (arvalid && arready)            rd_active <= 1'b1;
+            if (rvalid && rready && rlast)     rd_active <= 1'b0;
+            if (wvalid && wready && wlast)     wr_pend   <= 1'b1;
+            if (bvalid && bready)              wr_pend   <= 1'b0;
+
+            if (drv_busy) begin
+                if ((arvalid && !arready) || (rd_active && !rvalid))
+                    cyc_rdwait <= cyc_rdwait + 1'b1;
+                if (wr_pend && !bvalid)
+                    cyc_wrwait <= cyc_wrwait + 1'b1;
+            end
+            if (arvalid && arready)            ar_cnt <= ar_cnt + 1'b1;
+            if (rvalid && rready && rlast)     rl_cnt <= rl_cnt + 1'b1;
+        end
+    end
+
+    // drv_cycles 只在 S_RUN/S_FLUSH 自增，与 drv_busy 等价 ⇒ 不必再单独维护一个 32 位计数器
+    wire [23:0] cyc_rd = (cyc_rdwait > drv_cycles[23:0]) ? drv_cycles[23:0] : cyc_rdwait;
+    assign stat_read_cycles          = {8'd0, cyc_rd};
+    assign stat_compute_cycles       = drv_cycles - {8'd0, cyc_rd};
+    assign stat_prefetch_starts      = {16'd0, ar_cnt};
+    assign stat_prefetch_completions = {16'd0, rl_cnt};
+    assign stat_overlap_cycles       = {8'd0, cyc_wrwait};
 
     // coef 写口本版不使用（权重在 DDR blob）
     wire _unused = coef_we | coef_addr[0] | coef_word[0] | coef_data[0] | rom_addr[0] | rom_layer[0];
