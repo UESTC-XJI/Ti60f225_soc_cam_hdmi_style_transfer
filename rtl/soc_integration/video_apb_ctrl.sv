@@ -124,6 +124,11 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
       16'h194:begin ext_writable=1;prdata={16'd0,cap_shadow[103:88]};end
       16'h198:prdata=cap_mirror[87:56];
       16'h19c:prdata={16'd0,cap_mirror[103:88]};
+      // 2026-10-27：补上 RAW_FPS / DISP_FPS。这两个输入原本连了端口但 case 表里
+      //   一条都没用 -> 被综合掉 -> 固件读 0xf8100024（legacy 区，恒 0）拿到的 DISP
+      //   永远是 0，害得"显示没跑"这个假象骗了很久。0x164/0x168 原来是空地址。
+      16'h164:prdata={16'd0,i_raw_fps};
+      16'h168:prdata={16'd0,i_display_fps};
       16'h1a0:prdata=32'd0;
       default:ext_legal=0;
     endcase

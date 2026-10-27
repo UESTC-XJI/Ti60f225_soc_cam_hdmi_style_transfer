@@ -69,6 +69,8 @@ case "$XOR" in
   0x66ad16b1) echo "         ^ starry v7 signed + 板侧 DC 固化              [signed ✅]" ;;
   0x7296bfce) echo "         ^ starry v8 signed + 板侧 DC 固化              [signed ✅]" ;;
   0xb995616f) echo "         ^ starry old signed + 板侧 DC 固化             [signed ✅]" ;;
+  0xc9aefbc3) echo "         ^ red_v3 + 板侧 DC 固化 (呐喊红调)      [signed ✅]" ;;
+  0xd0593c46) echo "         ^ red_v3 (饱和修正) + 板侧 DC 固化   [signed ✅]" ;;
   0x6190ec6f) echo "         ^ starry v7                                [offset ⚠]" ;;
   0xb99505f9) echo "         ^ starry old signed                        [signed ✅]" ;;
   0xb987a435) echo "         ^ starry old                               [offset ⚠]" ;;

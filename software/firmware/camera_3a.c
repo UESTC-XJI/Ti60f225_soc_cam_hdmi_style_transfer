@@ -31,10 +31,17 @@
 #else
 #define THREE_A_HZ 100000000u
 #endif
-/* Illumination experiment (illum_20261021): lengthen VTS so the sensor allows
- * a longer integration time. 2500 lines -> camera ~18fps, max exposure
- * 2*2500-11 = 4989 half-lines. */
-#define CAMERA_VTS_OVERRIDE 2500u
+/* VTS（帧长，单位**行**）。
+ *
+ * 2026-10-21 illum_20261021：曾调到 2500 行换更长积分时间（-> ~18fps）。
+ * 2026-10-27 改回 1700：实测采集侧才是全系统瓶颈 —— 推理已从 50ms 压到 39ms，
+ *   但 raw_frames 只有 17.86fps（= 2500 行 × 22.4µs），网络 32% 时间在空转。
+ *   1700 行 -> ~25.6fps，正好与 39ms 的网络负载对齐（网络上限 25.6fps）。
+ *   代价：进光量 0.67×，亮度 mean 约 106 -> 71（AE 会把曝光顶到 2*1700-11=3389 半行）。
+ *   ⚠ 再往上（1460 行 = 30fps）需要网络先压到 ≤33ms，否则会持续 DROP。
+ * ⚠ 单位陷阱：VTS 是**行**，而曝光寄存器是**半行**（上限 2*VTS-11）。
+ *   日志里两者并排打印会让人误以为"曝光超帧长"，见 camera_3a_log 处的注释。 */
+#define CAMERA_VTS_OVERRIDE 1900u
 volatile uint32_t app_awb_mode=AWB_AUTO;
 camera_3a_t app_3a;
 static int advanced(uint32_t now,uint32_t old,uint32_t frames) { return (int32_t)(now-old)>=(int32_t)frames; }
@@ -203,7 +210,13 @@ static char *label(char *p,const char *text,uint32_t v) {
 }
 void camera_3a_log(const camera_3a_t *s) {
   char text[256],*p=text;
-  p=label(p,"3A state ",s->status);p=label(p," exp ",s->exposure);p=label(p," vts ",s->vts);
+  // ⚠ 单位陷阱：exp 是**半行**、vts 是**行**。以前两者并排打印，看日志的人
+  //   （包括我自己，2026-10-27）会以为 "exp 4989 > vts 2500 = 曝光超帧长"，
+  //   实际上 4989 半行 = 2494.5 行 < 2500 行。现在把 exp 换成行数并标出单位。
+  p=label(p,"3A state ",s->status);
+  p=label(p," expL ",s->exposure/2);          // 行
+  p=label(p," expH ",s->exposure%2);          // 半行的奇偶（0 或 1）
+  p=label(p," vts ",s->vts);                  // 行
   p=label(p," mean ",s->mean);p=label(p," hot ",s->high_permille);
   p=label(p," goal ",s->ae_goal);p=label(p," hold ",s->ae_held);
   p=label(p," R ",video_read(VIDEO_R_ACTIVE));p=label(p," B ",video_read(VIDEO_B_ACTIVE));
