@@ -39,11 +39,37 @@
 
 ---
 
+## ⚠ 文件归属规则（2026-10-27 起）
+
+**`software/firmware/rowpipe_weights.h` 是构建产物，不是源码。任何人不要手改。**
+
+| 谁 | 写哪里 |
+|---|---|
+| 模型侧 | `demo/reports/rowpipe/export_<风格>/rowpipe_weights.h` ← **唯一源头** |
+| 构建脚本 | `software/firmware/rowpipe_weights.h` ← 每次构建从导出目录整份复制 |
+| 其他人 | 不要碰；要用哪套风格，就 `bash tools/build_firmware.sh <风格名>` |
+
+原因：这个文件换风格时整份覆盖（3612 word + XOR 全换），两边同时写会静默撞车
+——固件照常 PASS，但里面装的是别的权重。**已实测发生过多起**（10-26 两次、
+10-27 15:03 一次导致四个固件权重错误）。详见
+`reports/ROW_PIPE_WEIGHTS_OWNERSHIP.md`。
+
+每次构建都会打印权重身份，例如：
+
+```
+  权重：XOR=0xcbc67865  WORDS=3612
+         ^ redsky v5（呐喊）
+PASS ... [weights XOR=0xcbc67865]
+```
+
+---
+
 ## 相关文档
 
 | 文档 | 内容 |
 |---|---|
-| `reports/FOR_MODEL_QUANT_CONTRACT.md` | blob 量化契约（模型侧必读） |
+| `reports/ROW_PIPE_WEIGHTS_OWNERSHIP.md` | **文件归属与换风格的规则（模型侧必读）** |
+| `reports/FOR_MODEL_QUANT_CONTRACT.md` | blob 量化契约（末层必须 qlo<0） |
 | `reports/FOR_MODEL_FIRMWARE_GUIDE.md` | 怎么改固件、编译、烧板、验证 |
 | `reports/REPLY_TO_MODEL_v5_verified.md` | v5 上板验收记录 |
 | `reports/COLOR_CHECKER_CALIB_2026-10-27.md` | 24 色卡校准与偏色定案 |
