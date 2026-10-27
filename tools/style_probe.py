@@ -194,18 +194,24 @@ def cmd_slots(ocd):
 
 
 def _grab_live_slot(ocd, nbytes):
-    """风格帧在 6 个 slot 之间轮转，APB 没有寄存器能报当前 slot ⇒ 只能探测。"""
-    for s in range(SLOT_COUNT):
-        ok, p = _probe_slot(ocd, s)
-        if os.path.exists(p):
-            os.remove(p)
-        if ok:
-            ocd.cmd("halt", timeout=10)
-            out = "_frame_slot%d.bin" % s
-            ocd.dump(FRAME_BASE + s * SLOT_STRIDE, nbytes, out)
-            ocd.cmd("resume", timeout=5)
-            return s, out
-    return None, None
+    """风格帧在 6 个 slot 之间轮转，APB 没有寄存器能报当前 slot ⇒ 只能探测。
+
+    ⚠ **必须先 halt 再 dump**：CPU 跑着的时候 dump_image 会让 OpenOCD 连接被
+      强制关闭（实测 WinError 10054），过去误以为是"OpenOCD 自己不稳定"。
+    """
+    ocd.cmd("halt", timeout=10)          # 先停 CPU，全程只在结尾 resume
+    try:
+        for s in range(SLOT_COUNT):
+            ok, p = _probe_slot(ocd, s)
+            if os.path.exists(p):
+                os.remove(p)
+            if ok:
+                out = "_frame_slot%d.bin" % s
+                ocd.dump(FRAME_BASE + s * SLOT_STRIDE, nbytes, out)
+                return s, out
+        return None, None
+    finally:
+        ocd.cmd("resume", timeout=5)
 
 
 def cmd_weights(ocd, path):

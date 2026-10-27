@@ -48,11 +48,31 @@ def _env():
 
 
 def run(args, timeout=120):
-    """在 cmd 里跑（需要 setup.bat 的环境），返回 (rc, 合并输出)"""
-    cmd = 'call "%s" >nul 2>&1 && python "%s" %s' % (SETUP, PROG, args)
-    p = subprocess.run(["cmd", "/c", cmd], cwd=ROOT, env=_env(),
-                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
-    return p.returncode, p.stdout.decode("utf-8", "replace")
+    """在 cmd 里跑（需要 setup.bat 的环境），返回 (rc, 合并输出)。
+
+    ⚠ 不要用 `cmd /c "call x.bat && python ..."` —— 引号与 && 的组合在这个环境
+      下不可靠：实测 `-l` 返回空输出，误判成"没有 FTDI 目标"。
+      生成临时 .bat 是唯一稳定可靠的方式。
+    """
+    bat = os.path.join(ROOT, "_flash_tmp.bat")
+    with open(bat, "w", encoding="ascii", newline="\r\n") as fh:
+        fh.write('@echo off\r\n')
+        fh.write('call "%s"\r\n' % SETUP)
+        fh.write('set EFINITY_USER_DIR=C:/Users/36040/.efinity\r\n')
+        fh.write('set EFINITY_USER_DIR_INI=C:/Users/36040/AppData/Local/Efinity/user_dir.ini\r\n')
+        fh.write('set PYTHONPATH=%s;%s\r\n' % (os.path.join(EFINITY, "debugger", "bin"),
+                                                os.path.join(EFINITY, "pgm", "bin")))
+        fh.write('cd /d "%s"\r\n' % ROOT)
+        fh.write('python "%s" %s\r\n' % (PROG, args))
+    try:
+        p = subprocess.run(["cmd", "/c", bat], cwd=ROOT,
+                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
+        return p.returncode, p.stdout.decode("utf-8", "replace")
+    finally:
+        try:
+            os.remove(bat)
+        except OSError:
+            pass
 
 
 def discover_urls():

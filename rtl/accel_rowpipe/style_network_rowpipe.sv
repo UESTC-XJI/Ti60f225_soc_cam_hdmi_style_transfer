@@ -23,7 +23,16 @@ module style_network_rowpipe #(
     //     算力 33.16ms -> 24.63ms（-25.7%），代价是输出高频细节变少（画面更柔）。
     // 设计依据见 reports/TRACK3_COMPUTE_RESTRUCTURE.md。
     // 3x3 卷积权重与分辨率无关 ⇒ 换这个开关不需要换任何权重文件。
-    parameter integer TAIL_LOWRES = 0
+    parameter integer TAIL_LOWRES = 0,
+    // ---- 仿真专用：微小几何（2026-10-27，CI/CO 等价性 A/B 用）-------------
+    //   1 = 把 12 层描述符的 win/hout/wout/ng 换成微小尺寸（结果帧 64x48），
+    //       **ci/cout/res/resu/xorin/s2/up/srcb/dstb/idb/idxor/srcf/dstf/idf 全部不变**。
+    //       目的是把一帧从 4.9M 拍压到 ~8 万拍，好让 iverilog 能跑 A/B。
+    //       尺寸关系仍是设计允许的那一套：s2=0 层 win==wout 且 win%16==0（ng=win/16）；
+    //       s2=1 层 win==2*wout 且 ng=wout/8；up=1 层 hout%2==0。
+    //   ⚠ **默认 0 ⇒ 与现状逐位相同**，综合/时序/面积零影响（只多一个常量选择器，
+    //      综合按 TB_TINY=0 折叠）。
+    parameter integer TB_TINY = 0
 )(
     input  wire         clk,
     input  wire         rst_n,
@@ -84,7 +93,7 @@ module style_network_rowpipe #(
     endfunction
 
     // 注意拼接顺序：左高右低 ⇒ DESCS[0 +: 128] = L0
-    localparam [12*128-1:0] DESCS = {
+    localparam [12*128-1:0] DESCS_FULL = {
         // Track3：TAIL_LOWRES=1 时 L11 改为读 L10 的 320x240（up=1），输出仍是 640x480
         mk(4, 3, 640,480,640,40, 0,1,1,0,TAIL_LOWRES, 2'd1,2'd2,2'd0,0, 2'd2,2'd0,2'd0), // L11
         // Track3：TAIL_LOWRES=1 时 L10 降到 320x240 卷积（up=0，顺序读 L9 的 320x240）
@@ -101,6 +110,27 @@ module style_network_rowpipe #(
         mk(4, 8, 640,240,320,40, 0,1,1,1,0, 2'd0,2'd1,2'd0,0, 2'd2,2'd1,2'd0), // L1
         mk(3, 4, 640,480,640,40, 0,1,1,0,0, 2'd3,2'd0,2'd0,0, 2'd0,2'd2,2'd0)  // L0
     };
+
+    // ---- TB_TINY 用的一套微小几何（结果帧 64x48；标志位与上面逐层一一对应）----
+    //   缩放关系：640→64、320→32、160→32；hout 全部 /10（up 层保持偶数）。
+    //   ng：s2=0 ⇒ win/16；s2=1 ⇒ wout/8。
+    localparam [12*128-1:0] DESCS_TINY = {
+        mk(4, 3, 64,48,64,4,   0,1,1,0,0,   2'd1,2'd2,2'd0,0, 2'd2,2'd0,2'd0), // L11
+        mk(8, 4, 64,48,64,4,   0,1,1,0,1,   2'd0,2'd1,2'd0,0, 2'd1,2'd2,2'd0), // L10
+        mk(8, 8, 32,24,32,2,   0,1,0,0,1,   2'd2,2'd0,2'd0,0, 2'd1,2'd1,2'd0), // L9  cap8
+        mk(8, 8, 32,12,32,2,   1,0,1,0,0,   2'd1,2'd2,2'd0,0, 2'd1,2'd1,2'd1), // L8  cap8
+        mk(8, 8, 32,12,32,2,   0,1,0,0,0,   2'd0,2'd1,2'd0,0, 2'd1,2'd1,2'd0), // L7  cap8
+        mk(8, 8, 32,12,32,2,   1,0,1,0,0,   2'd2,2'd0,2'd1,0, 2'd1,2'd1,2'd1), // L6  cap8
+        mk(8, 8, 32,12,32,2,   0,1,0,0,0,   2'd1,2'd2,2'd0,0, 2'd1,2'd1,2'd0), // L5  cap8
+        mk(8, 8, 32,12,32,2,   1,1,1,0,0,   2'd0,2'd1,2'd2,1, 2'd1,2'd1,2'd1), // L4  cap8
+        mk(8, 8, 32,12,32,2,   0,1,1,0,0,   2'd2,2'd0,2'd0,0, 2'd1,2'd1,2'd0), // L3  cap8
+        mk(8, 8, 32,12,16,2,   0,1,1,1,0,   2'd1,2'd2,2'd0,0, 2'd1,2'd1,2'd0), // L2  cap8
+        mk(4, 8, 64,24,32,4,   0,1,1,1,0,   2'd0,2'd1,2'd0,0, 2'd2,2'd1,2'd0), // L1
+        mk(3, 4, 64,48,64,4,   0,1,1,0,0,   2'd3,2'd0,2'd0,0, 2'd0,2'd2,2'd0)  // L0
+    };
+
+    // TB_TINY=0 ⇒ DESCS == DESCS_FULL（与改动前逐位相同）
+    localparam [12*128-1:0] DESCS = TB_TINY ? DESCS_TINY : DESCS_FULL;
 
     wire [127:0] rom_w   = 128'd0;
     wire [31:0]  rom_b   = 32'd0;

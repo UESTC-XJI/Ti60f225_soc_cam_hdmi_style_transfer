@@ -144,7 +144,20 @@ module rowpipe_engine (
     // 对有符号输出则是必需的 ⇒ 强制末层透传对两种约定都安全。
     wire last_layer = (L == NL-1);
     wire relu_dis   = last_layer;
-    rowpipe_layer #(.CI(16), .CIW(8), .PIX(16), .CO(16), .COUT(16)) u_layer (
+    //------------------------------------------------------------------------
+    // 2026-10-27：CI/CO 16 -> 8（腾面积）。
+    //   判据：描述符表 ci<=8 / cout<=8（12 层最大都是 8），仿真已证等价 ——
+    //     ① 整网 A/B：768 个输出 beat 的 SHA256 完全相同，12 层逐层写 hash+计数
+    //        全一致（含三个残差层 L4/L6/L8，正是 i_id 走进来的路径）
+    //     ② 单元级：高通道字节（A=0xA5/B=0x5A）对输出无影响 => 高 64 位是死数据；
+    //        负向对照（只翻通道 0 的 1 个 LSB）有 188/384 像素变化 => 比对有判别力
+    //   结构性理由：step_go 停在 cfg_ci（:671），窗口只采 q_*[8*gi+:8]（gi<CIW=8）
+    //     => 通道 8..15 的字节从不进窗口；npass2≡0（:341/:254）=> CO=16 时高半区恒 0。
+    //   ⚠ 前提：**所有层 cfg_ci<=8 且 cfg_cout<=8**。将来若加 ci=16 的层，
+    //     CI=8 会静默丢通道 8..15 —— 和 #1 隐式 ReLU 是同一类失败模式。
+    //   CIW=8 恰等于 CI => TILED=0，tile 死逻辑一并被剪。
+    //------------------------------------------------------------------------
+    rowpipe_layer #(.CI(8), .CIW(8), .PIX(16), .CO(8), .COUT(8)) u_layer (
         .clk(clk), .rst_n(layer_rst_n),
         .ld_we(ld_we), .ld_waddr(ld_waddr), .ld_wdata(ld_wdata),
         .ld_be(ld_be), .ld_baddr(ld_baddr), .ld_bdata(ld_bdata),
