@@ -37,3 +37,6 @@ __pycache__/
 /_ocd4.bat
 /_ocd5.bat
 /_t.bat
+
+# 冻结位流：3.2 MB 二进制，可由提交重建；目录内有 README 说明来历
+/_bit_frozen/

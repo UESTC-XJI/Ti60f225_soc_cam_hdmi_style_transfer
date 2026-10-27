@@ -1,7 +1,9 @@
 @echo off
-call "D:\Efinity\2026.1\bin\setup.bat"
-set EFINITY_USER_DIR=C:/Users/36040/.efinity
-set EFINITY_USER_DIR_INI=C:/Users/36040/AppData/Local/Efinity/user_dir.ini
-set PYTHONPATH=D:\Efinity\2026.1\debugger\bin;D:\Efinity\2026.1\pgm\bin
-cd /d "C:\Users\36040\Downloads\Ti60F225_DemoBoard_v4\rowpipe_keys"
-python "D:\Efinity\2026.1\pgm\bin\efx_pgm\ftdi_program.py" -m jtag -u "ftdi://0x0403:0x6011:3:3/2" --jtag_clock_freq 1000000 outflow/ti60f225_oob.bit
+REM 配 bit（重建 FPGA 配置）。默认烧 _bit_frozen/ 里的冻结副本，而不是 outflow 里
+REM 随时会被下次构建覆盖的最新产物。
+REM
+REM 为什么不再写死 FTDI URL：板子换个 USB 口，bus:device 就变（实测 3:3 -> 1:4），
+REM 写死会报 "could not be matched to any connected USB targets"。现在由 Python
+REM 工具每次重新发现。
+cd /d "%~dp0"
+python tools\flash_bit.py %*
