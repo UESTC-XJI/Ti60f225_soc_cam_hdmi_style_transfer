@@ -127,7 +127,14 @@ module rowpipe_frame_driver (
         .done(eng_done), .cur_layer(layer_index)
     );
 
-    rowpipe_ddr_banks u_bank (
+    // ---- Track1 扫描档位（2026-10-27）-------------------------------------
+    // A 基线：下面两行注释掉（吃 rowpipe_ddr_banks 的默认 64/16）
+    // C 长burst：MAXB=64 + DEPTH=256（DEPTH 必须 ≥ 2*MAXB，否则 free_ok 永不成立）
+    //   RAM 代价：每流 1→4 块，两流 +6（244→250/256）
+    //   B 档实测：MS 51ms、B 15%、RGAP 23%（读侧已成为最大项）——C 档正是打 RGAP
+    // ⚠ 不要开 MAX_RD_INFLIGHT=2：审计已确认 arvalid 会在 arready 前撤销（AXI 违规），
+    //   且 u_src/u_wstream 会被追加同地址 AR（同 burst 读两遍）。修好之前保持 1。
+    rowpipe_ddr_banks #(.MAXB(64), .DEPTH(256)) u_bank (
         .clk(clk), .rst_n(rst_n), .frame_start(frame_start),
         .rd0_bank(rd0_bank), .rd0_addr(rd0_addr), .rd0_en(rd0_en),
         .rd0_ack(rd0_ack), .rd0_data(rd0_data), .rd0_avail(rd0_avail),
