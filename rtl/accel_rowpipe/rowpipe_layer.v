@@ -137,7 +137,9 @@ module rowpipe_layer #(
 
     // ---- 列流输入：`s_vld` 拉高时 `s_col` 即"本拍要消费的那一列" ----
     input  wire                s_vld,
-    input  wire [CI*8-1:0]     s_col,
+    // 2026-10-27：这里原本写 CI*8 —— 但 s_col 是**一个 128 位 AXI beat = PIX 像素 × 8 bit**，
+    // 与通道数无关。以前 CI 恰好等于 PIX(16) 所以看不出问题；改 CI=8 会把像素通路截断。
+    input  wire [PIX*8-1:0]    s_col,
 
     // ---- 组启动：开始下一组 PIX 个输出列 ----
     input  wire                grp_vld,
@@ -178,11 +180,11 @@ module rowpipe_layer #(
     //        （旧写法是"组合值直接出引脚"，数据要过 3 拍流水才出来 ⇒ **配错像素**。）
     //     ② `o_id` **已经延迟了 `PUSH` 列**（见 ③b）⇒ 下游**直接把它当 `i_id` 接**，
     //        **不要再自己做延迟**。这条是残差串接唯一需要的对齐约定。
-    output wire [CI*8-1:0]     o_id,
+    output wire [CI*8-1:0]     o_id,        // 残差 id = **通道宽**（来自行缓冲），不是像素宽
     //   `i_id` = 恒等支，**必须和累加器同拍**（RTL 里已经和 `rq_pix_acc_r` 同时寄存；
     //     上游在"喂这个像素"那一拍给即可）。域处理照抄 `net_engine.v:270-279`（那两种写法
     //     差一步就静默错，且只在残差层露出）。
-    input  wire [CI*8-1:0]     i_id
+    input  wire [CI*8-1:0]     i_id         // 残差 id = 通道宽（写进 id_rb[CI*8]），不是像素宽
 );
 
     localparam integer CW = CI * 8;
@@ -200,7 +202,7 @@ module rowpipe_layer #(
     //   否则 `wrow[..][0 +: 8*8]` 会越出 4 字节的存储（静默 x）。
     localparam integer CO_FILL = CO_ARR; // cap8 static
     localparam integer CO_EXTRA = (CO > CO_ARR) ? (CO - CO_ARR) : 0;   // 高半区的空字节
-    localparam integer OW     = CO*8 + CI*8 + 2;                  // FIFO 槽：o_col+o_id+2 tag
+    localparam integer OW     = CO*8 + CI*8 + 2;                  // FIFO 槽：o_col+o_id+2 tag（o_id 是通道宽）
 
     //========================================================================
     // B1a：**固定最大缓冲 + 运行期几何**（2026-10-17）
