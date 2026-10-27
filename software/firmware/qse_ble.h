@@ -35,7 +35,7 @@
 
 /* Output rate limit in bytes per second (default, and the RATE command range). */
 #ifndef QSE_BLE_RATE
-#define QSE_BLE_RATE 1500u
+#define QSE_BLE_RATE 3500u
 #endif
 #define QSE_BLE_RATE_MIN 200u
 #define QSE_BLE_RATE_MAX 12800u

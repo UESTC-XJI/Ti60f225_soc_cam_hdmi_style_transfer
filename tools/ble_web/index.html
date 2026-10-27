@@ -11,9 +11,13 @@
   }
   * { box-sizing: border-box; }
   body { margin:0; font:15px/1.45 system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background:var(--bg); color:var(--text); }
-  main { max-width:1100px; margin:0 auto; padding:12px; display:grid; gap:12px; grid-template-columns: 1fr; }
-  @media (min-width: 900px) { main { grid-template-columns: 340px 1fr; align-items:start; } #viewer { grid-row: span 3; grid-column: 2; } }
-  section { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px; }
+  main { max-width:1100px; margin:0 auto; padding:12px; display:grid; gap:12px; grid-template-columns: minmax(0, 1fr); align-items:start; }
+  @media (min-width: 900px) {
+    main { grid-template-columns: 340px minmax(0, 1fr); }
+    #viewer { grid-column: 2; grid-row: 2 / span 3; }
+  }
+  /* min-width:0 keeps grid items from growing with their content. */
+  section { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px; min-width:0; }
   h1 { font-size:17px; margin:0 0 8px; } h2 { font-size:14px; margin:0 0 8px; color:var(--muted); font-weight:600; }
   button, select, input { font:inherit; color:inherit; background:var(--bg); border:1px solid var(--line); border-radius:7px; padding:8px 10px; min-height:40px; }
   button { cursor:pointer; } button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
@@ -27,9 +31,12 @@
   progress { width:100%; height:10px; }
   #warn { display:none; border-color:var(--bad); }
   #warn code { font-size:12px; word-break:break-all; }
-  #shot { display:block; width:100%; max-height:70vh; object-fit:contain; background:#000; border-radius:6px; min-height:180px; }
-  #gallery { display:flex; gap:6px; overflow-x:auto; padding-top:8px; }
-  #gallery img { height:64px; border-radius:4px; cursor:pointer; border:2px solid transparent; }
+  /* Every snapshot is 4:3; the frame keeps that shape for 160, 320 and 640 wide images. */
+  #frame { width:100%; max-width:calc(70vh * 4 / 3); margin:0 auto; aspect-ratio:4 / 3; background:var(--bg); border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+  #shot { display:block; width:100%; height:100%; object-fit:contain; }
+  #shot:not([src]) { visibility:hidden; }
+  #gallery { display:flex; gap:6px; overflow-x:auto; padding-top:8px; max-width:100%; }
+  #gallery img { flex:0 0 auto; width:85px; height:64px; object-fit:cover; border-radius:4px; cursor:pointer; border:2px solid transparent; }
   #gallery img.sel { border-color:var(--accent); }
   #log { height:180px; overflow:auto; font:12px/1.35 ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:6px; white-space:pre-wrap; word-break:break-all; }
   #log .tx { color:var(--accent); } #log .err { color:var(--bad); }
@@ -46,10 +53,12 @@
   <section>
     <h1>Ti60 风格迁移 · 蓝牙图传</h1>
     <div class="row">
-      <button id="connect" class="primary grow">连接蓝牙模块</button>
+      <button id="connect" class="primary grow">连接板卡</button>
       <button id="disconnect" disabled>断开</button>
     </div>
     <div class="status" id="status">未连接</div>
+    <div class="status">板卡模块 MAC <code>22:0C:18:0B:18:B0</code><span id="bound"></span></div>
+    <div class="row"><button id="forget" hidden>重新选择设备</button></div>
     <details>
       <summary>模块 UUID（默认自动识别）</summary>
       <div class="row">
@@ -84,7 +93,7 @@
         <select id="window"><option>1</option><option>2</option><option selected>4</option><option>8</option></select>
       </label>
       <label>板卡发送速率
-        <select id="rate"><option value="800">0.8 KB/s</option><option value="1500" selected>1.5 KB/s</option><option value="2500">2.5 KB/s</option><option value="4000">4 KB/s</option><option value="6000">6 KB/s</option><option value="9000">9 KB/s</option></select>
+        <select id="rate"><option value="800">0.8 KB/s</option><option value="1500">1.5 KB/s</option><option value="2500">2.5 KB/s</option><option value="3500" selected>3.5 KB/s</option><option value="5000">5 KB/s</option><option value="6000">6 KB/s</option><option value="9000">9 KB/s</option></select>
       </label>
     </div>
     <div class="row">
@@ -98,7 +107,7 @@
 
   <section id="viewer">
     <h2>画面</h2>
-    <img id="shot" alt="">
+    <div id="frame"><img id="shot" alt="最近一次拍摄的风格迁移画面"></div>
     <div class="row">
       <button id="save" disabled>保存 JPEG</button>
       <span class="status grow" id="shotInfo"></span>
@@ -140,6 +149,11 @@ const PROFILES = {
   nus:  { service: '6e400001-b5a3-f393-e0a9-e50e24dcca9e', notify: '6e400003-b5a3-f393-e0a9-e50e24dcca9e', write: '6e400002-b5a3-f393-e0a9-e50e24dcca9e' },
 };
 const STORE = 'ti60-ble-profile';
+// Web Bluetooth never exposes MAC addresses. The first connection goes through the chooser
+// (pick the module whose MAC is BOARD_MAC); Chrome then remembers it under an opaque id,
+// and later clicks connect to that device directly through navigator.bluetooth.getDevices().
+const BOARD_MAC = '22:0C:18:0B:18:B0';
+const DEVICE_KEY = 'ti60-ble-device';
 const enc = new TextEncoder();
 
 let device = null, notifyChar = null, writeChar = null, writeChain = Promise.resolve();
@@ -184,11 +198,24 @@ function profileList() {
   return p === 'auto' ? Object.values(PROFILES) : [PROFILES[p]];
 }
 
+async function knownDevice() {
+  const id = localStorage.getItem(DEVICE_KEY);
+  if (!id || !navigator.bluetooth.getDevices) return null;
+  try { return (await navigator.bluetooth.getDevices()).find(d => d.id === id) || null; }
+  catch (_) { return null; }
+}
+async function chooseDevice(list) {
+  log(`请在弹出的列表中选择 MAC 为 ${BOARD_MAC} 的模块（只需选一次）`);
+  return navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: list.map(p => p.service) });
+}
 async function connect() {
   const list = profileList();
   try {
-    device = await navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: list.map(p => p.service) });
+    device = await knownDevice();
+    if (device) log(`直接连接已绑定的模块 ${device.name || ''}`);
+    else device = await chooseDevice(list);
   } catch (e) { if (e.name !== 'NotFoundError') log(`选择设备失败：${e.message}`, 'err'); return; }
+  device.removeEventListener('gattserverdisconnected', onDisconnected);
   device.addEventListener('gattserverdisconnected', onDisconnected);
   setStatus(`正在连接 ${device.name || device.id}…`);
   try {
@@ -207,6 +234,8 @@ async function connect() {
     notifyChar.addEventListener('characteristicvaluechanged', onNotify);
     await notifyChar.startNotifications();
     localStorage.setItem(STORE, JSON.stringify({ profile: $('profile').value, custom: [$('cService').value, $('cNotify').value, $('cWrite').value] }));
+    localStorage.setItem(DEVICE_KEY, device.id);
+    showBound();
     setStatus(`<b class="on">已连接</b> ${device.name || device.id} · 服务 ${String(found.p.service).slice(0, 8)}`);
     log('已连接');
     setConnected(true);
@@ -325,6 +354,18 @@ function endSnap(err) {
   if (!err && $('auto').checked && writeChar) setTimeout(snap, 300);
 }
 
+function showBound() {
+  const bound = !!localStorage.getItem(DEVICE_KEY);
+  $('bound').textContent = bound ? ' · 已绑定，点“连接”直接连' : ' · 首次连接请在列表中选择它';
+  $('forget').hidden = !bound;
+}
+$('forget').onclick = async () => {
+  const d = await knownDevice();
+  if (d && d.forget) { try { await d.forget(); } catch (_) {} }
+  localStorage.removeItem(DEVICE_KEY);
+  showBound();
+  log('已解除绑定，下次连接会重新弹出设备列表');
+};
 $('connect').onclick = connect;
 $('disconnect').onclick = () => { $('auto').checked = false; device && device.gatt.disconnect(); };
 $('snap').onclick = snap;
@@ -356,6 +397,7 @@ try {
   }
 } catch (_) {}
 checkSupport();
+showBound();
 </script>
 </body>
 </html>
