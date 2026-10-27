@@ -67,6 +67,8 @@ case "$XOR" in
   0x72e97318) echo "         ^ starry v8                                [offset ⚠]" ;;
   0x66ac227e) echo "         ^ starry v7 signed                         [signed ✅]" ;;
   0x66ad16b1) echo "         ^ starry v7 signed + 板侧 DC 固化              [signed ✅]" ;;
+  0x7296bfce) echo "         ^ starry v8 signed + 板侧 DC 固化              [signed ✅]" ;;
+  0xb995616f) echo "         ^ starry old signed + 板侧 DC 固化             [signed ✅]" ;;
   0x6190ec6f) echo "         ^ starry v7                                [offset ⚠]" ;;
   0xb99505f9) echo "         ^ starry old signed                        [signed ✅]" ;;
   0xb987a435) echo "         ^ starry old                               [offset ⚠]" ;;
