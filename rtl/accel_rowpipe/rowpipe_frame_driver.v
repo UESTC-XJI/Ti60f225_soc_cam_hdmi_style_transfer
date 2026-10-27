@@ -15,7 +15,14 @@
 //============================================================================
 `timescale 1ns / 1ps
 
-module rowpipe_frame_driver (
+module rowpipe_frame_driver #(
+    // 2026-10-28：TAIL_LOWRES 打通到 banks，让**一个开关**同时控制
+    //   L9/L10/L11 的描述符几何 与 结果写通道的 2x2 复制。
+    //   以前 RESULT_X2 是 rowpipe_ddr_banks 自己的参数默认值，与 style_accel 的
+    //   TAIL_LOWRES 是**跨文件成对约束** —— 任何一侧单独改动都会让 result_done
+    //   永不成立、driver 卡在 S_FLUSH。现在单一来源，物理上不可能失配。
+    parameter integer TAIL_LOWRES = 0     // 默认关（= 旧行为）；生产由 style_accel 传 1
+) (
     input  wire         clk,
     input  wire         rst_n,
     input  wire         start,
@@ -134,7 +141,12 @@ module rowpipe_frame_driver (
     //   B 档实测：MS 51ms、B 15%、RGAP 23%（读侧已成为最大项）——C 档正是打 RGAP
     // ⚠ 不要开 MAX_RD_INFLIGHT=2：审计已确认 arvalid 会在 arready 前撤销（AXI 违规），
     //   且 u_src/u_wstream 会被追加同地址 AR（同 burst 读两遍）。修好之前保持 1。
-    rowpipe_ddr_banks #(.MAXB(64), .DEPTH(256)) u_bank (
+    // RESULT_X2 由 TAIL_LOWRES 直接推导（不再有独立的默认值可被误配）：
+    //   TAIL_LOWRES=1 => L11 输出 320x240 => 写通道必须 2x2 复制成 640x480
+    //   TAIL_LOWRES=0 => L11 输出 640x480 => 直通
+    rowpipe_ddr_banks #(.MAXB(64), .DEPTH(256), .RESULT_X2(TAIL_LOWRES),
+                        .X2_SRC_W(TAIL_LOWRES ? 320 : 640),
+                        .X2_TGT_W(640)) u_bank (
         .clk(clk), .rst_n(rst_n), .frame_start(frame_start),
         .rd0_bank(rd0_bank), .rd0_addr(rd0_addr), .rd0_en(rd0_en),
         .rd0_ack(rd0_ack), .rd0_data(rd0_data), .rd0_avail(rd0_avail),

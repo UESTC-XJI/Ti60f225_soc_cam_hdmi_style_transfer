@@ -748,7 +748,13 @@ module rowpipe_ddr_banks #(
     parameter integer DEPTH           = 64,     // 读流 FIFO 深（beat）；原写死 64
     parameter integer MAXB            = 16,     // 读 burst 最大 beat；原写死 16
     parameter integer MAX_RD_INFLIGHT = 1,      // 读流同时挂起的 burst 数；1 = 原行为
-    parameter integer MAX_B_OUT       = 4       // 写侧 posted-B 未回笔数；1 = 原串行行为
+    parameter integer MAX_B_OUT       = 4,      // 写侧 posted-B 未回笔数；1 = 原串行行为
+    // ---- A-3（2026-10-28）：结果帧 2×2 复制（L11 半分辨率）----
+    //   参数化只为**仿真台**能按 TB_TINY 的几何等比缩放（defparam）；
+    //   综合时用默认值（= 生产配置 TAIL_LOWRES=1）。
+    parameter integer RESULT_X2       = 1,      // 1 = L11 半分辨率输出 + 2×2 复制；0 = 直通
+    parameter integer X2_SRC_W        = 320,    // L11 的 wout（= 描述符里的 win/wout）
+    parameter integer X2_TGT_W        = 640     // 结果帧宽（= frame_width）
 ) (
     input  wire         clk,
     input  wire         rst_n,
@@ -929,17 +935,62 @@ module rowpipe_ddr_banks #(
     reg [31:0]   res_words;
     reg [31:0]   res_beats;
 
+    //========================================================================
+    // A-3（2026-10-28）：结果帧 **2×2 复制**（L11 半分辨率 → 输出仍是 640×480）
+    //------------------------------------------------------------------------
+    //   背景：L11 的卷积降到 320×240（描述符在 style_network_rowpipe.sv；`TAIL_LOWRES=1`
+    //   时 win/hout/wout = 320/240/320、up=0），一帧只产 19,200 个源 beat。
+    //   结果帧契约不变（`result_pixels` = 640×480 = 307,200 像素 = 76,800 beat），
+    //   所以这里把每个源 beat（4 像素）铺成 **4 个目标 beat**：
+    //     水平：{p1,p1,p0,p0} 和 {p3,p3,p2,p2}   （最近邻 2×）
+    //     垂直：每个源行写两遍（目标行 2r 与 2r+1）
+    //   ⇒ **总写 beat 数完全不变（76,800）**，DDR 写带宽零增加，只是把"复制"
+    //     从网络（算 4 倍的 MAC）搬到写通道（多 3 次 push）。
+    //
+    //   ⚠ 成对约束：`RESULT_X2=1` 必须与 L11 描述符的 320×240 同时成立。
+    //     任一侧不匹配 ⇒ `res_words/res_beats` 对不上 `result_pixels` ⇒ `result_done`
+    //     永不成立 ⇒ driver 卡在 S_FLUSH。**是响铃式失败，不会画出错图**。
+    //     （若 TAIL_LOWRES=0，请把 RESULT_X2 改 0。）
+    //========================================================================
+    localparam integer RESULT_X2_ON = RESULT_X2;   // 见模块头的 A-3 段（参数化以便 TB 等比缩放）
+    localparam integer X2_SCB     = X2_SRC_W/4;   // 源每行 beat 数 = 80（tiny: 8）
+    localparam integer X2_TCB     = X2_TGT_W/4;   // 目标每行 beat 数 = 160（tiny: 16）
+    localparam [19:0]  X2_ROW_INC = 2*X2_TCB;     // 每过一个源行，目标 beat 基址 +320
+
+    wire x2_on = (RESULT_X2_ON != 0);
+
+    reg [127:0] x2_data;      // 当前源 beat 的 4 个像素
+    reg [31:0]  x2_a0;        // **本源 beat 的目标起始字节地址**（左-上），在完成当拍锁存
+    reg [19:0]  x2_base;      // 目标 beat 基址 = (2*src_row)*X2_TCB
+    reg [7:0]   x2_scb;       // 源行内 beat 号 0..X2_SCB-1
+    reg [1:0]   x2_i;         // 铺到第几拍（0=左/上 1=右/上 2=左/下 3=右/下）
+    reg         x2_busy;      // 有一个源 beat 正在铺开
+
+    localparam [31:0] X2_ROW_BYTES = X2_TCB * 16;   // 一个目标行的字节数（640→2560）
+
+    wire [31:0]  xp0 = x2_data[31:0],   xp1 = x2_data[63:32];
+    wire [31:0]  xp2 = x2_data[95:64],  xp3 = x2_data[127:96];
+    wire [127:0] x2_beat = x2_i[0] ? {xp3, xp3, xp2, xp2}   // 目标 beat 奇数：{p3,p3,p2,p2}
+                                   : {xp1, xp1, xp0, xp0};  // 目标 beat 偶数：{p1,p1,p0,p0}
+    // 4 拍的目标地址 = 起始地址 + {0,16,row_bytes,row_bytes+16}（两个常量位互不重叠，用 OR）
+    wire [31:0]  x2_off  = (x2_i[1] ? X2_ROW_BYTES : 32'd0) | (x2_i[0] ? 32'd16 : 32'd0);
+    wire [31:0]  x2_addr = x2_a0 | x2_off;
+
     wire [31:0] bank_push_addr = wr_base + {wr_addr, 4'b0000};
     wire        pack_can_emit  = (pf != 2'd0) && (pk_cnt == pk_last);
     wire        wr_p_ready;
+    wire        x2_push = x2_on && x2_busy && wr_p_ready;   // A-3：铺开的 4 拍逐拍推进
 
-    wire         push_we   = virt ? beat_push :
+    wire         push_we   = virt ? (x2_on ? x2_push : beat_push) :
                              ((wr_fmt == 2'd0) ? wr_we : beat_push);
-    wire [31:0]  push_addr = virt ? beat_addr :
+    wire [31:0]  push_addr = virt ? (x2_on ? x2_addr : beat_addr) :
                              ((wr_fmt == 2'd0) ? bank_push_addr : beat_addr);
-    wire [127:0] push_data = virt ? beat_data :
+    wire [127:0] push_data = virt ? (x2_on ? x2_beat : beat_data) :
                              ((wr_fmt == 2'd0) ? wr_data : beat_data);
-    assign wr_ready = (pf == 2'd0) ? wr_p_ready : (!pack_can_emit || wr_p_ready);
+    // A-3：x2 模式下，凑满第 4 个像素那一拍要能锁进 x2 缓冲，所以还要 `!x2_busy`
+    assign wr_ready = (pf == 2'd0)      ? wr_p_ready :
+                      (virt && x2_on)   ? (!pack_can_emit || !x2_busy) :
+                                          (!pack_can_emit || wr_p_ready);
 
     // 紧凑 beat：像素下标 -> beat 地址
     reg [31:0] comp_addr;
@@ -971,22 +1022,38 @@ module rowpipe_ddr_banks #(
         if (!rst_n) begin
             pk_cnt <= 0; pk_acc <= 0; beat_push <= 0; beat_addr <= 0;
             beat_data <= 0; res_words <= 0; res_beats <= 0;
+            x2_data <= 0; x2_base <= 0; x2_scb <= 0; x2_i <= 0; x2_busy <= 0; x2_a0 <= 0;
         end else if (frame_start) begin
             // ⚠ 帧间清零：否则第二帧的 result_done 永远不成立
             pk_cnt <= 0; pk_acc <= 0; beat_push <= 1'b0;
             res_words <= 0; res_beats <= 0;
+            x2_base <= 0; x2_scb <= 0; x2_i <= 0; x2_busy <= 0; x2_a0 <= 0;
         end else begin
             beat_push <= 1'b0;
             if (virt) begin
                 if (wr_we && wr_ready) begin
                     pk_acc[32*pk_cnt +: 32] <= {8'h00, wr_data[23:0]};
-                    res_words <= res_words + 1'b1;
+                    // A-3：2×2 复制后一个源像素对应 4 个目标像素
+                    res_words <= res_words + (x2_on ? 32'd4 : 32'd1);
                     if (pk_cnt == 2'd3) begin
-                        beat_push <= 1'b1;
-                        beat_addr <= result_address + {wr_addr[19:2], 4'b0000};
-                        beat_data <= {8'h00, wr_data[23:0], pk_acc[95:0]};
+                        if (x2_on) begin
+                            // 4 像素凑满 = 1 个源 beat ⇒ 锁进 x2 缓冲，交给下面 4 拍铺开
+                            x2_data  <= {8'h00, wr_data[23:0], pk_acc[95:0]};
+                            x2_a0    <= result_address + {(x2_base + {{11{1'b0}}, x2_scb, 1'b0}), 4'b0000};
+                            x2_busy  <= 1'b1;
+                            x2_i     <= 2'd0;
+                            res_beats <= res_beats + 32'd4;
+                            if (x2_scb == X2_SCB[7:0] - 8'd1) begin
+                                x2_scb  <= 8'd0;
+                                x2_base <= x2_base + X2_ROW_INC;
+                            end else x2_scb <= x2_scb + 8'd1;
+                        end else begin
+                            beat_push <= 1'b1;
+                            beat_addr <= result_address + {wr_addr[19:2], 4'b0000};
+                            beat_data <= {8'h00, wr_data[23:0], pk_acc[95:0]};
+                            res_beats <= res_beats + 1'b1;
+                        end
                         pk_cnt <= 0;
-                        res_beats <= res_beats + 1'b1;
                     end else pk_cnt <= pk_cnt + 1'b1;
                 end
             end else if (wr_fmt != 2'd0) begin
@@ -1001,6 +1068,12 @@ module rowpipe_ddr_banks #(
                 end
             end else begin
                 pk_cnt <= 0; pk_acc <= 0;
+            end
+            // ---- A-3：x2 缓冲 → 逐拍铺开（与上面的打包并行；两者互斥：
+            //   锁新 beat 要求 `!x2_busy`，而这里在铺完最后一拍才把 busy 清掉）----
+            if (x2_on && x2_busy && wr_p_ready) begin
+                if (x2_i == 2'd3) x2_busy <= 1'b0;
+                x2_i <= x2_i + 1'b1;
             end
         end
 
@@ -1027,8 +1100,11 @@ module rowpipe_ddr_banks #(
     assign error = w_error | rd_err;
 
     // 结果：所有字都打包完 + 所有 beat ACK + 写引擎空闲
+    //   A-3：2× 复制时还要等 x2 缓冲把最后一组 4 拍铺完（`!x2_busy`）
     assign result_done = (res_words == result_pixels) &&
                          (res_beats == (result_pixels >> 2)) &&
                          (w_acked_virt == res_beats) &&
-                         w_idle && !beat_push;
+                         w_idle && !beat_push && !x2_busy;
 endmodule
+
+

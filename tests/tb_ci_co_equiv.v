@@ -94,6 +94,15 @@ module tb_ci_co_equiv #(
     defparam dut.u_drv.u_eng.u_layer.CO   = CAP8 ? 8 : 16;
     defparam dut.u_drv.u_eng.u_layer.COUT = CAP8 ? 8 : 16;
 
+    // ---- A-3：结果帧 2×2 复制的几何参数（按 TB 几何等比缩放）----
+    //   生产默认（TINY=0）是 320→640；TB_TINY 的 L11 是 32×24、结果帧 64×48 ⇒ 32→64。
+    //   基线编译时这些参数不存在 ⇒ iverilog 只报 warning（不生效），A/B 仍可比。
+`ifdef TB_A3
+    defparam dut.u_drv.u_bank.RESULT_X2 = 1;
+    defparam dut.u_drv.u_bank.X2_SRC_W  = TINY ? 32 : 320;
+    defparam dut.u_drv.u_bank.X2_TGT_W  = TINY ? 64 : 640;
+`endif
+
     //========================================================================
     // 存储模型
     //   wmem：903 个 128 位 beat（权重 blob）
@@ -291,3 +300,4 @@ endmodule
 module tb_ci16;    tb_ci_co_equiv #(.TINY(1), .CAP8(0)) u(); endmodule
 module tb_ci8;     tb_ci_co_equiv #(.TINY(1), .CAP8(1)) u(); endmodule
 module tb_full16;  tb_ci_co_equiv #(.TINY(0), .CAP8(0)) u(); endmodule
+
