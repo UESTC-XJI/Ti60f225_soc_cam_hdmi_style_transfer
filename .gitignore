@@ -15,3 +15,25 @@ software/firmware/build/
 *.vcd
 *.wlf
 transcript
+
+# ---- 2026-10-27：备份与仿真中间产物（体积大、可重建）----
+/_backup_*/
+/_sim/
+/_golden/
+*.npy
+.idea/
+__pycache__/
+
+# 构建/烧录脚本只保留规范版，其余是历史变体
+/_flash_179.bat
+/_flash_ref.bat
+/_flash_wburst.bat
+/_flash.bat
+/_jtag.bat
+/_jtag2.bat
+/_ocd.bat
+/_ocd2.bat
+/_ocd3.bat
+/_ocd4.bat
+/_ocd5.bat
+/_t.bat
