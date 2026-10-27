@@ -57,12 +57,24 @@ fi
 XOR=$(grep -m1 'ROWPIPE_WEIGHT_XOR' "$WEIGHTS" | grep -oE '0x[0-9a-fA-F]+' || echo '?')
 WORDS=$(grep -m1 'ROWPIPE_WEIGHT_WORDS' "$WEIGHTS" | grep -oE '[0-9]+' || echo '?')
 echo "  权重：XOR=$XOR  WORDS=$WORDS  （$WEIGHTS）"
+# 标签里带末层约定：signed = qlo<0（正确）；offset = qlo=0（靠 RTL 兜底）
 case "$XOR" in
-  0xcbc67865) echo "         ^ redsky v5（呐喊）" ;;
-  0x4a18e91c) echo "         ^ ink v5" ;;
-  0x58979045) echo "         ^ wave v5" ;;
-  0xf6a82050) echo "         ^ starry g075（注意：末层 qlo=0，现在由 RTL 强制透传兜底）" ;;
-  0xcdc157c0) echo "         ^ starry g085" ;;
+  0xcbc67865) echo "         ^ redsky v5（呐喊）                        [signed ✅]" ;;
+  0x4a18e91c) echo "         ^ ink v5                                   [signed ✅]" ;;
+  0x58979045) echo "         ^ wave v5                                  [signed ✅]" ;;
+  0x633d80ce) echo "         ^ wave v6                                  [见 q 头]" ;;
+  0x7296f3e8) echo "         ^ starry v8 signed                         [signed ✅]" ;;
+  0x72e97318) echo "         ^ starry v8                                [offset ⚠]" ;;
+  0x66ac227e) echo "         ^ starry v7 signed                         [signed ✅]" ;;
+  0x6190ec6f) echo "         ^ starry v7                                [offset ⚠]" ;;
+  0xb99505f9) echo "         ^ starry old signed                        [signed ✅]" ;;
+  0xb987a435) echo "         ^ starry old                               [offset ⚠]" ;;
+  0x5a9190f5) echo "         ^ starry v4                                [offset ⚠]" ;;
+  0x511c3201) echo "         ^ starry v3                                [offset ⚠]" ;;
+  0xa2f48f43) echo "         ^ starry v2                                [offset ⚠]" ;;
+  0x248752c6) echo "         ^ starry v1                                [offset ⚠]" ;;
+  0xf6a82050) echo "         ^ starry g075                              [offset ⚠]" ;;
+  0xcdc157c0) echo "         ^ starry g085                              [offset ⚠]" ;;
   0xc7eaf900) echo "         ^ ⚠ cap8-starry 原始 blob（不是 v5 家族，确认是有意的）" ;;
   *)          echo "         ^ 未登记的风格，请核对" ;;
 esac
