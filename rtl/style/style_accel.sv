@@ -110,6 +110,11 @@ module style_accel #(parameter bit USE_ROW_PIPE = 1'b1)(
   //   L11 读 L10 的 320x240 并上采样，输出仍是 640x480；
   //   L10 直接做 320x240 卷积（res 关闭，因为残差是 640x480 的）。
   //   实测省 8.53 ms / 17%（50 -> 41.5 ms）。前提：CI/CO=8 已落地腾出面积。
+  // 2026-10-28：TAIL_LOWRES=1 —— L9/L10/L11 半分辨率（路线 A）。
+  //   ⚠ 这个开关现在**不只是性能优化，是布线能否通过的前提**：
+  //     置 0（全分辨率尾层）实测 XLR 60,253 (99.10%) => PnR 布线失败；
+  //     置 1 是 60,171 (98.97%) => 通过。差 82 XLR 正好跨过 99% 的概率性天花板。
+  //   => 想回退全分辨率尾层，必须先腾出面积（RAM 还有 54 块余量，XLR 没有）。
   style_network_rowpipe #(.TAIL_LOWRES(1)) network(.clk(cnn_clk),.rst_n(core_reset[1]),.start(core_start),.source_address(mail_source),.result_address(mail_result),
     .frame_width(mail_geometry[9:0]),.frame_height(mail_geometry[25:16]),
     .coef_we(coef_valid&&coef_ready),.coef_addr(coef_packet[44:37]),.coef_word(coef_packet[36:32]),.coef_data(coef_packet[31:0]),
