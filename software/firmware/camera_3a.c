@@ -41,7 +41,13 @@
  *   ⚠ 再往上（1460 行 = 30fps）需要网络先压到 ≤33ms，否则会持续 DROP。
  * ⚠ 单位陷阱：VTS 是**行**，而曝光寄存器是**半行**（上限 2*VTS-11）。
  *   日志里两者并排打印会让人误以为"曝光超帧长"，见 camera_3a_log 处的注释。 */
-#define CAMERA_VTS_OVERRIDE 1900u
+/* 2026-10-28：1900 -> 1457 = 1080p 原生 30 fps（手册规格 1080p@30/60fps）。
+ *   帧周期 1457 x 22.9us = 33.4 ms；推理实测 26 ms => 余量 7.4 ms（很充裕，
+ *   历史上余量 1.8ms 就会持续丢帧，所以 7.4 是安全的）。
+ *   环境不暗，曝光只用到 ~900 行（上限 2*1457-11 = 2903 半行 = 1451 行），
+ *   不需要为了长曝光牺牲帧率。
+ *   ⚠ VTS 是**行**，曝光寄存器是**半行**（日志现在分列 expL/expH 避免再误判）。 */
+#define CAMERA_VTS_OVERRIDE 1457u
 volatile uint32_t app_awb_mode=AWB_AUTO;
 camera_3a_t app_3a;
 static int advanced(uint32_t now,uint32_t old,uint32_t frames) { return (int32_t)(now-old)>=(int32_t)frames; }
