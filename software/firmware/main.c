@@ -40,6 +40,15 @@ int app_ddr_test(void) {
     return errors ? -1 : 0;
 }
 
+/* C1：串口命令口。'1'..'N' = 切到第 N 套风格，'s'/'?' = 打印清单。
+ * uart_read() 本身会阻塞等数据，所以先查 RX FIFO 占用再读。 */
+static void style_uart_service(void) {
+    while(uart_readOccupancy(BSP_UART_TERMINAL)) {
+        char c=(char)uart_read(BSP_UART_TERMINAL);
+        if(c>='1'&&c<=(char)('0'+style_bank_count()))style_switch_bank((unsigned)(c-'1'));
+        else if(c=='s'||c=='S'||c=='?')style_list_banks();
+    }
+}
 int main(void) {
     osd_set_video_ready(0);  /* Also return to bars after a debugger reload. */
     bsp_init();
@@ -57,6 +66,10 @@ int main(void) {
     }
     uart_writeStr(BSP_UART_TERMINAL,"STYLE INT8 RGB self-test PASS; MONET VGA\r\n");
     style_stream_enable();
+    /* C1：清掉上电时 UART RX 里的残留字节，再公布可切换的风格清单 */
+    while(uart_readOccupancy(BSP_UART_TERMINAL))(void)uart_read(BSP_UART_TERMINAL);
+    uart_writeStr(BSP_UART_TERMINAL,"STYLE SW: keys 1..N switch live, 's' lists\r\n");
+    style_list_banks();
     camera_bus_init();
     bsp_uDelay(20000);
     int camera_rc = camera_init_cpu();
@@ -85,6 +98,7 @@ int main(void) {
     for (;;) {
         uint64_t now = clint_getTime(BSP_CLINT);
         if(now-last_service>=BSP_CLINT_HZ/1000u) {
+            style_uart_service();
             if(!camera_rc)camera_3a_service(&app_3a,now);
             if(app_hist_enable) {
                 int rc=video_hist_poll(&app_hist);
