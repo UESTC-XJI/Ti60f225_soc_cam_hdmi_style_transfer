@@ -1,0 +1,11 @@
+b1d0d2c2a358edd1b8f51a54d10de115 *rtl/style/style_display.sv
+c96f60d58598c3165e0b98a6fef0958e *rtl/ti60f225_oob_top.v
+bc9cde2e7c7d7bf6d7c1094e19c77b73 *rtl/soc_integration/video_apb_ctrl.sv
+cdd7cf6401c2829a7fe9db88e16163c0 *ti60f225_oob.peri.xml
+bac999bea721b14f533eb370dc9e1cf1 *software/firmware/main.c
+a3b5cdea3b2eefc90316661b2013e1e5 *software/firmware/style_banks.h
+d663c42ef694369446a0208d789ab407 *software/firmware/style_driver.c
+6b778fc8bf7ffab05faeb9e1b0805ff6 *weights/rainbow_dc_blob.bin
+b03497eda27c5b546b3a78ea27c94ba8 *tools/flash_bit.py
+350eb5105972bfc5cd89779a16669992 *artifacts/ti60f225_starry30_single43_20261028.bit
+eae55f8bbbbe21dcd8f3841737698235 *artifacts/soc_video_app_starry30_knob4_20261028.elf

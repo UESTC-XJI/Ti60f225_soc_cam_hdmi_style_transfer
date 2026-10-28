@@ -1,0 +1,68 @@
+# Efinity 构建产物
+/outflow/
+/work_syn/
+/work_pnr/
+/reports/
+*.peri.rpt
+*.place.rpt
+*.route.rpt
+*.efx_*.log
+
+# 固件编译产物
+software/firmware/build/
+
+# 仿真产物
+*.vcd
+*.wlf
+transcript
+
+# ---- 2026-10-27：备份与仿真中间产物（体积大、可重建）----
+/_backup_*/
+/_sim/
+/_golden/
+*.npy
+.idea/
+__pycache__/
+
+# 构建/烧录脚本只保留规范版，其余是历史变体
+/_flash_179.bat
+/_flash_ref.bat
+/_flash_wburst.bat
+/_flash.bat
+/_jtag.bat
+/_jtag2.bat
+/_ocd.bat
+/_ocd2.bat
+/_ocd3.bat
+/_ocd4.bat
+/_ocd5.bat
+/_t.bat
+
+# 冻结位流：3.2 MB 二进制，可由提交重建；目录内有 README 说明来历
+/_bit_frozen/
+
+
+# 2026-10-28 临时产物：板端 DDR dump、日志、一次性脚本（都可重建）
+/_m/
+/_c1test.ps1
+/_c1all.ps1
+/*.log
+/_fl.bat
+/_l.bat
+*.bak
+*.orig
+*.before_*
+/_net_struct.py
+/__pycache__/
+
+# 固件构建产物（可由 tools/build_firmware.sh 重建）
+/artifacts/
+!/artifacts/soc_video_app_30fps_starry_old.bin
+!/artifacts/soc_video_app_30fps_starry_old.elf
+/_v8.bin
+/_live_red_v3_blob.bin
+
+# 构建中间目录
+/work/
+/work_fw.bin
+/software/bsp/*/*/openocd/cpu0.yaml
