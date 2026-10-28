@@ -107,6 +107,13 @@ module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1
     if(!rst_n) profile_freeze<=1'b0;
     else if(profile_write) profile_freeze<=pwdata[0];
   end
+  // 2026-10-28（Tier 1 面积回收）**已回退**：
+  //   撤掉 profiler 后构建出来 XLR 59,753 (98.28%)、时序全正（vid +0.557、sdram +0.135），
+  //   build_check 判 USABLE —— 但**烧上去固件起不来**：CPU PC 停在 0、APB 全返同一值。
+  //   换回未改动的 A-4 位流立即正常（PC 0x1430、CORE_ID 正确）。
+  //   => 判定：这是"PASS + 无负 slack 仍不可用"的新失败模式，疑似 DDR 裕量变薄
+  //      （sdram_clk +0.135 比前几版更紧，而固件跑在 DDR 上）。
+  //   恢复：保留 profiler（330 XLR），面积回到 60,171 (98.97%)。
   style_ddr_profiler profiler(.clk(clk),.rst_n(rst_n),.enable(stream_enable),
     .freeze(profile_freeze),.clear(profile_write&&pwdata[1]),.network_idle(nn_ready),
     .index(profile_index),.value(profile_value),
