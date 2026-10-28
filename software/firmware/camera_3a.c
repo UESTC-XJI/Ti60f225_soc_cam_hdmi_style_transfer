@@ -53,6 +53,9 @@ camera_3a_t app_3a;
 static int advanced(uint32_t now,uint32_t old,uint32_t frames) { return (int32_t)(now-old)>=(int32_t)frames; }
 int camera_3a_init(camera_3a_t *s,uint64_t now) {
   for(unsigned i=0;i<sizeof(*s);i++)((volatile unsigned char *)s)[i]=0;
+  /* 2026-10-28：上面的 memset 已把整个结构清零 ⇒ `agc_index=0` 就是"出厂增益档位"，
+   * 对应 0x83/0x20 = 6.160x，与 camera_init_table.h 一致
+   * ⇒ **开机不动增益，行为与未加 AGC 时完全相同**（AGC 只会在曝光顶满且偏暗时介入）。 */
   s->last_stats_time=now;
   if(video_probe())return -1;
   uint8_t h,l,a,b,c,delay;
@@ -96,6 +99,25 @@ static int set_exposure(camera_3a_t *s,uint32_t value) {
   s->exposure_reserved=((uint32_t)(a&0xf0)<<8)|(c&15);
   return 0;
 }
+/*==========================================================================
+ * AGC 的增益写入（2026-10-28）
+ * 仿照 set_exposure 用 Group Hold(0x3812) 做**原子写**，避免一帧内
+ * 粗调/细调半更新导致闪一帧。手册 §2.4.2：第 N 帧写入、第 N+2 帧生效。
+ *========================================================================*/
+static int set_gain(camera_3a_t *s,uint32_t index) {
+  unsigned char ana=0,fine=0;
+  camera_agc_code(index,&ana,&fine);
+  int error=camera_reg_write(0x3812,0x00);
+  if(!error) error=camera_reg_write(0x3e08,ana);
+  if(!error) error=camera_reg_write(0x3e09,fine);
+  int release=camera_reg_write(0x3812,0x30);
+  if(error||release) return -1;
+  s->agc_index=index;
+  s->agc_settle=4;                  // 手册：N+2 生效；多留 2 帧给统计窗口
+  s->agc_updates++;
+  return 0;
+}
+
 static int confirm_exposure(camera_3a_t *s) {
   uint8_t a,b,c;
   if(camera_reg_read(0x3e00,&a)||camera_reg_read(0x3e01,&b)||camera_reg_read(0x3e02,&c))return 2;
@@ -189,6 +211,26 @@ void camera_3a_service(camera_3a_t *s,uint64_t now) {
     s->queued_exposure=target;s->queue_sensor=video_read(VIDEO_SENSOR_FRAME);
     s->wait_start=now;s->status=THREE_A_EXPOSURE_WAIT;return;
   }
+  /*---------------- AGC（2026-10-28）----------------
+   * 只有 AE 已经"按住不动"（曝光收敛或顶到上限）时才会走到这里。
+   * 手册 §2.4.1：曝光优先，曝光顶满后才调增益 ⇒ 这里正好是那个位置。
+   * 用 3 帧同向连击 + 4 帧 settle 抗抖动（增益 N+2 才生效）。 */
+  if(s->agc_settle) { s->agc_settle--; }
+  else {
+    int step=camera_agc_step(s->exposure,s->maximum,s->mean,s->ae_goal,s->agc_index,s->high_permille);
+    if(step) {
+      uint32_t dir = step>0 ? 1u : 2u;
+      s->agc_streak = (dir==s->agc_dir) ? s->agc_streak+1u : 1u;
+      s->agc_dir    = dir;
+      if(s->agc_streak>=3u) {
+        s->agc_streak=0;s->agc_dir=0;
+        if(set_gain(s,(step>0)?s->agc_index+1u:s->agc_index-1u)) {
+          s->last_error=6;s->errors++;
+        }
+        s->status=THREE_A_GAIN_WAIT;s->wait_start=now;return;
+      }
+    } else { s->agc_streak=0;s->agc_dir=0; }
+  }
   uint16_t r=(uint16_t)video_read(VIDEO_R_ACTIVE),b=(uint16_t)video_read(VIDEO_B_ACTIVE),nr=r,nb=b;
   if(app_awb_mode==AWB_LOCK)return;
   if(app_awb_mode==AWB_FIXED) {nr=STYLE_R_GAIN;nb=STYLE_B_GAIN;if(r==nr&&b==nb)return;}
@@ -227,6 +269,7 @@ void camera_3a_log(const camera_3a_t *s) {
   p=label(p," goal ",s->ae_goal);p=label(p," hold ",s->ae_held);
   p=label(p," R ",video_read(VIDEO_R_ACTIVE));p=label(p," B ",video_read(VIDEO_B_ACTIVE));
   p=label(p," AE ",s->ae_updates);p=label(p," AWB ",s->awb_updates);
+  p=label(p," agc ",s->agc_index);p=label(p," agcN ",s->agc_updates);
   p=label(p," code ",s->last_error);p=label(p," req ",s->pending_exposure);p=label(p," rb ",s->readback_exposure);
   p=label(p," err ",s->errors);*p++='\r';*p++='\n';*p=0;
   uart_writeStr(BSP_UART_TERMINAL,text);
