@@ -3,6 +3,8 @@
 #include "style_driver.h"
 #include "rowpipe_weights.h"
 #include "style_banks.h"
+#include "style_banks_sndc.h"
+#include "style_banks_xxdc.h"
 #include "style_selftest.h"
 #include "soc_video_driver.h"
 #define STYLE_BASE 0xf8100200u
@@ -29,9 +31,19 @@ typedef struct { const char *name; const unsigned int *words; uint32_t xor_expec
  *      而 .bin 已经因为权库从 28,360 涨到 87,904 B，不该再浪费。
  * 修法：bank0 改名为 starry_old，删掉重复的 bank4 => 4 套互不相同的风格。
  * 开机仍走 `style_program_bank(0)`，**默认风格不变**（还是 starry_old）。 */
+/* 2026-10-29 A/B 对照表（硬件侧）：
+ *   bank0 = 构建期烧进来的 rowpipe_weights.h（当前 = xx版 DC，bias 372/15099/21752）
+ *   bank1 = **原版 starry_night 的 DC**（bias -443/12673/17511）
+ *   两者是同一套 v2 权重，只有 DC 不同 => 用 '1'/'2' 秒切即可肉眼对比色调。
+ *   bank2/3 保留 starry_v8 与 red_v3_dc 作为参照。 */
+/* 2026-10-29 A/B 对照表（硬件侧）
+ *   bank0 = 构建期 rowpipe_weights.h = **sn_dc（原版 starry_night 深邃版，最终选定）**
+ *   bank1 = xx_dc（提亮参考画版，作对照）
+ *   两者同一套 v2 权重，只有 L11 bias(DC) 不同 => '1'/'2' 秒切即可对比色调。
+ *   bank2/3 = starry_v8 / red_v3_dc 作参照。 */
 static const style_bank_t style_banks[STYLE_BANK_COUNT]={
-    {"starry_old",rowpipe_weights,        ROWPIPE_WEIGHT_XOR},
-    {"starry_v7", style_bank_starry_v7,   STYLE_BANK_STARRY_V7_XOR},
+    {"sn_dc",     rowpipe_weights,        ROWPIPE_WEIGHT_XOR},   /* 构建期烧进来 = 原版 starry_night 深邃版（**最终选定**） */
+    {"xx_dc",     style_bank_xxdc,        STYLE_BANK_XXDC_XOR},
     {"starry_v8", style_bank_starry_v8,   STYLE_BANK_STARRY_V8_XOR},
     {"red_v3_dc", style_bank_red_v3_dc,   STYLE_BANK_RED_V3_DC_XOR},
 };
