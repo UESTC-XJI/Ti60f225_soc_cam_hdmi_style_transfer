@@ -42,7 +42,7 @@ typedef struct { const char *name; const unsigned int *words; uint32_t xor_expec
  *   两者同一套 v2 权重，只有 L11 bias(DC) 不同 => '1'/'2' 秒切即可对比色调。
  *   bank2/3 = starry_v8 / red_v3_dc 作参照。 */
 static const style_bank_t style_banks[STYLE_BANK_COUNT]={
-    {"sn_dc",     rowpipe_weights,        ROWPIPE_WEIGHT_XOR},   /* 构建期烧进来 = 原版 starry_night 深邃版（**最终选定**） */
+    {"wave_sw8_dc",rowpipe_weights,       ROWPIPE_WEIGHT_XOR},   /* 构建期烧进来 = wave_sw8 + DC（参考画神奈川） */
     {"xx_dc",     style_bank_xxdc,        STYLE_BANK_XXDC_XOR},
     {"starry_v8", style_bank_starry_v8,   STYLE_BANK_STARRY_V8_XOR},
     {"red_v3_dc", style_bank_red_v3_dc,   STYLE_BANK_RED_V3_DC_XOR},
