@@ -66,3 +66,16 @@ __pycache__/
 /work/
 /work_fw.bin
 /software/bsp/*/*/openocd/cpu0.yaml
+
+# ---- 2026-10-29 板侧调试临时文件（不入库）----
+_*.py
+_*.ps1
+_*.bin
+_*.log
+_*.err
+_fw_backup.*
+ocd_*.log
+ocd_*.err
+_ocd_plain.log
+software/bsp/EfxSapphireSoc/openocd/cpu0.yaml
+*.part

@@ -29,14 +29,22 @@ module style_display #(parameter bit BUFFERED=1'b1)(
     if(!rst_n)begin sp_meta<=1'b0;sp_sync<=1'b0;end
     else begin sp_meta<=single_panel;sp_sync<=sp_meta;end
   end
-  wire single_panel_pix=sp_sync;
+  // 2026-10-29（借自 1028 分支）：显示模式**只在帧首生效**。
+  //   单画面与对比模式的行映射不同（源行 = 显示行/3 vs 1:1），若在帧中间切换，
+  //   FIFO 里旧几何的包会和新 expect_row 错位 —— 实测过渡帧 60% 像素黑/错
+  //   （tb_disp_toggle：uf=554900）。
+  //   帧首锁存后，切模式与 epoch 翻转同拍，旧包统一按「epoch 不符」清掉
+  //   （不依赖行号比较，不会卡队头），切模式那一帧起就是干净画面。
+  reg sp_lat;
+  wire single_panel_pix=sp_lat;
   // The row-fetch state machine below runs in the clk domain, so it needs its
   // own synchroniser.  Feeding it the pix_clk-domain copy would be a CDC
   // violation and left the reader addressing the wrong DDR row.
   (* async_reg = "true" *) reg spc_meta,spc_sync;
   always @(posedge clk or negedge rst_n)begin
     if(!rst_n)begin spc_meta<=1'b0;spc_sync<=1'b0;end
-    else begin spc_meta<=single_panel;spc_sync<=spc_meta;end
+    // 同步的是帧首锁存后的 sp_lat，而不是引脚：单比特、只在一帧一次变化，比同步原始引脚更稳。
+    else begin spc_meta<=sp_lat;spc_sync<=spc_meta;end
   end
   wire single_panel_clk=spc_sync;
   reg [10:0] h;reg [9:0] v;reg [7:0] epoch,epoch_gray;
@@ -140,11 +148,11 @@ module style_display #(parameter bit BUFFERED=1'b1)(
     (v>=145 && (packet[51:43]<expect_row || (packet[51:43]==expect_row && h>=img_x0 && packet[42:32]<expect_x))));
   assign pixel_ready=obsolete||(image&&match);
   always @(posedge pix_clk or negedge rst_n)begin
-    if(!rst_n)begin h<=0;v<=0;epoch<=0;epoch_gray<=0;slot1<=0;slot2<=0;dv1<=0;dv2<=0;pixel<=0;hs<=0;vs<=0;de<=0;underflow<=0;end
+    if(!rst_n)begin h<=0;v<=0;epoch<=0;epoch_gray<=0;slot1<=0;slot2<=0;dv1<=0;dv2<=0;pixel<=0;hs<=0;vs<=0;de<=0;underflow<=0;sp_lat<=0;end
     else begin
       slot1<=display_slot;slot2<=slot1;dv1<=display_valid;dv2<=dv1;
       if(h==1649)begin h<=0;if(v==749)v<=0;else v<=v+1'b1;end else h<=h+1'b1;
-      if(h==0&&v==0)begin epoch<=epoch+1'b1;epoch_gray<=((epoch+1'b1)>>1)^(epoch+1'b1);end
+      if(h==0&&v==0)begin epoch<=epoch+1'b1;epoch_gray<=((epoch+1'b1)>>1)^(epoch+1'b1);sp_lat<=sp_sync;end
       hs<=h<40;vs<=v<5;de<=active;pixel<=image&&match ? packet[31:0]:0;
       underflow<=(image&&dv2&&!match)||(request&&!request_ready);
     end

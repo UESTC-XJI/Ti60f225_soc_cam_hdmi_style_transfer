@@ -286,6 +286,15 @@ module rowpipe_engine (
     reg [1:0]   uc = 0;
     // 超时：连续 65535 拍拿不到权重 beat ⇒ 判本帧失败（不挂死）
     reg [15:0]  wtimer = 0;
+    // 2026-10-29：**S_WAITPIX 看门狗**（逐行核查 C2）。
+    //   原来 S_WAITPIX 只等 `pix>=out_total_r && mem_wr_idle`，**没有任何超时**：
+    //   若 frame_width*height 与描述符的 out_total_r 不一致（或写流永久卡住），
+    //   引擎会永久 busy、done 永不置位、**且没有任何错误标志** —— 板子静默挂死。
+    //   超时后复用已有的 w_to（粘滞，帧首清）⇒ driver 的 `if (eng_w_to)` 分支
+    //   自动接上「判废 err_frame + done + 回 IDLE」，**零新端口、driver 一行不改**。
+    //   24 bit = 16.7M 拍 ≈ 113 ms @148.5 MHz（≈4 个帧周期）—— 正常排空远小于此，
+    //   真超时说明确实卡死，不会误触发。
+    reg [23:0]  ptimer = 0;
     reg         w_to = 0;
     assign w_timeout = w_to;
 
@@ -322,7 +331,7 @@ module rowpipe_engine (
             S_IDLE: if (start) begin
                 L <= 0; done <= 0; cnt_clr <= 1;
                 apply_desc(0);
-                w_to <= 0; wtimer <= 0;
+                w_to <= 0; wtimer <= 0; ptimer <= 0;
                 layer_rst_n <= 0; st <= S_LRST; i <= 0;
             end
             S_LRST: begin
@@ -462,5 +471,17 @@ module rowpipe_engine (
                     st   <= S_DONE;
                 end else wtimer <= wtimer + 1'b1;
             end else wtimer <= 16'd0;
+
+            // ---- 2026-10-29：S_WAITPIX 看门狗（逐行核查 C2）----
+            //   ⚠ 必须放在 case 之后：和权重超时一样，后写覆盖上面的状态转移，
+            //     否则 S_WAITPIX 的 `if(...)` 已经把 st 改了，这里的超时就不生效。
+            //   复用 w_to ⇒ driver 的 eng_w_to 分支负责 err_frame/done/回 IDLE。
+            if (st == S_WAITPIX) begin
+                if (ptimer == 24'hFFFFFF) begin
+                    w_to <= 1'b1;
+                    done <= 1'b1;
+                    st   <= S_DONE;
+                end else ptimer <= ptimer + 1'b1;
+            end else ptimer <= 24'd0;
         end
 endmodule
