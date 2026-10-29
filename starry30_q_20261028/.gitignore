@@ -57,8 +57,8 @@ __pycache__/
 
 # 固件构建产物（可由 tools/build_firmware.sh 重建）
 /artifacts/
-!/artifacts/soc_video_app_30fps_starry_old.bin
-!/artifacts/soc_video_app_30fps_starry_old.elf
+/artifacts/soc_video_app_30fps_starry_old.bin
+/artifacts/soc_video_app_30fps_starry_old.elf
 /_v8.bin
 /_live_red_v3_blob.bin
 
