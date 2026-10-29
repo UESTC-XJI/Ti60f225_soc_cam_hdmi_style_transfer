@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+  <name>soc_video_app</name>
+  <comment>Sapphire camera/HDMI firmware; external Python build</comment>
+  <projects/>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
+      <triggers>clean,full,incremental,</triggers>
+      <arguments/>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.cdt.core.cnature</nature>
+    <nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
+    <nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
+  </natures>
+</projectDescription>

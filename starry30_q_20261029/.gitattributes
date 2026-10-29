@@ -1,0 +1,10 @@
+* text=auto
+
+# 二进制产物：禁止换行转换（否则位流/ELF 会在 checkout 时损坏）
+*.bit binary
+*.elf binary
+*.bin binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.mem binary
