@@ -58,7 +58,7 @@ class OCD:
                 if os.path.exists(tmp):
                     os.remove(tmp)
                 self.cmd('dump_image {%s} 0x%08X 0x%X' % (tmp, addr + off, n),
-                         1.0 + n / 20000.0)
+                         2.0 + n / 8000.0)
                 if not os.path.exists(tmp):
                     raise RuntimeError('chunk @0x%X 失败' % (addr + off))
                 with open(tmp, 'rb') as g:
