@@ -53,6 +53,38 @@ FPGA 的 JTAG 配置是**易失**的。断电后从 **SPI flash 加载旧位流*
 
 **⇒ 任何数字进报告前，先跑第 6 节的口径自检。**
 
+### 铁律四：**画质判断以采集卡为准，不以 DDR 统计为准**
+
+**真实事故（2026-10-29，最深刻的一次）**：
+
+我用「≥25% 画宽累积能量」判断 bank 选型：
+- `v8` 输出 **91.7%**（保住大尺度）→ 我判断 v8 更好
+- `old` 输出 **20.8%** → 我判断 old 差
+
+**采集卡一看完全相反**：
+
+| | `old` | `v8` |
+|---|---|---|
+| DDR 尺度谱 | 20.8%（差） | **91.7%（好）** |
+| **采集卡视觉** | **蓝调、纹理一致、像铅笔版画** | **橄榄绿 + 大片平坦色块，像色阶化** |
+| 内容保真（模型侧） | **0.460** | 0.359 |
+| 时间稳定性 | **26.5 dB** | 19.9 dB |
+
+**"保住大尺度能量"在数值上好听，视觉上却是"大片平坦色块"——那叫色阶化，不叫画。**
+
+**⇒ 验收顺序必须是：**
+```
+1. 采集卡抓图（人眼看）        ← 最终真相
+2. 内容保真 / 时间稳定性        ← 客观支撑
+3. DDR 统计（PSNR/SSIM/尺度谱） ← 只能做"差异描述"，不能当画质判据
+```
+
+**为什么 DDR 统计不够**：它不经过显示链。显示屏还有
+`rgb_gain` + `luma_tone_map` + `lift` 三级处理，会显著改变观感。
+同一帧：DDR 口径 ≥25% 画宽 = 12.6%，**屏幕观感 = 62.4%**。
+
+**采集卡抓图命令**（见 §6.8）。
+
 ---
 
 ## 1 JTAG / OpenOCD 稳定性（最大的坑）
@@ -405,6 +437,37 @@ starry_night.jpg 的「≥25% 画宽累积能量」应 ≈ 88.5%（误差 <1 点
 **⇒ 每次 `style_switch_bank` 之后等 2.6 s（固件内部等待）+ 额外 5 s 再测。**
 
 ### 6.7 采集卡截图 vs DDR dump 不可直接比
+### 6.8 采集卡抓图（画质判断的最终依据）
+
+```bash
+FF="/d/Program Files/JianyingPro/7.7.0.12666/ffmpeg.exe"   # 或任意 ffmpeg
+
+# 0) 先关摄像头软件（会独占采集卡）
+taskkill //F //IM WindowsCamera.exe
+
+# 1) 抓一帧
+"$FF" -hide_banner -loglevel error -f dshow -i "video=USB Video" \
+      -frames:v 1 -update 1 -y ../demo/_grab/cap.png
+
+# 2) 裁出左右面板做并排对比
+python - <<'PY'
+from PIL import Image
+import numpy as np
+def crop_right(p):
+    im=Image.open(p).convert('RGB'); a=np.asarray(im)
+    rows=np.where(a.max(axis=(1,2))>20)[0]; cols=np.where(a.max(axis=(0,2))>20)[0]
+    y0,y1=rows[0],rows[-1]; x0,x1=cols[0],cols[-1]
+    mid=x0+(x1-x0+1)//2
+    return im.crop((mid,y0,x1,y1+1))
+PY
+```
+
+**注意事项**：
+- **必须关掉 Windows 相机等软件**，否则设备被独占，ffmpeg 报错
+- 采集卡输出是 **1920×1080**（HDMI 720p 被放大），实际内容区约 1920×728
+- **不要拍屏**（摩尔纹 + 反光 + 帧率不同步）
+
+
 
 截图经过了 `rgb_gain` + `luma_tone_map` + `lift`，对比度被抬高。
 同一帧：DDR 口径 ≥25% 画宽 = 12.6%，屏幕观感 = 62.4%。
