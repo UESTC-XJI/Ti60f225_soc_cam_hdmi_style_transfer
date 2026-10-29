@@ -81,6 +81,7 @@ case "$XOR" in
   0xf6a82050) echo "         ^ starry g075                              [offset ⚠]" ;;
   0xcdc157c0) echo "         ^ starry g085                              [offset ⚠]" ;;
   0xc7eaf900) echo "         ^ ⚠ cap8-starry 原始 blob（不是 v5 家族，确认是有意的）" ;;
+  0x9277287c) echo "         ^ starry xxg640 v2 + 原版图 DC（sn_dc）      [signed ✅]" ;;
   *)          echo "         ^ 未登记的风格，请核对" ;;
 esac
 

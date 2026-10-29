@@ -155,3 +155,41 @@ AE 永远等不到"下一帧" → 曝光不再更新 → 传感器停在长曝�
 grep -rn "raw_event\|VIDEO_SENSOR_FRAME\|raw_frames" rtl/ software/firmware/
 ```
 `VIDEO_SENSOR_FRAME` 是 AE 的功能依赖，不是调试信息。
+
+## 13. 31 fps 的测量口径（对外必须带这句）
+
+- **口径**：板上实测，屏上 FPS 叠加读数（style_irq 1 s 窗口），用户目视 31；
+  同时 JTAG 读引擎计数 `app_style_inferred` 约为 28–29/s（读数期间 CPU 被 halt，计数偏低）。
+- **对应产物**：位流 `8ed79a95…`（AE 修复版）、固件 `e7dbde89…`。
+- **对应 PnR**：XLR 59,650 / 60,800（98.11%），
+  `vid_clk_dvi2` **+0.015 ns**（约束 148.5 MHz）、`core_clk` +1.714 ns，`build_check = USABLE`。
+- 这是**实测帧率**，不是约束频率换算；对外报 31fps 时同时注明 vid slack 余量很薄（+0.015），
+  交付前需要重跑 PnR 换放置。
+
+## 14. 快照颜色发花：DDR 编码契约不一致（2026-10-29，已修）
+
+**现象**：BLE 链路通、`IMG` 头 CRC 全过、`IMG,END` 正常，但 JPEG 每通道最高位被翻转——
+画面发花、颜色全错。**不是链路问题，不是 MIPI/DDR/显示缺陷。**
+
+**根因**：两套工程的风格结果槽编码约定不同。
+
+| | `worktree-auto-resume-fw`（10-25） | 本工程 |
+|---|---|---|
+| 写 DDR | `wr_pixel ^ 0x808080` | 相同 |
+| 读回（`style_axi_rows`） | **再 XOR 一次** | **不 XOR** |
+| 显示 | 又 XOR 一次（抵消） | XOR 一次 |
+| DDR 里存的 | 屏上值 | **屏上值 ^ 0x808080** |
+
+`qse_imgtx.c` 的拷贝循环两份逐字节相同、不 XOR，所以复制过来后在验证工程里正确、在本工程上翻色。
+
+**修复**（`software/firmware/qse_imgtx.c::copy_rows`）：读像素时补
+`uint32_t v = p[sx] ^ 0x00808080u;`。契约见 `docs/BLE_BRINGUP.md` §5——
+**任何直接读风格结果槽的消费者必须自己 XOR 一次**。
+
+**验证**：构建 PASS（header↔bin 逐字节一致、`weights XOR` 实算一致、Q beat `(37,129,127)`）；
+板上自检 `selftest=0 / errors=0`，引擎 `inferred` 递增；用户目视确认 HDMI 与 BLE 快照均正常。
+
+**本轮产物**：位流 `8ed79a95…` + 固件 `e33708e9…`
+（含星空 `starry_xxg640_v2_sn_dc`：XOR `0x9277287c`，L11 bias `-443/12673/17511`，
+DC 目标 R−51.6 / G−35.6 / B−17.6 用**原版** `starry_night.jpg`）。
+回滚锚点：`backup/weights_rollback_20261029/`。

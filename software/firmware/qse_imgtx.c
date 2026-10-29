@@ -128,7 +128,13 @@ static void copy_rows(void) {
             for (uint32_t sy = 0; sy < factor; ++sy) {
                 const volatile uint32_t *p = src + (oy * factor + sy) * SRC_W + ox * factor;
                 for (uint32_t sx = 0; sx < factor; ++sx) {
-                    uint32_t v = p[sx];
+                    /* This RTL stores the style result biased: style_network writes
+                     * `wr_pixel ^ 0x808080`, style_axi_rows no longer XORs on read
+                     * (it does in the 10-25 auto-resume tree), and style_display
+                     * applies the single XOR. So DDR = on-screen RGB ^ 0x808080;
+                     * undo it here or every channel's MSB comes back flipped.
+                     * Keep in sync with rtl/style/style_display.sv:142. */
+                    uint32_t v = p[sx] ^ 0x00808080u;
                     r += v & 255u; g += (v >> 8) & 255u; b += (v >> 16) & 255u;
                 }
             }

@@ -1834,9 +1834,8 @@ static const unsigned int style_bank_starry_old[STYLE_BANK_EXTRA_WORDS] = {
     0x001fe066u,0x00000000u,0x00000000u,0x00000000u,
 };
 
-/* 2026-10-28: rainbow（彩虹流体）—— 源 deliverable/rainbow_cap8_20261028，**末层已改为有符号约定**
- *   改动：L11 bias −79230（= 128 q 步）、Q 头 qlo 0→129 / qhi 255→127（同 starry/red），
- *   否则显示端 XOR 0x80 会把无符号输出抬亮 128 并串色。md5 6b778fc8bf7f */
+/* 2026-10-28: rainbow（彩虹流体）—— 源 deliverable/rainbow_cap8_20261028，末层已改为有符号约定
+ *   L11 bias 下移、Q 头 qlo 0->129 / qhi 255->127；md5 6b778fc8bf7f */
 #define STYLE_BANK_RAINBOW_XOR 0xa09b9352u
 static const unsigned int style_bank_rainbow[STYLE_BANK_EXTRA_WORDS] = {
     0x236602feu,0x00000000u,0x00000000u,0x00000000u,0x1d38e505u,0x00000000u,0x00000000u,0x00000000u,
@@ -2292,3 +2291,7 @@ static const unsigned int style_bank_rainbow[STYLE_BANK_EXTRA_WORDS] = {
     0x00000000u,0x00000000u,0x00000000u,0x00000000u,0x00000000u,0x00000000u,0x00000000u,0x00000000u,
     0x001fe067u,0x00000000u,0x00000000u,0x00000000u,
 };
+
+
+
+
