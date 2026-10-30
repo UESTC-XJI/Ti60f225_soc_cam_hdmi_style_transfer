@@ -85,7 +85,7 @@ int qse_imgtx_command(const char *line, uint64_t now) {
         uint32_t w = 320u, q = 60u, win = 4u;
         if (qse_imgtx_state != IDLE) { qse_ble_send_line("IMG,ERR,BUSY"); return 1; }
         if (parse_arg(&a, &w) || parse_arg(&a, &q) || parse_arg(&a, &win) || *a ||
-            (w != 160u && w != 320u) || q < 1u || q > 100u || win < 1u || win > 8u) {
+            (w != 320u) || q < 1u || q > 100u || win < 1u || win > 8u) {
             qse_ble_send_line("IMG,ERR,ARG");
             return 1;
         }

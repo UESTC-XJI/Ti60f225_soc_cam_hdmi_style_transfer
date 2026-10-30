@@ -4,7 +4,7 @@
 /* BLE snapshot of the style-transfer result, sent as a baseline JPEG over the BLE UART (UART0 @128000).
  *
  * Commands (one ASCII line each, from the phone/browser):
- *   SNAP[,<w>[,<q>[,<win>]]]  w = 160|320 (default 320), JPEG quality 1..100
+ *   SNAP[,<w>[,<q>[,<win>]]]  w = 320 only (320x240), JPEG quality 1..100
  *                             (default 60), send window 1..8 packets (default 4)
  *   ACK,<n>                   cumulative: every packet with seq < n arrived
  *   NAK,<n>                   resend from packet n (go-back-N)

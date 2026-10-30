@@ -1,3 +1,5 @@
+> 2026-10-30：当前外设已合并 KEY0/KEY1，快照仅 320×240；下方历史上板状态不代表本次合并已上板。详见 `QSE_MAINLINE_MERGE.md`。
+
 # BLE 控制 + 图传（2026-10-29）
 
 > 状态：**构建全 PASS；2026-10-29 已上板：位流 + 固件均易失加载成功，app 主循环在跑
@@ -21,7 +23,8 @@
 | BLE RX（模块→FPGA） | `system_uart_0_io_rxd` | **GPIOL_06** (C3) | input，weak pullup |
 | BLE TX（FPGA→模块） | `system_uart_0_io_txd` | **GPIOR_13** (A12) | output |
 | 旋钮 SW1/SW2 | `io_sw1/io_sw2` | GPIOL_04 / GPIOL_10 | input |
-| 面板按键 | `panel_key` | GPIOR_22 | input |
+| KEY0（FPS 开关） | `io_key0` | GPIOL_11 | input，高有效，弱下拉 |
+| KEY1（视图切换） | `io_key1` | GPIOL_09 | input，高有效，弱下拉 |
 
 > ⚠ 10-24 的 `USER_IO_UART_ENCODER.md` 写的是 TX=GPIOL_06 / RX=GPIOR_13，与 10-26 的
 > BLE 文档相反；本实现按 10-26 的（RX=GPIOL_06、TX=GPIOR_13）。**上板若收不到数据，
@@ -33,17 +36,20 @@
 
 | 命令 | 作用 | 回复 |
 |---|---|---|
-| `STATE` | 查询状态 | `KNOB,<0..3>`、`BANK,<k>,<名>`、`RATE,<B/s>` |
+| `STATE` | 查询状态 | `KNOB,<0..3>`、`SLOT,<0..4>`、`BANK,<k>,<名>`、`OSD,<0|1>`、`VIEW,<0|1>`、`RATE,<B/s>` |
 | `KNOB,<0..3>` | 按物理旋钮映射切风格 | `KNOB,n`、`BANK,k,name` |
+| `VIEW` / `VIEW,0|1` | 切换/设置对比视图 | `VIEW,n` |
+| `OSD` / `OSD,0|1` | 切换/设置 FPS 叠加 | `OSD,n` |
+| `SLOT` / `SLOT,0..4` | 查询/选择 B 实际权重 BANK | `SLOT,n`、`BANK,n,name` |
 | `RATE` / `RATE,<B/s>` | 读/设输出限速 200–12800 | `RATE,n` |
-| `SNAP[,<w>[,<q>[,<win>]]]` | 拍一张风格结果，w=160/320（默认 320），q=1..100（默认 60），win=1..8 | `IMG,<w>,<h>,<bytes>,<crc32>,<packets>` 后跟数据包，最后 `IMG,END` |
+| `SNAP[,<w>[,<q>[,<win>]]]` | 拍一张风格结果，w=320（仅 320×240），q=1..100（默认 60），win=1..8 | `IMG,<w>,<h>,<bytes>,<crc32>,<packets>` 后跟数据包，最后 `IMG,END` |
 | `ACK,<n>` / `NAK,<n>` / `ABORT` | 图传确认/重传/中止 | — |
 
 图片数据包：`A5 5A seq(u16 LE) len(u8) payload[len] crc16(u16 LE)`，crc16 = CRC-16/CCITT-FALSE。
 
 **限速**：BLE 模块没有流控，输出队列默认按 **1500 B/s** 排空（`QSE_BLE_RATE`，**这是 10-26 的板测保守值，不是模块上限**；`RATE,<n>` 可实时调到 12800）。
 UART 本身是 128000 baud（≈12.8 KB/s）。按 1500 B/s，一张 320×240、q60 的 JPEG（约 8–15 KB）需
-**5–10 秒**；用 `SNAP,160,50` 预览约 2–4 秒。实际吞吐与是否丢字节**必须上板实测**。
+**5–10 秒**；本版只保留原生 320×240。实际吞吐与是否丢字节**必须上板实测**。
 
 ## 4. 数据来源
 
@@ -106,9 +112,9 @@ python tools/build_check.py
 2. JTAG 烧 `outflow/ti60f225_oob.bit`（md5 `d3dac978…`）+ `software/firmware/build/soc_video_app.elf`（md5 `e7dbde89…`）。
 3. 先验主链路：HDMI 出图、旋钮 G1/G2/G3 切换、屏上 FPS 叠加。**这一步不通过就不要碰 BLE**，直接用 §10 回滚。
 4. 手机 Web Bluetooth 连模块：
-   - 收到 `BOOT,1` → 链路通；发 `STATE` 应回 `KNOB/BANK/RATE`。
+   - 收到 `BOOT,1` → 链路通；发 `STATE` 应回 `KNOB/SLOT/BANK/OSD/VIEW/RATE`。
    - **收不到任何字节 → 先怀疑 RX/TX 方向**，按 §2 对调 `gpio_def` 重编（一次完整构建 ~13 分钟）。
-5. 发 `SNAP,160,50` 做快速预览（160×120，传输约 2–4 s），通了再试 `SNAP,320,60`。
+5. 发 `SNAP,320,60` 验证原生 320×240 图传。
 6. 看图颜色：和 HDMI 风格半屏比对；若不一致，记下差异（R/B 反还是整体偏色）。
 
 ## 10. 回滚预案（10 分钟内回到"能出图"的上一版）

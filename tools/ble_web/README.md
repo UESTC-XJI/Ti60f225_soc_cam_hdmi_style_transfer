@@ -1,6 +1,6 @@
 # 蓝牙图传浏览器应用
 
-把 HDMI 上当前显示的**风格迁移结果**（640×480）拍成 JPEG，通过 BLE 透传模块传到浏览器。
+把 HDMI 上当前显示的**风格迁移结果**（原生 320×240）拍成 JPEG，通过 BLE 透传模块传到浏览器。
 
 ## 使用
 
@@ -21,11 +21,13 @@
 ## 协议
 
 见 `software/firmware/qse_imgtx.h`。浏览器发 `SNAP,<w>,<q>,<win>`，板子暂停 CNN 流，
-读当前显示槽位的风格结果，缩放到 w×(3w/4)，编码 JPEG，按 128 字节分包发送；
+读当前显示槽位的风格结果，使用原生 320×240，编码 JPEG，按 128 字节分包发送；
 浏览器按序 `ACK`，丢包或 CRC 错误回 `NAK` 让板子从该包重发。其它文本行由板子原样回显。
 
 快捷指令（`software/firmware/qse_ble.h`）：`VIEW`、`OSD` 切换（或 `VIEW,0/1`、`OSD,0/1` 直接设置），
-`KNOB,0..3` 选档位（下一次拨动实体旋钮前有效），`RATE,<B/s>` 设置板卡发送速率，`STATE` 查询全部状态。
+`KNOB,0..3` 选档位（下一次拨动实体旋钮前有效），`SLOT,0..4` 选择 B 的实际 BANK，`RATE,<B/s>` 设置板卡发送速率，`STATE` 查询 KNOB/SLOT/BANK/OSD/VIEW/RATE。
+
+KNOB 数值保持 B：0=彩虹 BANK4，1=星空 BANK0，2=红天 BANK3，3=保持。网页解析 BANK 编号和名称。仅支持 320×240 快照。
 
 板卡输出按 `RATE` 限速（默认 1500 B/s）。BLE 模块没有流控，按 UART 满速写入会溢出模块缓冲并丢字节。
 网页连接后会自动下发页面上选的速率；重传多就调低一档，稳定后可以逐档调高找上限。
@@ -33,6 +35,8 @@
 ## 测试
 
 ```
-python3 tools/test_firmware_runtime.py     # img_snap 场景：固件完整走一遍并写出 reports/simulation/img_snap*.{jpg,bin}
-node tools/ble_web/test_ble_proto.js       # 用上面的字节流回放浏览器接收端（丢包、坏包、穿插事件行）
+python tools/test_qse_mainline.py          # 实际 RV32 ELF 的外设/图传回归
+node tools/ble_web/test_mainline_ui.js    # 网页状态与实际图传回放、丢包/坏包恢复
 ```
+
+本次外设合并的引脚、命令和构建说明见 docs/QSE_MAINLINE_MERGE.md。

@@ -1,5 +1,17 @@
 # Ti60F225 实时 AI 风格化视频（SC431HAI → CNN → HDMI）
 
+## master 主线更新（2026-10-30）
+
+以 B / `integrated_20261029` 为主线，合入 KEY0/KEY1（高电平按下、弱下拉、20 ms 消抖）、VIEW/OSD/STATE 控制及网页 BANK 解析。保留 B 的旋钮映射、UART0 128000 8N1、默认 1500 B/s；快照仅提供原生 **320×240**，SLOT 使用真实 BANK 0～4。
+
+- 操作、接线与构建说明：[QSE 主线合并说明](docs/QSE_MAINLINE_MERGE.md)。
+- 可直接使用的匹配产物：[交付目录](deliverable/qse_mainline_merge_20261030/README.md)，内含 bit、ELF、bin、网页、SHA256 清单与验证报告。必须配套加载该目录的 bit 与 ELF。
+- 固件、RTL、网页回归及 FPGA 完整编译已通过。用户已确认此前 `trap_halt` 来自误选 bit，换成匹配版本后该问题消失；这不代替全部外设的实板验收。
+
+以下为原工程说明，其中历史性能和资源数字保留原记录；本次构建数据见上述合并说明。
+
+---
+
 易灵思 Titanium **Ti60F225** 上的端到端实时风格迁移：MIPI 摄像头 RAW → debayer/ISP → 640×480 风格网络（行缓冲全流水）→ 720p60 HDMI 输出。RISC-V 软核跑 3A 与任务调度。
 
 **当前状态：31 fps 稳定运行，逻辑占用 98.97%，参数量仅为赛题上限的 2.9%。**

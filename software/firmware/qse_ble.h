@@ -1,22 +1,22 @@
 #pragma once
 #include <stdint.h>
 
-/* BLE link on UART0, repurposed as the QSE daughter-card channel.
- *
- * Pins: GPIOL_06 = RX (input, weak pullup), GPIOR_13 = TX (output), 3.3 V.
- * Baud 128000 8N1. The debug console is gone on this build; every byte on the
- * port belongs to the BLE protocol, so nothing else may write to UART0.
- *
- * Received lines (ended by '\n', a 50 ms gap or 64 bytes):
- *   STATE                 -> KNOB,<0..3> / BANK,<k>,<name> / RATE,<B/s>
- *   KNOB,<0..3>           -> same mapping as the physical knob, replies KNOB/BANK
- *   RATE | RATE,<B/s>     -> read / set the output rate limit
- *   SNAP[,<w>[,<q>[,<win>]]]  image snapshot (w = 160|320, default 320)
+/* QSE controls and BLE on B's UART0 (128000 8N1).
+ * RX=GPIOL_06, TX=GPIOR_13. UART0 is dedicated to this protocol.
+ * KEY0=GPIOL_11 toggles FPS OSD; KEY1=GPIOL_09 toggles compare/single view.
+ * Keys are active-high, weak pulldown, synchronized in RTL, debounced here 20 ms.
+ * The physical knob remains owned by main.c, with B's raw {SW2,SW1} mapping:
+ *   0=rainbow bank4, 1=starry_old bank0, 2=red_v3_dc bank3, 3=hold.
+ * Commands (newline, 50 ms idle gap, or 64 bytes ends a line):
+ *   VIEW | VIEW,0|1       toggle/set compare (1) vs single style (0)
+ *   OSD  | OSD,0|1        toggle/set FPS overlay
+ *   KNOB,0..3             B's raw knob mapping; next physical change takes over
+ *   SLOT | SLOT,0..4      query/select B's actual weight bank
+ *   STATE                 KNOB / SLOT / BANK,<id>,<name> / OSD / VIEW / RATE
+ *   RATE | RATE,<B/s>     query/set output limit, default 1500 B/s
+ *   SNAP[,320[,q[,win]]]  native 320x240 JPEG, q=1..100, win=1..8
  *   ACK,<n> | NAK,<n> | ABORT
- * Anything else is echoed back unchanged.
- *
- * The output queue drains at qse_ble_rate bytes/s because the BLE module has no
- * flow control; at the default 1500 B/s a snapshot takes seconds by design.
+ * Other lines are echoed unchanged. Text and binary share one paced TX queue.
  */
 
 #ifndef QSE_BLE_BAUD
@@ -24,6 +24,9 @@
 #endif
 #ifndef QSE_BLE_RATE
 #define QSE_BLE_RATE 1500u
+#endif
+#ifndef QSE_BLE_DEBOUNCE_MS
+#define QSE_BLE_DEBOUNCE_MS 20u
 #endif
 #define QSE_BLE_RATE_MIN 200u
 #define QSE_BLE_RATE_MAX 12800u
@@ -33,6 +36,7 @@ extern volatile uint32_t qse_ble_rx_bytes;
 extern volatile uint32_t qse_ble_tx_drops;
 extern volatile uint32_t qse_ble_rate;
 extern volatile uint32_t qse_ble_knob;
+extern volatile uint32_t qse_ble_osd_on, qse_ble_compare;
 
 void qse_ble_init(uint64_t now);
 void qse_ble_poll(uint64_t now);          /* call every main-loop iteration */

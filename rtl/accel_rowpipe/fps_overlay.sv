@@ -13,6 +13,7 @@
 module fps_overlay(
     input  wire        clk,
     input  wire        rst_n,
+    input  wire        i_enable,
     input  wire        i_vs,
     input  wire        i_hs,
     input  wire        i_de,
@@ -46,6 +47,16 @@ module fps_overlay(
         end
     end
 
+    (* async_reg="true" *) reg enable_meta, enable_sync;
+    reg enable_frame;
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n) begin enable_meta<=1;enable_sync<=1;enable_frame<=1;end
+        else begin
+            enable_meta<=i_enable;enable_sync<=enable_meta;
+            if(i_vs) enable_frame<=enable_sync;
+        end
+    end
+
     // fps 两级同步（慢变量；显示值最多晚 2 拍）
     reg [15:0] fps1, fps2;
     always @(posedge clk or negedge rst_n) begin
@@ -56,7 +67,7 @@ module fps_overlay(
     wire [3:0] d0 = fps2 % 10;          // 个位
 
     // 文本框内？
-    wire in_box = i_de && (x >= TEX_X0) && (x < TEX_X0+BOX_W) &&
+    wire in_box = enable_frame && i_de && (x >= TEX_X0) && (x < TEX_X0+BOX_W) &&
                            (y >= TEX_Y0) && (y < TEX_Y0+BOX_H);
     wire in_text = in_box && (x >= TEX_X0+2) && (y >= TEX_Y0+2) &&
                             (x < TEX_X0+2+5*12) && (y < TEX_Y0+2+GH*SCALE);

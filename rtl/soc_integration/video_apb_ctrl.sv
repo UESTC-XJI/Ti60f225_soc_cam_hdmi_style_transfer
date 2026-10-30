@@ -20,6 +20,8 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
   input wire [1:0] knob_in,   // 2026-10-28：{SW2,SW1} 旋钮档位，bit0=SW1（已两级同步）
   output wire [15:0] gain_r,gain_g,gain_b,
   output wire [31:0] display_tone,display_lift,
+  input wire [1:0] keys_in,  // synchronized {KEY1,KEY0}; 1 = pressed
+  output reg [1:0] ui_control, // [0] FPS overlay, [1] compare; consumed with frame-boundary latches
   output wire [2:0] display_hist
 );
   wire legacy_hit=paddr<=16'h0030;
@@ -108,6 +110,8 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
       16'h0ec:prdata=1;
       16'h100:begin ext_writable=1;prdata={29'd0,disp_shadow[82:80]};end
       16'h104:prdata={29'd0,disp_mirror[82:80]};
+      16'h130:begin ext_writable=1;prdata={30'd0,ui_control};if(pwrite&&pwdata[31:2]!=0)value_error=1;end
+      16'h134:prdata={30'd0,keys_in};
       16'h140:prdata=fault_sticky;
       16'h144:prdata=drop_count32;
       16'h148:prdata=axi_errors32;
@@ -193,7 +197,7 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
       cap_shadow<=CAP_DEFAULT;cap_pending<=CAP_DEFAULT;cap_mirror<=CAP_DEFAULT;
       disp_shadow<=DISP_DEFAULT;disp_pending<=DISP_DEFAULT;disp_mirror<=DISP_DEFAULT;
       cap_req<=0;disp_req<=0;cap_seen<=0;disp_seen<=0;cap_ack_sync<=0;disp_ack_sync<=0;cap_seq<=0;disp_seq<=0;
-      raw_frames<=0;
+      raw_frames<=0;ui_control<=2'b11;
       faults_meta<=0;faults_sync<=0;csi_meta<=0;csi_sync<=0;reset_meta<=0;reset_sync<=0;fault_sticky<=0;
     end else begin
       if(raw_event)raw_frames<=raw_frames+1'b1;
@@ -218,6 +222,7 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
         16'h084:disp_shadow[79:64]<=pwdata[15:0];
         16'h0d4:cap_shadow[55:48]<=pwdata[7:0];
         16'h100:disp_shadow[82:80]<=pwdata[2:0];
+        16'h130:ui_control<=pwdata[1:0];
         16'h190:cap_shadow[87:56]<=pwdata&32'h00ffff01;
         16'h194:cap_shadow[103:88]<=pwdata[15:0];
         default:;

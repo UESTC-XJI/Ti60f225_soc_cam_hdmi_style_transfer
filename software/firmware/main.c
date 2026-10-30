@@ -45,7 +45,7 @@ int app_ddr_test(void) {
  * QSE 旋钮的两位 {SW2,SW1} 从 video APB 0x54 的 bit[3:2] 读进（bit2=SW1，bit3=SW2）：
  *     raw 0b00 -> G3 彩虹        raw 0b01 -> G1 星空
  *     raw 0b10 -> G2 red_sky     raw 0b11 -> G4 保持
- * G3/G4 把 target 取成**当前 active**，所以 G1->G3->G2 快速拨动不会回跳。
+ * G4 保持当前 active；G3 明确选择彩虹 bank4。
  * 20 ms 消抖（1 kHz 轮询 = 20 拍）；切换走 style_switch_bank()（等引擎空闲再拷权重，
  * 实测 32 ms，不丢帧）。串口日志已移除：UART0 现在专供 BLE。 */
 static uint32_t knob_raw=0xFFFFFFFFu, knob_stable;
@@ -65,7 +65,7 @@ static void style_knob_apply(uint32_t raw) {
 }
 
 /* 上电就按旋钮的实际档位上电（旋钮在 G2 就开机即 red_sky），
- * 而不是"等第一次拨动才生效"。G3/G4 仍然是保持（target=当前 active）。 */
+ * 而不是"等第一次拨动才生效"。G4 保持当前 active，G3 选择彩虹 bank4。 */
 static void style_knob_reset(uint64_t now) {
     knob_raw = (*(volatile uint32_t *)0xF8100054u >> 2) & 3u;
     knob_stable = knob_raw; knob_since = now;

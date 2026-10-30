@@ -1,0 +1,10 @@
+FRAME 1 mode=0 uf=0 bad=0
+FRAME 2 mode=0 uf=0 bad=0
+KEY at v=300 of frame 3 -> single
+FRAME 3 mode=0 uf=0 bad=0
+FRAME 4 mode=1 uf=0 bad=0
+KEY at v=300 of frame 5 -> compare
+FRAME 5 mode=1 uf=0 bad=0
+FRAME 6 mode=0 uf=0 bad=0
+DONE
+tests/tb_disp_toggle.sv:73: $finish called at 99999934670 (1ps)

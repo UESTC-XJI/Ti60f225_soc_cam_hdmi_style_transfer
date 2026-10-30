@@ -1,5 +1,6 @@
 #include "bsp.h"
 #include "style_driver.h"
+#include "video_regs.h"
 #include "qse_ble.h"
 #include "qse_imgtx.h"
 
@@ -15,6 +16,15 @@
 volatile uint32_t qse_ble_tx_msgs, qse_ble_rx_bytes, qse_ble_tx_drops;
 volatile uint32_t qse_ble_rate = QSE_BLE_RATE;
 volatile uint32_t qse_ble_knob;
+volatile uint32_t qse_ble_osd_on = 1, qse_ble_compare = 1;
+
+typedef struct { uint32_t stable, candidate; uint64_t since; } debounce_t;
+static debounce_t db_key0, db_key1;
+#define DEBOUNCE_TICKS ((uint64_t)BSP_CLINT_HZ * QSE_BLE_DEBOUNCE_MS / 1000u)
+
+static void publish_ui(void) {
+    video_write(VIDEO_UI_CONTROL, (qse_ble_osd_on & 1u) | ((qse_ble_compare & 1u) << 1));
+}
 
 static uint8_t tx_queue[TX_QUEUE];
 static uint32_t tx_head, tx_tail;  /* free-running; head - tail = queued bytes */
@@ -110,33 +120,69 @@ static void send_bank(void) {
     qse_ble_send_line(m);
 }
 
+static void send_slot_bank(void) {
+    send_pair("SLOT", style_active_bank());
+    send_bank();
+}
+
 void qse_ble_note_knob(uint32_t pos) {
     knob_pos = pos & 3u;
     qse_ble_knob = knob_pos;
     send_pair("KNOB", knob_pos);
+    send_slot_bank();
+}
+
+static int equals(const char *a, const char *b) {
+    while (*a && *a == *b) { ++a; ++b; }
+    return *a == *b;
+}
+
+static int prefix(const char *s, const char *p) {
+    while (*p) if (*s++ != *p++) return 0;
+    return 1;
+}
+
+static void set_view(uint32_t on) {
+    qse_ble_compare = on & 1u;
+    publish_ui();
+    send_pair("VIEW", qse_ble_compare);
+}
+
+static void set_osd(uint32_t on) {
+    qse_ble_osd_on = on & 1u;
+    publish_ui();
+    send_pair("OSD", qse_ble_osd_on);
 }
 
 static int ui_command(const char *c) {
     uint32_t v;
-    if (c[0] == 'K' && c[1] == 'N' && c[2] == 'O' && c[3] == 'B' && c[4] == ',') {
-        if (!parse_uint(c + 5, &v) && v <= 3u) {
-            knob_pos = v; qse_ble_knob = v;
-            int b = bank_for_pos(v);
-            if (b >= 0 && (unsigned)b < style_bank_count()) (void)style_switch_bank((unsigned)b);
-            send_pair("KNOB", v);
-            send_bank();
-            return 1;
-        }
-    } else if (c[0] == 'R' && c[1] == 'A' && c[2] == 'T' && c[3] == 'E') {
-        if (!c[4]) { send_pair("RATE", qse_ble_rate); return 1; }
-        if (c[4] == ',' && !parse_uint(c + 5, &v)) {
-            qse_ble_rate = v < QSE_BLE_RATE_MIN ? QSE_BLE_RATE_MIN : v > QSE_BLE_RATE_MAX ? QSE_BLE_RATE_MAX : v;
-            send_pair("RATE", qse_ble_rate);
-            return 1;
-        }
-    } else if (c[0] == 'S' && c[1] == 'T' && c[2] == 'A' && c[3] == 'T' && c[4] == 'E' && !c[5]) {
+    if (equals(c, "VIEW")) { set_view(qse_ble_compare ^ 1u); return 1; }
+    if (prefix(c, "VIEW,") && !parse_uint(c + 5, &v) && v <= 1u) { set_view(v); return 1; }
+    if (equals(c, "OSD")) { set_osd(qse_ble_osd_on ^ 1u); return 1; }
+    if (prefix(c, "OSD,") && !parse_uint(c + 4, &v) && v <= 1u) { set_osd(v); return 1; }
+    if (prefix(c, "KNOB,") && !parse_uint(c + 5, &v) && v <= 3u) {
+        int bank = bank_for_pos(v);
+        if (bank >= 0 && (unsigned)bank < style_bank_count()) (void)style_switch_bank((unsigned)bank);
+        qse_ble_note_knob(v);
+        return 1;
+    }
+    if (equals(c, "SLOT")) { send_slot_bank(); return 1; }
+    if (prefix(c, "SLOT,") && !parse_uint(c + 5, &v) && v < style_bank_count()) {
+        (void)style_switch_bank(v);
+        send_slot_bank();
+        return 1;
+    }
+    if (equals(c, "RATE")) { send_pair("RATE", qse_ble_rate); return 1; }
+    if (prefix(c, "RATE,") && !parse_uint(c + 5, &v)) {
+        qse_ble_rate = v < QSE_BLE_RATE_MIN ? QSE_BLE_RATE_MIN : v > QSE_BLE_RATE_MAX ? QSE_BLE_RATE_MAX : v;
+        send_pair("RATE", qse_ble_rate);
+        return 1;
+    }
+    if (equals(c, "STATE")) {
         send_pair("KNOB", knob_pos);
-        send_bank();
+        send_slot_bank();
+        send_pair("OSD", qse_ble_osd_on);
+        send_pair("VIEW", qse_ble_compare);
         send_pair("RATE", qse_ble_rate);
         return 1;
     }
@@ -166,6 +212,15 @@ static void rx_poll(uint64_t now) {
     if (rx_len && now - rx_last >= RX_GAP_TICKS) rx_dispatch(now);
 }
 
+static int debounce(debounce_t *d, uint32_t raw, uint64_t now) {
+    if (raw != d->candidate) { d->candidate = raw; d->since = now; return 0; }
+    if (raw != d->stable && now - d->since >= DEBOUNCE_TICKS) {
+        d->stable = raw;
+        return 1;
+    }
+    return 0;
+}
+
 void qse_ble_init(uint64_t now) {
     Uart_Config cfg;
     cfg.dataLength = BITS_8;
@@ -177,12 +232,20 @@ void qse_ble_init(uint64_t now) {
     tx_tokens = 0; tx_last = now;
     rx_len = 0;
     knob_pos = 0;
+    uint32_t keys = video_read(VIDEO_UI_KEYS);
+    db_key0.stable = db_key0.candidate = keys & 1u; db_key0.since = now;
+    db_key1.stable = db_key1.candidate = (keys >> 1) & 1u; db_key1.since = now;
+    qse_ble_osd_on = qse_ble_compare = 1;
+    publish_ui();
     qse_imgtx_init();
     send_pair("BOOT", 1);
 }
 
 void qse_ble_poll(uint64_t now) {
     rx_poll(now);
+    uint32_t keys = video_read(VIDEO_UI_KEYS);
+    if (debounce(&db_key0, keys & 1u, now) && db_key0.stable) set_osd(qse_ble_osd_on ^ 1u);
+    if (debounce(&db_key1, (keys >> 1) & 1u, now) && db_key1.stable) set_view(qse_ble_compare ^ 1u);
     qse_imgtx_poll(now);
     tx_drain(now);
 }

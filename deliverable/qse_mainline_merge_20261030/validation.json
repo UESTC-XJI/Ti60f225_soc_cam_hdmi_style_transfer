@@ -1,0 +1,253 @@
+{
+  "date": "2026-10-30",
+  "base": "B integrated_20261029",
+  "board_programmed": false,
+  "tests": {
+    "firmware_build": "PASS",
+    "undefined_symbols": "NONE",
+    "rv32_keys_commands_bank_snapshot": "PASS",
+    "browser_state_and_packet_recovery": "PASS",
+    "apb_fps_rtl": "PASS",
+    "display_toggle_six_frames": "PASS: all frames uf=0 bad=0"
+  },
+  "fpga": "PASS: map/interface/pnr/bitstream",
+  "snapshot": "320x240 only",
+  "keys": {
+    "KEY0": {
+      "gpio": "GPIOL_11",
+      "active": "high",
+      "pull": "weak pulldown",
+      "debounce_ms": 20,
+      "action": "FPS overlay"
+    },
+    "KEY1": {
+      "gpio": "GPIOL_09",
+      "active": "high",
+      "pull": "weak pulldown",
+      "debounce_ms": 20,
+      "action": "compare/single style"
+    }
+  },
+  "removed_key_gpio": "GPIOR_22",
+  "uart": {
+    "number": 0,
+    "baud": 128000,
+    "bytes_per_second": 1500
+  },
+  "knob_raw_to_bank": {
+    "0": 4,
+    "1": 0,
+    "2": 3,
+    "3": "hold"
+  },
+  "firmware": {
+    "soc_video_app.elf": {
+      "sha256": "1eab4a63ea1b47bdcc5dab2e2cd998f526a93605433a19b06bad5ca45d25091f",
+      "bytes": 315944
+    },
+    "soc_video_app.bin": {
+      "sha256": "0a7a29b2c3a605f2b37fd12bf743578ec265fd2a40830abdf191fb14c8d16106",
+      "bytes": 94852
+    }
+  },
+  "timing": {
+    "Setup (Max)": [
+      {
+        "launch": "tx_cal_clk_90edge",
+        "capture": "tx_cal_clk_90edge",
+        "slack_ns": 0.246
+      },
+      {
+        "launch": "tx_cal_clk_90edge",
+        "capture": "tx_cal_clk",
+        "slack_ns": 1.05
+      },
+      {
+        "launch": "tx_cal_clk_90edge",
+        "capture": "core_clk",
+        "slack_ns": 1.875
+      },
+      {
+        "launch": "sdram_clk",
+        "capture": "tx_cal_clk_90edge",
+        "slack_ns": 0.938
+      },
+      {
+        "launch": "sdram_clk",
+        "capture": "sdram_clk",
+        "slack_ns": 0.235
+      },
+      {
+        "launch": "rx_cal_clk",
+        "capture": "rx_cal_clk",
+        "slack_ns": 0.447
+      },
+      {
+        "launch": "tx_cal_clk",
+        "capture": "tx_cal_clk",
+        "slack_ns": 0.41
+      },
+      {
+        "launch": "vid_clk_dvi2",
+        "capture": "vid_clk_dvi2",
+        "slack_ns": 0.26
+      },
+      {
+        "launch": "vid_clk_dvi2",
+        "capture": "hdmi_tx_slow_clk",
+        "slack_ns": 4.05
+      },
+      {
+        "launch": "hdmi_tx_slow_clk",
+        "capture": "vid_clk_dvi2",
+        "slack_ns": 2.233
+      },
+      {
+        "launch": "hdmi_tx_slow_clk",
+        "capture": "hdmi_tx_slow_clk",
+        "slack_ns": 5.142
+      },
+      {
+        "launch": "core_clk",
+        "capture": "tx_cal_clk_90edge",
+        "slack_ns": 0.418
+      },
+      {
+        "launch": "core_clk",
+        "capture": "core_clk",
+        "slack_ns": 2.544
+      },
+      {
+        "launch": "core_clk",
+        "capture": "i_cam_ck_CLKOUT",
+        "slack_ns": 8.848
+      },
+      {
+        "launch": "i_mipi_rx_pclk",
+        "capture": "i_mipi_rx_pclk",
+        "slack_ns": 13.652
+      },
+      {
+        "launch": "i_mipi_rx_pclk",
+        "capture": "i_cam_ck_CLKOUT",
+        "slack_ns": 8.233
+      },
+      {
+        "launch": "i_cam_ck_CLKOUT",
+        "capture": "i_mipi_rx_pclk",
+        "slack_ns": 8.251
+      },
+      {
+        "launch": "i_cam_ck_CLKOUT",
+        "capture": "i_cam_ck_CLKOUT",
+        "slack_ns": 4.636
+      }
+    ],
+    "Hold (Min)": [
+      {
+        "launch": "tx_cal_clk_90edge",
+        "capture": "tx_cal_clk_90edge",
+        "slack_ns": 0.097
+      },
+      {
+        "launch": "tx_cal_clk_90edge",
+        "capture": "tx_cal_clk",
+        "slack_ns": 0.621
+      },
+      {
+        "launch": "tx_cal_clk_90edge",
+        "capture": "core_clk",
+        "slack_ns": 0.08
+      },
+      {
+        "launch": "sdram_clk",
+        "capture": "tx_cal_clk_90edge",
+        "slack_ns": 0.507
+      },
+      {
+        "launch": "sdram_clk",
+        "capture": "sdram_clk",
+        "slack_ns": 0.06
+      },
+      {
+        "launch": "rx_cal_clk",
+        "capture": "rx_cal_clk",
+        "slack_ns": 0.029
+      },
+      {
+        "launch": "tx_cal_clk",
+        "capture": "tx_cal_clk",
+        "slack_ns": 0.071
+      },
+      {
+        "launch": "vid_clk_dvi2",
+        "capture": "vid_clk_dvi2",
+        "slack_ns": 0.033
+      },
+      {
+        "launch": "vid_clk_dvi2",
+        "capture": "hdmi_tx_slow_clk",
+        "slack_ns": 0.613
+      },
+      {
+        "launch": "hdmi_tx_slow_clk",
+        "capture": "vid_clk_dvi2",
+        "slack_ns": 0.701
+      },
+      {
+        "launch": "hdmi_tx_slow_clk",
+        "capture": "hdmi_tx_slow_clk",
+        "slack_ns": 0.029
+      },
+      {
+        "launch": "core_clk",
+        "capture": "tx_cal_clk_90edge",
+        "slack_ns": 0.261
+      },
+      {
+        "launch": "core_clk",
+        "capture": "core_clk",
+        "slack_ns": 0.028
+      },
+      {
+        "launch": "core_clk",
+        "capture": "i_cam_ck_CLKOUT",
+        "slack_ns": 0.113
+      },
+      {
+        "launch": "i_mipi_rx_pclk",
+        "capture": "i_mipi_rx_pclk",
+        "slack_ns": 0.101
+      },
+      {
+        "launch": "i_mipi_rx_pclk",
+        "capture": "i_cam_ck_CLKOUT",
+        "slack_ns": 0.119
+      },
+      {
+        "launch": "i_cam_ck_CLKOUT",
+        "capture": "i_mipi_rx_pclk",
+        "slack_ns": 0.073
+      },
+      {
+        "launch": "i_cam_ck_CLKOUT",
+        "capture": "i_cam_ck_CLKOUT",
+        "slack_ns": 0.026
+      }
+    ]
+  },
+  "resources": {
+    "XLR": {
+      "used": 59415,
+      "total": 60800
+    },
+    "RAM": {
+      "used": 202,
+      "total": 256
+    },
+    "DSP": {
+      "used": 147,
+      "total": 160
+    }
+  }
+}

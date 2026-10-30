@@ -49,7 +49,7 @@
     <stringAttribute key="org.eclipse.cdt.dsf.gdb.DEBUG_NAME" value="${eclipse_home}/../toolchain/bin/riscv-none-elf-gdb.exe"/>
     <booleanAttribute key="org.eclipse.cdt.dsf.gdb.UPDATE_THREADLIST_ON_SUSPEND" value="false"/>
     <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="0"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="G:\FPGAtest\hw\rowpipe\board_day\illum_20261021\soc_video_app_cap8_ae_crop_goal128_vts2500_max4989.elf"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="build/soc_video_app.elf"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="soc_video_app"/>
     <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value=""/>

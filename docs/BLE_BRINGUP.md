@@ -1,3 +1,5 @@
+> 2026-10-30 外设合并更新：以下历史产物哈希仅用于旧版记录；当前接线/命令请以 `QSE_MAINLINE_MERGE.md` 为准。KEY0=GPIOL_11，KEY1=GPIOL_09；原 GPIOR_22 控制已移除；快照仅 320×240。
+
 # BLE 图传上板 Bring-up（2026-10-29 定稿）
 
 > 适用产物：位流 `ti60f225_oob.bit` md5 `8ed79a95…`（AE 修复版）
@@ -13,7 +15,8 @@
 | BLE RX（模块→FPGA） | `system_uart_0_io_rxd` | **GPIOL_06** (C3) | input，weak pullup |
 | BLE TX（FPGA→模块） | `system_uart_0_io_txd` | **GPIOR_13** (A12) | output |
 | 旋钮 SW1/SW2 | `io_sw1/io_sw2` | GPIOL_04 / GPIOL_10 | input |
-| 面板按键 | `panel_key` | GPIOR_22 | input |
+| KEY0（FPS 开关） | `io_key0` | GPIOL_11 | input，高有效，弱下拉 |
+| KEY1（视图切换） | `io_key1` | GPIOL_09 | input，高有效，弱下拉 |
 
 - 模块：**JDY-3x**（BLE 串口透传，服务 FFE0/FFE1），3.3 V，**128000 8N1**。
 - **TX/RX 必须交叉**：FPGA TX(GPIOR_13) → 模块 RX；模块 TX → FPGA RX(GPIOL_06)。
@@ -39,9 +42,9 @@ python -m http.server 8000 --bind 127.0.0.1 --directory tools/ble_web
 
 ## 3. 标准验收流程
 
-1. 连上后先发 `STATE`，应回三行：`KNOB,<0..3>` / `BANK,<k>,<名>` / `RATE,<B/s>`。
-2. 发 `SNAP,160,50`（约 2–4 秒）：
-   - 回包 `IMG,160,120,<bytes>,<crc32>,<packets>`，crc32 必须对；
+1. 连上后先发 `STATE`，应回六行：KNOB / SLOT / BANK / OSD / VIEW / RATE。
+2. 发 `SNAP,320,50`（用时取决于 JPEG 大小和 RATE）：
+   - 回包 `IMG,320,240,<bytes>,<crc32>,<packets>`，crc32 必须对；
    - 最后必须收到 `IMG,END`；
    - 判图两条硬标准：**灰阶/纯色区 R=G=B**；**不应出现每 128 灰阶跳一档的色带**。
 3. 通过后再发 `SNAP,320,60` 看全图。

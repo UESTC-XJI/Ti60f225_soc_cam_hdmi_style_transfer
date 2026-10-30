@@ -1,0 +1,2 @@
+PASS QSE APB keys/UI/invalid writes; B knob bits preserved; FPS frame-boundary enable and pixel/timing bypass
+tests/qse_mainline_ui_tb.sv:38: $finish called at 291000 (1ps)

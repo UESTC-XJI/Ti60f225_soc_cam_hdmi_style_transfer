@@ -9,6 +9,8 @@
 #define VIDEO_TONE_SHADOW 0x04cu
 #define VIDEO_CFG_APPLY 0x050u
 #define VIDEO_CFG_STATUS 0x054u
+#define VIDEO_UI_CONTROL 0x130u /* bit0 FPS on, bit1 compare; default both on */
+#define VIDEO_UI_KEYS 0x134u    /* bit0 KEY0, bit1 KEY1; active-high */
 #define VIDEO_CAP_ACTIVE_SEQ 0x058u
 #define VIDEO_DISP_ACTIVE_SEQ 0x05cu
 #define VIDEO_R_ACTIVE 0x060u

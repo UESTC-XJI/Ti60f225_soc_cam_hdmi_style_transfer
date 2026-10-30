@@ -186,8 +186,8 @@ module ti60f225_oob_top #(
 
        //LED
        output [`CFG_BITS_8-1:0] led,
-       // Board key (active-low, GPIOR_22): toggles side-by-side <-> full-screen.
-       input  wire panel_key,
+       // QSE keys: active-high, weak pulldown; firmware debounces for 20 ms.
+       input wire io_key0, io_key1,
        // QSE 旋钮两档输入（2026-10-28，接法同 10-26：SW1=GPIOL_04 / SW2=GPIOL_10）
        input  wire io_sw1, io_sw2,
 
@@ -587,6 +587,7 @@ assign io_cam_sda_OUT = soc_i2c_sda_out;
 assign io_cam_scl_OE = ~soc_i2c_scl_out;
 assign io_cam_sda_OE = ~soc_i2c_sda_out;
 wire [31:0] soc_axi_error_count;
+wire [1:0] video_ui_control;
 wire osd_apb_enable; wire [11:0] osd_apb_x,osd_apb_y; wire [23:0] osd_apb_color;
 wire osd_apb_char_we,osd_apb_char_page,osd_apb_commit_toggle,osd_apb_commit_page; wire [6:0] osd_apb_char_addr; wire [7:0] osd_apb_char_data;
 wire osd_db_ack,osd_db_active,osd_db_busy,osd_video_ready;
@@ -625,7 +626,7 @@ assign soc_apb_pready=style_select ? style_pready:video_pready;
 assign soc_apb_pslverr=style_select ? style_pslverr:video_pslverr;
 style_video_system style_demo(
   .clk(core_clk),.cnn_clk(vid_clk_dvi2),.pix_clk(hdmi_tx_slow_clk),.rst_n(status_reset_n&&!soc_system_reset),
-  .key_panel(panel_key),
+  .compare_enable(video_ui_control[1]),
   .rgb_vs(rgb_vs),.rgb_de(rgb_de),.rgb_data(rgb_datax2),
   .psel(soc_apb_psel&&style_select),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr[7:0]),.pwdata(soc_apb_pwdata),
   .prdata(style_prdata),.pready(style_pready),.pslverr(style_pslverr),.irq(style_irq),
@@ -644,6 +645,10 @@ always @(posedge core_clk or negedge status_reset_n)
   if(!status_reset_n) begin sw_meta<=2'b11; sw_sync_q<=2'b11; end
   else begin sw_meta<={io_sw2,io_sw1}; sw_sync_q<=sw_meta; end
 wire sw1_sync=sw_sync_q[0], sw2_sync=sw_sync_q[1];
+(* async_reg = "true" *) reg [1:0] key_meta, key_sync;
+always @(posedge core_clk or negedge status_reset_n)
+  if(!status_reset_n) begin key_meta<=2'b00; key_sync<=2'b00; end
+  else begin key_meta<={io_key1,io_key0}; key_sync<=key_meta; end
 
 soc_video_ddr_integration soc_video_inst(
   .clk(core_clk),.rst_n(barrier_sys_reset_n),.allow_access(barrier_allow_sys),.video_read_urgent(style_read_urgent),
@@ -671,7 +676,7 @@ always @(posedge i_mipi_rx_pclk or negedge csi_reset_n)
   else video_csi_sticky<=video_csi_sticky|{mdebug_receive_error,mdebug_frame_vc0_error,
     mdebug_line_vc0_error,mdebug_undersize_pkt_error,mdebug_ecc_2bit_error,mdebug_ecc_1bit_error,mdebug_crc_error};
 video_apb_ctrl osd_apb(
-  .knob_in({sw2_sync,sw1_sync}),
+  .knob_in({sw2_sync,sw1_sync}),.keys_in(key_sync),.ui_control(video_ui_control),
   .capture_clk(vid_clk_dvi2),.display_clk(hdmi_tx_slow_clk),
   .raw_vs(capture_vs),.raw_de(capture_de),.raw_data(capture_raw),
   .rgb_vs(rgb_vs),.rgb_de(rgb_de),.rgb_data(rgb_datax2),.display_vs(ch0_vs),
@@ -937,7 +942,7 @@ always @(posedge hdmi_tx_slow_clk or negedge display_reset_n) begin
   end
 end
 fps_overlay u_fps_overlay(
-  .clk(hdmi_tx_slow_clk), .rst_n(display_reset_n),
+  .clk(hdmi_tx_slow_clk), .rst_n(display_reset_n),.i_enable(video_ui_control[0]),
   .i_vs(lift_vs), .i_hs(lift_hs), .i_de(lift_de),
   .i_r(lift_rdata), .i_g(lift_gdata), .i_b(lift_bdata),
   .i_fps(style_fps_disp),

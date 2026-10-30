@@ -8,3 +8,6 @@
 *.png binary
 *.jpg binary
 *.mem binary
+
+# Preserve released files byte-for-byte for manifest verification.
+deliverable/** -text -whitespace

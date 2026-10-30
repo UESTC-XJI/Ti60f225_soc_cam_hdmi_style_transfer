@@ -13,7 +13,7 @@ GCC = TOOLCHAIN / ('riscv-none-elf-gcc.exe' if os.name == 'nt' else 'riscv-none-
 COMMON = ['-march=rv32im_zicsr_zifencei', '-mabi=ilp32', '-msmall-data-limit=0',
           '-ffreestanding', '-fno-builtin', '-Os', '-g3',
           '-ffunction-sections', '-fdata-sections',
-          '-DEFX_SAPPHIRE_BSP', '-Isoftware/bsp/EfxSapphireSoc/include',
+          '-DEFX_SAPPHIRE_BSP', '-DBLE_SILENT_UART', '-Isoftware/bsp/EfxSapphireSoc/include',
           '-Isoftware/bsp/driver']
 
 def run(exe, *args):
@@ -28,7 +28,8 @@ def main():
     OUT.mkdir(exist_ok=True)
     objects = []
     for source in ['start.S', 'main.c', 'soc_video_driver.c', 'video_ctrl.c', 'video_stats.c',
-                   'camera_ae.c', 'camera_awb.c', 'camera_3a.c', 'style_driver.c']:
+                   'camera_ae.c', 'camera_awb.c', 'camera_3a.c', 'style_driver.c',
+                   'qse_ble.c', 'qse_imgtx.c', 'qse_jpeg.c']:
         obj = OUT / (Path(source).stem + '.o')
         run(GCC, *COMMON, '-c', APP / source, '-o', obj)
         objects.append(obj)
