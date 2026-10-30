@@ -64,15 +64,15 @@ class Board:
   self.drain();self.tx.clear();self.rx.extend((s+'\n').encode());self.poll();self.drain();return self.tx.decode('ascii')
 
 def main():
- b=Board();b.call('qse_ble_init',0,0);assert b.ui==3 and b.uart[8]==96 and b.word('qse_ble_rate')==1500
+ b=Board();b.call('qse_ble_init',0,0);assert b.ui==5 and b.uart[8]==96 and b.word('qse_ble_rate')==1500
  # A 19 ms press is rejected; 20 ms accepted; a held key never repeats.
- b.keys=1;b.poll();b.poll(19);assert b.ui==3;b.keys=0;b.poll();b.poll(25);assert b.ui==3
- b.keys=1;b.poll();b.poll(20);assert b.ui==2
- b.poll(100);assert b.ui==2
- b.keys=0;b.poll();b.poll(20);b.keys=1;b.poll();b.poll(20);assert b.ui==3
- b.keys=0;b.poll();b.poll(20);b.keys=2;b.poll();b.poll(20);assert b.ui==1
+ b.keys=1;b.poll();b.poll(19);assert b.ui==5;b.keys=0;b.poll();b.poll(25);assert b.ui==5
+ b.keys=1;b.poll();b.poll(20);assert b.ui==4
+ b.poll(100);assert b.ui==4
+ b.keys=0;b.poll();b.poll(20);b.keys=1;b.poll();b.poll(20);assert b.ui==5
+ b.keys=0;b.poll();b.poll(20);b.keys=2;b.poll();b.poll(20);assert b.ui==3
  b.keys=0;b.poll();b.poll(20)
- b.keys=3;b.poll();b.poll(20);assert b.ui==2
+ b.keys=3;b.poll();b.poll(20);assert b.ui==0
  b.keys=0;b.poll();b.poll(20)
  assert 'OSD,1' in b.command('OSD,1')
  assert 'VIEW,1' in b.command('VIEW,1') and b.ui==3
@@ -85,9 +85,15 @@ def main():
  assert b.command('SLOT,5')=='SLOT,5\n' and b.call('style_active_bank')==4
  assert b.command('hello')=='hello\n'
  assert 'RATE,200' in b.command('RATE,0');assert 'RATE,12800' in b.command('RATE,999999');b.command('RATE,1500')
- for invalid in ['VIEW,2','OSD,2','KNOB,4','SLOT,-1','SLOT,','V','OS','KN']:
+ for invalid in ['VIEW,3','OSD,2','KNOB,4','SLOT,-1','SLOT,','V','OS','KN']:
   before=b.ui;assert b.command(invalid)==invalid+'\n' and b.ui==before
  for w in [160,640]:assert 'IMG,ERR,ARG' in b.command(f'SNAP,{w}')
+ assert 'VIEW,2' in b.command('VIEW,2') and b.ui==5
+ b.command('OSD,0');assert b.ui==4
+ b.command('SLOT,0');assert b.ui==0
+ b.command('VIEW,2');b.knob=2;b.call('style_knob_apply',2);assert b.ui==4 # reset/apply does not override boot view
+ b.call('qse_ble_activate_style');assert b.ui==0
+ b.command('OSD,1')
  # Physical knob keeps B's raw mapping and takes over after a remote selection.
  for raw,bank in [(1,0),(0,4),(2,3),(3,3)]:
   b.knob=raw;b.call('style_knob_apply',raw)
@@ -127,3 +133,4 @@ def main():
  (out/'validation.json').write_text(json.dumps({'keys':'PASS','commands':'PASS','knob':'PASS','snapshot':'PASS','size':[320,240],'jpeg_bytes':size,'crc32':f'{zlib.crc32(jpg):08x}'}))
  print('PASS RV32 native 320x240 JPEG, bias correction, ACK-window UART transfer:',size,'bytes')
 if __name__=='__main__':main()
+

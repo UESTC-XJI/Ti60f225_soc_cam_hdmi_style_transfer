@@ -12,6 +12,7 @@
         <efx:design_file name="rtl/soc_integration/osd_apb_regs.sv" version="default" library="default" />
         <efx:design_file name="rtl/soc_integration/osd_text_double_buffer.sv" version="default" library="default" />
         <efx:design_file name="rtl/soc_integration/video_status_counters.sv" version="default" library="default" />
+        <efx:design_file name="rtl/soc_integration/boot_splash.sv" version="default" library="default" />
         <efx:design_file name="rtl/soc_integration/ddr_startup_barrier.sv" version="default" library="default" />
         <efx:design_file name="rtl/soc_integration/soc_video_ddr_integration.sv" version="default" library="default" />
         <efx:design_file name="soc/efx_sapphire_soc/soc/soc.v" version="default" library="default" />

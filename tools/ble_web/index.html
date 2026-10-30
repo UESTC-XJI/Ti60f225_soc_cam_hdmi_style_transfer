@@ -301,7 +301,7 @@ const rx = new BleProto.Receiver({
       $('bankSelect').value = m[1];
     }
     else if ((m = /^OSD,([01])$/.exec(s))) $('osd').textContent = `OSD ${m[1] === '1' ? '开' : '关'}`;
-    else if ((m = /^VIEW,([01])$/.exec(s))) $('view').textContent = m[1] === '1' ? '视图 对比' : '视图 单风格';
+    else if ((m = /^VIEW,([012])$/.exec(s))) $('view').textContent = m[1] === '1' ? '视图 对比' : m[1] === '2' ? '视图 原画' : '视图 单风格';
     else if ((m = /^RATE,(\d+)$/.exec(s))) { const o = [...$('rate').options].find(x => x.value === m[1]); if (o) $('rate').value = m[1]; }
   },
   progress: im => {

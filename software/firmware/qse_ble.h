@@ -8,7 +8,7 @@
  * The physical knob remains owned by main.c, with B's raw {SW2,SW1} mapping:
  *   0=rainbow bank4, 1=starry_old bank0, 2=red_v3_dc bank3, 3=hold.
  * Commands (newline, 50 ms idle gap, or 64 bytes ends a line):
- *   VIEW | VIEW,0|1       toggle/set compare (1) vs single style (0)
+ *   VIEW | VIEW,0|1|2       toggle/set compare (1), single style (0), original single (2)
  *   OSD  | OSD,0|1        toggle/set FPS overlay
  *   KNOB,0..3             B's raw knob mapping; next physical change takes over
  *   SLOT | SLOT,0..4      query/select B's actual weight bank
@@ -46,3 +46,6 @@ uint32_t qse_ble_tx_space(void);
 uint32_t qse_ble_tx_pending(void);        /* queued bytes not yet written */
 int qse_ble_tx_put(const uint8_t *data, uint32_t len);  /* all or nothing */
 void qse_ble_send_line(const char *s);                  /* appends "\r\n" */
+
+/* Leave initial original view when a physical/remote style is selected. */
+void qse_ble_activate_style(void);

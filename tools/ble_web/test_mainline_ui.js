@@ -20,6 +20,7 @@ for(const [n,label] of ['G3 彩虹','G1 星空','G2 红天','G4 保持'].entries
 }
 line('BANK,4,rainbow');assert.equal(element('bank').textContent,'BANK 4 · rainbow');assert.equal(element('bankSelect').value,'4');
 line('SLOT,4');assert.equal(element('slot').textContent,'SLOT 4');
+line('VIEW,2');assert.equal(element('view').textContent,'视图 原画');
 line('OSD,0');assert.equal(element('osd').textContent,'OSD 关');line('VIEW,1');assert.equal(element('view').textContent,'视图 对比');
 vm.runInContext('var sent=[];sendLine=s=>sent.push(s)',context);element('bankSelect').value='2';element('selectBank').onclick();
 assert.equal(vm.runInContext('sent[0]',context),'SLOT,2');

@@ -4,11 +4,13 @@
 #include "camera_3a.h"
 #include "style_driver.h"
 #include "qse_ble.h"
+#include "video_regs.h"
 
 /* Inspect these in the IDE if a trap stops the application. */
 volatile uint32_t firmware_trap_cause, firmware_trap_pc, firmware_trap_value;
 volatile uint32_t app_ddr_errors, app_osd_errors, app_camera_errors;
 volatile uint32_t app_metrics_updates;
+volatile uint32_t app_boot_stage,app_boot_errors;
 volatile uint32_t app_hist_enable,app_hist_updates,app_hist_errors;
 video_hist_t app_hist;
 
@@ -64,8 +66,8 @@ static void style_knob_apply(uint32_t raw) {
     qse_ble_note_knob(raw);
 }
 
-/* 上电就按旋钮的实际档位上电（旋钮在 G2 就开机即 red_sky），
- * 而不是"等第一次拨动才生效"。G4 保持当前 active，G3 选择彩虹 bank4。 */
+/* 上电按实际旋钮准备风格权重，但保持原画启动显示。
+ * 后续稳定档位变更才进入风格显示；G4 保持当前 active。 */
 static void style_knob_reset(uint64_t now) {
     knob_raw = (*(volatile uint32_t *)0xF8100054u >> 2) & 3u;
     knob_stable = knob_raw; knob_since = now;
@@ -78,10 +80,24 @@ static void style_knob_service(uint64_t now) {
     if (raw == knob_stable) return;
     if (now - knob_since < BSP_CLINT_HZ / 50u) return;     /* 20 ms */
     knob_stable = raw;
+    qse_ble_activate_style();
     style_knob_apply(knob_stable);
 }
 
 int main(void) {
+    /* Replay once for every firmware start, including IDE reloads. Hardware
+     * emits stable HDMI while camera/DDR application initialization is deferred. */
+    app_boot_stage=1;
+    video_write(VIDEO_UI_CONTROL,5u);
+    video_write(VIDEO_BOOT_CONTROL,1u);
+    uint64_t boot_deadline=clint_getTime(BSP_CLINT)+5ull*BSP_CLINT_HZ;
+    while(!(video_read(VIDEO_BOOT_STATUS)&1u)) {
+        if(clint_getTime(BSP_CLINT)>boot_deadline) {++app_boot_errors;for(;;){}}
+    }
+    while(!(video_read(VIDEO_BOOT_STATUS)&2u)) {
+        if(clint_getTime(BSP_CLINT)>boot_deadline) {++app_boot_errors;for(;;){}}
+    }
+    app_boot_stage=2;
     osd_set_video_ready(0);  /* Also return to bars after a debugger reload. */
     bsp_init();
     if (app_ddr_test()) {
@@ -109,6 +125,10 @@ int main(void) {
         (void)osd_write_string("MONET VGA");
     }
     if (camera_rc == 0) osd_set_video_ready(1);
+    /* Splash stays black until an actual completed capture/inference slot is
+     * available. RTL then switches at live VS; camera retries remain possible. */
+    video_write(VIDEO_BOOT_CONTROL,2u);
+    app_boot_stage=3;
     uint64_t last_update = clint_getTime(BSP_CLINT);
     if(!camera_rc) {
         (void)camera_3a_init(&app_3a,last_update);

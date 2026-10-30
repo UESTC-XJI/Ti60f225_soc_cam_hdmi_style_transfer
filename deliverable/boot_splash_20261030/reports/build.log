@@ -1,0 +1,10 @@
+WARNING: cannot find correct IV value
+Creating C:\Users\Goodmann\Downloads\Ti60f225_soc_cam_hdmi_style_transfer-integrated_20261029\work/boot_splash_tools
+Running: efx_run_map.py ti60f225_oob --family Titanium --device Ti60F225 --project_xml C:\Users\Goodmann\Downloads\Ti60f225_soc_cam_hdmi_style_transfer-integrated_20261029\ti60f225_cam_hdmi.xml --output_dir work/boot_splash_fpga --work_dir work/boot_splash_tools --opt root=ti60f225_oob_top --opt veri_options=verilog_mode=sv_09,vhdl_mode=vhdl_2008 work-dir=work/boot_splash_tools write_efx_verilog=on
+   map :	PASS 
+Running: efx_run_pt_unified.py ti60f225_oob Titanium Ti60F225 --output_dir work/boot_splash_fpga --timing_model I3 --project_xml ti60f225_cam_hdmi.xml --work_dir work/boot_splash_tools
+   interface :	PASS 
+Running: efx_run_pnr.py ti60f225_oob --prj C:\Users\Goodmann\Downloads\Ti60f225_soc_cam_hdmi_style_transfer-integrated_20261029\ti60f225_cam_hdmi.xml --family Titanium --device Ti60F225 --timing_model I3 --output_dir work/boot_splash_fpga --work_dir work/boot_splash_tools --opt sdc_file=ti60f225_oob.sdc
+   pnr :	PASS 
+Running: efx_run_pgm.py ti60f225_oob --family Titanium --device Ti60F225 --output_dir work/boot_splash_fpga --work_dir work/boot_splash_tools --opt mode=active width=1 enable_roms=on spi_low_power_mode=on io_weak_pullup=on oscillator_clock_divider=DIV8 enable_crc_check=on bitstream_compression=on active_capture_clk_edge=posedge release_tri_then_reset=on enable_external_master_clock=off jtag_usercode=0xFFFFFFFF
+   pgm :	PASS 

@@ -1,5 +1,7 @@
 # Ti60F225 实时 AI 风格化视频（SC431HAI → CNN → HDMI）
 
+最新本地功能：启动图片渐入/渐出后初始化设备，首次显示原画单画面；详见 [启动流程说明](docs/BOOT_SPLASH.md)。本版图片使用 RAM 调色板查表，必须配套使用对应构建的 bit 与 ELF。
+
 ## master 主线更新（2026-10-30）
 
 以 B / `integrated_20261029` 为主线，合入 KEY0/KEY1（高电平按下、弱下拉、20 ms 消抖）、VIEW/OSD/STATE 控制及网页 BANK 解析。保留 B 的旋钮映射、UART0 128000 8N1、默认 1500 B/s；快照仅提供原生 **320×240**，SLOT 使用真实 BANK 0～4。

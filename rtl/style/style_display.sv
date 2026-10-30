@@ -26,6 +26,7 @@ module style_display #(parameter bit BUFFERED=1'b1)(
   // Two versions of it are resynchronised below: one for the pix_clk pixel path
   // and one for the clk row-fetch state machine.
   input wire single_panel,
+  input tri0 original_single,
   output wire [31:0] araddr,output wire [7:0] arlen,output wire arvalid,input wire arready,
   input wire [127:0] rdata,input wire [1:0] rresp,input wire rlast,rvalid,output wire rready
 );
@@ -38,6 +39,18 @@ module style_display #(parameter bit BUFFERED=1'b1)(
   //   若在帧中间切换，FIFO 里旧几何的包会和新 expect_row 错位：实测过渡帧 60% 像素黑/错
   //   （tb_disp_toggle：uf=554900）。帧首锁存后，切模式与 epoch 翻转同拍，旧包统一按
   //   「epoch 不符」清掉（不依赖行号比较，不会卡队头），切模式那一帧起就是干净画面。
+  (* async_reg="true" *) reg raw_meta,raw_sync,rawc_meta,rawc_sync;
+  reg raw_lat;
+  always @(posedge pix_clk or negedge rst_n)begin
+    if(!rst_n)begin raw_meta<=0;raw_sync<=0;end
+    else begin raw_meta<=original_single;raw_sync<=raw_meta;end
+  end
+  always @(posedge clk or negedge rst_n)begin
+    if(!rst_n)begin rawc_meta<=0;rawc_sync<=0;end
+    else begin rawc_meta<=raw_lat;rawc_sync<=rawc_meta;end
+  end
+  wire raw_single_pix=raw_lat&&single_panel_pix;
+  wire raw_single_clk=rawc_sync&&single_panel_clk;
   reg sp_lat;
   wire single_panel_pix=sp_lat;
   // The row-fetch state machine below runs in the clk domain, so it needs its
@@ -67,7 +80,7 @@ module style_display #(parameter bit BUFFERED=1'b1)(
   wire active=v>=25&&v<745&&h>=260&&h<1540;
   //   单画面：源行 = ((显示行-25)>>2)+30；对比：源行 = 显示行-145（1:1）
   wire [8:0] expect_row=single_panel_pix
-        ? ((v>=10'd25 ? (v-10'd25) : 10'd0)/3)
+        ? (raw_single_pix ? (((v>=10'd25 ? (v-10'd25) : 10'd0)*2)/3) : ((v>=10'd25 ? (v-10'd25) : 10'd0)/3))
         : (v>=10'd145 ? (v-10'd145) : 9'd0);
   // Column index within the picture.  Both modes map one column to one source
   // pixel, they only differ in where the picture starts, so the FIFO is
@@ -79,7 +92,7 @@ module style_display #(parameter bit BUFFERED=1'b1)(
   wire request=h==0&&dv2&&(single_panel_pix ? (v>=10'd24&&v<10'd744) : (v>=10'd144&&v<10'd624));
   wire request_ready,req_valid,req_ready;wire [19:0] req;
   wire [8:0] request_row=single_panel_pix
-        ? ((v>=10'd24 ? (v-10'd24) : 10'd0)/3)
+        ? (raw_single_pix ? (((v>=10'd24 ? (v-10'd24) : 10'd0)*2)/3) : ((v>=10'd24 ? (v-10'd24) : 10'd0)/3))
         : (v>=10'd144 ? (v-10'd144) : 9'd0);
   style_async_fifo #(.WIDTH(20)) requests(.reset_n(rst_n),.wclk(pix_clk),.rclk(clk),
     .in_valid(request),.in_ready(request_ready),.in_data({epoch,slot2,request_row}),
@@ -152,7 +165,8 @@ module style_display #(parameter bit BUFFERED=1'b1)(
   wire pixel_in_ready;
   wire style_dup=right_side;
   //   ①a：单画面 4×（dup_max=3），对比模式风格侧 2×（dup_max=1），原画 1×（0）。
-  wire [1:0] dup_max=(style_dup&&single_panel_clk)?2'd2:(style_dup?2'd1:2'd0);
+  reg raw_odd;
+  wire [1:0] dup_max=raw_single_clk ? (raw_odd?2'd0:2'd1) : (style_dup&&single_panel_clk)?2'd2:(style_dup?2'd1:2'd0);
   wire pix_we=(dup_cnt!=2'd0)?1'b1:rd_valid;
   wire [31:0] pix_rgb=(dup_cnt!=2'd0)?dup_rgb:rgb;
   assign rd_ready=pixel_in_ready&&(dup_cnt==2'd0);
@@ -171,19 +185,20 @@ module style_display #(parameter bit BUFFERED=1'b1)(
     (v>=img_y0 && (packet[51:43]<expect_row || (packet[51:43]==expect_row && x_passed))));
   assign pixel_ready=obsolete||(image&&match);
   always @(posedge pix_clk or negedge rst_n)begin
-    if(!rst_n)begin h<=0;v<=0;epoch<=0;epoch_gray<=0;slot1<=0;slot2<=0;dv1<=0;dv2<=0;pixel<=0;hs<=0;vs<=0;de<=0;underflow<=0;sp_lat<=0;end
+    if(!rst_n)begin h<=0;v<=0;epoch<=0;epoch_gray<=0;slot1<=0;slot2<=0;dv1<=0;dv2<=0;pixel<=0;hs<=0;vs<=0;de<=0;underflow<=0;sp_lat<=0;raw_lat<=1;end
     else begin
       slot1<=display_slot;slot2<=slot1;dv1<=display_valid;dv2<=dv1;
       if(h==1649)begin h<=0;if(v==749)v<=0;else v<=v+1'b1;end else h<=h+1'b1;
-      if(h==0&&v==0)begin epoch<=epoch+1'b1;epoch_gray<=((epoch+1'b1)>>1)^(epoch+1'b1);sp_lat<=sp_sync;end
+      if(h==0&&v==0)begin epoch<=epoch+1'b1;epoch_gray<=((epoch+1'b1)>>1)^(epoch+1'b1);sp_lat<=sp_sync;raw_lat<=raw_sync;end
       hs<=h<40;vs<=v<5;de<=active;pixel<=image&&match ? packet[31:0]:0;
       underflow<=(image&&dv2&&!match)||(request&&!request_ready);
     end
   end
   always @(posedge clk or negedge rst_n)begin
-    if(!rst_n)begin state<=IDLE;rd_start<=0;rd_address<=0;row_epoch<=0;row_slot<=0;row_number<=0;x<=0;right_side<=0;dma_errors<=0;row_age<=0;rd_pixels_sel<=PIX_W_FULL;dup_cnt<=0;dup_rgb<=0;end
+    if(!rst_n)begin state<=IDLE;rd_start<=0;rd_address<=0;row_epoch<=0;row_slot<=0;row_number<=0;x<=0;right_side<=0;dma_errors<=0;row_age<=0;rd_pixels_sel<=PIX_W_FULL;dup_cnt<=0;dup_rgb<=0;raw_odd<=0;end
     else begin
       rd_start<=0;
+      if(rd_valid&&rd_ready)raw_odd<=!raw_odd;
       if(state==IDLE)row_age<=0;
       else if(row_age!=4095)row_age<=row_age+1'b1;
       // A-4：x 是「像素 FIFO 写第几条」，每条 +1；风格侧一个源像素写两条 ⇒ x += 2/像素
@@ -194,23 +209,23 @@ module style_display #(parameter bit BUFFERED=1'b1)(
       end
       case(state)
         IDLE:if(req_valid&&req_ready&&req[19:12]==current_epoch)begin
-          row_epoch<=req[19:12];row_slot<=req[11:9];row_number<=req[8:0];x<=0;
+          row_epoch<=req[19:12];row_slot<=req[11:9];row_number<=req[8:0];x<=0;raw_odd<=0;
           // Single panel fetches the stylised buffer straight away and skips
           // the second fetch, so a display row costs one DDR read instead of
           // two.  Two-panel mode keeps its original order: original frame first,
           // stylised frame second.
-          right_side<=single_panel_clk;
+          right_side<=single_panel_clk&&!raw_single_clk;
           // A-4：风格帧 = 320×240 / 跨距 1280，源行 = 显示行>>1（垂直 2× 最近邻）
-          rd_pixels_sel<=single_panel_clk ? PIX_W_HALF : PIX_W_FULL;
+          rd_pixels_sel<=single_panel_clk&&!raw_single_clk ? PIX_W_HALF : PIX_W_FULL;
           //   ①a：单画面的 req[8:0] 已经是源行（30..209），不再 >>1
-          rd_address<=single_panel_clk ? (raw_base(req[11:9])+32'h00800000+req[8:0]*STRIDE_HALF)
+          rd_address<=single_panel_clk&&!raw_single_clk ? (raw_base(req[11:9])+32'h00800000+req[8:0]*STRIDE_HALF)
                                        : (raw_base(req[11:9])+req[8:0]*STRIDE_FULL);
           state<=START;
         end
         START:begin rd_start<=1;state<=WAIT;end
         WAIT:if(rd_done)begin
           if(rd_error)dma_errors<=dma_errors+1'b1;
-          if(!right_side)begin right_side<=1;rd_pixels_sel<=PIX_W_HALF;
+          if(!right_side&&!single_panel_clk)begin right_side<=1;rd_pixels_sel<=PIX_W_HALF;
             rd_address<=raw_base(row_slot)+32'h00800000+(row_number>>1)*STRIDE_HALF;state<=START;end
           else state<=IDLE;
         end

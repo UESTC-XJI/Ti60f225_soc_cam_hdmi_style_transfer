@@ -1,0 +1,13 @@
+FRAME 1 mode=0 uf=0 bad=0
+RAW -> COMPARE mid-frame
+FRAME 2 mode=2 uf=0 bad=0
+FRAME 3 mode=0 uf=0 bad=0
+COMPARE -> STYLE mid-frame
+FRAME 4 mode=0 uf=0 bad=0
+FRAME 5 mode=1 uf=0 bad=0
+STYLE -> RAW mid-frame
+FRAME 6 mode=1 uf=0 bad=0
+FRAME 7 mode=2 uf=0 bad=0
+FRAME 8 mode=2 uf=0 bad=0
+DONE
+tests/tb_disp_boot_modes.sv:77: $finish called at 133333234670 (1ps)

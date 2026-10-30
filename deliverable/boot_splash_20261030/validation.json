@@ -1,0 +1,44 @@
+{
+  "fpga_stages": {
+    "map": "PASS",
+    "interface": "PASS",
+    "pnr": "PASS",
+    "pgm": "PASS"
+  },
+  "resources": {
+    "XLR": 60408,
+    "XLR_total": 60800,
+    "RAM": 250,
+    "RAM_total": 256,
+    "DSP": 147,
+    "DSP_total": 160,
+    "splash_only_XLR": 256,
+    "splash_only_RAM": 48,
+    "splash_only_DSP": 0
+  },
+  "timing": {
+    "minimum_setup_ns": 0.098,
+    "minimum_hold_ns": 0.028
+  },
+  "tests": {
+    "RV32 main startup order with modeled driver boundaries": "PASS",
+    "RV32 keys/BANK/STATE/JPEG/ACK": "PASS",
+    "browser controls and protocol replay": "PASS",
+    "APB keys/UI/boot handshake/FPS": "PASS",
+    "splash state transitions": "PASS",
+    "720p splash all pixels": "PASS",
+    "8 frames raw/compare/style display transitions": "PASS",
+    "IDE configuration": "PASS"
+  },
+  "board_programmed": false,
+  "board_validation": "pending",
+  "image_ROM": [
+    256,
+    144,
+    256
+  ],
+  "HDMI": [
+    1280,
+    720
+  ]
+}

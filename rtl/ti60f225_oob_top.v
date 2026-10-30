@@ -587,7 +587,8 @@ assign io_cam_sda_OUT = soc_i2c_sda_out;
 assign io_cam_scl_OE = ~soc_i2c_scl_out;
 assign io_cam_sda_OE = ~soc_i2c_sda_out;
 wire [31:0] soc_axi_error_count;
-wire [1:0] video_ui_control;
+wire [2:0] video_ui_control;
+wire boot_start_toggle,boot_live_arm,boot_busy,boot_done,boot_selected,style_frame_valid;
 wire osd_apb_enable; wire [11:0] osd_apb_x,osd_apb_y; wire [23:0] osd_apb_color;
 wire osd_apb_char_we,osd_apb_char_page,osd_apb_commit_toggle,osd_apb_commit_page; wire [6:0] osd_apb_char_addr; wire [7:0] osd_apb_char_data;
 wire osd_db_ack,osd_db_active,osd_db_busy,osd_video_ready;
@@ -626,7 +627,7 @@ assign soc_apb_pready=style_select ? style_pready:video_pready;
 assign soc_apb_pslverr=style_select ? style_pslverr:video_pslverr;
 style_video_system style_demo(
   .clk(core_clk),.cnn_clk(vid_clk_dvi2),.pix_clk(hdmi_tx_slow_clk),.rst_n(status_reset_n&&!soc_system_reset),
-  .compare_enable(video_ui_control[1]),
+  .compare_enable(video_ui_control[1]),.original_single(video_ui_control[2]),.frame_valid(style_frame_valid),
   .rgb_vs(rgb_vs),.rgb_de(rgb_de),.rgb_data(rgb_datax2),
   .psel(soc_apb_psel&&style_select),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr[7:0]),.pwdata(soc_apb_pwdata),
   .prdata(style_prdata),.pready(style_pready),.pslverr(style_pslverr),.irq(style_irq),
@@ -677,6 +678,7 @@ always @(posedge i_mipi_rx_pclk or negedge csi_reset_n)
     mdebug_line_vc0_error,mdebug_undersize_pkt_error,mdebug_ecc_2bit_error,mdebug_ecc_1bit_error,mdebug_crc_error};
 video_apb_ctrl osd_apb(
   .knob_in({sw2_sync,sw1_sync}),.keys_in(key_sync),.ui_control(video_ui_control),
+  .boot_status({boot_selected,boot_done,boot_busy}),.boot_start_toggle(boot_start_toggle),.boot_live_arm(boot_live_arm),
   .capture_clk(vid_clk_dvi2),.display_clk(hdmi_tx_slow_clk),
   .raw_vs(capture_vs),.raw_de(capture_de),.raw_data(capture_raw),
   .rgb_vs(rgb_vs),.rgb_de(rgb_de),.rgb_data(rgb_datax2),.display_vs(ch0_vs),
@@ -959,12 +961,15 @@ wire [7:0] bar_r,bar_g,bar_b;
 
 wire out_vs,out_hs,out_de;
 wire [7:0] out_r,out_g,out_b;
-assign out_vs=db_vs; assign out_hs=db_hs; assign out_de=db_de;
+boot_splash startup_page(
+  .clk(hdmi_tx_slow_clk),.rst_n(hdmi_output_reset_n),.start_toggle(boot_start_toggle),
+  .live_arm(boot_live_arm),.live_valid(style_frame_valid),
+  .live_hs(db_hs),.live_vs(db_vs),.live_de(db_de),.live_r(db_r),.live_g(db_g),.live_b(db_b),
+  .out_hs(out_hs),.out_vs(out_vs),.out_de(out_de),.out_r(out_r),.out_g(out_g),.out_b(out_b),
+  .busy(boot_busy),.done(boot_done),.selected(boot_selected));
 // pp_probe 已摘除（10-20）：pp 线降级为独立工程/空闲填充，不进合并图综合树。
 // 备份：rtl/ti60f225_oob_top.v.pre_pp
-assign out_r = db_r;
-assign out_g = db_g;
-assign out_b = db_b;
+
 
 
 dvi_encoder dvi_encoder_m0

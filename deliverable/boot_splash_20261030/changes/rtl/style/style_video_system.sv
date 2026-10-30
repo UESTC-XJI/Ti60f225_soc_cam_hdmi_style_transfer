@@ -1,0 +1,134 @@
+// Replaces the baseline resize/framebuffer/CVO path in the isolated demo branch.
+// The nested bridge saves full local IDs before the outer CPU/video bridge.
+module style_video_system #(parameter bit DISPLAY_BUFFER=1'b1,ADAPTIVE_READ=1'b1)(
+  input wire clk,cnn_clk,pix_clk,rst_n,
+  // Firmware owns QSE KEY1 and VIEW; display latches the mode at frame start.
+  input wire compare_enable,original_single,
+  output wire frame_valid,
+  input wire rgb_vs,rgb_de,input wire [47:0] rgb_data,
+  input wire psel,penable,pwrite,input wire [7:0] paddr,input wire [31:0] pwdata,
+  output wire [31:0] prdata,output wire pready,pslverr,irq,
+  output wire [31:0] pixel,output wire hs,vs,de,underflow,capture_fault,
+  output wire [31:0] resized_frames,
+  // Display read urgency (registered copy) exported so the OUTER CPU/video
+  // bridge can honour per-line display deadlines instead of pure round-robin.
+  // The inner bridge keeps using the raw level (see display_read_urgent_raw).
+  output wire display_read_urgent,
+  output wire [5:0] awid,arid,output wire [31:0] awaddr,araddr,output wire [7:0] awlen,arlen,
+  output wire [2:0] awsize,arsize,output wire [1:0] awburst,arburst,
+  output wire awvalid,arvalid,input wire awready,arready,
+  output wire [127:0] wdata,output wire [15:0] wstrb,output wire wlast,wvalid,input wire wready,
+  input wire [5:0] bid,rid,input wire [1:0] bresp,rresp,input wire bvalid,rvalid,rlast,output wire bready,rready,input wire [127:0] rdata
+);
+  wire crop_valid,crop_sof,crop_eof,crop_fault;wire [31:0] crop_pixel;
+  style_vga_crop crop(.clk(cnn_clk),.rst_n(rst_n),.i_vs(rgb_vs),.i_de(rgb_de),.i_rgb(rgb_data),
+    .valid(crop_valid),.sof(crop_sof),.eof(crop_eof),.pixel(crop_pixel),.fault(crop_fault),.completed_frames(resized_frames));
+  wire stream_enable;
+  (* async_reg="true" *)reg [1:0] enable_sync;reg cap_gate,cap_overflow;
+  wire cap_input_ready,cap_valid,cap_ready;wire [33:0] cap_packet;
+  wire cap_input_valid=crop_valid&&(crop_sof ? enable_sync[1]:cap_gate);
+  always @(posedge cnn_clk or negedge rst_n)begin
+    if(!rst_n)begin enable_sync<=0;cap_gate<=0;cap_overflow<=0;end
+    else begin
+      enable_sync<={enable_sync[0],stream_enable};
+      if(crop_sof&&crop_valid)cap_gate<=enable_sync[1];
+      if(crop_eof&&crop_valid)cap_gate<=0;
+      if(cap_input_valid&&!cap_input_ready)cap_overflow<=1;
+    end
+  end
+  assign capture_fault=crop_fault||cap_overflow;
+  style_async_fifo #(.WIDTH(34),.LOG_DEPTH(11)) capture_fifo(.reset_n(rst_n),.wclk(cnn_clk),.rclk(clk),
+    .in_valid(cap_input_valid),.in_ready(cap_input_ready),.in_data({crop_sof,crop_eof,crop_pixel}),
+    .out_valid(cap_valid),.out_ready(cap_ready),.out_data(cap_packet));
+  wire nn_start,nn_ready,nn_done,nn_error;wire [31:0] nn_source,nn_result,nn_cycles;
+  wire [2:0] display_slot;wire display_valid,display_frame_event,display_safe;
+  wire display_read_urgent_raw;
+  wire [31:0] captured,dropped,inferred,infer_errors,display_frame_id,display_dma_errors;
+  wire [31:0] v_awaddr,v_araddr;wire [7:0] v_awlen,v_arlen;
+  wire v_awvalid,v_awready,v_wlast,v_wvalid,v_wready,v_bvalid,v_bready,v_arvalid,v_arready,v_rvalid,v_rready,v_rlast;
+  wire [127:0] v_wdata,v_rdata;wire [15:0] v_wstrb;wire [1:0] v_bresp,v_rresp;
+  wire [7:0] unused_bid,unused_rid;
+  style_frame_store store(.clk(clk),.rst_n(rst_n),.cap_valid(cap_valid),.cap_ready(cap_ready),.cap_packet(cap_packet),
+    .stream_enable(stream_enable),.nn_ready(nn_ready),.nn_done(nn_done),.nn_error(nn_error),.nn_start(nn_start),.nn_source(nn_source),.nn_result(nn_result),
+    .display_frame_event(display_frame_event),.display_safe(display_safe),.display_slot(display_slot),.display_valid(display_valid),
+    .captured(captured),.dropped(dropped),.inferred(inferred),.infer_errors(infer_errors),.display_frame_id(display_frame_id),
+    .awaddr(v_awaddr),.awlen(v_awlen),.awvalid(v_awvalid),.awready(v_awready),.wdata(v_wdata),.wstrb(v_wstrb),.wlast(v_wlast),.wvalid(v_wvalid),.wready(v_wready),.bresp(v_bresp),.bvalid(v_bvalid),.bready(v_bready));
+  assign frame_valid=display_valid;
+  wire single_panel = !compare_enable;
+  style_display #(.BUFFERED(DISPLAY_BUFFER)) display(.clk(clk),.pix_clk(pix_clk),.rst_n(rst_n),.display_slot(display_slot),.display_valid(display_valid),.single_panel(single_panel),.original_single(original_single),
+    .display_frame_event(display_frame_event),.display_safe(display_safe),.pixel(pixel),.hs(hs),.vs(vs),.de(de),.underflow(underflow),.dma_errors(display_dma_errors),
+    .read_urgent(display_read_urgent_raw),
+    .araddr(v_araddr),.arlen(v_arlen),.arvalid(v_arvalid),.arready(v_arready),.rdata(v_rdata),.rresp(v_rresp),.rlast(v_rlast),.rvalid(v_rvalid),.rready(v_rready));
+  // Break the combinational path at the module boundary: the outer bridge folds
+  // video_read_urgent into its arready cone (axi_shared_ddr_2m.sv:49-52,64,72).
+  // A registered copy costs 1 FF and keeps that path out of style_display's
+  // FIFO comparators (read_urgent itself is combinational, style_display.sv:75).
+  reg display_read_urgent_q;
+  always @(posedge clk or negedge rst_n)
+    if(!rst_n) display_read_urgent_q<=1'b0;
+    else       display_read_urgent_q<=display_read_urgent_raw;
+  assign display_read_urgent=display_read_urgent_q;
+  wire [31:0] c_awaddr,c_araddr;wire [7:0] c_awlen,c_arlen;
+  wire c_awvalid,c_awready,c_wlast,c_wvalid,c_wready,c_bvalid,c_bready,c_arvalid,c_arready,c_rvalid,c_rready,c_rlast;
+  wire [127:0] c_wdata,c_rdata;wire [15:0] c_wstrb;wire [1:0] c_bresp,c_rresp;
+  wire [7:0] c_bid,c_rid;wire [31:0] accel_prdata;
+  style_accel accelerator(.clk(clk),.cnn_clk(cnn_clk),.rst_n(rst_n),.psel(psel),.penable(penable),.pwrite(pwrite),.paddr(paddr),.pwdata(pwdata),
+    .prdata(accel_prdata),.pready(pready),.pslverr(pslverr),.irq(irq),.stream_enable(stream_enable),
+    .auto_start(nn_start),.auto_source(nn_source),.auto_result(nn_result),.auto_ready(nn_ready),.job_done(nn_done),.job_error(nn_error),.last_cycles(nn_cycles),
+    .araddr(c_araddr),.arlen(c_arlen),.arvalid(c_arvalid),.arready(c_arready),.rdata(c_rdata),.rresp(c_rresp),.rlast(c_rlast),.rvalid(c_rvalid),.rready(c_rready),
+    .awaddr(c_awaddr),.awlen(c_awlen),.awvalid(c_awvalid),.awready(c_awready),.wdata(c_wdata),.wstrb(c_wstrb),.wlast(c_wlast),.wvalid(c_wvalid),.wready(c_wready),.bresp(c_bresp),.bvalid(c_bvalid),.bready(c_bready));
+  wire [31:0] bridge_errors;
+  // Hard display deadlines override the CNN bypass limit. CNN reads remain
+  // fair when display urgency clears; the outer CPU/video policy is unchanged.
+  axi_shared_ddr_2m #(.DDR_ID_W(6),.VIDEO_READ_PRIORITY(!ADAPTIVE_READ),.DYNAMIC_VIDEO_READ(ADAPTIVE_READ),.URGENT_OVERRIDES_FAIRNESS(1'b0),.RESERVE_URGENT_READ(1'b0)) bridge(.clk(clk),.rst_n(rst_n),.allow_access(1'b1),.video_read_urgent(display_read_urgent_raw),
+    .cpu_awid(8'h03),.cpu_awaddr(c_awaddr),.cpu_awlen(c_awlen),.cpu_awsize(3'd4),.cpu_awburst(2'b01),.cpu_awvalid(c_awvalid),.cpu_awready(c_awready),
+    .cpu_wdata(c_wdata),.cpu_wstrb(c_wstrb),.cpu_wlast(c_wlast),.cpu_wvalid(c_wvalid),.cpu_wready(c_wready),.cpu_bid(c_bid),.cpu_bresp(c_bresp),.cpu_bvalid(c_bvalid),.cpu_bready(c_bready),
+    .cpu_arid(8'h03),.cpu_araddr(c_araddr),.cpu_arlen(c_arlen),.cpu_arsize(3'd4),.cpu_arburst(2'b01),.cpu_arvalid(c_arvalid),.cpu_arready(c_arready),.cpu_rid(c_rid),.cpu_rdata(c_rdata),.cpu_rresp(c_rresp),.cpu_rlast(c_rlast),.cpu_rvalid(c_rvalid),.cpu_rready(c_rready),
+    .vid_awid(8'h01),.vid_awaddr(v_awaddr),.vid_awlen(v_awlen),.vid_awsize(3'd4),.vid_awburst(2'b01),.vid_awvalid(v_awvalid),.vid_awready(v_awready),
+    .vid_wdata(v_wdata),.vid_wstrb(v_wstrb),.vid_wlast(v_wlast),.vid_wvalid(v_wvalid),.vid_wready(v_wready),.vid_bid(unused_bid),.vid_bresp(v_bresp),.vid_bvalid(v_bvalid),.vid_bready(v_bready),
+    .vid_arid(8'h02),.vid_araddr(v_araddr),.vid_arlen(v_arlen),.vid_arsize(3'd4),.vid_arburst(2'b01),.vid_arvalid(v_arvalid),.vid_arready(v_arready),.vid_rid(unused_rid),.vid_rdata(v_rdata),.vid_rresp(v_rresp),.vid_rlast(v_rlast),.vid_rvalid(v_rvalid),.vid_rready(v_rready),
+    .ddr_awid(awid),.ddr_awaddr(awaddr),.ddr_awlen(awlen),.ddr_awsize(awsize),.ddr_awburst(awburst),.ddr_awvalid(awvalid),.ddr_awready(awready),
+    .ddr_wdata(wdata),.ddr_wstrb(wstrb),.ddr_wlast(wlast),.ddr_wvalid(wvalid),.ddr_wready(wready),.ddr_bid(bid),.ddr_bresp(bresp),.ddr_bvalid(bvalid),.ddr_bready(bready),
+    .ddr_arid(arid),.ddr_araddr(araddr),.ddr_arlen(arlen),.ddr_arsize(arsize),.ddr_arburst(arburst),.ddr_arvalid(arvalid),.ddr_arready(arready),.ddr_rid(rid),.ddr_rdata(rdata),.ddr_rresp(rresp),.ddr_rlast(rlast),.ddr_rvalid(rvalid),.ddr_rready(rready),.axi_error_count(bridge_errors));
+  // ---- DDR 占用剖析器（2026-10-27 恢复）--------------------------------
+  // 提交 4fdc3c8 曾把它接进本模块，之后被删；而固件至今仍在读 0x54/0x58..0x84，
+  // 于是 style_log_ddr() 打出来的 12 个计数器全是 0（静默失效）。此处按当年那版接线恢复。
+  //   APB 0x54 : [0]=freeze（冻结计数，便于软件连贯读取） [1]=clear（写 1 清零）
+  //   APB 0x58..0x84 : index=(paddr-0x58)>>2，12 个槽位
+  // ⚠ 索引与位序（Verilog 拼接最后一个元素落在 bit0，原版 events 的 bit0 是 1'b1）：
+  //     0=总拍数(T) 1=CNN AR 反压 2=显示 AR 反压 3=读气泡(burst 在飞无 beat)
+  //     4=CNN R 背压 5=显示 R 背压 6=AW 7=W **8=等B** 9=空闲 10=CNN R 消费 11=显示 R 消费
+  //   本版只实现 **0/1/2/3/8** 五项（其余装不下，见 style_ddr_profiler.sv 头注），读回 0。
+  //   恢复 12 个全部时会占 661 FF，PnR 在 99.82% 因拥塞失败——面积是这里的硬约束。
+  reg profile_freeze;
+  wire profile_write=psel&&penable&&pwrite&&paddr==8'h54;
+  wire [31:0] profile_value;
+  wire [3:0]  profile_index=(paddr-8'h58)>>2;
+  always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) profile_freeze<=1'b0;
+    else if(profile_write) profile_freeze<=pwdata[0];
+  end
+  // 2026-10-28（Tier 1 面积回收）**已回退**：
+  //   撤掉 profiler 后构建出来 XLR 59,753 (98.28%)、时序全正（vid +0.557、sdram +0.135），
+  //   build_check 判 USABLE —— 但**烧上去固件起不来**：CPU PC 停在 0、APB 全返同一值。
+  //   换回未改动的 A-4 位流立即正常（PC 0x1430、CORE_ID 正确）。
+  //   => 判定：这是"PASS + 无负 slack 仍不可用"的新失败模式，疑似 DDR 裕量变薄
+  //      （sdram_clk +0.135 比前几版更紧，而固件跑在 DDR 上）。
+  //   恢复：保留 profiler（330 XLR），面积回到 60,171 (98.97%)。
+  style_ddr_profiler profiler(.clk(clk),.rst_n(rst_n),.enable(stream_enable),
+    .freeze(profile_freeze),.clear(profile_write&&pwdata[1]),.network_idle(nn_ready),
+    .index(profile_index),.value(profile_value),
+    .c_arvalid(c_arvalid),.c_arready(c_arready),.c_rvalid(c_rvalid),.c_rready(c_rready),.c_rlast(c_rlast),
+    .c_awvalid(c_awvalid),.c_awready(c_awready),.c_wvalid(c_wvalid),.c_wready(c_wready),.c_wlast(c_wlast),
+    .c_bvalid(c_bvalid),.c_bready(c_bready),
+    .arvalid(v_arvalid),.arready(v_arready),.v_rvalid(v_rvalid),.v_rready(v_rready));
+  assign prdata=paddr==8'h38 ? captured:paddr==8'h3c ? dropped:paddr==8'h40 ? inferred:
+    paddr==8'h44 ? infer_errors:paddr==8'h48 ? display_frame_id:paddr==8'h4c ? display_dma_errors:
+    paddr==8'h50 ? bridge_errors:
+    paddr==8'h54 ? {31'b0,profile_freeze}:
+    // 0x88: {bit31=1 readback present, bit3=valid, bits2:0=displayed slot}.
+    // The BLE snapshot copies exactly the slot HDMI is showing, so the frame
+    // cannot be torn by a slot change mid-copy (firmware checks it again after).
+    paddr==8'h88 ? {1'b1,27'd0,display_valid,display_slot}:
+    (paddr>=8'h58&&paddr<=8'h84) ? profile_value:accel_prdata;
+endmodule

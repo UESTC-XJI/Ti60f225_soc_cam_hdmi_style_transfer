@@ -1,0 +1,2 @@
+PASS complete 720p splash frame: every visible pixel equals approved indexed asset, timing aligned
+tests/boot_splash_pixels_tb.sv:26: $finish called at 12375026000 (1ps)
