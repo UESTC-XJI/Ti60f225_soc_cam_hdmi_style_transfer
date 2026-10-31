@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f6bff"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient>
+    <linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5fa2"/><stop offset="1" stop-color="#ff9f43"/></linearGradient>
+    <linearGradient id="c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0fd1b8"/><stop offset="1" stop-color="#3bd16f"/></linearGradient>
+    <linearGradient id="d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc245"/><stop offset="1" stop-color="#ff8c42"/></linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a233d"/><stop offset="1" stop-color="#070a12"/></linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <rect x="11" y="11" width="19" height="19" rx="5" fill="url(#a)"/>
+  <rect x="34" y="11" width="19" height="19" rx="5" fill="url(#b)"/>
+  <rect x="11" y="34" width="19" height="19" rx="5" fill="url(#c)"/>
+  <rect x="34" y="34" width="19" height="19" rx="5" fill="url(#d)"/>
+</svg>

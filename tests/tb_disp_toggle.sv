@@ -40,13 +40,19 @@ module tb_disp_toggle;
     if(rvalid&&rready)begin address<=address+16;beat<=beat+1'b1;if(rlast)read_active<=0;end
   end
 
+  //   2026-10-31 几何（d=vv-25，x=hh-260）：
+  //   对比：图片区 v=205..564；左半完整原画 1:1（60+(v-205), x）；
+  //         右半完整风格 2×（30+((v-205)>>1), (h-900)>>1）；其余黑边。
+  //   单画面：整屏风格 4×（30+(d>>2), x>>2）。
   function [31:0] expect_pix(input integer md, input integer vv, input integer hh);
-    integer sy,sx;begin
+    integer sy,sx,d;begin
+      d=vv-25;
       if(!md)begin
-        if(hh<900)expect_pix=value(0,0,(vv-145),hh-260);
-        else begin sy=(vv-145)>>1;sx=(hh-900)>>1;expect_pix=value(0,1,sy,sx)^32'h00808080;end
+        if(vv<205||vv>=565)expect_pix=0;
+        else if(hh<900)expect_pix=value(0,0,60+(vv-205),hh-260);
+        else begin sy=30+((vv-205)>>1);sx=(hh-900)>>1;expect_pix=value(0,1,sy,sx)^32'h00808080;end
       end else begin
-        sy=(vv-25)/3;sx=(hh-420)/3;
+        sy=30+(d>>2);sx=(hh-260)>>2;
         expect_pix=value(0,1,sy,sx)^32'h00808080;
       end
     end
@@ -61,10 +67,7 @@ module tb_disp_toggle;
     if(oldh==0&&oldv==0)mode_at_frame=single;   // 帧首锁存期望模式
     if(de)begin
       if(underflow)uf=uf+1;
-      // 对比模式：上下 120 行是黑边；单画面：整屏都是图
-      else if((!mode_at_frame&&(oldv<145||oldv>=625))||(mode_at_frame&&(oldh<420||oldh>=1380)))begin
-        if(pixel!==0)bad=bad+1;
-      end else if(pixel!==expect_pix(mode_at_frame,oldv,oldh))bad=bad+1;
+      else if(pixel!==expect_pix(mode_at_frame,oldv,oldh))bad=bad+1;
     end
     if(oldh==1649&&oldv==749)begin
       frames=frames+1;

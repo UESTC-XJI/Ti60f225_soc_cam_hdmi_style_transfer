@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Ti60 风格迁移 · 手机控制</title>
+<meta name="description" content="手机上的 Ti60 风格迁移遥控器：切换风格与强度、拍摄并下载画面。">
+<meta name="theme-color" content="#eef2f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0e15" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ti60">
+<link rel="manifest" href="./manifest-mobile.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="./app.css">
+</head>
+<body class="mobile">
+
+<header class="appbar">
+  <div class="appbar-inner">
+    <div class="brand">
+      <img src="icons/icon-192.png" alt="" width="34" height="34">
+      <div class="brand-text">
+        <h1>Ti60 手机控制</h1>
+        <p>FPGA · BLE 图传</p>
+      </div>
+    </div>
+    <span class="spacer"></span>
+    <span class="status-pill" id="statusPill" data-state="off">
+      <span class="status-dot"></span><span id="statusText">未连接</span>
+    </span>
+    <button class="btn soft" id="installBtn" hidden aria-label="安装到主屏幕">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>
+      <span class="install-label">安装</span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="card warn" id="warn" hidden>
+    <h2>此浏览器无法使用 Web Bluetooth</h2>
+    <div id="warnText"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>连接</h2>
+      <span class="chip" id="deviceChip">未连接</span>
+    </div>
+    <div class="conn-line">
+      <span class="chip">BLE 串口 · 自动识别</span>
+    </div>
+    <div class="conn-actions">
+      <button id="connect" class="btn primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 7V3M15 7V3M7 7h10v3a5 5 0 0 1-5 5 5 5 0 0 1-5-5V7ZM12 15v6"/></svg>
+        连接蓝牙模块
+      </button>
+      <button id="disconnect" class="btn ghost" disabled>断开</button>
+    </div>
+    <details class="adv">
+      <summary>模块 UUID 与安装说明</summary>
+      <div class="adv-body">
+        <label class="field">配置
+          <select id="profile">
+            <option value="auto">自动识别（FFE0 / FFF0 / Nordic UART）</option>
+            <option value="ffe0">HC-08 / HM-10 / JDY：FFE0 · FFE1</option>
+            <option value="fff0">FFF0 · 通知 FFF1 · 写 FFF2</option>
+            <option value="nus">Nordic UART：6E400001…</option>
+            <option value="custom">自定义</option>
+          </select>
+        </label>
+        <div class="uuid-fields" id="customRow" hidden>
+          <label class="field">服务 UUID<input id="cService" placeholder="0000ffe0-0000-1000-8000-00805f9b34fb"></label>
+          <label class="field">通知特征<input id="cNotify" placeholder="0000ffe1-…"></label>
+          <label class="field">写特征<input id="cWrite" placeholder="0000ffe1-…"></label>
+        </div>
+        <div class="hint">安卓 Chrome / Edge 可在菜单或顶栏“安装”到主屏幕，像 App 一样全屏打开。iPhone 上的浏览器不支持 Web Bluetooth。</div>
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>风格强度</h2>
+      <span class="chip now" id="tierNow">星空 · 50%</span>
+    </div>
+    <div class="style-grid" id="styleGrid">
+      <button class="style-card sel" data-bank="0" disabled aria-pressed="true">
+        <span class="swatch" aria-hidden="true"></span>
+        <span class="meta"><span class="name">星空</span><span class="en">starry</span></span>
+      </button>
+      <button class="style-card" data-bank="1" disabled aria-pressed="false">
+        <span class="swatch" aria-hidden="true"></span>
+        <span class="meta"><span class="name">糖果</span><span class="en">candy</span></span>
+      </button>
+      <button class="style-card" data-bank="2" disabled aria-pressed="false">
+        <span class="swatch" aria-hidden="true"></span>
+        <span class="meta"><span class="name">马赛克</span><span class="en">mosaic</span></span>
+      </button>
+      <button class="style-card" data-bank="3" disabled aria-pressed="false">
+        <span class="swatch" aria-hidden="true"></span>
+        <span class="meta"><span class="name">羽毛</span><span class="en">feathers</span></span>
+      </button>
+    </div>
+    <div class="tier-row" id="tierRow" role="group" aria-label="风格强度">
+      <button class="tier" data-tier="0" disabled aria-pressed="false">10%</button>
+      <button class="tier" data-tier="1" disabled aria-pressed="false">30%</button>
+      <button class="tier sel" data-tier="2" disabled aria-pressed="true">50%</button>
+      <button class="tier" data-tier="3" disabled aria-pressed="false">70%</button>
+      <button class="tier" data-tier="4" disabled aria-pressed="false">100%</button>
+    </div>
+    <div class="hint">每个风格独立记忆自己的档位，默认中间档。</div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>拍摄图传</h2>
+      <span class="head-note">原生 320×240</span>
+    </div>
+    <div class="field-grid">
+      <label class="field">分辨率
+        <select id="size"><option value="320" selected>320×240</option></select>
+      </label>
+      <label class="field">JPEG 质量
+        <select id="quality"><option>40</option><option selected>60</option><option>75</option><option>90</option></select>
+      </label>
+      <label class="field">发送窗口
+        <select id="window"><option>1</option><option>2</option><option selected>4</option><option>8</option></select>
+      </label>
+      <label class="field">板卡发送速率
+        <select id="rate"><option value="800">0.8 KB/s</option><option value="1500" selected>1.5 KB/s</option><option value="2500">2.5 KB/s</option><option value="4000">4 KB/s</option><option value="6000">6 KB/s</option><option value="9000">9 KB/s</option></select>
+      </label>
+    </div>
+    <div class="snap-row">
+      <button id="snap" class="btn primary" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
+        拍摄
+      </button>
+      <button id="abort" class="btn danger" disabled>中止</button>
+      <label class="switch"><input type="checkbox" id="auto"> 连拍</label>
+    </div>
+    <div class="progress" id="prog"><span id="progBar"></span></div>
+    <div class="xfer" id="xfer">—</div>
+  </section>
+
+  <section class="card viewer" id="viewer">
+    <div class="card-head">
+      <h2>画面</h2>
+      <span class="chip" id="shotInfo">等待拍摄</span>
+    </div>
+    <div class="frame">
+      <img id="shot" alt="风格迁移画面">
+      <div class="empty" id="emptyViewer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
+        <b>还没有画面</b>
+        <span>连接后点“拍摄”，板卡会把当前风格结果传回来。</span>
+      </div>
+    </div>
+    <div class="viewer-foot">
+      <button id="save" class="btn" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+        保存 JPEG
+      </button>
+      <span class="hint">CRC32 校验 · 缺包自动重传</span>
+    </div>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>板卡控制</h2>
+      <span class="head-note">与实体旋钮同步</span>
+    </div>
+    <div class="chips">
+      <span class="chip" id="knob">旋钮 —</span>
+      <span class="chip" id="osd">OSD —</span>
+      <span class="chip" id="view">视图 —</span>
+    </div>
+    <div class="ctl-row">
+      <button class="btn ctl" id="viewBtn" data-cmd="VIEW" disabled>切换视图</button>
+      <button class="btn ctl" id="osdBtn" data-cmd="OSD" disabled>开关 OSD</button>
+    </div>
+    <div class="knob-row">
+      <button class="btn ctl" data-cmd="KNOB,1" disabled><span>G1</span><small>星空</small></button>
+      <button class="btn ctl" data-cmd="KNOB,2" disabled><span>G2</span><small>糖果</small></button>
+      <button class="btn ctl" data-cmd="KNOB,0" disabled><span>G3</span><small>马赛克</small></button>
+      <button class="btn ctl" data-cmd="KNOB,3" disabled><span>G4</span><small>羽毛</small></button>
+    </div>
+    <div class="hint">档位快捷键在下一次拨动实体旋钮前有效。</div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>串口</h2>
+      <span class="head-note">板卡原样回显</span>
+    </div>
+    <div class="serial-row">
+      <input id="text" placeholder="发送文本命令…" disabled>
+      <button id="send" class="btn" disabled>发送</button>
+    </div>
+    <div id="log"></div>
+  </section>
+</main>
+
+<p class="footnote">Ti60F225 · 手机端 · 需要安卓 Chrome / Edge</p>
+
+<script src="ble_proto.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

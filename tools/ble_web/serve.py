@@ -1,26 +1,55 @@
-"""Serve the BLE image viewer (this directory only) to other devices, e.g. over ZeroTier.
+"""Serve the BLE viewer (this directory only) to a phone or another computer.
 
-    python3 tools/ble_web/serve.py                 # HTTP on the ZeroTier address, port 8443
-    python3 tools/ble_web/serve.py --https         # HTTPS, self-signed certificate for that address
-    python3 tools/ble_web/serve.py --bind 0.0.0.0  # every interface (not recommended)
+Same Wi-Fi (no ZeroTier needed) — use this PC's IPv4 address from `ipconfig`:
+
+    python3 tools/ble_web/serve.py --bind 192.168.1.23 --port 8443 --https
+    # phone opens https://192.168.1.23:8443/ and accepts the self-signed certificate
+
+Across networks (optional) — with ZeroTier joined, omit --bind:
+
+    python3 tools/ble_web/serve.py --https
 
 Web Bluetooth only works in a secure context. Over plain HTTP the remote Chrome must list
 the origin in chrome://flags/#unsafely-treat-insecure-origin-as-secure. With --https the
 remote device must trust (or click through) the self-signed certificate instead.
 The Bluetooth link itself always runs between the browser's device and the BLE module.
+
+PWA install and the offline service worker need HTTPS (or localhost). For a local test:
+
+    python3 tools/ble_web/serve.py --bind 127.0.0.1 --port 8000
+    # then open http://127.0.0.1:8000/ — localhost counts as a secure context
 """
 import argparse
 import functools
 import http.server
 import ipaddress
+import mimetypes
+import os
+import shutil
 import socket
 import ssl
+import string
 import subprocess
 import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-FILES = {'/': 'index.html', '/index.html': 'index.html', '/ble_proto.js': 'ble_proto.js'}
+ICONS = HERE / 'icons'
+mimetypes.add_type('application/manifest+json', '.webmanifest')
+mimetypes.add_type('text/javascript', '.js')
+mimetypes.add_type('image/svg+xml', '.svg')
+
+FILES = {
+    '/': 'index.html',
+    '/index.html': 'index.html',
+    '/index_mobile.html': 'index_mobile.html',
+    '/app.css': 'app.css',
+    '/app.js': 'app.js',
+    '/ble_proto.js': 'ble_proto.js',
+    '/sw.js': 'sw.js',
+    '/manifest.webmanifest': 'manifest.webmanifest',
+    '/manifest-mobile.webmanifest': 'manifest-mobile.webmanifest',
+}
 
 
 def zerotier_address():
@@ -37,14 +66,25 @@ def zerotier_address():
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
-    """Only the viewer files; no directory listings or other paths."""
+    """Only the viewer files and icons; no directory listings or other paths."""
+
+    @staticmethod
+    def resolve(path):
+        if path in FILES:
+            return FILES[path]
+        if path.startswith('/icons/'):
+            name = path[len('/icons/'):]
+            if name and '/' not in name and '\\' not in name and (ICONS / name).is_file():
+                return f'icons/{name}'
+        return None
 
     def do_GET(self):
         path = self.path.split('?', 1)[0]
-        if path not in FILES:
+        target = self.resolve(path)
+        if not target:
             self.send_error(404)
             return
-        self.path = '/' + FILES[path]
+        self.path = '/' + target
         super().do_GET()
 
     def do_HEAD(self):
@@ -59,6 +99,36 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_error(404)
 
 
+def find_openssl():
+    """Locate openssl even when Python was started from PowerShell/cmd (Git ships one)."""
+    found = shutil.which('openssl')
+    if found:
+        return found
+    candidates = []
+    git = shutil.which('git')
+    if git:
+        root = Path(git).resolve().parent.parent
+        candidates += [root / 'mingw64/bin/openssl.exe', root / 'usr/bin/openssl.exe']
+    for base in (os.environ.get('ProgramFiles'), os.environ.get('ProgramFiles(x86)'),
+                 os.environ.get('LOCALAPPDATA')):
+        if base:
+            folder = Path(base)
+            candidates += [
+                folder / 'Git/mingw64/bin/openssl.exe',
+                folder / 'Git/usr/bin/openssl.exe',
+                folder / 'Programs/Git/mingw64/bin/openssl.exe',
+                folder / 'Programs/Git/usr/bin/openssl.exe',
+            ]
+    # Portable/custom Git installs (e.g. E:\Git) are not on PATH and may live on any drive.
+    for drive in string.ascii_uppercase:
+        candidates += [Path(f'{drive}:/Git/mingw64/bin/openssl.exe'),
+                       Path(f'{drive}:/Git/usr/bin/openssl.exe')]
+    for path in candidates:
+        if path.is_file():
+            return str(path)
+    return None
+
+
 def certificate(address):
     """Self-signed certificate for this address, kept in tools/ble_web/cert/ (git-ignored)."""
     folder = HERE / 'cert'
@@ -66,14 +136,22 @@ def certificate(address):
     (folder / '.gitignore').write_text('*\n')
     crt, key = folder / f'{address}.crt', folder / f'{address}.key'
     if not crt.exists() or not key.exists():
+        openssl = find_openssl()
+        if not openssl:
+            sys.exit('openssl not found. Install Git for Windows (it includes openssl), '
+                     'or run without --https and allow HTTP in Chrome flags.')
         try:
             ipaddress.ip_address(address)
             san = f'IP:{address}'
         except ValueError:
             san = f'DNS:{address}'
-        subprocess.run(['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '825',
-                        '-subj', f'/CN={address}', '-addext', f'subjectAltName={san}',
-                        '-keyout', str(key), '-out', str(crt)], check=True, capture_output=True)
+        try:
+            subprocess.run([openssl, 'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '825',
+                            '-subj', f'/CN={address}', '-addext', f'subjectAltName={san}',
+                            '-keyout', str(key), '-out', str(crt)], check=True, capture_output=True)
+        except subprocess.CalledProcessError as e:
+            detail = (e.stderr or b'').decode('utf-8', 'replace').strip()
+            sys.exit(f'openssl failed to create {crt.name}:\n{detail}')
         key.chmod(0o600)
     return crt, key
 
@@ -87,7 +165,10 @@ def main():
 
     bind = a.bind or zerotier_address()
     if not bind:
-        sys.exit('No ZeroTier (zt*) IPv4 address found; is zerotier-one joined? Use --bind to choose one.')
+        sys.exit('No --bind address and no ZeroTier interface found.\n'
+                 'Phone on the same Wi-Fi: pass this PC\'s IPv4 (see `ipconfig`):\n'
+                 '    python tools/ble_web/serve.py --bind <PC IPv4> --port 8443 --https\n'
+                 'ZeroTier is optional and only needed when the two devices are on different networks.')
     server = http.server.ThreadingHTTPServer((bind, a.port), functools.partial(Handler, directory=str(HERE)))
     scheme = 'http'
     if a.https:

@@ -2,7 +2,7 @@
 #include "plic.h"
 #include "style_driver.h"
 #include "rowpipe_weights.h"
-#include "style_banks.h"
+#include "style_banks_final.h"
 #include "style_selftest.h"
 #include "soc_video_driver.h"
 #define STYLE_BASE 0xf8100200u
@@ -16,26 +16,53 @@ static volatile uint32_t *const regs=(volatile uint32_t *)STYLE_BASE;
  * CPU 根本poll不到 ⇒ 必须先把 regs[1].bit4(stream_enable) 清 0 掐断 pop_ready，
  * 等 pending 稳定为 0，再写权重，最后恢复。 */
 #define STYLE_DDR_WEIGHTS ((volatile uint32_t *)0x06F00000u)
-#define STYLE_BANK_COUNT 5u
+#define STYLE_COUNT 4u
+#define STYLE_TIERS 5u
+#define STYLE_DEFAULT_TIER 2u
+#define STYLE_BANK_COUNT STYLE_COUNT
 #define STYLE_STREAM_ON 16u
-
+/* 2026-10-31 final: 4 styles x 5 strength tiers:
+ *   G1 starry / G2 candy / G3 mosaic / G4 feathers.
+ * All 20 weight blobs live in .rodata (DDR app region); only the selected
+ * tier is copied to the engine window 0x06F00000.  The new starry/candy/
+ * feathers headers already have the per-tier DC folded into the L11 bias. */
 typedef struct { const char *name; const unsigned int *words; uint32_t xor_expected; } style_bank_t;
-/* bank 0 = 构建期烧进来的 rowpipe_weights.h（当前 redsky v5 / 呐喊, 0xcbc67865） */
-/* 2026-10-28 修正（硬件侧）：原表有两处问题 ——
- *   ① bank0 标签写的是 "redsky_v5"，但它的数据是 `rowpipe_weights`，
- *      而 `ROWPIPE_WEIGHT_XOR = 0xb995616f` **就是 starry_old**（与 bank4 同一个 XOR）。
- *      => 标签是错的，演示时 `s` 列清单会显示一个不存在的风格名。
- *   ② bank4 与 bank0 的 XOR 相同 => 同一份权重存了两遍，白占 14,448 B flash。
- *      而 .bin 已经因为权库从 28,360 涨到 87,904 B，不该再浪费。
- * 修法：bank0 改名为 starry_old，删掉重复的 bank4 => 4 套互不相同的风格。
- * 开机仍走 `style_program_bank(0)`，**默认风格不变**（还是 starry_old）。 */
-static const style_bank_t style_banks[STYLE_BANK_COUNT]={
-    {"starry_old",rowpipe_weights,        ROWPIPE_WEIGHT_XOR},
-    {"starry_v7", style_bank_starry_v7,   STYLE_BANK_STARRY_V7_XOR},
-    {"starry_v8", style_bank_starry_v8,   STYLE_BANK_STARRY_V8_XOR},
-    {"red_v3_dc", style_bank_red_v3_dc,   STYLE_BANK_RED_V3_DC_XOR},
-    {"rainbow",   style_bank_rainbow,     STYLE_BANK_RAINBOW_XOR},
+static const style_bank_t starry_tiers[STYLE_TIERS]={
+    {"starry_sw5",  style_bank_starry_sw5,  STYLE_BANK_STARRY_SW5_XOR},
+    {"starry_sw10", style_bank_starry_sw10, STYLE_BANK_STARRY_SW10_XOR},
+    {"starry_sw15", style_bank_starry_sw15, STYLE_BANK_STARRY_SW15_XOR},
+    {"starry_sw20", style_bank_starry_sw20, STYLE_BANK_STARRY_SW20_XOR},
+    {"starry_sw25", style_bank_starry_sw25, STYLE_BANK_STARRY_SW25_XOR},
 };
+static const style_bank_t candy_tiers[STYLE_TIERS]={
+    {"candy_sw1.5", style_bank_candy_sw1p5, STYLE_BANK_CANDY_SW1P5_XOR},
+    {"candy_sw2",   style_bank_candy_sw2,   STYLE_BANK_CANDY_SW2_XOR},
+    {"candy_sw2.5", style_bank_candy_sw2p5, STYLE_BANK_CANDY_SW2P5_XOR},
+    {"candy_sw3",   style_bank_candy_sw3,   STYLE_BANK_CANDY_SW3_XOR},
+    {"candy_sw4",   style_bank_candy_sw4,   STYLE_BANK_CANDY_SW4_XOR},
+};
+static const style_bank_t mosaic_tiers[STYLE_TIERS]={
+    {"mosaic_l1200", style_bank_mosaic_l1200, STYLE_BANK_MOSAIC_L1200_XOR},
+    {"mosaic_l200",  style_bank_mosaic_l200,  STYLE_BANK_MOSAIC_L200_XOR},
+    {"mosaic_t025",  style_bank_mosaic_t025,  STYLE_BANK_MOSAIC_T025_XOR},
+    {"mosaic_t05",   style_bank_mosaic_t05,   STYLE_BANK_MOSAIC_T05_XOR},
+    {"mosaic_t1",    style_bank_mosaic_t1,    STYLE_BANK_MOSAIC_T1_XOR},
+};
+static const style_bank_t feathers_tiers[STYLE_TIERS]={
+    {"feathers_sw1",   style_bank_feathers_sw1,   STYLE_BANK_FEATHERS_SW1_XOR},
+    {"feathers_sw3",   style_bank_feathers_sw3,   STYLE_BANK_FEATHERS_SW3_XOR},
+    {"feathers_sw3.5", style_bank_feathers_sw3p5, STYLE_BANK_FEATHERS_SW3P5_XOR},
+    {"feathers_sw4",   style_bank_feathers_sw4,   STYLE_BANK_FEATHERS_SW4_XOR},
+    {"feathers_sw5",   style_bank_feathers_sw5,   STYLE_BANK_FEATHERS_SW5_XOR},
+};
+typedef struct { const char *name; const style_bank_t *tiers; } style_def_t;
+static const style_def_t style_defs[STYLE_COUNT]={
+    {"starry",   starry_tiers},
+    {"candy",    candy_tiers},
+    {"mosaic",   mosaic_tiers},
+    {"feathers", feathers_tiers},
+};
+static unsigned style_tier_index[STYLE_COUNT]={STYLE_DEFAULT_TIER,STYLE_DEFAULT_TIER,STYLE_DEFAULT_TIER,STYLE_DEFAULT_TIER};
 static unsigned style_active_bank_index;
 static volatile uint64_t style_switch_t0;
 static volatile uint32_t style_switch_armed;
@@ -72,9 +99,15 @@ void firmware_interrupt_handler(void) {
         plic_release(BSP_PLIC,BSP_PLIC_CPU_0,claim);
     }
 }
+/* 当前 bank 的权重：mosaic 取它当前档位，其他 bank 只有一档。 */
+static const style_bank_t *style_weight_for(unsigned index) {
+    if(index>=STYLE_COUNT)return 0;
+    return &style_defs[index].tiers[style_tier_index[index]];
+}
 /* 把一套 blob 写进引擎读的那个 DDR 窗口并做 XOR 自检。返回 0 = 写入并校验通过。 */
 static int style_program_bank(unsigned index) {
-    const style_bank_t *bank=&style_banks[index];
+    const style_bank_t *bank=style_weight_for(index);
+    if(!bank)return -1;
     volatile uint32_t *dst=STYLE_DDR_WEIGHTS;
     for(uint32_t i=0;i<ROWPIPE_WEIGHT_WORDS;++i)dst[i]=bank->words[i];
     sync_ddr();
@@ -87,8 +120,18 @@ static uint32_t style_us(uint64_t ticks) {
 }
 unsigned style_bank_count(void) { return STYLE_BANK_COUNT; }
 unsigned style_active_bank(void) { return style_active_bank_index; }
+unsigned style_tier_count(unsigned index) {
+    return index<STYLE_COUNT?STYLE_TIERS:0u;
+}
+unsigned style_active_tier(void) {
+    return style_active_bank_index<STYLE_COUNT?style_tier_index[style_active_bank_index]:0u;
+}
+const char *style_tier_name(unsigned index,unsigned tier) {
+    if(index<STYLE_COUNT && tier<STYLE_TIERS)return style_defs[index].tiers[tier].name;
+    return "?";
+}
 const char *style_bank_name(unsigned index) {
-    return index<STYLE_BANK_COUNT?style_banks[index].name:"?";
+    return index<STYLE_COUNT?style_defs[index].name:"?";
 }
 void style_list_banks(void) {
     char line[96],*p=line;
@@ -97,7 +140,7 @@ void style_list_banks(void) {
         p=put_text(p," ");
         p=put_decimal(p,i+1u);
         p=put_text(p,":");
-        p=put_text(p,style_banks[i].name);
+        p=put_text(p,style_defs[i].name);
         if(i==style_active_bank_index)p=put_text(p,"*");
     }
     *p++='\r';*p++='\n';*p=0;
@@ -146,12 +189,42 @@ int style_switch_bank(unsigned index) {
     {
         char line[96],*p=line;
         p=put_text(p,"STYLE SW ");p=put_decimal(p,index+1u);
-        p=put_text(p," ");p=put_text(p,style_banks[index].name);
+        p=put_text(p," ");p=put_text(p,style_bank_name(index));
         p=put_text(p," ok wait ");p=put_decimal(p,app_style_switch_wait_us);
         p=put_text(p,"us copy ");p=put_decimal(p,app_style_switch_copy_us);
         p=put_text(p,"us");*p++='\r';*p++='\n';*p=0;
         uart_writeStr(BSP_UART_TERMINAL,line);
     }
+    return 0;
+}
+/* 运行期调档：mosaic 5 档；其他风格目前只有 1 档。
+ * 如果目标 bank 不是当前 active，只记住档位，等切过去时生效；
+ * 如果就是当前 active，走一次与切风格相同的停流/写权重/校验/放行。 */
+int style_set_tier(unsigned index,unsigned tier) {
+    if(index>=STYLE_BANK_COUNT || tier>=style_tier_count(index))return -1;
+    if(tier==style_tier_index[index])return 1;
+    if(index!=style_active_bank_index) { style_tier_index[index]=tier; return 0; }
+    unsigned old=style_tier_index[index];
+    uint64_t t0=clint_getTime(BSP_CLINT);
+    regs[1]=0u;
+    uint64_t deadline=t0+BSP_CLINT_HZ/20u;
+    while(regs[2]&1u) {
+        if(clint_getTime(BSP_CLINT)>deadline) {
+            regs[1]=STYLE_STREAM_ON;
+            ++app_style_switch_errors;
+            return -2;
+        }
+    }
+    style_tier_index[index]=tier;
+    if(style_program_bank(index)) {
+        style_tier_index[index]=old;
+        style_program_bank(index);
+        regs[1]=STYLE_STREAM_ON;
+        ++app_style_switch_errors;
+        return -3;
+    }
+    regs[1]=STYLE_STREAM_ON;
+    ++app_style_switches;
     return 0;
 }
 int style_init_and_selftest(void) {

@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ti60 风格迁移 · 蓝牙图传</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#1d2330; --muted:#677084; --line:#d9dde5; --accent:#2f6fdb; --bad:#c43c3c; --ok:#22874a; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14171c; --card:#1d2128; --text:#e6e9ef; --muted:#9aa3b5; --line:#323844; --accent:#6c9cf0; --bad:#ef7070; --ok:#5cc485; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.45 system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background:var(--bg); color:var(--text); }
+  main { max-width:1100px; margin:0 auto; padding:12px; display:grid; gap:12px; grid-template-columns: 1fr; }
+  @media (min-width: 900px) { main { grid-template-columns: 340px 1fr; align-items:start; } #viewer { grid-row: span 3; grid-column: 2; } }
+  section { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px; }
+  h1 { font-size:17px; margin:0 0 8px; } h2 { font-size:14px; margin:0 0 8px; color:var(--muted); font-weight:600; }
+  button, select, input { font:inherit; color:inherit; background:var(--bg); border:1px solid var(--line); border-radius:7px; padding:8px 10px; min-height:40px; }
+  button { cursor:pointer; } button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  button.tier.sel { background:var(--accent); border-color:var(--accent); color:#fff; }
+  button:disabled { opacity:.45; cursor:default; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:6px 0; }
+  .row > label { display:flex; flex-direction:column; gap:3px; font-size:12px; color:var(--muted); flex:1; min-width:90px; }
+  .grow { flex:1; }
+  .status { font-size:13px; color:var(--muted); }
+  .status b.on { color:var(--ok); } .status b.off { color:var(--bad); }
+  .pill { display:inline-block; padding:2px 8px; border:1px solid var(--line); border-radius:99px; font-size:13px; margin-right:4px; }
+  progress { width:100%; height:10px; }
+  #warn { display:none; border-color:var(--bad); }
+  #warn code { font-size:12px; word-break:break-all; }
+  #shot { display:block; width:100%; max-height:70vh; object-fit:contain; background:#000; border-radius:6px; min-height:180px; }
+  #gallery { display:flex; gap:6px; overflow-x:auto; padding-top:8px; }
+  #gallery img { height:64px; border-radius:4px; cursor:pointer; border:2px solid transparent; }
+  #gallery img.sel { border-color:var(--accent); }
+  #log { height:180px; overflow:auto; font:12px/1.35 ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:6px; white-space:pre-wrap; word-break:break-all; }
+  #log .tx { color:var(--accent); } #log .err { color:var(--bad); }
+  details summary { cursor:pointer; color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+  <section id="warn">
+    <h1>此浏览器无法使用 Web Bluetooth</h1>
+    <div id="warnText"></div>
+  </section>
+
+  <section>
+    <h1>Ti60 风格迁移 · 蓝牙图传</h1>
+    <div class="row">
+      <button id="connect" class="primary grow">连接蓝牙模块</button>
+      <button id="disconnect" disabled>断开</button>
+    </div>
+    <div class="status" id="status">未连接</div>
+    <details>
+      <summary>模块 UUID（默认自动识别）</summary>
+      <div class="row">
+        <label>配置
+          <select id="profile">
+            <option value="auto">自动识别（FFE0 / FFF0 / Nordic UART）</option>
+            <option value="ffe0">HC-08 / HM-10 / JDY：FFE0 · FFE1</option>
+            <option value="fff0">FFF0 · 通知 FFF1 · 写 FFF2</option>
+            <option value="nus">Nordic UART：6E400001…</option>
+            <option value="custom">自定义</option>
+          </select>
+        </label>
+      </div>
+      <div class="row" id="customRow" hidden>
+        <label>服务 UUID<input id="cService" placeholder="0000ffe0-0000-1000-8000-00805f9b34fb"></label>
+        <label>通知特征<input id="cNotify" placeholder="0000ffe1-…"></label>
+        <label>写特征<input id="cWrite" placeholder="0000ffe1-…"></label>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>拍摄风格迁移画面</h2>
+    <div class="row">
+      <label>分辨率
+        <select id="size"><option value="160">160×120</option><option value="320" selected>320×240</option><option value="640">640×480</option></select>
+      </label>
+      <label>JPEG 质量
+        <select id="quality"><option>40</option><option selected>60</option><option>75</option><option>90</option></select>
+      </label>
+      <label>发送窗口
+        <select id="window"><option>1</option><option>2</option><option selected>4</option><option>8</option></select>
+      </label>
+      <label>板卡发送速率
+        <select id="rate"><option value="800">0.8 KB/s</option><option value="1500" selected>1.5 KB/s</option><option value="2500">2.5 KB/s</option><option value="4000">4 KB/s</option><option value="6000">6 KB/s</option><option value="9000">9 KB/s</option></select>
+      </label>
+    </div>
+    <div class="row">
+      <button id="snap" class="primary grow" disabled>拍摄</button>
+      <button id="abort" disabled>中止</button>
+      <label style="flex:0 0 auto;flex-direction:row;align-items:center;gap:6px;font-size:13px"><input type="checkbox" id="auto"> 连续</label>
+    </div>
+    <progress id="prog" value="0" max="1"></progress>
+    <div class="status" id="xfer">—</div>
+  </section>
+
+  <section id="viewer">
+    <h2>画面</h2>
+    <img id="shot" alt="">
+    <div class="row">
+      <button id="save" disabled>保存 JPEG</button>
+      <span class="status grow" id="shotInfo"></span>
+    </div>
+    <div id="gallery"></div>
+  </section>
+
+  <section>
+    <h2>板卡控制</h2>
+    <div><span class="pill" id="knob">档位 —</span><span class="pill" id="osd">OSD —</span><span class="pill" id="view">视图 —</span></div>
+    <div class="row">
+      <button class="ctl grow" data-cmd="VIEW" disabled>切换视图</button>
+      <button class="ctl grow" data-cmd="OSD" disabled>开关 OSD</button>
+    </div>
+    <div class="row">
+      <button class="ctl grow" data-cmd="KNOB,0" disabled>档位 0</button>
+      <button class="ctl grow" data-cmd="KNOB,1" disabled>档位 1</button>
+      <button class="ctl grow" data-cmd="KNOB,2" disabled>档位 2</button>
+      <button class="ctl grow" data-cmd="KNOB,3" disabled>档位 3</button>
+    </div>
+    <div class="status">档位快捷指令在下一次拨动实体旋钮前有效。</div>
+    <h2 style="margin-top:12px">风格强度（mosaic 5 档）</h2>
+    <div class="row">
+      <label>风格
+        <select id="styleSel">
+          <option value="0">starry_old（单档）</option>
+          <option value="1">starry_v7（单档）</option>
+          <option value="2">starry_v8（单档）</option>
+          <option value="3" selected>mosaic（5 档）</option>
+          <option value="4">rainbow（单档）</option>
+        </select>
+      </label>
+    </div>
+    <div><span class="pill" id="tierNow">强度 —</span></div>
+    <div class="row">
+      <button class="tier" data-tier="0" disabled>1 l1200</button>
+      <button class="tier" data-tier="1" disabled>2 l200</button>
+      <button class="tier" data-tier="2" disabled>3 t025</button>
+      <button class="tier" data-tier="3" disabled>4 t05</button>
+      <button class="tier" data-tier="4" disabled>5 t1</button>
+    </div>
+    <div class="status">mosaic 默认第 3 档 t025（效果最好）；其他风格暂为单档。</div>
+    <h2 style="margin-top:12px">串口</h2>
+    <div class="row">
+      <input id="text" class="grow" placeholder="发送文本（板卡原样回显）">
+      <button id="send" disabled>发送</button>
+    </div>
+    <div id="log"></div>
+  </section>
+</main>
+
+<script src="ble_proto.js"></script>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const uuid = s => (typeof BluetoothUUID !== 'undefined' ? BluetoothUUID.getService(s) : s);
+const PROFILES = {
+  ffe0: { service: 0xffe0, notify: 0xffe1, write: 0xffe1 },
+  fff0: { service: 0xfff0, notify: 0xfff1, write: 0xfff2 },
+  nus:  { service: '6e400001-b5a3-f393-e0a9-e50e24dcca9e', notify: '6e400003-b5a3-f393-e0a9-e50e24dcca9e', write: '6e400002-b5a3-f393-e0a9-e50e24dcca9e' },
+};
+const STORE = 'ti60-ble-profile';
+const enc = new TextEncoder();
+
+let device = null, notifyChar = null, writeChar = null, writeChain = Promise.resolve();
+let styleBank = 3, styleTier = 2;   // mosaic t025 is the default 3rd tier
+// One handler for the page's lifetime: Chrome hands back the same characteristic object
+// after a reconnect, and a second listener would deliver every byte twice.
+function onNotify(ev) {
+  const v = ev.target.value;
+  rx.push(new Uint8Array(v.buffer, v.byteOffset, v.byteLength));
+}
+let snapping = false, current = null, garbage = 0;
+const shots = [];
+
+function log(msg, cls) {
+  const el = $('log'), line = document.createElement('div');
+  line.textContent = `${new Date().toLocaleTimeString()}  ${msg}`;
+  if (cls) line.className = cls;
+  el.appendChild(line);
+  while (el.childNodes.length > 400) el.removeChild(el.firstChild);
+  el.scrollTop = el.scrollHeight;
+}
+
+function checkSupport() {
+  let why = '';
+  if (!window.isSecureContext)
+    why = `当前地址 <code>${location.origin}</code> 不是安全上下文，浏览器关闭了蓝牙接口。<br>
+      远程打开时二选一：<br>
+      1. 在本设备的 Chrome 打开 <code>chrome://flags/#unsafely-treat-insecure-origin-as-secure</code>，
+         填入 <code>${location.origin}</code>，设为 Enabled 并重启浏览器；<br>
+      2. 用 <code>serve.py --https</code> 启动，并信任它的证书。`;
+  else if (!navigator.bluetooth)
+    why = `需要电脑或安卓上的 Chrome / Edge。Firefox、Safari 和 iPhone 上的浏览器不支持 Web Bluetooth。
+      Linux 上的 Chrome 可能还需要在 <code>chrome://flags</code> 启用 Experimental Web Platform features。`;
+  if (why) { $('warn').style.display = 'block'; $('warnText').innerHTML = why; $('connect').disabled = true; }
+}
+
+function profileList() {
+  const p = $('profile').value;
+  if (p === 'custom') {
+    const parse = v => /^[0-9a-f]{4}$/i.test(v) ? parseInt(v, 16) : v.trim().toLowerCase();
+    return [{ service: parse($('cService').value), notify: parse($('cNotify').value), write: parse($('cWrite').value) }];
+  }
+  return p === 'auto' ? Object.values(PROFILES) : [PROFILES[p]];
+}
+
+async function connect() {
+  const list = profileList();
+  try {
+    device = await navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: list.map(p => p.service) });
+  } catch (e) { if (e.name !== 'NotFoundError') log(`选择设备失败：${e.message}`, 'err'); return; }
+  device.addEventListener('gattserverdisconnected', onDisconnected);
+  setStatus(`正在连接 ${device.name || device.id}…`);
+  try {
+    const server = await device.gatt.connect();
+    let found = null;
+    for (const p of list) {
+      try {
+        const svc = await server.getPrimaryService(p.service);
+        found = { notify: await svc.getCharacteristic(p.notify), write: await svc.getCharacteristic(p.write), p };
+        break;
+      } catch (e) { /* try next profile */ }
+    }
+    if (!found) throw new Error('模块上没有找到已知的串口服务，请在“模块 UUID”中填写自定义 UUID');
+    notifyChar = found.notify; writeChar = found.write;
+    notifyChar.removeEventListener('characteristicvaluechanged', onNotify);
+    notifyChar.addEventListener('characteristicvaluechanged', onNotify);
+    await notifyChar.startNotifications();
+    localStorage.setItem(STORE, JSON.stringify({ profile: $('profile').value, custom: [$('cService').value, $('cNotify').value, $('cWrite').value] }));
+    setStatus(`<b class="on">已连接</b> ${device.name || device.id} · 服务 ${String(found.p.service).slice(0, 8)}`);
+    log('已连接');
+    setConnected(true);
+    sendLine(`RATE,${$('rate').value}`);
+    sendLine('STATE');
+  } catch (e) {
+    log(`连接失败：${e.message}`, 'err');
+    try { device.gatt.disconnect(); } catch (_) {}
+    setStatus('<b class="off">未连接</b>');
+  }
+}
+
+function onDisconnected() {
+  setConnected(false);
+  setStatus('<b class="off">已断开</b>');
+  log('连接已断开', 'err');
+  if (snapping) endSnap('连接断开');
+}
+
+function setStatus(html) { $('status').innerHTML = html; }
+function setConnected(on) {
+  $('disconnect').disabled = !on; $('snap').disabled = !on || snapping; $('send').disabled = !on;
+  for (const b of document.querySelectorAll('.ctl')) b.disabled = !on;
+  $('styleSel').disabled = !on;
+  $('connect').disabled = on || $('warn').style.display === 'block';
+  if (!on) { notifyChar = writeChar = null; }
+  updateTierUI();
+}
+
+function tierCount(bank) { return bank === 3 ? 5 : 1; }
+function updateTierUI() {
+  const bank = parseInt($('styleSel').value, 10);
+  const n = tierCount(bank);
+  const on = !!writeChar;
+  for (const b of document.querySelectorAll('.tier')) {
+    const t = parseInt(b.dataset.tier, 10);
+    b.disabled = !on || bank !== 3 || t >= n;
+    b.classList.toggle('sel', bank === styleBank && t === styleTier);
+  }
+  const opt = $('styleSel').selectedOptions[0];
+  $('tierNow').textContent = bank === 3
+    ? `mosaic · 第 ${styleTier + 1}/5 档`
+    : `${opt ? opt.textContent : ''} · 单档`;
+}
+
+// GATT allows one operation at a time; every write goes through one chain.
+function write(bytes) {
+  if (!writeChar) return Promise.resolve();
+  writeChain = writeChain.then(async () => {
+    for (let i = 0; i < bytes.length; i += 20) {
+      const part = bytes.slice(i, i + 20);
+      if (writeChar.properties.writeWithoutResponse) await writeChar.writeValueWithoutResponse(part);
+      else await writeChar.writeValueWithResponse(part);
+    }
+  }).catch(e => log(`写入失败：${e.message}`, 'err'));
+  return writeChain;
+}
+function sendLine(s, quiet) {
+  if (!quiet) log(`→ ${s}`, 'tx');
+  return write(enc.encode(s + '\r\n'));
+}
+
+const rx = new BleProto.Receiver({
+  send: s => sendLine(s, true),
+  line: s => {
+    // Stray packet bytes (lost sync) are not text; count them instead of printing.
+    if (/[^\x20-\x7e\t]/.test(s)) { garbage += s.length; $('xfer').dataset.garbage = garbage; return; }
+    log(`← ${s}`);
+    let m;
+    if ((m = /^KNOB,(\d)$/.exec(s))) $('knob').textContent = `档位 ${m[1]}`;
+    else if ((m = /^OSD,([01])$/.exec(s))) $('osd').textContent = `OSD ${m[1] === '1' ? '开' : '关'}`;
+    else if ((m = /^VIEW,([01])$/.exec(s))) $('view').textContent = m[1] === '1' ? '视图 对比' : '视图 单风格';
+    else if ((m = /^RATE,(\d+)$/.exec(s))) { const o = [...$('rate').options].find(x => x.value === m[1]); if (o) $('rate').value = m[1]; }
+    else if ((m = /^SLOT,(\d+)$/.exec(s))) {
+      styleBank = +m[1];
+      if ($('styleSel').querySelector(`option[value="${m[1]}"]`)) $('styleSel').value = m[1];
+      updateTierUI();
+    }
+    else if ((m = /^TIER,(\d+),(\d+),(\d+),?(.*)$/.exec(s))) {
+      styleBank = +m[1]; styleTier = +m[2];
+      if ($('styleSel').querySelector(`option[value="${m[1]}"]`)) $('styleSel').value = m[1];
+      $('tierNow').textContent = `${m[4] || ''} · 第 ${styleTier + 1}/${m[3]} 档`;
+      updateTierUI();
+    }
+    else if (/^ERR,TIER/.test(s)) log('调档失败', 'err');
+  },
+  progress: im => {
+    $('prog').max = im.packets; $('prog').value = im.expect;
+    const t = (Date.now() - im.start) / 1000;
+    $('xfer').textContent = `${im.w}×${im.h} · ${im.bytes}/${im.size} B · ${t > 0.2 ? (im.bytes / 1024 / t).toFixed(1) : '—'} KB/s` + (im.naks ? ` · 重传 ${im.naks}` : '');
+    if (im.expect === 0) garbage = 0;
+  },
+  image: (data, im) => {
+    const kbs = (im.size / 1024 / Math.max(im.seconds, 0.001)).toFixed(1);
+    $('xfer').textContent = `完成：${im.w}×${im.h}，${im.size} B，${im.seconds.toFixed(1)} s，${kbs} KB/s` + (im.naks ? `，重传 ${im.naks}` : '');
+    log(`收到图像 ${im.w}×${im.h} ${im.size} B，用时 ${im.seconds.toFixed(1)} s，重传 ${im.naks}` + (garbage ? `，丢弃失步字节 ${garbage}` : ''));
+    if (im.naks > im.packets / 10) log('重传较多：可以把“板卡发送速率”调低一档', 'err');
+    addShot(data, im);
+    endSnap();
+  },
+  error: why => { log(`图传失败：${why}`, 'err'); $('xfer').textContent = `失败：${why}`; endSnap(why); },
+});
+
+function addShot(data, im) {
+  const blob = new Blob([data], { type: 'image/jpeg' });
+  const shot = { url: URL.createObjectURL(blob), w: im.w, h: im.h, size: im.size, time: new Date() };
+  shots.unshift(shot);
+  while (shots.length > 30) URL.revokeObjectURL(shots.pop().url);
+  showShot(shot);
+  renderGallery();
+}
+function showShot(s) {
+  current = s;
+  $('shot').src = s.url;
+  $('shotInfo').textContent = `${s.w}×${s.h} · ${(s.size / 1024).toFixed(1)} KB · ${s.time.toLocaleTimeString()}`;
+  $('save').disabled = false;
+  renderGallery();
+}
+function renderGallery() {
+  const g = $('gallery'); g.textContent = '';
+  for (const s of shots) {
+    const img = document.createElement('img');
+    img.src = s.url; img.className = s === current ? 'sel' : ''; img.onclick = () => showShot(s);
+    g.appendChild(img);
+  }
+}
+
+let snapTimer = 0;
+function snap() {
+  if (snapping || !writeChar) return;
+  snapping = true;
+  $('snap').disabled = true; $('abort').disabled = false;
+  $('prog').value = 0; $('xfer').textContent = '板卡正在抓取并编码…';
+  sendLine(`SNAP,${$('size').value},${$('quality').value},${$('window').value}`);
+  armWatchdog();
+}
+// The board resends on its own; give up only if nothing arrives for 15 s.
+function armWatchdog() {
+  clearTimeout(snapTimer);
+  snapTimer = setTimeout(() => { if (snapping) { log('15 秒没有收到数据，已中止', 'err'); sendLine('ABORT'); endSnap('超时'); } }, 15000);
+}
+function endSnap(err) {
+  clearTimeout(snapTimer);
+  snapping = false; rx.img = null;
+  $('abort').disabled = true; $('snap').disabled = !writeChar;
+  if (!err && $('auto').checked && writeChar) setTimeout(snap, 300);
+}
+
+$('connect').onclick = connect;
+$('disconnect').onclick = () => { $('auto').checked = false; device && device.gatt.disconnect(); };
+$('snap').onclick = snap;
+$('abort').onclick = () => { $('auto').checked = false; sendLine('ABORT'); endSnap('已中止'); };
+$('save').onclick = () => {
+  if (!current) return;
+  const a = document.createElement('a');
+  const t = current.time;
+  const p = n => String(n).padStart(2, '0');
+  a.href = current.url;
+  a.download = `ti60_style_${t.getFullYear()}${p(t.getMonth() + 1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}.jpg`;
+  a.click();
+};
+for (const b of document.querySelectorAll('.ctl')) b.onclick = () => sendLine(b.dataset.cmd);
+$('styleSel').onchange = () => { updateTierUI(); sendLine(`SLOT,${$('styleSel').value}`); };
+for (const b of document.querySelectorAll('.tier')) b.onclick = () => {
+  const bank = parseInt($('styleSel').value, 10);
+  const t = parseInt(b.dataset.tier, 10);
+  styleTier = t; updateTierUI();
+  sendLine(`TIER,${bank},${t}`);
+};
+updateTierUI();
+$('rate').onchange = () => sendLine(`RATE,${$('rate').value}`);
+$('send').onclick = () => { const v = $('text').value; if (v) { sendLine(v); $('text').value = ''; } };
+$('text').onkeydown = e => { if (e.key === 'Enter') $('send').click(); };
+$('profile').onchange = () => { $('customRow').hidden = $('profile').value !== 'custom'; };
+// Any data from the board keeps an in-progress snapshot alive.
+const origPush = rx.push.bind(rx);
+rx.push = chunk => { if (snapping) armWatchdog(); origPush(chunk); };
+
+try {
+  const saved = JSON.parse(localStorage.getItem(STORE) || 'null');
+  if (saved) {
+    $('profile').value = saved.profile;
+    [$('cService').value, $('cNotify').value, $('cWrite').value] = saved.custom;
+    $('profile').onchange();
+  }
+} catch (_) {}
+checkSupport();
+</script>
+</body>
+</html>

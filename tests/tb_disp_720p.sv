@@ -1,7 +1,8 @@
-// ①a 回归 TB（2026-10-28）
-//   模式 0（对比）：逐像素校验「原画左 640 + 风格右 640」，用于改前/改后比对。
-//   模式 1（单画面）：校验 320×240 结果 4× 最近邻 + 垂直裁 30 行后铺满 1280×720。
-//   +single=0/1 选择；每帧打印 CHECKSUM。
+// 显示回归 TB（2026-10-31）
+//   模式 0（对比）：左半屏完整原画 640×360，右半屏完整风格 320×180→2×；
+//     垂直居中（v=205..564），上下各 180 行黑边。
+//   模式 1（单画面）：风格 320×180（裁掉采集上下黑边）4× 铺满 1280×720。
+//   逐像素校验；+single=0/1 选择；每帧打印 CHECKSUM。
 `timescale 1ns/1ps
 module tb_disp_720p;
   reg clk=0,pix_clk=0;always #5 clk=~clk;always #6.734 pix_clk=~pix_clk;
@@ -52,13 +53,18 @@ module tb_disp_720p;
     end
   end
 
+  //   对比：图片区 v=205..564，左半（h<900）原画 1:1（行 60+(v-205)、x h-260）；
+  //         右半（h>=900）风格 2×（行 30+((v-205)>>1)、x (h-900)>>1）；其余为黑边。
+  //   单画面：整屏风格 4×（行 30+((v-25)>>2)、x (h-260)>>2）。
   function [31:0] expect_pix(input integer vv, input integer hh);
-    integer sy,sx;begin
+    integer sy,sx,d;begin
+      d=vv-25;
       if(!single)begin
-        if(hh<900)expect_pix=value(0,0,(vv-145),hh-260);
-        else begin sy=(vv-145)>>1;sx=(hh-900)>>1;expect_pix=value(0,1,sy,sx)^32'h00808080;end
+        if(vv<205||vv>=565)expect_pix=0;
+        else if(hh<900)expect_pix=value(0,0,60+(vv-205),hh-260);
+        else begin sy=30+((vv-205)>>1);sx=(hh-900)>>1;expect_pix=value(0,1,sy,sx)^32'h00808080;end
       end else begin
-        sy=(vv-25)/3;sx=(hh-420)/3;
+        sy=30+(d>>2);sx=(hh-260)>>2;
         expect_pix=value(0,1,sy,sx)^32'h00808080;
       end
     end
@@ -72,9 +78,7 @@ module tb_disp_720p;
     // 帧首锁存的模式还不等于请求模式时（复位后第一帧），整帧不检查
     if(de&&(dut.sp_lat===single))begin
       n=n+1;sum=sum+pixel;cx=cx^pixel;
-      if((!single&&(oldv<145||oldv>=625))||(single&&(oldh<420||oldh>=1380)))begin
-        if(pixel!==0)$fatal(1,"letterbox not black v=%0d",oldv);
-      end else if(underflow)begin
+      if(underflow)begin
         uf=uf+1;
         if(pixel!==0)$fatal(1,"underflow not black v=%0d h=%0d",oldv,oldh);
       end else begin

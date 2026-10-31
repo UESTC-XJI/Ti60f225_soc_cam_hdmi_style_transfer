@@ -2,6 +2,7 @@
 module style_display_tb;
  reg clk=0,pix_clk=0;always #5 clk=~clk;always #6.734 pix_clk=~pix_clk;
  reg rst_n=0;reg [2:0] display_slot=2;reg display_valid=1;
+ reg single_panel=0;reg original_single=0;
  wire display_frame_event,display_safe;wire [31:0] pixel,dma_errors;wire hs,vs,de,underflow;
  wire read_urgent;
  wire [31:0] araddr;wire [7:0] arlen;wire arvalid,rready;
@@ -16,7 +17,9 @@ module style_display_tb;
    integer slot,offset,right_side,row,x,k;reg [31:0] base;
    begin
      right_side=a>=32'h05800000;base=right_side?32'h05800000:32'h05000000;
-     slot=(a-base)/32'h140000;offset=(a-base)%32'h140000;row=offset/2560;x=(offset%2560)/4;
+     slot=(a-base)/32'h140000;offset=(a-base)%32'h140000;
+     row=right_side?offset/1280:offset/2560;
+     x=right_side?(offset%1280)/4:(offset%2560)/4;
      for(k=0;k<4;k=k+1)data_at[k*32+:32]=value(slot,right_side,row,x+k);
    end
  endfunction
@@ -43,12 +46,14 @@ module style_display_tb;
    #1;
    if(hs!==(oldh<40)||vs!==(oldv<5)||de!==(oldv>=25&&oldv<745&&oldh>=260&&oldh<1540))$fatal(1,"720p sync stopped");
    if(de)begin
-     if(oldv<145||oldv>=625)begin if(pixel!==0)$fatal(1,"letterbox not black");end
+     if(oldv<205||oldv>=565)begin if(pixel!==0)$fatal(1,"letterbox not black");end
      else if(underflow)begin
        if(pixel!==0)$fatal(1,"underflow not black");bad_pixels=bad_pixels+1;
-       if(frames!=1)$fatal(1,"unexpected starvation frame=%0d row=%0d x=%0d",frames,oldv-145,oldh-260);
+       if(frames!=1)$fatal(1,"unexpected starvation frame=%0d row=%0d x=%0d",frames,oldv-205,oldh-260);
      end else begin
-       if(pixel!==value(frames==2?4:2,oldh>=900,oldv-145,(oldh-260)%640))$fatal(1,"paired DDR pixel frame=%0d row=%0d x=%0d got=%h",frames,oldv-145,oldh-260,pixel);
+       if(pixel!==(oldh<900 ? value(frames==2?4:2,0,60+(oldv-205),oldh-260)
+                            : value(frames==2?4:2,1,30+((oldv-205)>>1),(oldh-900)>>1)^32'h00808080))
+         $fatal(1,"paired DDR pixel frame=%0d row=%0d x=%0d got=%h",frames,oldv-205,oldh-260,pixel);
        good_pixels=good_pixels+1;
      end
    end

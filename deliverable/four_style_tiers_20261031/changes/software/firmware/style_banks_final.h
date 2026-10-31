@@ -1,0 +1,23 @@
+#pragma once
+#define STYLE_BANK_EXTRA_WORDS 3612u
+/* 4 styles x 5 tiers: starry/candy/mosaic/feathers */
+#include "style_bank_mosaic_l1200.h"
+#include "style_bank_mosaic_l200.h"
+#include "style_bank_mosaic_t025.h"
+#include "style_bank_mosaic_t05.h"
+#include "style_bank_mosaic_t1.h"
+#include "style_bank_starry_sw5.h"
+#include "style_bank_starry_sw10.h"
+#include "style_bank_starry_sw15.h"
+#include "style_bank_starry_sw20.h"
+#include "style_bank_starry_sw25.h"
+#include "style_bank_candy_sw1p5.h"
+#include "style_bank_candy_sw2.h"
+#include "style_bank_candy_sw2p5.h"
+#include "style_bank_candy_sw3.h"
+#include "style_bank_candy_sw4.h"
+#include "style_bank_feathers_sw1.h"
+#include "style_bank_feathers_sw3.h"
+#include "style_bank_feathers_sw3p5.h"
+#include "style_bank_feathers_sw4.h"
+#include "style_bank_feathers_sw5.h"

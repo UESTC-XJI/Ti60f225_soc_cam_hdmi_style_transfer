@@ -23,17 +23,17 @@ KEY1/VIEW 复用 B 已有的帧首锁存与显示几何；单风格显示保持 
 
 | 原始 {SW2,SW1} / KNOB 数值 | 风格 |
 |---|---|
-| 00 / 0 | G3 彩虹，BANK 4 rainbow |
-| 01 / 1 | G1 星空，BANK 0 starry_old |
-| 10 / 2 | G2 红天，BANK 3 red_v3_dc |
-| 11 / 3 | G4 保持当前 BANK |
+| 00 / 0 | G3 mosaic（style 2，5 档） |
+| 01 / 1 | G1 starry 星空（style 0，5 档） |
+| 10 / 2 | G2 candy 糖果（style 1，5 档） |
+| 11 / 3 | G4 feathers 羽毛（style 3，5 档） |
 
 实体旋钮在 main.c 保持原路径（两级同步，20 ms 消抖，约 1 kHz 服务）。蓝牙选档或 SLOT 选择后，下次实体档位发生稳定变化时接管。
 
 - `VIEW` 切换；`VIEW,0` 单风格；`VIEW,1` 对比。
 - `OSD` 切换；`OSD,0/1` 关闭/打开 FPS。
 - `KNOB,0..3` 按上表选择，回 KNOB、SLOT、BANK。
-- `SLOT` 查询；`SLOT,0..4` 选择真实权重 BANK，回 SLOT 和 BANK。0=starry_old，1=starry_v7，2=starry_v8，3=red_v3_dc，4=rainbow。
+- `SLOT` 查询；`SLOT,0..3` 选择风格（0=starry，1=candy，2=mosaic，3=feathers），回 SLOT/BANK/TIER；每个风格 5 档，用 `TIER,<style>,<0..4>` 调整，默认第 3 档。
 - `STATE` 返回 KNOB、SLOT、BANK、OSD、VIEW、RATE。KNOB 为上次实体/远程旋钮值，SLOT/BANK 为实际活动权重；直接 SLOT 选 BANK 不伪造旋钮位置。
 - `RATE` 查询；`RATE,n` 设置限速，范围 200..12800 B/s，默认 1500。
 - `SNAP[,320[,q[,win]]]` 仅支持原生 320×240；质量 1..100，默认 60；窗口 1..8，默认 4。160/640 返回 IMG,ERR,ARG。

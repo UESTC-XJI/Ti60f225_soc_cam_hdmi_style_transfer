@@ -32,7 +32,7 @@
 | RAM / DSP | **202 / 256**、**147 / 160** | PnR 后 |
 | 时序 | vid_clk_dvi2 **+0.441 ns**、core_clk +2.032、hdmi_tx_slow +5.787 | I3 时序模型 |
 | 网络 | 12 层 3×3 INT8，**5,400 个参数** | 部署 blob 14,448 B |
-| 显示 | 720p60 | 左原画 / 右风格，按键可切全屏 |
+| 显示 | 720p60 | 左完整原画 / 右完整风格（等比，上下黑边），按键切单画面 4× 全屏 |
 | **多风格切换** | **4 套**，SWT **43–90 ms** | < 100 ms 达标，切换时 DROP 不增 |
 
 ### 与标准网络的对比
@@ -54,14 +54,14 @@
 SC431HAI (1920×1080 RAW10, 4-lane MIPI)
    ↓ 内置 D-PHY + CSI-2 RX
 debayer (BGGR) + ISP
-   ↓ 中心裁 1280×960 → 2×2 均值降采样
+   ↓ 全幅 3×3 均值压缩 → 640×360，上下补 60 行黑边
 640×480 {B,G,R,X} → DDR 捕获 slot（6 个三态轮转）
    ↓
 rowpipe 加速器（12 层，层内行流水，单实例复用）
    ↓
 320×240 结果帧 → DDR（显示端 2× 最近邻放大到 640×480）
    ↓
-720p60 HDMI（左原画 / 右风格）
+720p60 HDMI（左完整原画 / 右完整风格，等比；按键切单画面 4× 全屏）
 ```
 
 ### 网络（12 层 dense 3×3，全 INT8）
@@ -177,7 +177,7 @@ python tools/smoke_test.py                     # 3. 冒烟测试（必做）
 串口 115200：发 `s` 列清单，发 `1`–`4` 切换。
 
 ```
-STYLE BANKS 1:starry_old* 2:starry_v7 3:starry_v8 4:red_v3_dc
+STYLE BANKS 1:starry 2:candy 3:mosaic 4:feathers
 STYLE SW 2 starry_v7 ok wait 17274us copy 1041us
 ```
 

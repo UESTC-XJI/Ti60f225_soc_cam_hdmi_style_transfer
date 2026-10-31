@@ -117,7 +117,7 @@ def main():
     s.close()
     print()
     print("=" * 56)
-    print("裁决：" + ("全过 ✓" if ok else "**有失败 —— 不要继续，先回退**"))
+    print("裁决：" + ("全过 PASS" if ok else "**有失败 —— 不要继续，先回退**"))
     print("=" * 56)
     return 0 if ok else 1
 

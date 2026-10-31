@@ -16,14 +16,19 @@ module style_capture_tb;
  function [23:0] color(input integer x,y);
    color={8'(x*3+y*5),8'(x*7+y*11),8'(x*13+y*17)};
  endfunction
+ // 2026-10-30: full-frame 3x3 average -> 640x360, letterboxed to 640x480.
+ // Output row 0..59 and 420..479 are black; row 60+r is source rows 3r..3r+2.
  function [31:0] expected_pixel(input integer p);
-   integer x,y,c,dx,dy,total;reg [23:0] sample;
+   integer row,col,x,y,c,dx,dy,total;reg [23:0] sample;
    begin
-     x=320+(p%640)*2;y=60+(p/640)*2;expected_pixel=0;
-     for(c=0;c<3;c=c+1)begin
-       total=0;
-       for(dx=0;dx<2;dx=dx+1)for(dy=0;dy<2;dy=dy+1)begin sample=color(x+dx,y+dy);total=total+sample[c*8+:8];end
-       expected_pixel[c*8+:8]=(total+2)/4;
+     row=p/640;col=p%640;expected_pixel=0;
+     if(row>=60&&row<420)begin
+       x=col*3;y=(row-60)*3;
+       for(c=0;c<3;c=c+1)begin
+         total=0;
+         for(dx=0;dx<3;dx=dx+1)for(dy=0;dy<3;dy=dy+1)begin sample=color(x+dx,y+dy);total=total+sample[c*8+:8];end
+         expected_pixel[c*8+:8]=(total+4)/9;
+       end
      end
    end
  endfunction
@@ -31,26 +36,44 @@ module style_capture_tb;
  always @(posedge cnn_clk)if(valid&&!input_ready)$fatal(1,"capture FIFO overflow");
  always @(posedge clk)begin
    rng<={rng[30:0],rng[31]^rng[21]^rng[1]^rng[0]};
+   // Check only the committed frame.  After its eof the crop opens the next
+   // frame's top bars (sof) immediately, and this TB never feeds that frame's
+   // image, so those trailing writes belong to a partial frame in slot 1 and
+   // must not be counted.
    if(awvalid&&awready)begin
-     if(awaddr!==32'h05000000+words*4||awlen!=31)$fatal(1,"capture address");wa<=1;beats=0;bursts=bursts+1;
+     if(!captured)begin
+       if(awaddr!==32'h05000000+words*4||awlen!=31)$fatal(1,"capture address aw=%h want=%h len=%0d words=%0d",awaddr,32'h05000000+words*4,awlen,words);
+       bursts=bursts+1;
+     end
+     wa<=1;beats=0;
    end
    if(wvalid&&wready)begin
-     if(wstrb!=16'hffff||wlast!==(beats==31))$fatal(1,"capture write protocol");
-     for(integer k=0;k<4;k=k+1)if(wdata[k*32+:32]!==expected_pixel(words+k))$fatal(1,"VGA capture pixel %0d",words+k);
-     words=words+4;beats=beats+1;if(wlast)begin wa<=0;bvalid<=1;end
+     if(!captured)begin
+       if(wstrb!=16'hffff||wlast!==(beats==31))$fatal(1,"capture write protocol");
+       for(integer k=0;k<4;k=k+1)if(wdata[k*32+:32]!==expected_pixel(words+k))$fatal(1,"VGA capture pixel %0d",words+k);
+       words=words+4;
+     end
+     beats=beats+1;if(wlast)begin wa<=0;bvalid<=1;end
    end
    if(bvalid&&bready)bvalid<=0;
  end
- integer xx,yy;
+ integer xx,yy,fr;
  initial begin
-   repeat(5)@(negedge cnn_clk);rst_n=1;i_vs=1;repeat(4)@(negedge cnn_clk);i_vs=0;repeat(3)@(negedge cnn_clk);
-   for(yy=0;yy<1080;yy=yy+1)begin
-     for(xx=0;xx<960;xx=xx+1)begin i_de=1;i_rgb={color(xx*2+1,yy),color(xx*2,yy)};@(negedge cnn_clk);end
-     i_de=0;repeat(40)@(negedge cnn_clk);
+   repeat(5)@(negedge cnn_clk);rst_n=1;repeat(3)@(negedge cnn_clk);
+   // Two sensor frames: the first one only fills the line buffers before the
+   // letterbox stream opens (its sof sits after the first bottom-bar block),
+   // so the store commits the second one.
+   for(fr=0;fr<2;fr=fr+1)begin
+     i_vs=1;repeat(4)@(negedge cnn_clk);i_vs=0;repeat(3)@(negedge cnn_clk);
+     for(yy=0;yy<1080;yy=yy+1)begin
+       for(xx=0;xx<960;xx=xx+1)begin i_de=1;i_rgb={color(xx*2+1,yy),color(xx*2,yy)};@(negedge cnn_clk);end
+       i_de=0;repeat(40)@(negedge cnn_clk);
+     end
+     repeat(400000)@(negedge cnn_clk);   // 1080p30 vertical blanking
    end
    wait(captured==1);@(negedge clk);
    if(words!=307200||bursts!=2400||dropped||fault||completed_frames!=1||store.ready_count!=1)$fatal(1,"full capture counts");
    $display("PASS full 1080p -> VGA capture: 307200 exact XBGR pixels, 2400 DDR bursts, 148.5/100MHz FIFO, no overflow");$finish;
  end
- initial begin #15000000;$fatal(1,"capture timeout");end
+ initial begin #40000000;$fatal(1,"capture timeout");end
 endmodule

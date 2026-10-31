@@ -21,16 +21,9 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
   output wire [15:0] gain_r,gain_g,gain_b,
   output wire [31:0] display_tone,display_lift,
   input wire [1:0] keys_in,  // synchronized {KEY1,KEY0}; 1 = pressed
-  output reg [2:0] ui_control, // [0] FPS overlay, [1] compare; consumed with frame-boundary latches
-  input wire [2:0] boot_status,
-  output reg boot_start_toggle,boot_live_arm,
+  output reg [1:0] ui_control, // [0] FPS overlay, [1] compare; consumed with frame-boundary latches
   output wire [2:0] display_hist
 );
-  (* async_reg="true" *) reg [2:0] boot_status_meta,boot_status_sync;
-  always @(posedge pclk or negedge preset_n)begin
-    if(!preset_n)begin boot_status_meta<=0;boot_status_sync<=0;end
-    else begin boot_status_meta<=boot_status;boot_status_sync<=boot_status_meta;end
-  end
   wire legacy_hit=paddr<=16'h0030;
   wire [31:0] legacy_data=(paddr==16'h0000)?CORE_ID:32'd0;
   wire legacy_ready=1'b1,legacy_error=1'b0;
@@ -117,10 +110,8 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
       16'h0ec:prdata=1;
       16'h100:begin ext_writable=1;prdata={29'd0,disp_shadow[82:80]};end
       16'h104:prdata={29'd0,disp_mirror[82:80]};
-      16'h130:begin ext_writable=1;prdata={29'd0,ui_control};if(pwrite&&pwdata[31:3]!=0)value_error=1;end
+      16'h130:begin ext_writable=1;prdata={30'd0,ui_control};if(pwrite&&pwdata[31:2]!=0)value_error=1;end
       16'h134:prdata={30'd0,keys_in};
-      16'h138:begin ext_writable=1;prdata={30'd0,boot_live_arm,boot_start_toggle};if(pwrite&&pwdata[31:2]!=0)value_error=1;end
-      16'h13c:prdata={29'd0,boot_status_sync};
       16'h140:prdata=fault_sticky;
       16'h144:prdata=drop_count32;
       16'h148:prdata=axi_errors32;
@@ -160,10 +151,11 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
   wire [7:0] ae_l0 = ae_y0[9:2], ae_l1 = ae_y1[9:2];
   wire ae_hot0 = rgb_data[7:0]>=8'd232 || rgb_data[15:8]>=8'd232 || rgb_data[23:16]>=8'd232;
   wire ae_hot1 = rgb_data[31:24]>=8'd232 || rgb_data[39:32]>=8'd232 || rgb_data[47:40]>=8'd232;
-  // AE meters the same central 1280x960 region the style crop uses
-  // (1920x1080 -> center 1280x960 -> 2x2 -> 640x480). Two pixels per de
-  // cycle: pairs 160..799, rows 60..1019; samples = 1,228,800.
-  wire ae_in_crop = (ae_x>=10'd160)&&(ae_x<10'd800)&&(ae_row>=11'd60)&&(ae_row<11'd1020);
+  // AE meters the whole 1920x1080 sensor frame: the style path now compresses
+  // the full frame (3x3 area average -> 640x360 letterboxed to 640x480)
+  // instead of cropping the centre. Two pixels per de cycle:
+  // samples = 1920*1080 = 2,073,600 (fits the 21-bit ae_n/ae_hot counters).
+  wire ae_in_crop = 1'b1;
   always @(posedge capture_clk or negedge preset_n) begin
     if(!preset_n) begin ae_y<=0; ae_n<=0; ae_hot<=0; ae_frame<=0; ae_x<=0; ae_row<=0; vs_d<=0; ae_valid<=0; ae_payload<=0; end
     else begin
@@ -206,7 +198,7 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
       cap_shadow<=CAP_DEFAULT;cap_pending<=CAP_DEFAULT;cap_mirror<=CAP_DEFAULT;
       disp_shadow<=DISP_DEFAULT;disp_pending<=DISP_DEFAULT;disp_mirror<=DISP_DEFAULT;
       cap_req<=0;disp_req<=0;cap_seen<=0;disp_seen<=0;cap_ack_sync<=0;disp_ack_sync<=0;cap_seq<=0;disp_seq<=0;
-      raw_frames<=0;ui_control<=3'b101;boot_start_toggle<=0;boot_live_arm<=0;
+      raw_frames<=0;ui_control<=2'b11;
       faults_meta<=0;faults_sync<=0;csi_meta<=0;csi_sync<=0;reset_meta<=0;reset_sync<=0;fault_sticky<=0;
     end else begin
       if(raw_event)raw_frames<=raw_frames+1'b1;
@@ -231,11 +223,7 @@ module video_apb_ctrl #(parameter integer CHAR_ADDR_W=7,parameter [31:0] CORE_ID
         16'h084:disp_shadow[79:64]<=pwdata[15:0];
         16'h0d4:cap_shadow[55:48]<=pwdata[7:0];
         16'h100:disp_shadow[82:80]<=pwdata[2:0];
-        16'h130:ui_control<=pwdata[2:0];
-        16'h138:begin
-          if(pwdata[0])begin boot_start_toggle<=!boot_start_toggle;boot_live_arm<=0;end
-          else boot_live_arm<=pwdata[1];
-        end
+        16'h130:ui_control<=pwdata[1:0];
         16'h190:cap_shadow[87:56]<=pwdata&32'h00ffff01;
         16'h194:cap_shadow[103:88]<=pwdata[15:0];
         default:;

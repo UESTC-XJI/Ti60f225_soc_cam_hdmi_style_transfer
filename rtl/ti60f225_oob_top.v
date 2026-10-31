@@ -587,8 +587,7 @@ assign io_cam_sda_OUT = soc_i2c_sda_out;
 assign io_cam_scl_OE = ~soc_i2c_scl_out;
 assign io_cam_sda_OE = ~soc_i2c_sda_out;
 wire [31:0] soc_axi_error_count;
-wire [2:0] video_ui_control;
-wire boot_start_toggle,boot_live_arm,boot_busy,boot_done,boot_selected,style_frame_valid;
+wire [1:0] video_ui_control;
 wire osd_apb_enable; wire [11:0] osd_apb_x,osd_apb_y; wire [23:0] osd_apb_color;
 wire osd_apb_char_we,osd_apb_char_page,osd_apb_commit_toggle,osd_apb_commit_page; wire [6:0] osd_apb_char_addr; wire [7:0] osd_apb_char_data;
 wire osd_db_ack,osd_db_active,osd_db_busy,osd_video_ready;
@@ -627,7 +626,7 @@ assign soc_apb_pready=style_select ? style_pready:video_pready;
 assign soc_apb_pslverr=style_select ? style_pslverr:video_pslverr;
 style_video_system style_demo(
   .clk(core_clk),.cnn_clk(vid_clk_dvi2),.pix_clk(hdmi_tx_slow_clk),.rst_n(status_reset_n&&!soc_system_reset),
-  .compare_enable(video_ui_control[1]),.original_single(video_ui_control[2]),.frame_valid(style_frame_valid),
+  .compare_enable(video_ui_control[1]),
   .rgb_vs(rgb_vs),.rgb_de(rgb_de),.rgb_data(rgb_datax2),
   .psel(soc_apb_psel&&style_select),.penable(soc_apb_penable),.pwrite(soc_apb_pwrite),.paddr(soc_apb_paddr[7:0]),.pwdata(soc_apb_pwdata),
   .prdata(style_prdata),.pready(style_pready),.pslverr(style_pslverr),.irq(style_irq),
@@ -678,7 +677,6 @@ always @(posedge i_mipi_rx_pclk or negedge csi_reset_n)
     mdebug_line_vc0_error,mdebug_undersize_pkt_error,mdebug_ecc_2bit_error,mdebug_ecc_1bit_error,mdebug_crc_error};
 video_apb_ctrl osd_apb(
   .knob_in({sw2_sync,sw1_sync}),.keys_in(key_sync),.ui_control(video_ui_control),
-  .boot_status({boot_selected,boot_done,boot_busy}),.boot_start_toggle(boot_start_toggle),.boot_live_arm(boot_live_arm),
   .capture_clk(vid_clk_dvi2),.display_clk(hdmi_tx_slow_clk),
   .raw_vs(capture_vs),.raw_de(capture_de),.raw_data(capture_raw),
   .rgb_vs(rgb_vs),.rgb_de(rgb_de),.rgb_data(rgb_datax2),.display_vs(ch0_vs),
@@ -943,6 +941,8 @@ always @(posedge hdmi_tx_slow_clk or negedge display_reset_n) begin
     end else fps_tick <= fps_tick + 1'b1;
   end
 end
+// 2026-10-31: FPS text overlay re-enabled with its 5x7 font stored in one
+// BRAM (128x5) instead of LUTs, so it fits alongside the boot animation.
 fps_overlay u_fps_overlay(
   .clk(hdmi_tx_slow_clk), .rst_n(display_reset_n),.i_enable(video_ui_control[0]),
   .i_vs(lift_vs), .i_hs(lift_hs), .i_de(lift_de),
@@ -961,15 +961,27 @@ wire [7:0] bar_r,bar_g,bar_b;
 
 wire out_vs,out_hs,out_de;
 wire [7:0] out_r,out_g,out_b;
+// 2026-10-31: power-on boot animation, auto-started in RTL (no boot firmware).
+// The qse master's SoC stays untouched; the boot image plays once, then the
+// live compare/single display is selected ~7.2 s after HDMI reset.
+reg boot_start_toggle,boot_live_arm;
+wire boot_busy,boot_done,boot_selected;
+reg [21:0] boot_dly;   // ~56 ms @74.25 MHz
+reg [29:0] boot_arm_dly; // ~7.2 s
+always @(posedge hdmi_tx_slow_clk or negedge hdmi_output_reset_n) begin
+  if(!hdmi_output_reset_n) begin
+    boot_dly<=0;boot_arm_dly<=0;boot_start_toggle<=0;boot_live_arm<=0;
+  end else begin
+    if(boot_dly!=22'h3FFFFF)boot_dly<=boot_dly+1'b1; else boot_start_toggle<=1'b1;
+    if(boot_arm_dly!=30'h20000000)boot_arm_dly<=boot_arm_dly+1'b1; else boot_live_arm<=1'b1;
+  end
+end
 boot_splash startup_page(
-  .clk(hdmi_tx_slow_clk),.rst_n(hdmi_output_reset_n),.start_toggle(boot_start_toggle),
-  .live_arm(boot_live_arm),.live_valid(style_frame_valid),
+  .clk(hdmi_tx_slow_clk),.rst_n(hdmi_output_reset_n),
+  .start_toggle(boot_start_toggle),.live_arm(boot_live_arm),.live_valid(1'b1),
   .live_hs(db_hs),.live_vs(db_vs),.live_de(db_de),.live_r(db_r),.live_g(db_g),.live_b(db_b),
   .out_hs(out_hs),.out_vs(out_vs),.out_de(out_de),.out_r(out_r),.out_g(out_g),.out_b(out_b),
   .busy(boot_busy),.done(boot_done),.selected(boot_selected));
-// pp_probe 已摘除（10-20）：pp 线降级为独立工程/空闲填充，不进合并图综合树。
-// 备份：rtl/ti60f225_oob_top.v.pre_pp
-
 
 
 dvi_encoder dvi_encoder_m0

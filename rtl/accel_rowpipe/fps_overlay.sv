@@ -74,91 +74,52 @@ module fps_overlay(
 
     wire [10:0] tx = (x - TEX_X0 - 2);
     wire [9:0]  ty = (y - TEX_Y0 - 2);
-    wire [2:0]  ch = tx / (GW*SCALE + 2);       // 0..4：F,P,S,十位,个位
+    wire [2:0]  ch = tx / (GW*SCALE + 2);       // 0..4: F,P,S,tens,ones
     wire [10:0] cx = tx % (GW*SCALE + 2);
     wire [9:0]  cy = ty;
-    wire [3:0]  gx = cx[4:1];                   // /SCALE = /2，0..5
-    wire [3:0]  gy = cy[3:1];                   // /2，0..7
+    wire [3:0]  gx = cx[4:1];                   // /SCALE = /2, 0..5
+    wire [3:0]  gy = cy[3:1];                   // /2, 0..7
 
-    // 5×7 字模（行 0..6，列 0..4，MSB=左）
-    function automatic lit;
-        input [2:0] c;
-        input [2:0] col;
-        input [2:0] row;
-        reg [4:0] r0,r1,r2,r3,r4,r5,r6;
-        begin
-            r0=0; r1=0; r2=0; r3=0; r4=0; r5=0; r6=0;
-            case (c)
-            3'd0: begin // F
-                r0=5'b11111; r1=5'b10000; r2=5'b10000; r3=5'b11110;
-                r4=5'b10000; r5=5'b10000; r6=5'b10000;
-            end
-            3'd1: begin // P
-                r0=5'b11110; r1=5'b10001; r2=5'b10001; r3=5'b11110;
-                r4=5'b10000; r5=5'b10000; r6=5'b10000;
-            end
-            3'd2: begin // S
-                r0=5'b01111; r1=5'b10000; r2=5'b10000; r3=5'b01110;
-                r4=5'b00001; r5=5'b00001; r6=5'b11110;
-            end
-            3'd3: begin // tens
-                case (d1)
-                4'd0: begin r0=5'b01110;r1=5'b10001;r2=5'b10011;r3=5'b10101;r4=5'b11001;r5=5'b10001;r6=5'b01110; end
-                4'd1: begin r0=5'b00100;r1=5'b01100;r2=5'b00100;r3=5'b00100;r4=5'b00100;r5=5'b00100;r6=5'b01110; end
-                4'd2: begin r0=5'b01110;r1=5'b10001;r2=5'b00001;r3=5'b00010;r4=5'b00100;r5=5'b01000;r6=5'b11111; end
-                4'd3: begin r0=5'b11111;r1=5'b00010;r2=5'b00100;r3=5'b00010;r4=5'b00001;r5=5'b10001;r6=5'b01110; end
-                4'd4: begin r0=5'b00010;r1=5'b00110;r2=5'b01010;r3=5'b10010;r4=5'b11111;r5=5'b00010;r6=5'b00010; end
-                4'd5: begin r0=5'b11111;r1=5'b10000;r2=5'b11110;r3=5'b00001;r4=5'b00001;r5=5'b10001;r6=5'b01110; end
-                4'd6: begin r0=5'b01110;r1=5'b10000;r2=5'b11110;r3=5'b10001;r4=5'b10001;r5=5'b10001;r6=5'b01110; end
-                4'd7: begin r0=5'b11111;r1=5'b00001;r2=5'b00010;r3=5'b00100;r4=5'b01000;r5=5'b01000;r6=5'b01000; end
-                4'd8: begin r0=5'b01110;r1=5'b10001;r2=5'b10001;r3=5'b01110;r4=5'b10001;r5=5'b10001;r6=5'b01110; end
-                default: begin r0=5'b01110;r1=5'b10001;r2=5'b10001;r3=5'b01111;r4=5'b00001;r5=5'b00001;r6=5'b01110; end
-                endcase
-            end
-            3'd4: begin // ones
-                case (d0)
-                4'd0: begin r0=5'b01110;r1=5'b10001;r2=5'b10011;r3=5'b10101;r4=5'b11001;r5=5'b10001;r6=5'b01110; end
-                4'd1: begin r0=5'b00100;r1=5'b01100;r2=5'b00100;r3=5'b00100;r4=5'b00100;r5=5'b00100;r6=5'b01110; end
-                4'd2: begin r0=5'b01110;r1=5'b10001;r2=5'b00001;r3=5'b00010;r4=5'b00100;r5=5'b01000;r6=5'b11111; end
-                4'd3: begin r0=5'b11111;r1=5'b00010;r2=5'b00100;r3=5'b00010;r4=5'b00001;r5=5'b10001;r6=5'b01110; end
-                4'd4: begin r0=5'b00010;r1=5'b00110;r2=5'b01010;r3=5'b10010;r4=5'b11111;r5=5'b00010;r6=5'b00010; end
-                4'd5: begin r0=5'b11111;r1=5'b10000;r2=5'b11110;r3=5'b00001;r4=5'b00001;r5=5'b10001;r6=5'b01110; end
-                4'd6: begin r0=5'b01110;r1=5'b10000;r2=5'b11110;r3=5'b10001;r4=5'b10001;r5=5'b10001;r6=5'b01110; end
-                4'd7: begin r0=5'b11111;r1=5'b00001;r2=5'b00010;r3=5'b00100;r4=5'b01000;r5=5'b01000;r6=5'b01000; end
-                4'd8: begin r0=5'b01110;r1=5'b10001;r2=5'b10001;r3=5'b01110;r4=5'b10001;r5=5'b10001;r6=5'b01110; end
-                default: begin r0=5'b01110;r1=5'b10001;r2=5'b10001;r3=5'b01111;r4=5'b00001;r5=5'b00001;r6=5'b01110; end
-                endcase
-            end
-            default: ;
-            endcase
-            case (row)
-            3'd0: lit = r0[4-col];
-            3'd1: lit = r1[4-col];
-            3'd2: lit = r2[4-col];
-            3'd3: lit = r3[4-col];
-            3'd4: lit = r4[4-col];
-            3'd5: lit = r5[4-col];
-            default: lit = r6[4-col];
-            endcase
+    // Glyph ROM: 0=F,1=P,2=S, 3..12=digits 0..9.  128x5 bits = one BRAM.
+    wire [3:0] glyph = (ch==3'd0)?4'd0 : (ch==3'd1)?4'd1 : (ch==3'd2)?4'd2 :
+                       (ch==3'd3)?(4'd3+d1) : (4'd3+d0);
+    wire [6:0] font_addr = {glyph, gy[2:0]};
+    (* ram_style="block" *) reg [4:0] font_rom [0:127];
+    initial $readmemh("assets/fps_font.hex", font_rom);
+    reg [4:0] font_q;
+
+    reg s_vs,s_hs,s_de;reg [7:0] s_r,s_g,s_b;
+    reg s_in_box,s_in_text,s_gx_ok,s_gy_ok;reg [3:0] s_gx;
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n) begin
+            font_q<=5'd0;s_vs<=0;s_hs<=0;s_de<=0;s_r<=0;s_g<=0;s_b<=0;
+            s_in_box<=0;s_in_text<=0;s_gx_ok<=0;s_gy_ok<=0;s_gx<=0;
+        end else begin
+            font_q <= font_rom[font_addr];
+            s_vs<=i_vs;s_hs<=i_hs;s_de<=i_de;
+            s_r<=i_r;s_g<=i_g;s_b<=i_b;
+            s_in_box<=in_box;s_in_text<=in_text;
+            s_gx_ok<=(gx<GW);s_gy_ok<=(gy<GH);s_gx<=gx;
         end
-    endfunction
+    end
 
-    wire px_lit = in_text && (gx < GW) && (gy < GH) && lit(ch, gx, gy);
+    wire [2:0] s_col = (s_gx<4'd5)?s_gx[2:0]:3'd0;
+    wire px_lit = s_in_text && s_gx_ok && s_gy_ok && font_q[4-s_col];
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             o_vs<=0; o_hs<=0; o_de<=0; o_r<=0; o_g<=0; o_b<=0;
         end else begin
-            o_vs <= i_vs; o_hs <= i_hs; o_de <= i_de;
-            if (in_box) begin
+            o_vs<=s_vs; o_hs<=s_hs; o_de<=s_de;
+            if (s_in_box) begin
                 if (px_lit) begin o_r<=8'hff; o_g<=8'hff; o_b<=8'hff; end
                 else        begin o_r<=8'h00; o_g<=8'h00; o_b<=8'h00; end
             end else begin
-                o_r <= i_r; o_g <= i_g; o_b <= i_b;
+                o_r<=s_r; o_g<=s_g; o_b<=s_b;
             end
         end
     end
 
-    // coef 口不使用
+    // coef port unused
     wire _unused = i_fps[15];
 endmodule

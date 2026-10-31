@@ -1,7 +1,13 @@
 // Fixed 720p60 timing. Missing pixels become black without stopping sync.
-// 2026-10-28（①a）：单画面铺满 1280×720 —— 320×240 结果帧 4× 最近邻、垂直裁上下各 30 行。
-//   对比模式（single_panel=0）逐拍不变：窗口 640..1220、行号 1:1、风格侧 2× 全部原样。
-// DDR only supplies the two VGA rectangles; the 120-line bars are generated.
+// 2026-10-31：对比模式 = 左右两幅完整画面；单画面 = 裁黑边 4× 全屏。
+//   采集自 2026-10-30 起输出「640×360 活动画面 + 上下各 60 行黑边」（风格槽
+//   320×240 = 320×180 + 上下各 30 行）。显示端只取活动行：
+//   · 对比模式（single_panel=0）：左半屏（h=260..899）放**完整原画** 640×360
+//     (1:1)，右半屏（h=900..1539）放**完整风格画** 320×180 → 2× 最近邻 = 640×360。
+//     两幅垂直居中（DE 行 180..539），上下各留 180 行黑边；等比、不裁切、不变形。
+//   · 单画面（single_panel=1）：风格 320×180 4× 铺满 1280×720（裁掉采集黑边，
+//     整屏无黑边）。
+//   模式仍在帧首锁存。
 //
 // 2026-10-28（A-4）：风格结果帧改为 **320×240 原生分辨率**（L11 半分辨率直写，
 //   rowpipe 的写通道不再做 2×2 复制）。放大搬到这里做**最近邻 2×2**：
@@ -18,15 +24,18 @@ module style_display #(parameter bit BUFFERED=1'b1)(
   output reg [31:0] pixel,output reg hs,vs,de,underflow,
   output reg [31:0] dma_errors,
   output wire read_urgent,
-  // single_panel=1 shows only the stylised result, scaled 4x to fill the whole
-  // 1280x720 raster (no side bands, no black rows: the 320x240 result is
-  // cropped to its middle 320x180 and stretched 4x in both axes), instead of the
-  // side-by-side original/stylised pair.  The mode is latched at the frame start
-  // (sp_lat) so switching it can never desynchronise the row-tagged pixel FIFO.
+  // single_panel=1 shows only the stylised result, 4x nearest-neighbour, filling
+  // the whole 1280x720 raster (the 320x240 result is cropped to its middle
+  // 320x180, i.e. the capture letterbox rows are dropped, then stretched 4x).
+  // single_panel=0 shows the two complete images side by side: the full
+  // original (640x360, 1:1) on the left and the full stylised result
+  // (320x180, 2x) on the right, centred vertically with 180-line black bars
+  // above and below.  No cropping and no aspect distortion in either mode.
+  // The mode is latched at the frame start (sp_lat) so switching it can never
+  // desynchronise the row-tagged pixel FIFO.
   // Two versions of it are resynchronised below: one for the pix_clk pixel path
   // and one for the clk row-fetch state machine.
   input wire single_panel,
-  input tri0 original_single,
   output wire [31:0] araddr,output wire [7:0] arlen,output wire arvalid,input wire arready,
   input wire [127:0] rdata,input wire [1:0] rresp,input wire rlast,rvalid,output wire rready
 );
@@ -35,22 +44,10 @@ module style_display #(parameter bit BUFFERED=1'b1)(
     if(!rst_n)begin sp_meta<=1'b0;sp_sync<=1'b0;end
     else begin sp_meta<=single_panel;sp_sync<=sp_meta;end
   end
-  //   ①a：显示模式**只在帧首生效**。单画面与对比模式的行映射不同（源行 = 显示行>>2 vs 1:1），
+  //   ①a：显示模式**只在帧首生效**。单画面与对比模式的行映射/复制倍数不同（>>2 vs >>1），
   //   若在帧中间切换，FIFO 里旧几何的包会和新 expect_row 错位：实测过渡帧 60% 像素黑/错
   //   （tb_disp_toggle：uf=554900）。帧首锁存后，切模式与 epoch 翻转同拍，旧包统一按
   //   「epoch 不符」清掉（不依赖行号比较，不会卡队头），切模式那一帧起就是干净画面。
-  (* async_reg="true" *) reg raw_meta,raw_sync,rawc_meta,rawc_sync;
-  reg raw_lat;
-  always @(posedge pix_clk or negedge rst_n)begin
-    if(!rst_n)begin raw_meta<=0;raw_sync<=0;end
-    else begin raw_meta<=original_single;raw_sync<=raw_meta;end
-  end
-  always @(posedge clk or negedge rst_n)begin
-    if(!rst_n)begin rawc_meta<=0;rawc_sync<=0;end
-    else begin rawc_meta<=raw_lat;rawc_sync<=rawc_meta;end
-  end
-  wire raw_single_pix=raw_lat&&single_panel_pix;
-  wire raw_single_clk=rawc_sync&&single_panel_clk;
   reg sp_lat;
   wire single_panel_pix=sp_lat;
   // The row-fetch state machine below runs in the clk domain, so it needs its
@@ -65,35 +62,41 @@ module style_display #(parameter bit BUFFERED=1'b1)(
   wire single_panel_clk=spc_sync;
   reg [10:0] h;reg [9:0] v;reg [7:0] epoch,epoch_gray;
   (* async_reg="true" *)reg [2:0] slot1,slot2;reg dv1,dv2;
-  // ---- 2026-10-28（①a）：单画面铺满 1280×720 ------------------------------
-  //   源 = 320×240 风格结果帧（A-4）。4× 最近邻：每源像素写 4 条 FIFO；
-  //   垂直取源行 30..209（240 行里裁掉上下各 30 行 = 25%），显示 720 行。
-  //   水平 320→1280 全宽，不拉伸 ⇒ 不变形。
-  //   **对比模式（single_panel=0）的窗口/行号/复制倍数完全不变。**
-  //   单画面每显示行都重取同一源行（行内没有垂直缓冲），DDR 读 720 行 × 320px。
-  //   单画面：1280 宽的 DE 窗口里居中放 960 宽（左右各 160 黑边）⇒ 420..1380
-  wire [10:0] img_x0=single_panel_pix ? 11'd420  : 11'd260;
-  wire [10:0] img_x1=single_panel_pix ? 11'd1380 : 11'd1540;
-  wire [9:0]  img_y0=single_panel_pix ? 10'd25  : 10'd145;
-  wire [9:0]  img_y1=single_panel_pix ? 10'd745 : 10'd625;
+  // ---- 2026-10-31：对比两幅完整画面 / 单画面无黑边 -------------------------
+  //   显示列 x = h-260 ∈ [0,1280)，DE 行 d = v-25 ∈ [0,720)。
+  //   源画面在 DDR 槽里带上下黑边（原画 60 行、风格 30 行），只取活动行。
+  //   对比模式（两幅完整画面，垂直居中）：
+  //     图片区 v=205..564（DE 行 180..539），上下各 180 行黑边。
+  //     左半屏 x<640：原画完整 640×360，1:1；源行 = 60+(v-205)，源 x = x
+  //     右半屏 x≥640：风格完整 320×180，2×：源行 = 30+((v-205)>>1)，
+  //                   源 x = (x-640)>>1（= (h-900)>>1）
+  //   单画面：整屏 1280×720，风格 320×180 4×：源行 = 30+(d>>2)，源 x = x>>2。
+  //   两种模式每显示行都重取源行（行内无垂直缓冲），DDR 读：
+  //     对比 640+320 px/行（360 行），单画面 320 px/行（720 行）。
+  wire [10:0] img_x0=11'd260;
+  wire [10:0] img_x1=11'd1540;
+  wire [9:0]  img_y0=single_panel_pix ? 10'd25  : 10'd205;
+  wire [9:0]  img_y1=single_panel_pix ? 10'd745 : 10'd565;
   wire image=v>=img_y0&&v<img_y1&&h>=img_x0&&h<img_x1;
   wire active=v>=25&&v<745&&h>=260&&h<1540;
-  //   单画面：源行 = ((显示行-25)>>2)+30；对比：源行 = 显示行-145（1:1）
+  wire [9:0] row_d=v>=img_y0 ? (v-img_y0) : 10'd0;
+  //   对比：原画槽行号 60..419（1:1）；单画面：风格槽行号 30..209（4 行）。
   wire [8:0] expect_row=single_panel_pix
-        ? (raw_single_pix ? (((v>=10'd25 ? (v-10'd25) : 10'd0)*2)/3) : ((v>=10'd25 ? (v-10'd25) : 10'd0)/3))
-        : (v>=10'd145 ? (v-10'd145) : 9'd0);
-  // Column index within the picture.  Both modes map one column to one source
-  // pixel, they only differ in where the picture starts, so the FIFO is
-  // consumed at the same rate in both.  Clamped below img_x0 so the value
-  // cannot wrap negative while the beam is still in the left blanking band.
-  wire [10:0] expect_x=(h>=img_x0) ? (h-img_x0) : 11'd0;   // 单画面 0..959，源 x = expect_x/3
-  //   单画面请求在 v=24..743 的**每一行**（同一源行显示 4 行）；
-  //   请求行的映射比 expect 早一行：request_row(v) == expect_row(v+1)。
-  wire request=h==0&&dv2&&(single_panel_pix ? (v>=10'd24&&v<10'd744) : (v>=10'd144&&v<10'd624));
+        ? (9'd30+(row_d>>2))
+        : (9'd60+row_d);
+  // Column index within the picture, 0..1279.  Tags on the FIFO are display-
+  // relative x; comparison writes the original as tags 0..639 and the stylised
+  // as 640..1279 (2x), single panel writes 0..1279 (4x).  Clamped below img_x0
+  // so the value cannot wrap negative in the left blanking band.
+  wire [10:0] expect_x=(h>=img_x0) ? (h-img_x0) : 11'd0;
+  //   每个显示行都发一次请求；请求行对应**下一个显示行**：
+  //   对比 v=204..563 预取图片行 0..359；单画面 v=24..743 预取 0..719。
+  wire request=h==0&&dv2&&(single_panel_pix ? (v>=10'd24&&v<10'd744)
+                                            : (v>=10'd204&&v<10'd564));
   wire request_ready,req_valid,req_ready;wire [19:0] req;
   wire [8:0] request_row=single_panel_pix
-        ? (raw_single_pix ? (((v>=10'd24 ? (v-10'd24) : 10'd0)*2)/3) : ((v>=10'd24 ? (v-10'd24) : 10'd0)/3))
-        : (v>=10'd144 ? (v-10'd144) : 9'd0);
+        ? (9'd30+((v>=10'd24 ? (v-10'd24) : 10'd0)>>2))
+        : (9'd60+(v>=10'd204 ? (v-10'd204) : 10'd0));
   style_async_fifo #(.WIDTH(20)) requests(.reset_n(rst_n),.wclk(pix_clk),.rclk(clk),
     .in_valid(request),.in_ready(request_ready),.in_data({epoch,slot2,request_row}),
     .out_valid(req_valid),.out_ready(req_ready),.out_data(req));
@@ -144,11 +147,12 @@ module style_display #(parameter bit BUFFERED=1'b1)(
       3:raw_base=32'h053c0000;4:raw_base=32'h05500000;default:raw_base=32'h05640000;
     endcase end
   endfunction
-  // ---- A-4：风格结果帧几何（320×240 原生 → 显示端最近邻 2×2）----
-  localparam [9:0]  PIX_W_FULL   = 10'd640;    // 原画行：640 像素
-  localparam [9:0]  PIX_W_HALF   = 10'd320;    // 风格行：320 像素（L11 半分辨率）
+  // ---- 帧几何：原画 640 px/行，风格 320 px/行 ----
+  localparam [9:0]  PIX_W_FULL   = 10'd640;    // 对比首段：原画完整行
+  localparam [9:0]  PIX_W_HALF   = 10'd320;    // 风格完整行（单画面首段 / 对比第二段）
   localparam [31:0] STRIDE_FULL  = 32'd2560;   // 640 px × 4 B
   localparam [31:0] STRIDE_HALF  = 32'd1280;   // 320 px × 4 B
+  localparam [31:0] STYLE_OFFSET = 32'h0080_0000;
   assign req_ready=state==IDLE&&dup_cnt==2'd0;
   assign display_safe=state==IDLE&&!rd_busy;
   wire pixel_valid,pixel_ready;wire [59:0] packet;
@@ -157,16 +161,14 @@ module style_display #(parameter bit BUFFERED=1'b1)(
   // plain 8-bit RGB. right_side is low for the original fetch and high for the
   // stylised one (see the fetch FSM below), so it selects the conversion.
   wire [31:0] rgb={8'b0, right_side ? (rd_pixel[23:0]^24'h808080) : rd_pixel[23:0]};
-  // ---- A-4：水平 2× 最近邻复制（只在风格侧）----
-  //   读侧每接受一个源像素，就往像素 FIFO 写两条（x 与 x+1），所以 pix_clk 侧收到的
-  //   仍是「每行 1280 条、x 连续」的流，与改动前完全同构。dup_pend 表示第 2 条待写；
-  //   第 2 条必须用**锁存的** dup_rgb（那时 rd_pixel 已经前进了一拍）。
-  //   （dup_pend / dup_rgb 的声明在 FSM 寄存器那一行，因为 req_ready 要先用到它。）
+  // ---- 水平最近邻复制（对比：原画 1×/风格 2×；单画面：风格 4×）----
+  //   读侧每接受一个源像素，就往像素 FIFO 写 dup_max+1 条（x 连续递增），
+  //   所以 pix_clk 侧收到的仍是「每行 1280 条、x=0..1279」的流。
+  //   后续几条必须用**锁存的** dup_rgb（那时 rd_pixel 已经前进了一拍）。
   wire pixel_in_ready;
-  wire style_dup=right_side;
-  //   ①a：单画面 4×（dup_max=3），对比模式风格侧 2×（dup_max=1），原画 1×（0）。
-  reg raw_odd;
-  wire [1:0] dup_max=raw_single_clk ? (raw_odd?2'd0:2'd1) : (style_dup&&single_panel_clk)?2'd2:(style_dup?2'd1:2'd0);
+  //   2026-10-31：对比模式原画完整行 1×（dup_max=0）、风格 2×（dup_max=1）；
+  //   单画面风格 4×（dup_max=3）。right_side 在每段读开始时定好，不会半路变形。
+  wire [1:0] dup_max=right_side?(single_panel_clk?2'd3:2'd1):2'd0;
   wire pix_we=(dup_cnt!=2'd0)?1'b1:rd_valid;
   wire [31:0] pix_rgb=(dup_cnt!=2'd0)?dup_rgb:rgb;
   assign rd_ready=pixel_in_ready&&(dup_cnt==2'd0);
@@ -174,34 +176,32 @@ module style_display #(parameter bit BUFFERED=1'b1)(
     .in_valid(pix_we),.in_ready(pixel_in_ready),.in_data({row_epoch,row_number,x,pix_rgb}),
     .out_valid(pixel_valid),.out_ready(pixel_ready),.out_data(packet),.write_level(pixel_level));
   wire match=pixel_valid&&packet[59:52]==epoch&&packet[51:43]==expect_row&&packet[42:32]==expect_x;
-  //   ①a 单画面：同一源行会排队**多份拷贝**（每显示行取一次）。水平消隐期 h>=img_x1 时
-  //   expect_x 仍在按 h-img_x0 增长（可到 1389），若此时按 x<expect_x 判过期，就会把
-  //   下一份拷贝的头部 110 个像素（消隐长度 1649-1539）当过期弹掉，队列从此错位到 x=110，
-  //   该显示行前 110 像素全黑且队列堵死（实测 540 行 × 110 = 59,400 uf）。
-  //   ⇒ x 过期判据只在本行可见区内生效；满图垂直裁剪/跨帧清理仍无条件执行。
-  //   单画面以外保持原判据，对比模式逐拍不变。
-  wire x_passed=h>=img_x0&&packet[42:32]<expect_x&&(!single_panel_pix||(h<img_x1&&v>=img_y0));
+  //   两种模式现在都是「每显示行重取一行」：同一源行会排队多份拷贝。水平消隐期
+  //   h>=img_x1 时 expect_x 仍在按 h-img_x0 增长（可到 1389），若此时按 x<expect_x
+  //   判过期，会把下一份拷贝的头部 110 个像素（消隐长度 1649-1539）当过期弹掉，
+  //   队列错位到 x=110、该行前 110 像素全黑（实测 540 行 × 110 = 59,400 uf）。
+  //   ⇒ x 过期判据只在可见窗口内生效；满图垂直裁剪/跨帧清理仍无条件执行。
+  wire x_passed=h>=img_x0&&h<img_x1&&v>=img_y0&&packet[42:32]<expect_x;
   wire obsolete=pixel_valid&&(packet[59:52]!=epoch || v>=img_y1 ||
     (v>=img_y0 && (packet[51:43]<expect_row || (packet[51:43]==expect_row && x_passed))));
   assign pixel_ready=obsolete||(image&&match);
   always @(posedge pix_clk or negedge rst_n)begin
-    if(!rst_n)begin h<=0;v<=0;epoch<=0;epoch_gray<=0;slot1<=0;slot2<=0;dv1<=0;dv2<=0;pixel<=0;hs<=0;vs<=0;de<=0;underflow<=0;sp_lat<=0;raw_lat<=1;end
+    if(!rst_n)begin h<=0;v<=0;epoch<=0;epoch_gray<=0;slot1<=0;slot2<=0;dv1<=0;dv2<=0;pixel<=0;hs<=0;vs<=0;de<=0;underflow<=0;sp_lat<=0;end
     else begin
       slot1<=display_slot;slot2<=slot1;dv1<=display_valid;dv2<=dv1;
       if(h==1649)begin h<=0;if(v==749)v<=0;else v<=v+1'b1;end else h<=h+1'b1;
-      if(h==0&&v==0)begin epoch<=epoch+1'b1;epoch_gray<=((epoch+1'b1)>>1)^(epoch+1'b1);sp_lat<=sp_sync;raw_lat<=raw_sync;end
+      if(h==0&&v==0)begin epoch<=epoch+1'b1;epoch_gray<=((epoch+1'b1)>>1)^(epoch+1'b1);sp_lat<=sp_sync;end
       hs<=h<40;vs<=v<5;de<=active;pixel<=image&&match ? packet[31:0]:0;
       underflow<=(image&&dv2&&!match)||(request&&!request_ready);
     end
   end
   always @(posedge clk or negedge rst_n)begin
-    if(!rst_n)begin state<=IDLE;rd_start<=0;rd_address<=0;row_epoch<=0;row_slot<=0;row_number<=0;x<=0;right_side<=0;dma_errors<=0;row_age<=0;rd_pixels_sel<=PIX_W_FULL;dup_cnt<=0;dup_rgb<=0;raw_odd<=0;end
+    if(!rst_n)begin state<=IDLE;rd_start<=0;rd_address<=0;row_epoch<=0;row_slot<=0;row_number<=0;x<=0;right_side<=0;dma_errors<=0;row_age<=0;rd_pixels_sel<=PIX_W_HALF;dup_cnt<=0;dup_rgb<=0;end
     else begin
       rd_start<=0;
-      if(rd_valid&&rd_ready)raw_odd<=!raw_odd;
       if(state==IDLE)row_age<=0;
       else if(row_age!=4095)row_age<=row_age+1'b1;
-      // A-4：x 是「像素 FIFO 写第几条」，每条 +1；风格侧一个源像素写两条 ⇒ x += 2/像素
+      // x 是「像素 FIFO 写第几条」，每条 +1；对比原画 1 条、风格 2 条/像素；单画面 4 条。
       if(pix_we&&pixel_in_ready)begin
         x<=x+1'b1;
         if(dup_cnt!=2'd0) dup_cnt<=dup_cnt-2'd1;
@@ -209,24 +209,28 @@ module style_display #(parameter bit BUFFERED=1'b1)(
       end
       case(state)
         IDLE:if(req_valid&&req_ready&&req[19:12]==current_epoch)begin
-          row_epoch<=req[19:12];row_slot<=req[11:9];row_number<=req[8:0];x<=0;raw_odd<=0;
+          row_epoch<=req[19:12];row_slot<=req[11:9];row_number<=req[8:0];x<=0;
           // Single panel fetches the stylised buffer straight away and skips
           // the second fetch, so a display row costs one DDR read instead of
           // two.  Two-panel mode keeps its original order: original frame first,
           // stylised frame second.
-          right_side<=single_panel_clk&&!raw_single_clk;
-          // A-4：风格帧 = 320×240 / 跨距 1280，源行 = 显示行>>1（垂直 2× 最近邻）
-          rd_pixels_sel<=single_panel_clk&&!raw_single_clk ? PIX_W_HALF : PIX_W_FULL;
-          //   ①a：单画面的 req[8:0] 已经是源行（30..209），不再 >>1
-          rd_address<=single_panel_clk&&!raw_single_clk ? (raw_base(req[11:9])+32'h00800000+req[8:0]*STRIDE_HALF)
+          right_side<=single_panel_clk;
+          //   单画面：req 已是风格源行（30..209），读完整 320 px；
+          //   对比：req 是原画源行（60..419），读完整 640 px。
+          rd_pixels_sel<=single_panel_clk ? PIX_W_HALF : PIX_W_FULL;
+          rd_address<=single_panel_clk ? (raw_base(req[11:9])+STYLE_OFFSET+req[8:0]*STRIDE_HALF)
                                        : (raw_base(req[11:9])+req[8:0]*STRIDE_FULL);
           state<=START;
         end
         START:begin rd_start<=1;state<=WAIT;end
         WAIT:if(rd_done)begin
           if(rd_error)dma_errors<=dma_errors+1'b1;
-          if(!right_side&&!single_panel_clk)begin right_side<=1;rd_pixels_sel<=PIX_W_HALF;
-            rd_address<=raw_base(row_slot)+32'h00800000+(row_number>>1)*STRIDE_HALF;state<=START;end
+          //   对比模式第二段：风格源行 = 30+((原画源行-60)>>1)（风格每源行显示 2 行），
+          //   读完整 320 px，每个源像素写 2 条。
+          if(!right_side)begin right_side<=1;rd_pixels_sel<=PIX_W_HALF;
+            rd_address<=raw_base(row_slot)+STYLE_OFFSET
+              +(9'd30+((row_number>=9'd60)?((row_number-9'd60)>>1):9'd0))*STRIDE_HALF;
+            state<=START;end
           else state<=IDLE;
         end
       endcase

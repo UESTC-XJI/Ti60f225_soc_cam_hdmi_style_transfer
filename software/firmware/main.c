@@ -4,13 +4,11 @@
 #include "camera_3a.h"
 #include "style_driver.h"
 #include "qse_ble.h"
-#include "video_regs.h"
 
 /* Inspect these in the IDE if a trap stops the application. */
 volatile uint32_t firmware_trap_cause, firmware_trap_pc, firmware_trap_value;
 volatile uint32_t app_ddr_errors, app_osd_errors, app_camera_errors;
 volatile uint32_t app_metrics_updates;
-volatile uint32_t app_boot_stage,app_boot_errors;
 volatile uint32_t app_hist_enable,app_hist_updates,app_hist_errors;
 video_hist_t app_hist;
 
@@ -45,9 +43,9 @@ int app_ddr_test(void) {
 
 /* ---- 旋钮档位 G1..G4（2026-10-28，沿用 10-26 的板级接法）----------------
  * QSE 旋钮的两位 {SW2,SW1} 从 video APB 0x54 的 bit[3:2] 读进（bit2=SW1，bit3=SW2）：
- *     raw 0b00 -> G3 彩虹        raw 0b01 -> G1 星空
- *     raw 0b10 -> G2 red_sky     raw 0b11 -> G4 保持
- * G4 保持当前 active；G3 明确选择彩虹 bank4。
+ *     raw 0b00 -> G3 mosaic      raw 0b01 -> G1 星空
+ *     raw 0b10 -> G2 candy       raw 0b11 -> G4 feathers
+ * 每个风格各有 5 个强度档，档位由 BLE TIER 命令独立设置。
  * 20 ms 消抖（1 kHz 轮询 = 20 拍）；切换走 style_switch_bank()（等引擎空闲再拷权重，
  * 实测 32 ms，不丢帧）。串口日志已移除：UART0 现在专供 BLE。 */
 static uint32_t knob_raw=0xFFFFFFFFu, knob_stable;
@@ -56,18 +54,18 @@ static uint64_t knob_since;
 static void style_knob_apply(uint32_t raw) {
     unsigned target;
     switch (raw) {
-    case 0u:  target = 4u; break;                          /* G3 彩虹（bank4 rainbow） */
-    case 1u:  target = 0u; break;                          /* G1 星空（bank0 starry_old） */
-    case 2u:  target = 3u; break;                          /* G2 red_sky（bank3 red_v3_dc） */
-    default:  target = style_active_bank(); break;         /* G4 保持 */
+    case 0u:  target = 2u; break;                          /* G3 mosaic */
+    case 1u:  target = 0u; break;                          /* G1 starry */
+    case 2u:  target = 1u; break;                          /* G2 candy */
+    default:  target = 3u; break;                          /* G4 feathers */
     }
     if (target != style_active_bank() && target < style_bank_count())
         (void)style_switch_bank(target);
     qse_ble_note_knob(raw);
 }
 
-/* 上电按实际旋钮准备风格权重，但保持原画启动显示。
- * 后续稳定档位变更才进入风格显示；G4 保持当前 active。 */
+/* 上电就按旋钮的实际档位上电（旋钮在 G2 就开机即 candy），
+ * 而不是"等第一次拨动才生效"。四个档位都直接选择对应风格。 */
 static void style_knob_reset(uint64_t now) {
     knob_raw = (*(volatile uint32_t *)0xF8100054u >> 2) & 3u;
     knob_stable = knob_raw; knob_since = now;
@@ -80,24 +78,10 @@ static void style_knob_service(uint64_t now) {
     if (raw == knob_stable) return;
     if (now - knob_since < BSP_CLINT_HZ / 50u) return;     /* 20 ms */
     knob_stable = raw;
-    qse_ble_activate_style();
     style_knob_apply(knob_stable);
 }
 
 int main(void) {
-    /* Replay once for every firmware start, including IDE reloads. Hardware
-     * emits stable HDMI while camera/DDR application initialization is deferred. */
-    app_boot_stage=1;
-    video_write(VIDEO_UI_CONTROL,5u);
-    video_write(VIDEO_BOOT_CONTROL,1u);
-    uint64_t boot_deadline=clint_getTime(BSP_CLINT)+5ull*BSP_CLINT_HZ;
-    while(!(video_read(VIDEO_BOOT_STATUS)&1u)) {
-        if(clint_getTime(BSP_CLINT)>boot_deadline) {++app_boot_errors;for(;;){}}
-    }
-    while(!(video_read(VIDEO_BOOT_STATUS)&2u)) {
-        if(clint_getTime(BSP_CLINT)>boot_deadline) {++app_boot_errors;for(;;){}}
-    }
-    app_boot_stage=2;
     osd_set_video_ready(0);  /* Also return to bars after a debugger reload. */
     bsp_init();
     if (app_ddr_test()) {
@@ -125,10 +109,6 @@ int main(void) {
         (void)osd_write_string("MONET VGA");
     }
     if (camera_rc == 0) osd_set_video_ready(1);
-    /* Splash stays black until an actual completed capture/inference slot is
-     * available. RTL then switches at live VS; camera retries remain possible. */
-    video_write(VIDEO_BOOT_CONTROL,2u);
-    app_boot_stage=3;
     uint64_t last_update = clint_getTime(BSP_CLINT);
     if(!camera_rc) {
         (void)camera_3a_init(&app_3a,last_update);

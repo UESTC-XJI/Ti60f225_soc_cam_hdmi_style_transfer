@@ -2295,3 +2295,14 @@ static const unsigned int style_bank_rainbow[STYLE_BANK_EXTRA_WORDS] = {
 
 
 
+
+/* 2026-10-31: mosaic_glass_t025 bank (replaces red_v3_dc in style_driver). */
+#include "style_bank_mosaic_t025.h"
+
+#include "style_bank_mosaic_l1200.h"
+
+#include "style_bank_mosaic_l200.h"
+
+#include "style_bank_mosaic_t05.h"
+
+#include "style_bank_mosaic_t1.h"

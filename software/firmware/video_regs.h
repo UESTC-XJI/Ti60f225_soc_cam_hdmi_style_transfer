@@ -9,9 +9,7 @@
 #define VIDEO_TONE_SHADOW 0x04cu
 #define VIDEO_CFG_APPLY 0x050u
 #define VIDEO_CFG_STATUS 0x054u
-#define VIDEO_UI_CONTROL 0x130u /* bit0 FPS, bit1 compare, bit2 original single; reset 5 */
-#define VIDEO_BOOT_CONTROL 0x138u /* write 1 restart, write 2 arm live handover */
-#define VIDEO_BOOT_STATUS 0x13cu /* bit0 busy, bit1 done, bit2 live selected */
+#define VIDEO_UI_CONTROL 0x130u /* bit0 FPS on, bit1 compare; default both on */
 #define VIDEO_UI_KEYS 0x134u    /* bit0 KEY0, bit1 KEY1; active-high */
 #define VIDEO_CAP_ACTIVE_SEQ 0x058u
 #define VIDEO_DISP_ACTIVE_SEQ 0x05cu

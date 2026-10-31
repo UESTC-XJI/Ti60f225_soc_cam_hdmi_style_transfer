@@ -1,5 +1,9 @@
 // 逐拍 A/B：改动前（style_display_old，由 .pre720p_20261028 只改模块名生成）与改动后并排跑，
 // 同一时钟、同一激励，对比模式（single_panel=0）要求 pixel/hs/vs/de/underflow 逐拍相同。
+//
+// ⚠ 2026-10-31：对比模式几何有意改为“左完整原画 / 右完整风格 + 上下黑边”，
+//    本 A/B 的 diff=0 前提不再成立，**已废弃，不要再当回归**。当前回归用
+//    tb_disp_720p / tb_disp_toggle / tb_disp_boot_modes。
 
 `timescale 1ns/1ps
 module tb_disp_ab;

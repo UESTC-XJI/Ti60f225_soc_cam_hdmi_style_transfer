@@ -4,11 +4,11 @@ module qse_mainline_ui_tb;
  reg rst_n=0,psel=0,penable=0,pwrite=0;
  reg [15:0] paddr=0;reg [31:0] pwdata=0;
  wire [31:0] prdata;wire pready,pslverr;
- reg [1:0] keys=0;wire [2:0] ui;reg [2:0] bs=0;wire bt,ba;
+ reg [1:0] keys=0;wire [1:0] ui;
  video_apb_ctrl apb(.pclk(clk),.preset_n(rst_n),.psel(psel),.penable(penable),.pwrite(pwrite),
   .paddr(paddr),.pwdata(pwdata),.prdata(prdata),.pready(pready),.pslverr(pslverr),
   .capture_clk(clk),.display_clk(clk),.raw_vs(1'b0),.raw_de(1'b0),.rgb_vs(1'b0),.rgb_de(1'b0),.display_vs(1'b0),
-  .raw_data(16'd0),.rgb_data(48'd0),.keys_in(keys),.knob_in(2'b10),.ui_control(ui),.boot_status(bs),.boot_start_toggle(bt),.boot_live_arm(ba));
+  .raw_data(16'd0),.rgb_data(48'd0),.keys_in(keys),.knob_in(2'b10),.ui_control(ui));
  reg vs=0,en=1;wire [7:0] r,g,b;wire hsout,vsout,deout;
  fps_overlay fps(.clk(clk),.rst_n(rst_n),.i_enable(en),.i_vs(vs),.i_hs(1'b0),.i_de(1'b1),
   .i_r(8'h23),.i_g(8'h45),.i_b(8'h67),.i_fps(16'd30),
@@ -21,18 +21,12 @@ module qse_mainline_ui_tb;
  end endtask
  initial begin
   repeat(3)@(negedge clk);rst_n=1;
-  #1;if(ui!==5)$fatal(1,"default UI");
+  #1;if(ui!==3)$fatal(1,"default UI");
   paddr=16'h134;keys=2;#1;if(prdata!==2)$fatal(1,"key readback");
   paddr=16'h054;#1;if(prdata[3:2]!==2)$fatal(1,"B knob mapping");
   wr(16'h130,0,0);if(ui!==0)$fatal(1,"UI write");
-  wr(16'h130,8,1);if(ui!==0)$fatal(1,"bad UI write mutated state");
+  wr(16'h130,4,1);if(ui!==0)$fatal(1,"bad UI write mutated state");
   wr(16'h134,1,1);wr(16'h130,3,0);if(ui!==3)$fatal(1,"UI restore");
-  wr(16'h130,5,0);if(ui!==5)$fatal(1,"raw single UI");
-  wr(16'h138,1,0);if(bt!==1||ba!==0)$fatal(1,"boot start");
-  bs=3;repeat(4)@(negedge clk);paddr=16'h13c;#1;if(prdata!==3)$fatal(1,"boot status CDC");
-  wr(16'h138,2,0);if(!ba)$fatal(1,"boot live arm");
-  wr(16'h138,1,0);if(bt!==0||ba!==0)$fatal(1,"boot replay");
-  wr(16'h13c,0,1);wr(16'h138,4,1);
   force fps.x=8;force fps.y=128;
   @(negedge clk);#1;if({r,g,b}!==24'h000000)$fatal(1,"enabled box missing");
   en=0;repeat(5)@(negedge clk);#1;if({r,g,b}!==24'h000000)$fatal(1,"OSD changed mid-frame");

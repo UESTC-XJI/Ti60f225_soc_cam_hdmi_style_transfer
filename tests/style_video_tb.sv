@@ -4,20 +4,30 @@ module style_video_tb;
  reg clk=0;always #5 clk=~clk;reg rst_n=0;
  reg i_vs=0,i_de=0;reg [47:0] i_rgb=0;
  wire valid,sof,eof,fault;wire [31:0] pixel,completed_frames;
- style_vga_crop #(.SOURCE_WIDTH(32),.SOURCE_HEIGHT(16),.WIDTH(8),.HEIGHT(4)) crop(.*);
+ // 2026-10-30: full-frame 3x3 average + letterbox.  24x9 source -> 8x3 image
+ // inside an 8x5 frame (one blank row top and bottom), 40 pixels per frame.
+ style_vga_crop #(.SOURCE_WIDTH(24),.SOURCE_HEIGHT(9),.WIDTH(8),.HEIGHT(5)) crop(.*);
  function [23:0] color(input integer x,y);
    color={8'(x*5+y*2),8'(x+y*3),8'(x*2+y)};
  endfunction
- integer crop_count=0,x,y,c,total;reg [23:0] expected_rgb;
+ integer crop_count=0,chk=0,x,y,c,total;reg checking=0,done=0;reg [23:0] expected_rgb;
  always @(posedge clk)if(valid)begin
-   for(c=0;c<3;c=c+1)begin
-     total=0;
-     for(y=0;y<2;y=y+1)for(x=0;x<2;x=x+1)begin
-       expected_rgb=color(8+(crop_count%8)*2+x,4+(crop_count/8)*2+y);total=total+expected_rgb[c*8+:8];
+   // The first frame only primes the line buffers: its image rows are emitted
+   // before any sof, so the checked frame is the one opened by the first sof.
+   if(sof&&!done)begin checking=1;chk=0;end
+   if(checking)begin
+     if(chk<8||chk>=32)begin
+       if(pixel[23:0]!==24'd0)$fatal(1,"crop blank row pixel=%0d",chk);
+     end else for(c=0;c<3;c=c+1)begin
+       total=0;
+       for(y=0;y<3;y=y+1)for(x=0;x<3;x=x+1)begin
+         expected_rgb=color(((chk-8)%8)*3+x,((chk-8)/8)*3+y);total=total+expected_rgb[c*8+:8];
+       end
+       if(pixel[c*8+:8] !== 8'((total+4)/9))$fatal(1,"crop channel=%0d pixel=%0d",c,chk);
      end
-     if(pixel[c*8+:8] !== 8'((total+2)/4))$fatal(1,"crop channel=%0d pixel=%0d",c,crop_count);
+     if(sof !== (chk==0)||eof !== (chk==39))$fatal(1,"crop frame tags");
+     chk=chk+1;if(chk==40)begin checking=0;done=1;end
    end
-   if(sof !== (crop_count==0)||eof !== (crop_count==31))$fatal(1,"crop frame tags");
    crop_count=crop_count+1;
  end
  reg cap_valid=0;wire cap_ready;reg [33:0] cap_packet=0;
@@ -64,14 +74,18 @@ module style_video_tb;
  integer xx,yy;
  initial begin
    repeat(4)@(negedge clk);rst_n=1;
-   @(negedge clk);i_vs=1;repeat(3)@(negedge clk);i_vs=0;
-   repeat(3)@(negedge clk);
-   for(yy=0;yy<16;yy=yy+1)begin
-     for(xx=0;xx<16;xx=xx+1)begin i_de=1;i_rgb={color(xx*2+1,yy),color(xx*2,yy)};@(negedge clk);end
-     i_de=0;repeat(5)@(negedge clk);
+   // Two source frames: 24x9 (12 DE clocks per line).  The 400-clock gap is
+   // the letterbox budget for this tiny geometry (2 rows x 8 px x 3 clocks
+   // plus the 48-clock pipeline drain).
+   for(integer fr=0;fr<2;fr=fr+1)begin
+     @(negedge clk);i_vs=1;repeat(3)@(negedge clk);i_vs=0;repeat(3)@(negedge clk);
+     for(yy=0;yy<9;yy=yy+1)begin
+       for(xx=0;xx<12;xx=xx+1)begin i_de=1;i_rgb={color(xx*2+1,yy),color(xx*2,yy)};@(negedge clk);end
+       i_de=0;repeat(20)@(negedge clk);
+     end
+     repeat(400)@(negedge clk);
    end
-   repeat(5)@(negedge clk);
-   if(crop_count!=32||completed_frames!=1||fault)$fatal(1,"crop count");
+   if(crop_count!=80||completed_frames!=1||fault)$fatal(1,"crop count=%0d frames=%0d fault=%b",crop_count,completed_frames,fault);
    for(integer f=0;f<6;f=f+1)frame(384);
    if(captured!=6||dropped!=0)$fatal(1,"six queue slots");
    frame(384);if(dropped!=1||captured!=6)$fatal(1,"queue overflow count");

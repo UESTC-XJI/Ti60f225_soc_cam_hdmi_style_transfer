@@ -40,16 +40,19 @@ module tb_disp_boot_modes;
     if(rvalid&&rready)begin address<=address+16;beat<=beat+1'b1;if(rlast)read_active<=0;end
   end
 
+  //   md=0 对比（左完整原画/右完整风格，v=205..564）；md=1 风格单画面 4×；
+  //   md=2 raw_single（boot splash，960×720 原画）。
   function [31:0] expect_pix(input integer md, input integer vv, input integer hh);
     integer sy,sx;begin
       if(md==0)begin
-        if(hh<900)expect_pix=value(0,0,(vv-145),hh-260);
-        else begin sy=(vv-145)>>1;sx=(hh-900)>>1;expect_pix=value(0,1,sy,sx)^32'h00808080;end
+        if(vv<205||vv>=565)expect_pix=0;
+        else if(hh<900)expect_pix=value(0,0,60+(vv-205),hh-260);
+        else begin sy=30+((vv-205)>>1);sx=(hh-900)>>1;expect_pix=value(0,1,sy,sx)^32'h00808080;end
       end else if(md==2)begin
         sy=((vv-25)*2)/3;sx=((hh-420)*2)/3;
         expect_pix=value(0,0,sy,sx);
       end else begin
-        sy=(vv-25)/3;sx=(hh-420)/3;
+        sy=30+((vv-25)>>2);sx=(hh-260)>>2;
         expect_pix=value(0,1,sy,sx)^32'h00808080;
       end
     end
@@ -64,8 +67,8 @@ module tb_disp_boot_modes;
     if(oldh==0&&oldv==0)mode_at_frame=dut.raw_sync&&dut.sp_sync ? 2 : (dut.sp_sync ? 1:0);   // 帧首锁存期望模式
     if(de)begin
       if(underflow)uf=uf+1;
-      // 对比模式：上下 120 行是黑边；单画面：整屏都是图
-      else if((!mode_at_frame&&(oldv<145||oldv>=625))||(mode_at_frame&&(oldh<420||oldh>=1380)))begin
+      // 对比：v=205..564 之外是黑边；风格单画面满屏；raw_single 左右各 160 黑边
+      else if((mode_at_frame==0&&(oldv<205||oldv>=565))||(mode_at_frame==2&&(oldh<420||oldh>=1380)))begin
         if(pixel!==0)bad=bad+1;
       end else if(pixel!==expect_pix(mode_at_frame,oldv,oldh))bad=bad+1;
     end

@@ -1,5 +1,5 @@
-// Replays the emulated board output (reports/simulation/img_snap_stream.bin, written by
-// tools/test_firmware_runtime.py) through the browser receiver in 20-byte BLE notifications.
+// Replays a real board capture (deliverable/qse_mainline_merge_20261030/reports/snapshot_stream.bin)
+// through the browser receiver in 20-byte BLE notifications.
 //   node tools/ble_web/test_ble_proto.js
 'use strict';
 const fs = require('fs');
@@ -8,8 +8,9 @@ const assert = require('assert');
 const { Receiver, crc32 } = require('./ble_proto.js');
 
 const root = path.resolve(__dirname, '../..');
-const stream = fs.readFileSync(path.join(root, 'reports/simulation/img_snap_stream.bin'));
-const expected = fs.readFileSync(path.join(root, 'reports/simulation/img_snap.jpg'));
+const dir = path.join(root, 'deliverable/qse_mainline_merge_20261030/reports');
+const stream = fs.readFileSync(path.join(dir, 'snapshot_stream.bin'));
+const expected = fs.readFileSync(path.join(dir, 'snapshot.jpg'));
 
 // Byte offsets of every packet in the stream.
 function packets(buf) {
@@ -37,20 +38,27 @@ function run(name, bytes) {
 
 const all = packets(stream);
 assert.ok(all.length > 20);
+const imgEnd = stream.indexOf(Buffer.from('IMG,END'));
+assert.ok(imgEnd > 0);
+const firstTwo = all.find(p => p.seq === 2);
 
-// 1. Exact board output. The board resent from packet 2, so the receiver sees duplicates.
+// 1. Exact board output.
 run('as sent', stream);
 
-// 2. Drop the first copy of packet 2: the receiver must NAK and complete from the resend.
-const firstTwo = all.find(p => p.seq === 2);
-const dropped = Buffer.concat([stream.subarray(0, firstTwo.at), stream.subarray(firstTwo.at + firstTwo.len + 7)]);
+// 2. Drop packet 2: the receiver must NAK, then finish from the board's go-back-N resend.
+//    The fixture has no duplicate copy, so replay the whole stream after the gap.
+const dropped = Buffer.concat([
+  stream.subarray(0, firstTwo.at),
+  stream.subarray(firstTwo.at + firstTwo.len + 7, imgEnd),
+  stream,
+]);
 const r2 = run('packet 2 lost', dropped);
 assert.ok(r2.sent.includes('NAK,2'), 'NAK,2 not sent');
 
-// 3. Corrupt one payload byte in the first copy of packet 2: CRC fails, NAK, resend used.
+// 3. Corrupt one payload byte in packet 2: CRC fails, NAK, resend used.
 const corrupt = Buffer.from(stream);
 corrupt[firstTwo.at + 9] ^= 0x40;
-const r3 = run('packet 2 corrupt', corrupt);
+const r3 = run('packet 2 corrupt', Buffer.concat([corrupt.subarray(0, imgEnd), stream]));
 assert.ok(r3.sent.includes('NAK,2'), 'NAK,2 not sent for corrupt packet');
 assert.deepStrictEqual(r3.lines, [], 'corrupt bytes leaked as text');
 

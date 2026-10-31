@@ -1,5 +1,7 @@
-// AE crop test: 1920x1080 RGB stream, center 1280x960 must be the only
-// metered region (1920 -> pairs 160..799, rows 60..1019; 1,228,800 samples).
+// AE full-frame test: since 2026-10-30 the style path compresses the whole
+// 1920x1080 frame (3x3 -> 640x360, letterboxed) instead of cropping, so AE
+// must meter all 2,073,600 samples.  The centre is bright and the border dim,
+// so a still-cropped meter would under-count.
 `timescale 1ns/1ps
 module tb_ae_crop;
   reg capture_clk=0, pclk=0;
@@ -65,14 +67,14 @@ module tb_ae_crop;
     $display("seq=%0d y=%0d n=%0d hot=%0d fl=0x%0h cfg=%0d src=%0d capseq=%0d",
              seq,y_sum,samples,hot,flags,cfg,source,cap_seq);
     if(seq!==32'd2) $display("FAIL seq expect 2");
-    if(samples!==32'd1228800) $display("FAIL samples expect 1228800");
-    if(y_sum!==32'd245760000) $display("FAIL y_sum expect 245760000");
+    if(samples!==32'd2073600) $display("FAIL samples expect 2073600");
+    if(y_sum!==32'd330240000) $display("FAIL y_sum expect 330240000");
     if(hot!==32'd0) $display("FAIL hot expect 0");
     if(!(flags&1)) $display("FAIL flags bit0");
     if(cfg!==cap_seq) $display("FAIL cfg != capseq");
     if(source!==32'd1) $display("FAIL source");
-    if(seq==32'd2&&samples==32'd1228800&&y_sum==32'd245760000&&(flags&1)&&cfg==cap_seq&&source==1)
-      $display("PASS AE center-crop metering: 1280x960 only, 1,228,800 samples");
+    if(seq==32'd2&&samples==32'd2073600&&y_sum==32'd330240000&&(flags&1)&&cfg==cap_seq&&source==1)
+      $display("PASS AE full-frame metering: 2,073,600 samples, centre+border both metered");
     $finish;
   end
 endmodule

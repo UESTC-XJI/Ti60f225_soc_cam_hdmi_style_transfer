@@ -1,0 +1,3 @@
+06d3ad8aed317e6162c1b87febc1d375 *F:/Ti60f225_soc_cam_hdmi_style_transfer-master (1)/Ti60f225_soc_cam_hdmi_style_transfer-master/deliverable/capture_display_20261031/ti60f225_oob.bit
+5ea88e8c0b3dc6818c4490ab7887b742 *F:/Ti60f225_soc_cam_hdmi_style_transfer-master (1)/Ti60f225_soc_cam_hdmi_style_transfer-master/deliverable/capture_display_20261031/soc_video_app.bin
+cc5f45a3a93e5f47a618233b103b8e61 *F:/Ti60f225_soc_cam_hdmi_style_transfer-master (1)/Ti60f225_soc_cam_hdmi_style_transfer-master/deliverable/capture_display_20261031/soc_video_app.elf
